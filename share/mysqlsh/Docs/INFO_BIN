@@ -1,0 +1,20 @@
+===== Information about the build process: =====
+Build was run at 2024-12-16 08:50:49Z
+Build was done on Windows-10.0.20348 processor AMD64
+Build was done using cmake 3.29.5-msvc4
+
+===== CMAKE_GENERATOR =====
+Visual Studio 17 2022
+
+===== Feature flags used: =====
+-- Cache values
+
+===== Compiler flags used: =====
+CMAKE_BUILD_TYPE: RelWithDebInfo
+Compiler: MSVC 19.42.34433.0
+COMPILE_DEFINITIONS: 
+CMAKE_C_FLAGS: /DWIN32 /D_WINDOWS /W3
+CMAKE_CXX_FLAGS: /DWIN32 /D_WINDOWS /W3 /GR /EHsc /std:c++20 /TP /Zc:preprocessor
+CMAKE_C_FLAGS_RELWITHDEBINFO: /MD /Zi /O2 /Ob1 /DNDEBUG -DNDEBUG 
+CMAKE_CXX_FLAGS_RELWITHDEBINFO: /MD /Zi /O2 /Ob1 /DNDEBUG /std:c++20 -DNDEBUG 
+===== EOF =====

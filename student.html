@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>學生個人作品集</title>
+    <!-- 載入 Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 載入 Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/student.css">
+    <script defer src="js/student.js"></script>
+</head>
+
+<body>
+    <div class="d-flex">
+        <!-- 側邊欄 -->
+        <aside class="sidebar">
+            <div class="logo">Portfolio+</div>
+            <nav>
+                <ul>
+                    <li><i class="fas fa-home"></i> 主頁</li>
+                    <li><i class="fas fa-folder-open"></i> 作品集</li>
+                    <li><i class="fas fa-user"></i> 社交</li>
+                    <li><i class="fas fa-cog"></i> 設定</li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主要內容 -->
+        <main class="content">
+            <section class="profile-card d-flex">
+                <img src="images/author.jpg" alt="使用者頭像" class="rounded-circle" id="student-avatar">
+                <div class="profile-info">
+                    <h2 id="student-name">姓名</h2>
+                    <p id="student-major">產業類別 | 公司地址</p>
+                    <div>
+                        <span id="status-dot" class="status-dot"></span>
+                        <span id="status">上線中</span>
+                    </div>
+                    <button class="edit-btn btn btn-primary">編輯</button>
+                </div>
+            </section>
+
+            <section class="bio">
+                <p id="student-bio">Lorem ipsum dolor sit amet consectetur. Feugiat nulla tortor dictum sodales...</p>
+            </section>
+
+            <section class="contact">
+                <div class="contact-item">
+                    <i class="fab fa-github"></i> <span id="github-link">carsys99_GitHub</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-lock"></i> <span id="password">123456</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i> <span id="email">mail@mail.mail</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fab fa-facebook"></i> <span id="facebook-link">關注我 Facebook</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i> <span id="phone">0987-654-321</span>
+                </div>
+                <p>瀏覽次數 <span class="view-count" id="view-count">20</span></p>
+            </section>
+
+            <section class="skills">
+                <h3>專業背景</h3>
+                <div class="skills-content">
+                    <p><strong>目前狀態：</strong> <span id="student-status">就學中</span></p>
+                    <p><strong>專業：</strong> <span id="student-skills">UI/UX 設計, 程式設計</span></p>
+                    <p><strong>技能：</strong> <span id="student-languages">Java, Python</span></p>
+                    <p><strong>語言能力：</strong> <span id="languages">English, 中文</span></p>
+                    <p><strong>最高學歷：</strong> 靜宜大學 學士班</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 載入 Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
