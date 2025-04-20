@@ -38,7 +38,7 @@ async function loginUser(event) {
     try {
         console.log("📤 發送登入請求...");
 
-        const response = await fetch("login.php", { // 修改為 PHP API
+        const response = await fetch("login.php", { // 使用正確的路徑
             method: "POST",
             body: formData
         });
@@ -47,10 +47,16 @@ async function loginUser(event) {
         console.log("🔄 伺服器回應:", result);
 
         if (result.status === "success") {
-            localStorage.setItem("token", result.token); // 假設後端有提供 token
+            // 登入成功，根據角色跳轉
             showSuccessMessage("🎉 登入成功！");
             setTimeout(() => {
-                window.location.href = "student.html";
+                if (result.role === "student") {
+                    window.location.href = "student/student_dashboard.php"; // 學生角色轉到學生儀表板
+                } else if (result.role === "admin") {
+                    window.location.href = "admin/admin_dashboard.php"; // 管理員角色轉到管理員儀表板
+                } else if (result.role === "company") {
+                    window.location.href = "company/company_dashboard.php"; // 企業角色轉到企業儀表板
+                }
             }, 1500);
         } else {
             alert(`❌ 登入失敗: ${result.message}`);

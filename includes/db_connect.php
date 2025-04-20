@@ -12,4 +12,3 @@ if ($conn->connect_error) {
     die(json_encode(["status" => "error", "message" => "資料庫連線失敗: " . $conn->connect_error]));
 }
 ?>
-

@@ -11,11 +11,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    if($role == "student"){
+    // 根據角色選擇不同的資料表和欄位名稱
+    if ($role == "student") {
         $sql = "SELECT * FROM students WHERE email = ?";
-    }else if($role == "admin"){
+    } else if ($role == "admin") {
         $sql = "SELECT * FROM admins WHERE email = ?";
-    }else if($role == "company"){
+    } else if ($role == "company") {
         $sql = "SELECT * FROM companies WHERE email = ?";
     }
 
@@ -28,17 +29,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $row["password_hash"])) {
             session_start();
             $_SESSION["role"] = $role;
-            if($role == "student"){
-                $_SESSION["user_id"] = $row["student_id"];
-            }else if($role == "admin"){
-                $_SESSION["user_id"] = $row["admin_id"];
-            }else if($role == "company"){
-                $_SESSION["user_id"] = $row["company_id"];
-            }
             $_SESSION["email"] = $row["email"];
             $_SESSION["name"] = $row["name"];
-            
-            echo json_encode(["status" => "success", "message" => "登入成功！"]);
+
+            // 根據角色選擇對應的 ID 欄位
+            if ($role == "student") {
+                $_SESSION["user_id"] = $row["student_id"];
+            } else if ($role == "admin") {
+                $_SESSION["user_id"] = $row["admin_id"];
+            } else if ($role == "company") {
+                $_SESSION["user_id"] = $row["company_id"];
+            }
+
+            // 回傳登入成功並包含角色資訊
+            echo json_encode(["status" => "success", "role" => $role, "message" => "登入成功！"]);
         } else {
             echo json_encode(["status" => "error", "message" => "密碼錯誤"]);
         }
