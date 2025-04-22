@@ -1,3 +1,12 @@
+<?php
+// 先檢查是否有傳遞 'need_info' 參數
+if (isset($_GET['need_info'])) {
+    $show_message = true;
+} else {
+    $show_message = false;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -5,11 +14,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>學生基本資料填寫</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="bg-light">
 
 <div class="container py-5">
     <h2 class="text-center mb-4">學生基本資料填寫</h2>
+
+    <!-- 顯示提示訊息 -->
+    <?php if ($show_message): ?>
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <strong>提醒：</strong> 請先填寫您的個人資料～
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <?php endif; ?>
+
+    <!-- 學生基本資料填寫表單 -->
     <form id="studentForm" method="POST" action="submit_student.php" enctype="multipart/form-data">
         <div class="mb-3 row">
             <label for="name" class="col-sm-2 col-form-label">姓名</label>
@@ -144,6 +164,18 @@
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 自動消失的提示框效果
+    setTimeout(function () {
+        var alert = document.querySelector('.alert');
+        if (alert) {
+            alert.style.opacity = 0;
+            setTimeout(function () {
+                alert.remove();
+            }, 1000); // 延遲1秒後移除提示框
+        }
+    }, 5000); // 5秒後自動消失
+</script>
+
 </body>
 </html>
