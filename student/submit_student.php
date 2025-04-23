@@ -1,8 +1,9 @@
 <?php
-require '../includes/db_connect.php'; // 載入資料庫連線
+require '../includes/db_connect.php'; // 資料庫連線
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 從表單取得資料
+    // 接收學生輸入的資料
+    $name = $_POST['name'];
     $student_id = $_POST['student_id'];
     $gender = $_POST['gender'];
     $birth = isset($_POST['birth']) ? $_POST['birth'] : null;
@@ -12,67 +13,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $address = $_POST['address'];
 
-    // 新增的欄位
-    $github = isset($_POST['github']) ? $_POST['github'] : null;
-    $instagram = isset($_POST['instagram']) ? $_POST['instagram'] : null;
-    $facebook = isset($_POST['facebook']) ? $_POST['facebook'] : null;
-    $bio = isset($_POST['bio']) ? $_POST['bio'] : null;
-    $professional_background = isset($_POST['professional_background']) ? $_POST['professional_background'] : null;
-    $skills = isset($_POST['skills']) ? $_POST['skills'] : null;
-    $languages = isset($_POST['languages']) ? $_POST['languages'] : null;
-    $graduation_school = isset($_POST['graduation_school']) ? $_POST['graduation_school'] : null;
+    // 新增欄位
+    $github = $_POST['github'] ?? null;
+    $instagram = $_POST['instagram'] ?? null;
+    $facebook = $_POST['facebook'] ?? null;
+    $bio = $_POST['bio'] ?? null;
+    $professional_background = $_POST['professional_background'] ?? null;
+    $skills = $_POST['skills'] ?? null;
+    $languages = $_POST['languages'] ?? null;
+    $school = $_POST['school'] ?? null;
 
     // 處理頭像上傳
-    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
-        $avatar = $_FILES['avatar'];
-        $avatar_name = time() . "_" . $avatar['name'];
-        $avatar_path = 'uploads/' . $avatar_name;
-        move_uploaded_file($avatar['tmp_name'], $avatar_path);
-    } else {
-        $avatar_path = null; // 如果沒有上傳頭像，則設為 null
+    $profile_picture_path = null;
+    if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
+        $upload_dir = 'uploads/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true); // 若目錄不存在則建立
+        }
+        $profile_picture_name = time() . "_" . basename($_FILES['profile_picture']['name']);
+        $profile_picture_path = $upload_dir . $profile_picture_name;
+        move_uploaded_file($_FILES['profile_picture']['tmp_name'], $profile_picture_path);
     }
 
-    // 檢查 email 是否已經註冊過
-    $check_sql = "SELECT student_id FROM students WHERE email = ?";
-    if ($stmt = $conn->prepare($check_sql)) {
-        $stmt->bind_param("s", $email);
+    // 儲存 student_id 到 students 表（若不存在就新增）
+    $insert_student_sql = "INSERT INTO students (student_id, email) VALUES (?, ?) 
+                           ON DUPLICATE KEY UPDATE email = VALUES(email)";
+    if ($stmt = $conn->prepare($insert_student_sql)) {
+        $stmt->bind_param("is", $student_id, $email);
         $stmt->execute();
-        $stmt->store_result();
-
-        if ($stmt->num_rows == 0) {
-            // 若該 email 不存在，回傳錯誤訊息
-            echo json_encode(["status" => "error", "message" => "此 email 尚未註冊！"]);
-            exit;
-        }
         $stmt->close();
     } else {
-        echo json_encode(["status" => "error", "message" => "資料庫查詢準備失敗。"]);
+        echo json_encode(["status" => "error", "message" => "插入學生基本資料失敗。"]);
         exit;
     }
 
-    // 準備 SQL 查詢，插入學生資料到 student_profiles
+    // 插入資料到 student_profiles 表
     $sql = "INSERT INTO student_profiles 
-                (student_id, gender, birth, department, grade, phone, email, address, avatar, 
-                 github, instagram, facebook, bio, professional_background, skills, languages, graduation_school)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                (name,student_id, gender, birth, department, grade, phone, email, address, profile_picture, 
+                 github, instagram, facebook, bio, professional_background, skills, languages, school)
+            VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     if ($stmt = $conn->prepare($sql)) {
-        // 這裡的 'ssssssssssssssss' 是根據你的欄位數量對應的類型：s 是 string，i 是 int
-        $stmt->bind_param("issssssssssssssss", 
-            $student_id, $gender, $birth, $department, $grade, $phone, $email, $address, $avatar_path, 
-            $github, $instagram, $facebook, $bio, $professional_background, $skills, $languages, $graduation_school);
+        $stmt->bind_param("isssssssssssssssss", 
+            $name, $student_id, $gender, $birth, $department, $grade, $phone, $email, $address, $profile_picture_path, 
+            $github, $instagram, $facebook, $bio, $professional_background, $skills, $languages, $school
+        );
 
         if ($stmt->execute()) {
-            // 資料儲存成功後轉向 student_dashboard.php
-            header("Location: student_dashboard.php");
-            exit; // 確保程式執行停止，防止後續程式繼續運行
+            session_write_close();
+            header("Location: /portfolio/student/student_dashboard_view.php");
+            exit;
         } else {
-            echo json_encode(["status" => "error", "message" => "儲存資料時發生錯誤。"]);
+            echo json_encode(["status" => "error", "message" => "儲存學生資料失敗！請檢查資料。"]);
         }
 
         $stmt->close();
     } else {
-        echo json_encode(["status" => "error", "message" => "資料庫查詢準備失敗。"]);
+        echo json_encode(["status" => "error", "message" => "準備儲存學生資料時發生錯誤。"]);
     }
 
     $conn->close();

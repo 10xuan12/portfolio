@@ -34,7 +34,7 @@ if (isset($_GET['need_info'])) {
         <div class="mb-3 row">
             <label for="name" class="col-sm-2 col-form-label">姓名</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="name" name="name" required>
+                <input type="text" autocomplete="username" class="form-control" id="name" name="name" required>
             </div>
         </div>
         <div class="mb-3 row">
@@ -50,13 +50,13 @@ if (isset($_GET['need_info'])) {
         <div class="mb-3 row">
             <label for="birth" class="col-sm-2 col-form-label">生日</label>
             <div class="col-sm-10">
-                <input type="date" class="form-control" id="birth" name="birth" required>
+                <input type="date" autocomplete="bday" class="form-control" id="birth" name="birth" required>
             </div>
         </div>
         <div class="mb-3 row">
             <label for="student_id" class="col-sm-2 col-form-label">學號</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="student_id" name="student_id" required>
+                <input type="text" autocomplete="student_id" class="form-control" id="student_id" name="student_id" required>
             </div>
         </div>
         <div class="mb-3 row">
@@ -80,19 +80,19 @@ if (isset($_GET['need_info'])) {
         <div class="mb-3 row">
             <label for="phone" class="col-sm-2 col-form-label">聯絡電話</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="phone" name="phone" required>
+                <input type="text" autocomplete="tel" class="form-control" id="phone" name="phone" required>
             </div>
         </div>
         <div class="mb-3 row">
             <label for="email" class="col-sm-2 col-form-label">電子郵件</label>
             <div class="col-sm-10">
-                <input type="email" class="form-control" id="email" name="email" required>
+                <input type="email" autocomplete="email" class="form-control" id="email" name="email" required>
             </div>
         </div>
         <div class="mb-3 row">
             <label for="address" class="col-sm-2 col-form-label">聯絡地址</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="address" name="address" required>
+                <input type="text" autocomplete="address" class="form-control" id="address" name="address" required>
             </div>
         </div>
         <div class="mb-3 row">
@@ -152,9 +152,9 @@ if (isset($_GET['need_info'])) {
         </div>
 
         <div class="mb-3 row">
-            <label for="avatar" class="col-sm-2 col-form-label">上傳頭像</label>
+            <label for="profile_picture" class="col-sm-2 col-form-label">上傳頭像</label>
             <div class="col-sm-10">
-                <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
             </div>
         </div>
         
