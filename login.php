@@ -34,12 +34,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // 根據角色選擇對應的 ID 欄位
             if ($role == "student") {
-                $_SESSION["student_id"] = $row["student_id"];
-                header("Location: student/student_dashboard.php");
+                $_SESSION["email"] = $row["email"];
+                header("Location: student/student_dashboard_view.php");
                 exit();
             } else if ($role == "admin") {
                 $_SESSION["admin_id"] = $row["admin_id"];
-                header("Location: student/student_dashboard.php");
+                header("Location: admin/admin_dashboard.php");
                 exit();
             } else if ($role == "company") {
                 $_SESSION["company_id"] = $row["company_id"];

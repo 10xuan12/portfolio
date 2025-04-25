@@ -1,34 +1,37 @@
-<?php
+<?php 
 session_start();
-require('../includes/db_connect.php');
+require '../includes/db_connect.php';  // 連接資料庫
 
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-if (!isset($_SESSION["role"]) || $_SESSION["role"] !== 'student') {
-    echo "您尚未登入或權限不足，請重新登入。";
-    exit;
+// 登入驗證
+if (!isset($_SESSION['email'])) {
+    header("Location: /portfolio/login.php");  // 請根據實際路徑修改
+    exit();
 }
 
-$student_id = $_SESSION['student_id'];
+$email = $_SESSION['email'];
 $student_data = null;
 
-$sql = "SELECT * FROM student_profiles WHERE student_id = ?";
+// 查詢學生資料
+$sql = "SELECT * FROM student_profiles WHERE email = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $student_id);
+$stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 1) {
     $student_data = $result->fetch_assoc();
+    var_dump($student_data);
+    header("Location: /portfolio/student/student_dashboard_view.php");
+    exit();
+} else {
+    // 若資料為空，導向填寫資料頁面
+    header("Location: /portfolio/student/student.php?need_info=1");
+    exit();
 }
 
-if ($result->num_rows === 0) {
-    header("Location: student.php?need_info=1");
-    exit;
-}
+$stmt->close();
+$conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="zh-TW">
@@ -55,43 +58,63 @@ if ($result->num_rows === 0) {
         .btn-edit {
             border-radius: 30px;
         }
+        .alert {
+            transition: opacity 0.5s ease;
+        }
     </style>
 </head>
 <body class="bg-light">
 
 <div class="container py-5">
-    <h2 class="text-center text-primary mb-5">🎓 學生個人資料頁面</h2>
+    <h2 class="text-center text-primary mb-4">🎓 學生個人資料頁面</h2>
 
-    <?php if ($student_data): ?>
-        <div class="card profile-card p-4 mx-auto" style="max-width: 600px;">
-            <div class="text-center">
-                <!-- 頭像區塊：若無圖片則使用預設 -->
-                <?php if (!empty($student_data['avatar'])): ?>
-                    <img src="../uploads/<?php echo htmlspecialchars($student_data['avatar']); ?>" alt="頭像" class="avatar">
-                <?php else: ?>
-                    <img src="https://via.placeholder.com/150x150.png?text=Avatar" alt="預設頭像" class="avatar">
-                <?php endif; ?>
-                <h4 class="mt-3"><?php echo htmlspecialchars($student_data['student_name']); ?></h4>
-                <p class="text-muted">學號：<?php echo htmlspecialchars($student_data['student_id']); ?></p>
-            </div>
-            <hr>
-            <div>
-                <p><i class="bi bi-buildings"></i> 系所：<?php echo htmlspecialchars($student_data['department']); ?></p>
-                <p><i class="bi bi-mortarboard-fill"></i> 年級：<?php echo htmlspecialchars($student_data['grade']); ?></p>
-                <p><i class="bi bi-telephone"></i> 電話：<?php echo htmlspecialchars($student_data['phone']); ?></p>
-                <p><i class="bi bi-envelope"></i> 信箱：<?php echo htmlspecialchars($student_data['email']); ?></p>
-            </div>
-            <div class="text-center mt-4">
-                <a href="student_edit_form.php" class="btn btn-outline-primary btn-edit px-4">
-                    <i class="bi bi-pencil-square"></i> 修改資料
-                </a>
-            </div>
+    <!-- ✅ 提示訊息 -->
+    <?php if (isset($_GET['saved']) && $_GET['saved'] == 1): ?>
+        <div class="alert alert-success text-center" id="successMessage">
+            ✅ 資料儲存成功！
         </div>
-    <?php else: ?>
-        <p class="text-danger text-center">找不到資料，請確認您的帳號是否正確。</p>
+    <?php elseif (isset($_GET['need_info']) && $_GET['need_info'] == 1): ?>
+        <div class="alert alert-warning text-center" id="warningMessage">
+            ⚠️ 尚未填寫完整資料，請先完成基本資料填寫。
+        </div>
     <?php endif; ?>
+
+    <!-- 🧾 資料卡片 -->
+    <div class="card profile-card p-4 mx-auto" style="max-width: 600px;">
+        <div class="text-center">
+            <?php if (!empty($student_data['avatar'])): ?>
+                <img src="../uploads/<?php echo htmlspecialchars($student_data['avatar']); ?>" alt="頭像" class="avatar">
+            <?php else: ?>
+                <img src="https://via.placeholder.com/150x150.png?text=Avatar" alt="預設頭像" class="avatar">
+            <?php endif; ?>
+            <h4 class="mt-3"><?php echo htmlspecialchars($student_data['student_name']); ?></h4>
+            <p class="text-muted">學號：<?php echo htmlspecialchars($student_data['student_id']); ?></p>
+        </div>
+        <hr>
+        <div>
+            <p><i class="bi bi-buildings"></i> 系所：<?php echo htmlspecialchars($student_data['department']); ?></p>
+            <p><i class="bi bi-mortarboard-fill"></i> 年級：<?php echo htmlspecialchars($student_data['grade']); ?></p>
+            <p><i class="bi bi-telephone"></i> 電話：<?php echo htmlspecialchars($student_data['phone']); ?></p>
+            <p><i class="bi bi-envelope"></i> 信箱：<?php echo htmlspecialchars($student_data['email']); ?></p>
+        </div>
+        <div class="text-center mt-4">
+            <a href="student_edit_form.php" class="btn btn-outline-primary btn-edit px-4">
+                <i class="bi bi-pencil-square"></i> 修改資料
+            </a>
+        </div>
+    </div>
 </div>
 
+<!-- Bootstrap & 自動隱藏提示 -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 3 秒後淡出提示訊息
+    setTimeout(() => {
+        const success = document.getElementById('successMessage');
+        const warning = document.getElementById('warningMessage');
+        if (success) success.style.opacity = 0;
+        if (warning) warning.style.opacity = 0;
+    }, 3000);
+</script>
 </body>
 </html>
