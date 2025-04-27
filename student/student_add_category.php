@@ -1,26 +1,52 @@
 <?php
-session_start(); // 確保在開頭啟動 session
-require '../includes/db_connect.php';  // 連接資料庫
+session_start(); // 開啟 session
+require '../includes/db_connect.php'; // 資料庫連線
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $name = $_POST['name'];
-        $description = $_POST['description'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $name = trim($_POST['name']);
+        $description = trim($_POST['description']);
 
-        // 處理圖片
+        // 預設圖片路徑
         $imagePath = null;
-        if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-            $uploadDir = 'uploads/';
+
+        // 如果有上傳圖片
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = '../uploads/'; // 儲存到上層 uploads 資料夾
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
-            $fileName = time() . '_' . basename($_FILES['image']['name']);
-            $targetPath = $uploadDir . $fileName;
-            move_uploaded_file($_FILES['image']['tmp_name'], $targetPath);
-            $imagePath = $targetPath;
+
+            // 取得副檔名並過濾
+            $fileInfo = pathinfo($_FILES['image']['name']);
+            $extension = strtolower($fileInfo['extension']);
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+            if (!in_array($extension, $allowedExtensions)) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => '只允許上傳 JPG、PNG、GIF、WEBP 格式的圖片'
+                ]);
+                exit();
+            }
+
+            // 新檔名避免重複 (用時間戳加亂數)
+            $newFileName = time() . '_' . bin2hex(random_bytes(5)) . '.' . $extension;
+            $targetPath = $uploadDir . $newFileName;
+
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
+                // 儲存相對路徑（給前端用）
+                $imagePath = 'uploads/' . $newFileName;
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => '圖片上傳失敗，請稍後再試。'
+                ]);
+                exit();
+            }
         }
 
         // 寫入資料庫
@@ -43,7 +69,7 @@ try {
 } catch (PDOException $e) {
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => '資料庫錯誤：' . $e->getMessage()
     ]);
     exit();
 }

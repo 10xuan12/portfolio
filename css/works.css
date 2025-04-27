@@ -1,0 +1,175 @@
+/* 基本樣式 */
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 側邊欄樣式 */
+.sidebar {
+    background-color: #babcbd; /* 淺灰色背景 */
+    height: 100vh;
+    padding-top: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100px;
+    font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
+}
+
+.sidebar .nav-link {
+    color: #000000; /* 黑色文字 */
+    font-weight: bold; /* 字體加粗 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.sidebar .nav-link i {
+    font-size: 1.5rem; /* 圖示大小 */
+    margin-bottom: 8px; /* 圖示與文字間距 */
+}
+
+.sidebar .nav-link:hover {
+    background-color: #6e3ced; /* 滑鼠懸停時的背景色 */
+}
+.main-content {
+    margin-left: 250px; /* 主內容不會被側邊欄擋住 */
+    padding: 20px;
+  }
+/* 主內容區域 */
+.main-content {
+    padding: 20px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+/* 卡片樣式 */
+.card {
+    border-radius: 0.75rem;
+    border: none;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card-img-top {
+    object-fit: cover;
+    height: 180px;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(99, 132, 255, 0.3);
+}
+
+.card .btn {
+    transition: transform 0.2s ease;
+}
+
+.card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(99, 132, 255, 0.3);
+}
+
+/* 按鈕樣式 */
+.btn-success {
+    background-color: #5d73a9;
+    border-color: #5d73a9;
+}
+
+/* 預設按鈕樣式 */
+.btn-outline-secondary {
+    background-color: #f0f0f0; /* 淺灰底 */
+    color: #000000; /* 黑色字 */
+    border-color: #dcdcdc;
+}
+
+/* 按鈕滑鼠懸停樣式 */
+.btn-outline-secondary:hover {
+    background-color: #5d73a9; /* 藍紫色底 */
+    color: white; /* 白色字 */
+}
+
+/* 預設按鈕樣式 */
+.btn-primary {
+    background-color: #5d73a9; /* 藍紫色底 */
+    color: white; /* 白色字 */
+}
+
+/* 按鈕滑鼠懸停樣式*/
+.btn-primary:hover {
+    background-color: #5d73a9; /* 藍紫色底 */
+    color: white; /* 白色字 */
+}
+
+/* 搜尋框樣式 */
+#search {
+    padding-left: 2.5rem;
+}
+
+.bi-search {
+    font-size: 1.4rem;
+    color: #6c757d;
+}
+
+/* 分頁樣式 */
+.pagination .page-link {
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #f5f7fa;
+    border-color: #0d6efd;
+}
+
+/* 卡片動畫效果 */
+.animate-card {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.animate-card.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    /* 收合側邊欄 */
+    .sidebar {
+        width: 200px;
+        padding: 0;
+    }
+
+    .sidebar .fs-4 {
+        font-size: 1rem !important;
+        padding: 0.75rem 0;
+    }
+
+    .sidebar .nav-link {
+        padding: 5rem;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .sidebar .nav-link span {
+        display: none;
+    }
+
+    .sidebar .nav-link i,
+    .sidebar .nav-link .bi {
+        margin-right: 0;
+        font-size: 1.2rem;
+    }
+
+    .main-content {
+        margin-left: 0; /* 在小螢幕模式下取消側邊欄的 margin */
+    }
+
+    /* 調整搜尋框樣式，讓其更適應小螢幕 */
+    #search {
+        padding-left: 2rem; /* 減少內邊距 */
+    }
+}
