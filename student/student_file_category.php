@@ -1,3 +1,13 @@
+<?php
+// 資料庫連線
+session_start(); // 開啟 session
+require '../includes/db_connect.php'; // 資料庫連線
+
+// 查詢所有分類
+$category_sql = "SELECT * FROM categories";
+$category_result = $conn->query($category_sql);
+?>
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
     <head>
@@ -59,8 +69,8 @@
       <!-- 分類按鈕 -->
       <div class="mb-4 d-flex flex-wrap align-items-center gap-2">
         <div>
-            <a href="student_file_category.html" class="btn btn-outline-secondary">分類</a>
-            <a href="works.html" class="btn btn-primary ms-2">全部作品</a>
+            <a href="student_file_category.php" class="btn btn-outline-secondary">分類</a>
+            <a href="works.php" class="btn btn-primary ms-2">全部作品</a>
         </div>
         <button class="btn btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
             ＋ 新增分類
@@ -69,76 +79,19 @@
 
       <!-- 卡片列表 -->
 <div class="row g-4" id="category-list">
-    <!-- 卡片範例 1 -->
-    <div class="col-12 col-sm-6 col-lg-4">
+    <?php while($category = $category_result->fetch_assoc()): ?>
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3"> <!-- 這裡調整為更小的列數 -->
       <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="...">
+      <img src="<?php echo !empty($category['image']) ? 'uploads/' . $category['image'] : 'https://via.placeholder.com/300x150'; ?>" class="card-img-top" alt="...">
         <div class="card-body text-center">
-          <h5 class="card-title">資訊</h5>
-          <p class="card-text">描述內容。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看作品</a>
+          <h5 class="card-title"><?php echo htmlspecialchars($category['name']); ?></h5>
+          <p class="card-text"><?php echo htmlspecialchars($category['description']); ?></p>
+          <a href="category_projects.php?category_id=<?php echo $category['category_id']; ?>" class="btn btn-outline-primary mt-2">查看作品</a>
         </div>
       </div>
     </div>
-  
-    <!-- 卡片範例 2 -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="...">
-        <div class="card-body text-center">
-          <h5 class="card-title">SDGs</h5>
-          <p class="card-text">描述內容。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看作品</a>
-        </div>
-      </div>
-    </div>
-  
-    <!-- 卡片範例 3 -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="...">
-        <div class="card-body text-center">
-          <h5 class="card-title">開發</h5>
-          <p class="card-text">這是關於開發的作品。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看作品</a>
-        </div>
-      </div>
-    </div>
-  
-    <!-- 卡片範例 4 -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="...">
-        <div class="card-body text-center">
-          <h5 class="card-title">JAVA</h5>
-          <p class="card-text">JAVA相關。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看作品</a>
-        </div>
-      </div>
-    </div>
-  
-    <!-- 卡片範例 5 -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="...">
-        <div class="card-body text-center">
-          <h5 class="card-title">Python</h5>
-          <p class="card-text">Python作品。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看作品</a>
-        </div>
-      </div>
-    </div>
-  
-    <!-- 卡片範例 6 -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="...">
-        <div class="card-body text-center">
-          <h5 class="card-title">音樂</h5>
-          <p class="card-text">一個音樂作品的介紹。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看作品</a>
-        </div>
-      </div>
+    <?php endwhile; ?>
+</div>
     </div>
   </div>
   

@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData(this);
 
-        fetch('add_category.php', {
+        fetch('student_add_category.php', {
             method: 'POST',
             body: formData
         })
@@ -103,5 +103,40 @@ document.addEventListener('DOMContentLoaded', function () {
     function generateIdFromName(name) {
         const randomSuffix = Math.floor(Math.random() * 10000);
         return name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + randomSuffix;
+    }
+    function renderPagination() {
+        pagination.innerHTML = "";
+
+        // Previous 按鈕
+        const prev = document.createElement("li");
+        prev.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+        prev.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+        prev.addEventListener("click", function(e) {
+            e.preventDefault();
+            if (currentPage > 1) showPage(currentPage - 1);
+        });
+        pagination.appendChild(prev);
+
+        // 頁數按鈕
+        for (let i = 1; i <= totalPages; i++) {
+            const pageItem = document.createElement("li");
+            pageItem.className = `page-item ${i === currentPage ? "active" : ""}`;
+            pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            pageItem.addEventListener("click", function(e) {
+                e.preventDefault();
+                showPage(i);
+            });
+            pagination.appendChild(pageItem);
+        }
+
+        // Next 按鈕
+        const next = document.createElement("li");
+        next.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+        next.innerHTML = `<a class="page-link" href="#">Next</a>`;
+        next.addEventListener("click", function(e) {
+            e.preventDefault();
+            if (currentPage < totalPages) showPage(currentPage + 1);
+        });
+        pagination.appendChild(next);
     }
 });

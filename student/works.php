@@ -1,6 +1,38 @@
+<?php
+// 資料庫連線
+session_start();
+require '../includes/db_connect.php'; // 資料庫連線
+
+// 取得所有作品資料
+$portfolio_sql = "SELECT * FROM portfolios";
+$stmt = $conn->prepare($portfolio_sql);
+$stmt->execute();
+$portfolio_result = $stmt->get_result();
+
+// 新增作品表單處理
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
+    $title = $_POST['workTitle'];
+    $description = $_POST['workDescription'];
+    $image = $_FILES['workImage']['name'];
+    $image_tmp = $_FILES['workImage']['tmp_name'];
+    $image_folder = "../uploads/" . $image;
+
+    // 移動圖片到指定資料夾
+    move_uploaded_file($image_tmp, $image_folder);
+
+    $insert_sql = "INSERT INTO portfolios (title, description, image) VALUES (?, ?, ?)";
+    $stmt2 = $conn->prepare($insert_sql);
+    $stmt2->bind_param("sss", $title, $description, $image);
+    $stmt2->execute();
+
+    // 重定向到作品集頁面
+    header("Location: works.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +42,6 @@
   <link rel="stylesheet" href="../css/works.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-
 <body>
 
 <div class="container-fluid">
@@ -19,34 +50,19 @@
       <nav class="col-auto sidebar">
         <ul class="nav nav-pills flex-column">
           <li class="nav-item">
-            <a href="#" class="nav-link ">
-              <i class="bi bi-house"></i>
-              <span>主頁</span>
-            </a>
+            <a href="#" class="nav-link "><i class="bi bi-house"></i><span>主頁</span></a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link active">
-              <i class="bi bi-collection"></i>
-              <span>作品集</span>
-            </a>
+            <a href="#" class="nav-link active"><i class="bi bi-collection"></i><span>作品集</span></a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="bi bi-bell"></i>
-              <span>通知</span>
-            </a>
+            <a href="#" class="nav-link"><i class="bi bi-bell"></i><span>通知</span></a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="bi bi-gear"></i>
-              <span>設定</span>
-            </a>
+            <a href="#" class="nav-link"><i class="bi bi-gear"></i><span>設定</span></a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="bi bi-box-arrow-right"></i>
-              <span>登出</span>
-            </a>
+            <a href="#" class="nav-link"><i class="bi bi-box-arrow-right"></i><span>登出</span></a>
           </li>
         </ul>
       </nav>
@@ -61,57 +77,29 @@
 
         <div class="mb-4 d-flex flex-wrap align-items-center gap-2">
           <div>
-            <a href="student_file_category.html" class="btn btn-outline-secondary">分類</a>
-            <a href="works.html" class="btn btn-primary ms-2">全部作品</a>
+            <a href="student_file_category.php" class="btn btn-outline-secondary">分類</a>
+            <a href="works.php" class="btn btn-primary ms-2">全部作品</a>
           </div>
           <button class="btn btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#addWorkModal">
             ＋ 新增作品
           </button>
         </div>
 
-        <!-- 分類頁面：顯示 Java 相關作品 -->
-<div class="row" id="javaCardContainer">
-    <!-- 作品範例 1 (Java 作品) -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="Java作品1">
-        <div class="card-body text-center">
-          <h5 class="card-title">Java 作品 1</h5>
-          <p class="card-text">這是一個 Java 編程作品，展示了我的物件導向設計技巧。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看詳細</a>
+        <!-- 作品列表 -->
+        <div class="row" id="portfolioContainer">
+            <?php while ($portfolio = $portfolio_result->fetch_assoc()): ?>
+            <div class="col-12 col-sm-6 col-lg-4">
+              <div class="card h-100 shadow-sm">
+                <img src="../uploads/<?php echo htmlspecialchars($portfolio['image']); ?>" class="card-img-top" alt="作品圖片">
+                <div class="card-body text-center">
+                  <h5 class="card-title"><?php echo htmlspecialchars($portfolio['title']); ?></h5>
+                  <p class="card-text"><?php echo htmlspecialchars($portfolio['description']); ?></p>
+                  <a href="#" class="btn btn-outline-primary mt-2">查看詳細</a>
+                </div>
+              </div>
+            </div>
+            <?php endwhile; ?>
         </div>
-      </div>
-    </div>
-  
-    <!-- 作品範例 2 (Java 作品) -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="Java作品2">
-        <div class="card-body text-center">
-          <h5 class="card-title">Java 作品 2</h5>
-          <p class="card-text">這是一個基於 Java 的桌面應用程式，展示了我的 GUI 設計技巧。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看詳細</a>
-        </div>
-      </div>
-    </div>
-  
-    <!-- 作品範例 3 (Java 作品) -->
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm">
-        <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="Java作品3">
-        <div class="card-body text-center">
-          <h5 class="card-title">Java 作品 3</h5>
-          <p class="card-text">這是一個 Java 網頁爬蟲項目，展示了我的網絡編程能力。</p>
-          <a href="#" class="btn btn-outline-primary mt-2">查看詳細</a>
-        </div>
-      </div>
-    </div>
-  
-    <!-- 可以繼續添加更多與 Java 相關的作品 -->
-  </div>
-
-        
-  
 
         <!-- 分頁 -->
         <nav aria-label="Page navigation" class="mt-4">
@@ -130,7 +118,7 @@
   <!-- 新增作品 Modal -->
   <div class="modal fade" id="addWorkModal" tabindex="-1" aria-labelledby="addWorkModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form id="addWorkForm" class="modal-content">
+      <form id="addWorkForm" class="modal-content" method="POST" enctype="multipart/form-data">
         <div class="modal-header">
           <h5 class="modal-title" id="addWorkModalLabel">新增作品</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
@@ -138,23 +126,23 @@
         <div class="modal-body">
           <div class="mb-3">
             <label for="workImage" class="form-label">作品圖片</label>
-            <input class="form-control" type="file" id="workImage" accept="image/*">
+            <input class="form-control" type="file" id="workImage" name="workImage" accept="image/*" required>
           </div>
           <div class="mb-3">
             <label for="workTitle" class="form-label">作品標題</label>
-            <input type="text" class="form-control" id="workTitle" required>
+            <input type="text" class="form-control" id="workTitle" name="workTitle" required>
           </div>
           <div class="mb-3">
             <label for="workDescription" class="form-label">作品描述</label>
-            <textarea class="form-control" id="workDescription" rows="3" required></textarea>
+            <textarea class="form-control" id="workDescription" name="workDescription" rows="3" required></textarea>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">新增</button>
+          <button type="submit" class="btn btn-primary" name="add_work">新增</button>
         </div>
       </form>
     </div>
-</div>
+  </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/works.js"></script>
