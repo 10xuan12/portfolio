@@ -1,0 +1,159 @@
+/* 基本樣式 */
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #f8f9fa;
+    overflow-x: hidden;
+  }
+  
+  /* 側邊欄樣式 */
+  .sidebar {
+    background-color: #babcbd; /* 淺灰色背景 */
+    min-height: 100vh;
+    padding-top: 20px;
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100px; /* 調整側邊欄寬度 */
+    font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
+    z-index: 1000;
+  }
+  
+  .sidebar .nav-link {
+    color: #000000; /* 黑色文字 */
+    font-weight: bold; /* 字體加粗 */
+    display: flex;
+    flex-direction: column; /* 垂直排列圖示和文字 */
+    align-items: center; /* 水平置中 */
+    justify-content: center; /* 垂直置中 */
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    text-align: center; /* 文字置中 */
+  }
+  
+  .sidebar .nav-link i {
+    font-size: 1.5rem; /* 圖示大小 */
+    margin-bottom: 8px; /* 圖示與文字間距 */
+  }
+  
+  .sidebar .nav-link:hover {
+    background-color: #6e3ced; /* 滑鼠懸停時的背景色 */
+    color: #ffffff;
+    border-radius: 5px;
+  }
+  
+  .sidebar .nav-link.active {
+    background-color: #0d6efd;
+    color: #ffffff;
+    border-radius: 5px;
+  }
+  
+  /* 主內容區域 */
+  .content {
+    padding: 20px;
+    margin-left: 0;
+    width: calc(100% - 220px);
+  }
+  
+  /* Card 樣式 */
+  .card {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    margin-bottom: 20px;
+  }
+  
+  .card-header {
+    background-color: #5d73a9;
+    color: white;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+  /* 簡介區塊 */
+  .bg-primary {
+    background-color: #5d73a9 !important;
+    border-radius: 5px 5px 0 0;
+    margin-bottom: 0;
+  }
+  
+  .bg-primary + div {
+    border-radius: 0 0 5px 5px;
+    margin-bottom: 20px;
+  }
+  
+  /* 留言區塊 */
+  .bg-info {
+    background-color: #cfe2ff !important;
+    border-radius: 5px 5px 0 0;
+    margin-bottom: 0;
+  }
+  
+  #comment-section {
+    background-color: #f4f7fc;
+    border-radius: 0 0 5px 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  #comments-section {
+    background-color: #f4f7fc;
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  
+  /* 留言表單 */
+  #commentForm textarea {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+  
+  #commentForm button {
+    padding: 10px 30px;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: #5d73a9;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  #commentForm button:hover {
+    background-color: #5d73a9;
+  }
+  
+  /* 留言列表 */
+  .list-group-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+    background-color: transparent;
+  }
+  
+  .list-group-item:last-child {
+    border-bottom: none;
+  }
+  
+  /* For smaller screens */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 70px;
+    }
+    
+    .sidebar .nav-link {
+      padding: 10px 5px;
+    }
+    
+    .sidebar .nav-link span {
+      font-size: 0.7rem;
+    }
+    
+    .content {
+      width: calc(100% - 70px);
+    }
+  }

@@ -2,6 +2,7 @@
 body {
   font-family: 'Noto Sans TC', sans-serif;
   background-color: #f8f9fa;
+  overflow-x: hidden;
 }
 
 /* 側邊欄樣式 */
@@ -9,11 +10,12 @@ body {
   background-color: #babcbd; /* 淺灰色背景 */
   height: 100vh;
   padding-top: 20px;
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
-  width: 100px;
+  width: 220px;
   font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
+  z-index: 1000;
 }
 
 .sidebar .nav-link {
@@ -33,6 +35,8 @@ body {
 
 .sidebar .nav-link:hover {
   background-color: #6e3ced; /* 滑鼠懸停時的背景色 */
+  color: #ffffff;
+  border-radius: 5px;
 }
 
 .main-content {
