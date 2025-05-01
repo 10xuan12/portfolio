@@ -2,7 +2,6 @@
 body {
   font-family: 'Noto Sans TC', sans-serif;
   background-color: #f8f9fa;
-  overflow-x: hidden;
 }
 
 /* 側邊欄樣式 */
@@ -10,13 +9,13 @@ body {
   background-color: #babcbd; /* 淺灰色背景 */
   height: 100vh;
   padding-top: 20px;
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 220px;
+  width: 100px;
   font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
-  z-index: 1000;
-}
+  transition: width 0.3s ease; /* 添加過渡效果，平滑收合側邊欄 */
+  }
 
 .sidebar .nav-link {
   color: #000000; /* 黑色文字 */
@@ -40,16 +39,10 @@ body {
 }
 
 .main-content {
-  margin-left: 250px; /* 主內容不會被側邊欄擋住 */
+  margin-left: 100px; /* 主內容不會被側邊欄擋住 */
   padding: 20px;
 }
 
-/* 主內容區域 */
-.main-content {
-  padding: 20px;
-  min-height: 100vh;
-  background-color: #f9fcff;
-}
 
 /* 卡片樣式 */
 .card {

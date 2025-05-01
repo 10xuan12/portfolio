@@ -46,13 +46,13 @@ $comments = $commentStmt->get_result();
       <nav class="sidebar">
         <ul class="nav nav-pills flex-column">
           <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="student_dashboard.php" class="nav-link">
               <i class="bi bi-house"></i>
               <span>主頁</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link active">
+            <a href="student_file_category.php" class="nav-link active">
               <i class="bi bi-collection"></i>
               <span>作品集</span>
             </a>
@@ -70,7 +70,7 @@ $comments = $commentStmt->get_result();
             </a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="../login.php" class="nav-link">
               <i class="bi bi-box-arrow-right"></i>
               <span>登出</span>
             </a>

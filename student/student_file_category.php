@@ -15,25 +15,25 @@ $category_result = $conn->query($category_sql);
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>作品集分類管理</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="../css/student_file_category.css">
+        <link rel="stylesheet" href="../css/student_file_category.css?v=2">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
 <body>
 
 <div class="container-fluid">
-  <div class="row flex-nowrap">
+  <div class="row">
     <!-- 側邊欄 -->
-    <nav class="col-auto sidebar">
+    <nav class="col-auto col-md-3 col-lg-2 sidebar">
         <ul class="nav nav-pills flex-column">
           <li class="nav-item">
-            <a href="#" class="nav-link ">
+            <a href="student_dashboard.php" class="nav-link ">
               <i class="bi bi-house"></i>
               <span>主頁</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link active">
+            <a href="student_file_category.php" class="nav-link active">
               <i class="bi bi-collection"></i>
               <span>作品集</span>
             </a>
@@ -51,7 +51,7 @@ $category_result = $conn->query($category_sql);
             </a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="../login.php" class="nav-link">
               <i class="bi bi-box-arrow-right"></i>
               <span>登出</span>
             </a>

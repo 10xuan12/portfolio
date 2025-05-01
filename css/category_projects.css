@@ -35,6 +35,8 @@ body {
 
 .sidebar .nav-link:hover {
     background-color: #6e3ced; /* 滑鼠懸停時的背景色 */
+    color: #ffffff;
+    border-radius: 5px;
 }
 
 .main-content {

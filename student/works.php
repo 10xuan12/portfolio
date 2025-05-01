@@ -39,21 +39,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
   <title>作品集 - 全部作品</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="../css/works.css">
+  <link rel="stylesheet" href="../css/works.css?v=2">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
 <div class="container-fluid">
-  <div class="row flex-nowrap">
+  <div class="row">
       <!-- 側邊欄 -->
-      <nav class="col-auto sidebar">
+      <nav class="col-auto col-md-3 col-lg-2 sidebar">
         <ul class="nav nav-pills flex-column">
           <li class="nav-item">
-            <a href="#" class="nav-link "><i class="bi bi-house"></i><span>主頁</span></a>
+            <a href="student_dashboard.php" class="nav-link "><i class="bi bi-house"></i><span>主頁</span></a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link active"><i class="bi bi-collection"></i><span>作品集</span></a>
+            <a href="student_file_category.php" class="nav-link active"><i class="bi bi-collection"></i><span>作品集</span></a>
           </li>
           <li class="nav-item">
             <a href="#" class="nav-link"><i class="bi bi-bell"></i><span>通知</span></a>
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
             <a href="#" class="nav-link"><i class="bi bi-gear"></i><span>設定</span></a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link"><i class="bi bi-box-arrow-right"></i><span>登出</span></a>
+            <a href="../login.php" class="nav-link"><i class="bi bi-box-arrow-right"></i><span>登出</span></a>
           </li>
         </ul>
       </nav>
