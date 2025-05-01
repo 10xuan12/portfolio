@@ -168,7 +168,7 @@ $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <div class="flex min-h-screen">
 
        <!-- ✅ 左側欄 -->
-    <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-8">
+    <nav class="flex flex-col items-center shadow-md border-r bg-gray-300 w-14 py-6 space-y-8">
       <button class="flex flex-col items-center text-black bg-blue-700 w-14 h-14 justify-center rounded-sm">
         <i class="fas fa-user-circle text-xl"></i>
         <span class="text-xs mt-1 leading-none">主頁</span>
@@ -194,11 +194,11 @@ $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </nav>
 
     <!-- ✅ 右側主內容 -->
-    <main class="flex-1 p-6 overflow-y-auto">
+    <main class="flex-1 p-6 overflow-y-auto max-w-5xl mx-auto">
 
       <!-- 頭像與公司資料 -->
       <section class="flex items-start space-x-6 mb-6">
-        <img src="<?php echo htmlspecialchars($user['avatar'] ?? 'uploads/default.jpg'); ?>" alt="企業頭像" class="w-24 h-24 rounded-full object-cover">
+        <img src="<?php echo htmlspecialchars($user['avatar'] ?? 'uploads/default.jpg'); ?>" alt="企業頭像" class="w-24 h-24 rounded-full object-cover  border-2 border-gray-300 shadow-md">
 
         <div class="flex-1">
           <h2 class="text-base font-bold" id="display-company-name">
