@@ -7,15 +7,16 @@ body {
 /* 側邊欄樣式 */
 .sidebar {
     background-color: #babcbd; /* 淺灰色背景 */
-    height: 100vh;
+    min-height: 100vh;
     padding-top: 20px;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100px;
+    width: 100px; /* 調整側邊欄寬度 */
     font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
-    transition: width 0.3s ease; /* 添加過渡效果，平滑收合側邊欄 */
-}
+    z-index: 1000;
+    transition: width 0.3s ease;
+  }
 
 .sidebar .nav-link {
     color: #000000; /* 黑色文字 */
@@ -25,7 +26,6 @@ body {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 1rem 0; /* 加大按鈕的上下間距 */
 }
 
 .sidebar .nav-link i {
@@ -42,19 +42,38 @@ body {
 .main-content {
     margin-left: 100px; /* 主內容不會被側邊欄擋住 */
     padding: 20px;
-    transition: margin-left 0.3s ease; /* 添加過渡效果 */
 }
-
 /* 側邊欄在小螢幕下改變 */
 @media (max-width: 768px) {
     /* 調整側邊欄 */
     .sidebar {
-        width: 60px; /* 小螢幕時側邊欄寬度縮小 */
+        width: 200px; /* 小螢幕時側邊欄寬度縮小 */
+        padding: 0;
+    }
+    .sidebar .fs-4 {
+        font-size: 1rem !important;
+        padding: 0.75rem 0;
+    }
+  
+    .sidebar .nav-link {
+        padding: 5rem;
+        justify-content: center;
+        text-align: center;
+    }
+  
+    .sidebar .nav-link span {
+        display: none;
+    }
+  
+    .sidebar .nav-link i,
+    .sidebar .nav-link .bi {
+        margin-right: 0;
+        font-size: 1.2rem;
     }
 
     /* 調整主內容 */
     .main-content {
-        margin-left: 60px; /* 內容區域移動過來 */
+        margin-left: 0; /* 內容區域移動過來 */
     }
 
     /* 側邊欄圖示 */

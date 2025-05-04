@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 如果有上傳圖片
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = '../uploads/'; // 儲存位置
+        $uploadDir = 'uploads/'; // 儲存位置
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
