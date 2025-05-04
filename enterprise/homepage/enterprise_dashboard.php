@@ -1,4 +1,6 @@
 <?php
+echo "載入成功！"; exit;
+
 session_start();
 require 'db.php'; // 這裡 db.php 內部會是 PDO 建立好 $pdo
 
@@ -82,11 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_contact'])) {
 
 // 自動加一瀏覽次數
 $stmt = $pdo->prepare("UPDATE users SET view_count = view_count + 1 WHERE id = :id");
-$stmt->execute(['id' => 1]); // 假設 user_id = 1，可根據 session 或邏輯調整
+$stmt->execute(['id' => $user_id  ]); // user_id 可根據 session 或邏輯調整
 
 // 撈 user 資訊
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-$stmt->execute(['id' => 1]);
+$stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // 分頁共用
@@ -121,7 +123,7 @@ $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $jobOffset, PDO::PARAM_INT);
 $stmt->execute();
 $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-$pdo = new PDO("mysql:host=localhost;dbname=testdb;charset=utf8", "root", "");
+
 
 // ====== 處理留言分頁 ======
 $perPage = 10;
