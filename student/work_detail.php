@@ -85,7 +85,7 @@ $comments = $commentStmt->get_result();
       <div class="card mb-4 p-4">
         <div class="row g-3">
           <div class="col-md-4">
-            <img src="<?php echo htmlspecialchars($portfolio['image_url'] ?? '../images/placeholder.jpg'); ?>" alt="作品封面" class="img-fluid rounded" />
+            <img src="uploads/<?php echo htmlspecialchars($portfolio['cover_image']); ?>" class="img-fluid rounded" alt="作品封面" style="max-height: 100px;">
           </div>
           <div class="col-md-8 d-flex flex-column justify-content-center">
             <h3><?php echo htmlspecialchars($portfolio['title'] ?? '未知標題'); ?></h3>
@@ -144,6 +144,27 @@ $comments = $commentStmt->get_result();
           <button type="submit" class="btn btn-primary">送出留言</button>
         </form>
       </div>
+      <!-- 編輯留言 Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCommentModalLabel">編輯留言</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editCommentForm">
+          <div class="mb-3">
+            <textarea class="form-control" id="editContent" name="content" rows="4" required></textarea>
+          </div>
+          <input type="hidden" id="editCommentId" name="comment_id">
+          <button type="submit" class="btn btn-primary">儲存修改</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
     </div>
   </div>
 </div>

@@ -1,6 +1,14 @@
 const commentList = document.getElementById("commentList");
 const form = document.getElementById("commentForm");
-const editModal = new bootstrap.Modal(document.getElementById("editModal"));
+
+// 正確抓到 modal 元素
+const editModalEl = document.getElementById("myModal");
+const editModal = new bootstrap.Modal(document.getElementById("myModal"));
+
+// 編輯表單元素
+const editForm = document.getElementById("editCommentForm");
+const editContent = document.getElementById("editContent");
+const editCommentId = document.getElementById("editCommentId");
 
 async function loadComments() {
     try {
@@ -12,11 +20,11 @@ async function loadComments() {
             li.className = "list-group-item";
             li.innerHTML = `
                 <strong>${comment.user_type === 'student' ? '👨‍🎓' : '🏢'} ${comment.user_name}</strong>
-                <p>${comment.content.replace(/\n/g, '<br>')}</p> <!-- 支援換行 -->
+                <p>${comment.content.replace(/\n/g, '<br>')}</p>
                 <small class="text-muted">${comment.created_at}</small>
                 ${comment.can_edit ? `
                     <div class="text-end">
-                        <button class="btn btn-sm btn-secondary me-2" onclick="showEditModal(${comment.comment_id}, \`${comment.content}\`)">編輯</button>
+                        <button class="btn btn-sm btn-secondary me-2" onclick="showEditModal(${comment.comment_id}, \`${comment.content.replace(/`/g, '\\`')}\`)">編輯</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteComment(${comment.comment_id})">刪除</button>
                     </div>` : ''}
             `;
@@ -49,15 +57,15 @@ form.addEventListener("submit", async e => {
 });
 
 function showEditModal(id, content) {
-    document.getElementById("edit_id").value = id;
-    document.getElementById("edit_content").value = content;
+    editCommentId.value = id;
+    editContent.value = content;
     editModal.show();
 }
 
-document.getElementById("editForm").addEventListener("submit", async e => {
+editForm.addEventListener("submit", async e => {
     e.preventDefault();
-    const id = document.getElementById("edit_id").value;
-    const content = document.getElementById("edit_content").value;
+    const id = editCommentId.value;
+    const content = editContent.value;
     try {
         const res = await fetch("edit_comment.php", {
             method: "POST",
