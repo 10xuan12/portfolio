@@ -2,7 +2,6 @@
 session_start();
 require '../includes/db_connect.php';
 
-// 檢查是否已登入
 if (!isset($_SESSION['student_id'])) {
     header("Location: ../login.php");
     exit();
@@ -34,11 +33,11 @@ $conn->close();
 </head>
 <body class="bg-light">
 <div class="container py-5">
-    <h2 class="text-center mb-4">編輯個人資料</h2>
-    <form action="student_update.php" method="POST" class="p-4 bg-white rounded shadow-sm">
+    <h2 class="text-center mb-4"> 📝 編輯個人資料</h2>
+    <form action="student_update.php" method="POST" enctype="multipart/form-data" class="p-4 bg-white rounded shadow-sm">
         <div class="mb-3">
-            <label for="student_name" class="form-label">姓名</label>
-            <input type="text" name="student_name" class="form-control" value="<?= htmlspecialchars($student_data['student_name']) ?>" required>
+            <label for="name" class="form-label">姓名</label>
+            <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($student_data['name']) ?>" required>
         </div>
         <div class="mb-3">
             <label for="department" class="form-label">系所</label>
@@ -56,8 +55,23 @@ $conn->close();
             <label for="email" class="form-label">電子郵件</label>
             <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($student_data['email']) ?>">
         </div>
-        <button type="submit" class="btn btn-primary">儲存變更</button>
-        <a href="student_dashboard.php" class="btn btn-secondary">返回</a>
+
+        <!-- 頭像預覽與上傳 -->
+        <div class="mb-3">
+            <label class="form-label">目前頭像</label><br>
+            <?php if (!empty($student_data['profile_picture'])): ?>
+                <img src="uploads/<?= htmlspecialchars($student_data['profile_picture']) ?>" alt="頭像" class="img-thumbnail mb-2" style="max-width: 150px;">
+            <?php else: ?>
+                <p class="text-muted">尚未上傳頭像</p>
+            <?php endif; ?>
+        </div>
+        <div class="mb-3">
+            <label for="profile_picture" class="form-label">上傳新頭像</label>
+            <input type="file" name="profile_picture" class="form-control" accept="image/*">
+        </div>
+
+        <button type="submit" class="btn btn-primary"> 💾 儲存變更</button>
+        <a href="student_dashboard_view.php" class="btn btn-secondary">返回</a>
     </form>
 </div>
 </body>

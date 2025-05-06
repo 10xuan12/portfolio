@@ -1,17 +1,13 @@
 <?php 
 session_start();
-require '../includes/db_connect.php';  // 連接資料庫
+require '../includes/db_connect.php';
 
-// 登入驗證
 if (!isset($_SESSION['email'])) {
-    header("Location: /portfolio/login.php");  // 請根據實際路徑修改
+    header("Location: /portfolio/login.php");
     exit();
 }
 
 $email = $_SESSION['email'];
-$student_data = null;
-
-// 查詢學生資料
 $sql = "SELECT * FROM student_profiles WHERE email = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $email);
@@ -20,15 +16,17 @@ $result = $stmt->get_result();
 
 if ($result->num_rows === 1) {
     $student_data = $result->fetch_assoc();
-    var_dump($student_data);
-    header("Location: /portfolio/student/student_dashboard_view.php");
-    exit();
+    $required_fields = ['name', 'email'];
+    foreach ($required_fields as $field) {
+        if (empty($student_data[$field])) {
+            header("Location: /portfolio/student/student.php?need_info=1");
+            exit();
+        }
+    }
 } else {
-    // 若資料為空，導向填寫資料頁面
     header("Location: /portfolio/student/student.php?need_info=1");
     exit();
 }
-
 $conn->close();
 ?>
 
@@ -42,72 +40,184 @@ $conn->close();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        .profile-card {
-            border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        body {
+            background-color: #f9f9f9;
         }
-        .avatar {
-            width: 150px;
-            height: 150px;
+        .sidebar {
+            background-color: #babcbd; /* 淺灰色背景 */
+            height: 100vh;
+            padding-top: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100px;
+            font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
+            transition: width 0.3s ease; /* 添加過渡效果，平滑收合側邊欄 */
+        }
+        .sidebar .nav-link {
+            color: #000000; /* 黑色文字 */
+            font-weight: bold; /* 字體加粗 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.5rem; /* 圖示大小 */
+            margin-bottom: 8px; /* 圖示與文字間距 */
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #6e3ced; /* 滑鼠懸停時的背景色 */
+            color: #ffffff;
+            border-radius: 5px;
+        }
+
+        .main-content {
+            margin-left: 100px; /* 主內容不會被側邊欄擋住 */
+            padding: 20px;
+        }   
+        .profile-img {
+            width: 120px;
+            height: 120px;
             object-fit: cover;
             border-radius: 50%;
-            border: 3px solid #0d6efd;
-            margin-bottom: 1rem;
+            border: 3px solid #5d73a9;
+        }
+        .info-box {
+            background-color: #f7f3f3;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .section-title {
+            background-color: #5d73a9;
+            color: white;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
         .btn-edit {
             border-radius: 30px;
+            background-color: #5d73a9;
+            color: #fafafa;
         }
-        .alert {
-            transition: opacity 0.5s ease;
+        .text-primary {
+            color: #000000; /* 黑色文字 */
+            font-weight: bold; /* 字體加粗 */
+            font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
-<div class="container py-5">
-    <h2 class="text-center text-primary mb-4">🎓 學生個人資料頁面</h2>
-
-    <!-- ✅ 提示訊息 -->
-    <?php if (isset($_GET['saved']) && $_GET['saved'] == 1): ?>
-        <div class="alert alert-success text-center" id="successMessage">
-            ✅ 資料儲存成功！
-        </div>
-    <?php elseif (isset($_GET['need_info']) && $_GET['need_info'] == 1): ?>
-        <div class="alert alert-warning text-center" id="warningMessage">
-            ⚠️ 尚未填寫完整資料，請先完成基本資料填寫。
-        </div>
-    <?php endif; ?>
-
-    <!-- 🧾 資料卡片 -->
-    <div class="card profile-card p-4 mx-auto" style="max-width: 600px;">
-        <div class="text-center">
-            <?php if (!empty($student_data['avatar'])): ?>
-                <img src="../uploads/<?php echo htmlspecialchars($student_data['avatar']); ?>" alt="頭像" class="avatar">
-            <?php else: ?>
-                <img src="https://via.placeholder.com/150x150.png?text=Avatar" alt="預設頭像" class="avatar">
-            <?php endif; ?>
-            <h4 class="mt-3"><?php echo htmlspecialchars($student_data['student_name']); ?></h4>
-            <p class="text-muted">學號：<?php echo htmlspecialchars($student_data['student_id']); ?></p>
-        </div>
-        <hr>
-        <div>
-            <p><i class="bi bi-buildings"></i> 系所：<?php echo htmlspecialchars($student_data['department']); ?></p>
-            <p><i class="bi bi-mortarboard-fill"></i> 年級：<?php echo htmlspecialchars($student_data['grade']); ?></p>
-            <p><i class="bi bi-telephone"></i> 電話：<?php echo htmlspecialchars($student_data['phone']); ?></p>
-            <p><i class="bi bi-envelope"></i> 信箱：<?php echo htmlspecialchars($student_data['email']); ?></p>
-        </div>
-        <div class="text-center mt-4">
-            <a href="student_edit_form.php" class="btn btn-outline-primary btn-edit px-4">
-                <i class="bi bi-pencil-square"></i> 修改資料
+<div class="container-fluid">
+    <div class="row">
+        <!-- 側邊欄 -->
+    <nav class="col-auto col-md-3 col-lg-2 sidebar">
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item">
+            <a href="student_dashboard_view.php" class="nav-link active">
+              <i class="bi bi-house"></i>
+              <span>個人主頁</span>
             </a>
+          </li>
+          <li class="nav-item">
+            <a href="student_file_category.php" class="nav-link">
+              <i class="bi bi-collection"></i>
+              <span>作品集</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="bi bi-bell"></i>
+              <span>通知</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="bi bi-gear"></i>
+              <span>設定</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="../login.php" class="nav-link">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>登出</span>
+            </a>
+          </li>
+        </ul>
+    </nav>
+
+        <!-- 主內容 -->
+        <div class="col-md-10 py-5 px-4" style="background-color: #fff; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin: 20px auto;">
+            <?php if (isset($_GET['saved']) && $_GET['saved'] == 1): ?>
+                <div class="alert alert-success text-center" id="successMessage">
+                    ✅ 資料儲存成功！
+                </div>
+            <?php elseif (isset($_GET['need_info']) && $_GET['need_info'] == 1): ?>
+                <div class="alert alert-warning text-center" id="warningMessage">
+                    ⚠️ 尚未填寫完整資料，請先完成基本資料填寫。
+                </div>
+            <?php endif; ?>
+
+            <!-- 基本資料卡 -->
+            <div class="d-flex align-items-center mb-4">
+                <div class="me-4">
+                    <?php if (!empty($student_data['profile_picture'])): ?>
+                        <img src="uploads/<?php echo htmlspecialchars($student_data['profile_picture']); ?>" alt="頭像" class="profile-img shadow">
+                    <?php else: ?>
+                        <img src="https://via.placeholder.com/120" alt="預設頭像" class="profile-img shadow">
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <h4 class="mb-1 fw-bold text-primary"><?php echo htmlspecialchars($student_data['name']); ?></h4>
+                    <p class="mb-1 text-muted"><?php echo htmlspecialchars($student_data['department']); ?> | <?php echo htmlspecialchars($student_data['address']); ?></p>
+                    <a href="student_edit_form.php" class="btn btn-primary btn-sm btn-edit rounded-pill px-4">
+                        <i class="bi bi-pencil-square"></i> 編輯
+                    </a>
+                </div>
+            </div>
+
+            <!-- 個人簡介 -->
+            <div class="mb-4">
+                <h5 class="section-title">個人簡介</h5>
+                <div class="info-box shadow-sm">
+                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($student_data['bio'] ?? '尚未填寫個人簡介')); ?></p>
+                </div>
+            </div>
+
+            <!-- 聯絡資訊 -->
+            <div class="mb-4">
+                <h5 class="section-title">聯絡方式與社群</h5>
+                <div class="info-box shadow-sm row row-cols-1 row-cols-md-2 g-3">
+                    <div><i class="bi bi-github me-2"></i><?php echo htmlspecialchars($student_data['github']); ?></div>
+                    <div><i class="bi bi-instagram me-2"></i><?php echo htmlspecialchars($student_data['instagram']); ?></div>
+                    <div><i class="bi bi-facebook me-2"></i><?php echo htmlspecialchars($student_data['facebook']); ?></div>
+                    <div><i class="bi bi-envelope me-2"></i><?php echo htmlspecialchars($student_data['email']); ?></div>
+                    <div><i class="bi bi-phone me-2"></i><?php echo htmlspecialchars($student_data['phone']); ?></div>
+                </div>
+            </div>
+
+            <!-- 專業背景 -->
+            <div>
+                <h5 class="section-title">專業背景</h5>
+                <div class="info-box shadow-sm">
+                    <p><strong>技能：</strong> <?php echo htmlspecialchars($student_data['skills']); ?></p>
+                    <p><strong>語言能力：</strong> <?php echo htmlspecialchars($student_data['languages']); ?></p>
+                    <p><strong>最高學歷：</strong> <?php echo htmlspecialchars($student_data['school']); ?></p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap & 自動隱藏提示 -->
+<!-- Bootstrap & JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 3 秒後淡出提示訊息
     setTimeout(() => {
         const success = document.getElementById('successMessage');
         const warning = document.getElementById('warningMessage');

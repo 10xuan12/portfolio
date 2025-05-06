@@ -27,9 +27,9 @@ $category_result = $conn->query($category_sql);
     <nav class="col-auto col-md-3 col-lg-2 sidebar">
         <ul class="nav nav-pills flex-column">
           <li class="nav-item">
-            <a href="student_dashboard.php" class="nav-link ">
+            <a href="student_dashboard_view.php" class="nav-link ">
               <i class="bi bi-house"></i>
-              <span>主頁</span>
+              <span>個人主頁</span>
             </a>
           </li>
           <li class="nav-item">

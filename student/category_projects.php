@@ -39,9 +39,9 @@ $portfolio_result = $stmt2->get_result();
     <nav class="col-auto col-md-3 col-lg-2 sidebar bg-light py-4">
         <ul class="nav nav-pills flex-column text-center">
             <li class="nav-item">
-               <a href="student_dashboard.php" class="nav-link text-gray">
+               <a href="student_dashboard_view.php" class="nav-link text-gray">
                   <i class="bi bi-house fs-4 d-block"></i>
-                  <strong>主頁</strong>
+                  <strong>個人主頁</strong>
                </a>
             </li>
             <li class="nav-item">

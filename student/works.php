@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
       <nav class="col-auto col-md-3 col-lg-2 sidebar">
         <ul class="nav nav-pills flex-column">
           <li class="nav-item">
-            <a href="student_dashboard.php" class="nav-link "><i class="bi bi-house"></i><span>主頁</span></a>
+            <a href="student_dashboard_view.php" class="nav-link "><i class="bi bi-house"></i><span>個人主頁</span></a>
           </li>
           <li class="nav-item">
             <a href="student_file_category.php" class="nav-link active"><i class="bi bi-collection"></i><span>作品集</span></a>

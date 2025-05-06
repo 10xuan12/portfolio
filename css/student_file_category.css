@@ -141,12 +141,12 @@ body {
 }
 
 .btn-view {
-  background-color: #20c997;
+  background-color: #5d73a9;
   color: white;
 }
 
 .btn-view:hover {
-  background-color: #17a589;
+  background-color: #5d73a9;
   transform: scale(1.05);
 }
 
