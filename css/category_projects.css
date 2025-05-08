@@ -5,18 +5,18 @@ body {
 }
 
 /* 側邊欄樣式 */
+/* 側邊欄樣式 */
 .sidebar {
-    background-color: #babcbd; /* 淺灰色背景 */
-    min-height: 100vh;
+    background-color: #babcbd !important;
+    height: 100vh;
     padding-top: 20px;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100px; /* 調整側邊欄寬度 */
-    font-family: 'Comic Sans MS', sans-serif; /* 可愛的字體 */
-    z-index: 1000;
+    width: 100px;
+    font-family: 'Comic Sans MS', sans-serif;
     transition: width 0.3s ease;
-  }
+}
 
 .sidebar .nav-link {
     color: #000000; /* 黑色文字 */
@@ -26,6 +26,7 @@ body {
     align-items: center;
     justify-content: center;
     text-align: center;
+    padding: 10px 0;
 }
 
 .sidebar .nav-link i {
@@ -145,4 +146,13 @@ body {
     .portfolio-list .card {
         margin-bottom: 20px; /* 卡片間隔縮小 */
     }
+}
+
+.card.scale-up {
+    transform: scale(1.03);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

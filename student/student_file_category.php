@@ -15,7 +15,7 @@ $category_result = $conn->query($category_sql);
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>作品集分類管理</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="../css/student_file_category.css?v=2">
+        <link rel="stylesheet" href="../css/student_file_category.css?v=3">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
@@ -86,7 +86,7 @@ $category_result = $conn->query($category_sql);
         <div class="card-body text-center">
           <h5 class="card-title"><?php echo htmlspecialchars($category['name']); ?></h5>
           <p class="card-text"><?php echo htmlspecialchars($category['description']); ?></p>
-          <a href="category_projects.php?category_id=<?php echo $category['category_id']; ?>" class="btn btn-outline-primary mt-2">查看作品</a>
+          <a href="category_projects.php?category_id=<?php echo $category['category_id']; ?>" class="btn btn-outline-primary mt-2">查看作品集</a>
         </div>
       </div>
     </div>

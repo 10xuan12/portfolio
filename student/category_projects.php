@@ -27,9 +27,9 @@ $portfolio_result = $stmt2->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>分類細項 - 作品集</title>
+    <link href="../css/category_projects.css?v=3" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link href="../css/category_projects.css?v=2" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -39,7 +39,7 @@ $portfolio_result = $stmt2->get_result();
     <nav class="col-auto col-md-3 col-lg-2 sidebar bg-light py-4">
         <ul class="nav nav-pills flex-column text-center">
             <li class="nav-item">
-               <a href="student_dashboard_view.php" class="nav-link text-gray">
+               <a href="student_dashboard_view.php" class="nav-link">
                   <i class="bi bi-house fs-4 d-block"></i>
                   <strong>個人主頁</strong>
                </a>
@@ -51,19 +51,19 @@ $portfolio_result = $stmt2->get_result();
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-gray">
+                <a href="#" class="nav-link">
                   <i class="bi bi-bell fs-4 d-block"></i>
                   <strong>通知</strong>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link text-gray">
+                <a href="#" class="nav-link">
                   <i class="bi bi-gear fs-4 d-block"></i>
                   <strong>設定</strong>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="../login.php" class="nav-link text-gray">
+                <a href="../login.php" class="nav-link">
                   <i class="bi bi-box-arrow-right fs-4 d-block"></i>
                   <strong>登出</strong>
                 </a>

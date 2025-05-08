@@ -1,5 +1,3 @@
-/* category_projects.css */
-
 /* 整體頁面排版 */
 body {
   background-color: #f8f9fa;
@@ -56,7 +54,7 @@ body {
 .category-header h2 {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #007bff;
+  color: #5d73a9;
 }
 
 .category-header p {
@@ -76,6 +74,17 @@ body {
   border-radius: 50px;
   padding: 12px 20px;
   font-size: 1rem;
+}
+
+.btn-primary {
+  border-color: #555;
+  color: #555;
+  background-color:  #f8f9fa;
+}
+
+.btn-outline-secondary {
+  background-color:  #5d73a9;
+  color: #f8f9fa
 }
 
 /* 卡片樣式 */
@@ -130,16 +139,6 @@ body {
   transition: all 0.2s ease-in-out;
 }
 
-.btn-like {
-  background-color: #ff6b81;
-  color: white;
-}
-
-.btn-like:hover {
-  background-color: #ff4757;
-  transform: scale(1.05);
-}
-
 .btn-view {
   background-color: #5d73a9;
   color: white;
@@ -148,6 +147,10 @@ body {
 .btn-view:hover {
   background-color: #5d73a9;
   transform: scale(1.05);
+}
+
+.btn-success {
+  background-color: #5d73a9;
 }
 
 /* 無資料區塊 */

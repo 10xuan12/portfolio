@@ -1,63 +1,70 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const itemsPerPage = 5; // 每頁顯示幾筆
-    const cards = document.querySelectorAll(".portfolio-list .card");
+document.addEventListener("DOMContentLoaded", function () {
+    const categoryId = document.getElementById("category-id").value; // 用 hidden input 傳入
+    const portfolioList = document.querySelector(".portfolio-list");
     const pagination = document.querySelector(".pagination");
-
     let currentPage = 1;
-    const totalPages = Math.ceil(cards.length / itemsPerPage);
 
-    function showPage(page) {
-        currentPage = page;
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-
-        cards.forEach((card, index) => {
-            if (index >= start && index < end) {
-                card.style.display = "block";
-            } else {
-                card.style.display = "none";
-            }
-        });
-
-        renderPagination();
+    function showLoading() {
+        portfolioList.innerHTML = `
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">載入中...</span>
+                </div>
+            </div>
+        `;
     }
 
-    function renderPagination() {
-        pagination.innerHTML = "";
+    function loadPortfolios(page = 1) {
+        showLoading();
 
-        // Previous 按鈕
-        const prev = document.createElement("li");
-        prev.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
-        prev.innerHTML = `<a class="page-link" href="#">Previous</a>`;
-        prev.addEventListener("click", function(e) {
-            e.preventDefault();
-            if (currentPage > 1) showPage(currentPage - 1);
-        });
-        pagination.appendChild(prev);
-
-        // 頁數按鈕
-        for (let i = 1; i <= totalPages; i++) {
-            const pageItem = document.createElement("li");
-            pageItem.className = `page-item ${i === currentPage ? "active" : ""}`;
-            pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-            pageItem.addEventListener("click", function(e) {
-                e.preventDefault();
-                showPage(i);
+        fetch(`get_portfolios.php?category_id=${categoryId}&page=${page}`)
+            .then(response => {
+                if (!response.ok) throw new Error("伺服器錯誤");
+                return response.text();
+            })
+            .then(data => {
+                portfolioList.innerHTML = data;
+                currentPage = page;
+                setupPagination(); // 重新綁定分頁按鈕
+                applyCardHover();  // 加入 hover 效果
+            })
+            .catch(error => {
+                portfolioList.innerHTML = "";
+                Swal.fire({
+                    icon: "error",
+                    title: "發生錯誤",
+                    text: "載入作品時發生錯誤，請稍後再試",
+                    confirmButtonColor: "#3085d6"
+                });
+                console.error("載入失敗：", error);
             });
-            pagination.appendChild(pageItem);
-        }
+    }
 
-        // Next 按鈕
-        const next = document.createElement("li");
-        next.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
-        next.innerHTML = `<a class="page-link" href="#">Next</a>`;
-        next.addEventListener("click", function(e) {
-            e.preventDefault();
-            if (currentPage < totalPages) showPage(currentPage + 1);
+    function setupPagination() {
+        const pageLinks = document.querySelectorAll(".page-link-btn");
+        pageLinks.forEach(link => {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const page = parseInt(this.dataset.page);
+                if (page !== currentPage) {
+                    loadPortfolios(page);
+                }
+            });
         });
-        pagination.appendChild(next);
+    }
+
+    function applyCardHover() {
+        const cards = document.querySelectorAll(".portfolio-list .card");
+        cards.forEach(card => {
+            card.addEventListener("mouseenter", () => {
+                card.classList.add("shadow", "scale-up");
+            });
+            card.addEventListener("mouseleave", () => {
+                card.classList.remove("shadow", "scale-up");
+            });
+        });
     }
 
     // 初始化
-    showPage(1);
+    loadPortfolios();
 });

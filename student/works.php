@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
   <title>作品集 - 全部作品</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="../css/works.css?v=2">
+  <link rel="stylesheet" href="../css/works.css?v=3">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -47,25 +47,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
 <div class="container-fluid">
   <div class="row">
       <!-- 側邊欄 -->
-      <nav class="col-auto col-md-3 col-lg-2 sidebar">
-        <ul class="nav nav-pills flex-column">
-          <li class="nav-item">
-            <a href="student_dashboard_view.php" class="nav-link "><i class="bi bi-house"></i><span>個人主頁</span></a>
-          </li>
-          <li class="nav-item">
-            <a href="student_file_category.php" class="nav-link active"><i class="bi bi-collection"></i><span>作品集</span></a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link"><i class="bi bi-bell"></i><span>通知</span></a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link"><i class="bi bi-gear"></i><span>設定</span></a>
-          </li>
-          <li class="nav-item">
-            <a href="../login.php" class="nav-link"><i class="bi bi-box-arrow-right"></i><span>登出</span></a>
-          </li>
+    <nav class="col-auto col-md-3 col-lg-2 sidebar bg-light py-4">
+        <ul class="nav nav-pills flex-column text-center">
+            <li class="nav-item">
+               <a href="student_dashboard_view.php" class="nav-link text-gray">
+                  <i class="bi bi-house fs-4 d-block"></i>
+                  <strong>個人主頁</strong>
+               </a>
+            </li>
+            <li class="nav-item">
+                <a href="student_file_category.php" class="nav-link active">
+                    <i class="bi bi-collection fs-4 d-block"></i>
+                    <strong>作品集</strong>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-gray">
+                  <i class="bi bi-bell fs-4 d-block"></i>
+                  <strong>通知</strong>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link text-gray">
+                  <i class="bi bi-gear fs-4 d-block"></i>
+                  <strong>設定</strong>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="../login.php" class="nav-link text-gray">
+                  <i class="bi bi-box-arrow-right fs-4 d-block"></i>
+                  <strong>登出</strong>
+                </a>
+            </li>
         </ul>
-      </nav>
+    </nav>
 
       <!-- 主內容 -->
       <div class="col py-3 main-content">
@@ -94,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
                 <div class="card-body text-center">
                   <h5 class="card-title"><?php echo htmlspecialchars($portfolio['title']); ?></h5>
                   <p class="card-text"><?php echo htmlspecialchars($portfolio['description']); ?></p>
-                  <a href="#" class="btn btn-outline-primary mt-2">查看詳細</a>
+                  <a href="#" class="btn btn-outline-primary mt-2">查看作品 !</a>
                 </div>
               </div>
             </div>
