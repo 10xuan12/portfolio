@@ -1,11 +1,12 @@
 <?php
 session_start();
-require __DIR__ . '/../config/db.php';
 
-if (!isset($_SESSION['user_id'])) {
-  header("Location: login.php");
-  exit();
-}
+// 載入 EnterpriseDB 類別
+require $_SERVER['DOCUMENT_ROOT']
+    . '/portfolio/enterprise/config/enterprise.php';
+
+$db  = new \Config\EnterpriseDB();
+$pdo = $db->getConnection();
 
 $user_id = $_SESSION['user_id'];
 $pdo = (new \Config\DB())->getConnection();

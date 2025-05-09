@@ -1,8 +1,12 @@
 <?php
-// public/category_filter.php
 session_start();
-require __DIR__ . '/../config/db.php';    // 調整到你的 db.php 路徑
-$pdo = (new \Config\DB())->getConnection();
+
+// 載入 EnterpriseDB 類別
+require $_SERVER['DOCUMENT_ROOT']
+    . '/portfolio/enterprise/config/enterprise.php';
+
+$db  = new \Config\EnterpriseDB();
+$pdo = $db->getConnection();
 
 // 1. 讀取篩選參數 & 分頁設定
 $cats    = $_GET['cat']  ?? [];

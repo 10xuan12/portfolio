@@ -1,22 +1,20 @@
 <?php
-// config/db.php
 namespace Config;
 
 use PDO;
 use PDOException;
 
-class DB {
+class EnterpriseDB {
     private PDO $pdo;
 
     public function __construct() {
-        // 資料庫參數：請依實際環境調整
         $host     = 'localhost';
-        $dbName   = 'enterprise_portal';
-        $user     = 'root';
+        $dbName   = 'enterprise_portal';  // ← 這是你的資料庫名稱
+        $user     = 'root';               // ← XAMPP 預設
         $password = '';
         $charset  = 'utf8mb4';
 
-        $dsn = "mysql:host={$host};dbname={$dbName};charset={$charset}";
+        $dsn = "mysql:host=$host;dbname=$dbName;charset=$charset";
         $options = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -26,17 +24,11 @@ class DB {
         try {
             $this->pdo = new PDO($dsn, $user, $password, $options);
         } catch (PDOException $e) {
-            // 開發環境可直接顯示，正式環境建議寫入 log
-            echo 'Database Connection Failed: ' . htmlspecialchars($e->getMessage());
+            echo '資料庫連線失敗: ' . htmlspecialchars($e->getMessage());
             exit;
         }
     }
 
-    /**
-     * 回傳 PDO 連線物件
-     *
-     * @return PDO
-     */
     public function getConnection(): PDO {
         return $this->pdo;
     }

@@ -1,8 +1,12 @@
 <?php
-// latest.php
 session_start();
-require __DIR__ . '/config/db.php';
-$pdo = (new \Config\DB())->getConnection();
+
+// 載入 EnterpriseDB 類別
+require $_SERVER['DOCUMENT_ROOT']
+    . '/portfolio/enterprise/config/enterprise.php';
+
+$db  = new \Config\EnterpriseDB();
+$pdo = $db->getConnection();
 
 // 1. 讀分頁
 $page    = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
