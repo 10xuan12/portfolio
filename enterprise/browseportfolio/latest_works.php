@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$activeTab = $_GET['tab'] ?? 'filter';
+$activeTab = $_GET['tab'] ?? 'newest';
 // 載入 EnterpriseDB 類別
 require $_SERVER['DOCUMENT_ROOT']
     . '/portfolio/enterprise/config/enterprise.php';
@@ -25,21 +25,44 @@ $stmtCount = $pdo->prepare("
 $stmtCount->execute([':weekAgo' => $weekAgo]);
 $total      = (int)$stmtCount->fetchColumn();
 $totalPages = (int)ceil($total / $perPage);
-
 // 4. 取本頁資料
 $stmt = $pdo->prepare("
-  SELECT id, title, description, thumb, created_at
-    FROM works
-   WHERE created_at >= :weekAgo
-ORDER BY created_at DESC
-   LIMIT :lim OFFSET :off
+  SELECT 
+    w.id,
+    w.title,
+    w.content     AS description,
+    w.thumb,
+    w.created_at,
+    c.name AS category_name,
+    l.name AS location_name
+  FROM works AS w
+  JOIN categories AS c ON w.category_id = c.id
+  JOIN locations  AS l ON w.location_id = l.id
+  WHERE w.created_at >= :weekAgo
+  ORDER BY w.created_at DESC
+  LIMIT :lim OFFSET :off
 ");
+
+// 綁定參數
 $stmt->bindValue(':weekAgo', $weekAgo);
-$stmt->bindValue(':lim',     $perPage, \PDO::PARAM_INT);
-$stmt->bindValue(':off',     $offset,  \PDO::PARAM_INT);
+$stmt->bindValue(':lim',     $perPage, PDO::PARAM_INT);
+$stmt->bindValue(':off',     $offset,  PDO::PARAM_INT);
+
+// **執行 SQL**
 $stmt->execute();
-$works = $stmt->fetchAll();
+
+// **抓出結果**
+$works = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Tabs 定義（給前端迴圈用）
+$tabs = [
+  'home'   => '首頁',
+  'filter' => '分類篩選',
+  'recent' => '最近查看',
+  'newest' => '最新作品',
+  'random' => '作品隨心看',
+];
 ?>
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -57,82 +80,107 @@ $works = $stmt->fetchAll();
   </style>
 </head>
 <body class="bg-white font-sans text-gray-800">
-  <div class="flex min-h-screen">
-    <!-- 側邊欄 -->
-    <aside class="flex flex-col items-center bg-gray-100 w-16 py-4 space-y-6">
-      <a href="latest.php" class="text-blue-600"><i class="fas fa-folder fa-lg"></i></a>
-      <a href="#" class="text-gray-600 hover:text-blue-600"><i class="fas fa-home fa-lg"></i></a>
-      <a href="#" class="text-gray-600 hover:text-blue-600"><i class="fas fa-bell fa-lg"></i></a>
-      <a href="#" class="text-gray-600 hover:text-blue-600"><i class="fas fa-cog fa-lg"></i></a>
-      <a href="#" class="mt-auto text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt fa-lg"></i></a>
-    </aside>
-
-    <div class="flex-1 flex flex-col">
-      <!-- 標題 -->
-      <header class="p-4 bg-gray-50 border-b">
-        <h1 class="text-xl font-semibold">近期新作品（一週內）</h1>
-      </header>
-
-      <!-- 搜尋／篩選列 -->
-      <div class="flex items-center p-4 bg-gray-50">
-        <button
-          id="filterBtn"
-          class="flex items-center bg-purple-100 text-purple-700 px-3 py-1 rounded-full mr-4"
-        >
-          <i class="fas fa-filter mr-2"></i>搜尋條件
+<div class="flex min-h-screen">
+    <!-- 左側欄 -->
+    <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
+        <i class="fas fa-user-circle text-xl"></i>
+        <span class="text-xs mt-1">主頁</span>
+      </button>
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-white bg-blue-700">
+        <i class="fas fa-folder text-xl"></i>
+        <span class="text-xs mt-1">瀏覽</span>
+      </button>
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
+        <i class="fas fa-bell text-xl"></i>
+        <span class="text-xs mt-1">通知</span>
+      </button>
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
+        <i class="fas fa-cog text-xl"></i>
+        <span class="text-xs mt-1">設定</span>
+      </button>
+      <form method="post" action="logout.php">
+        <button type="submit" class="flex flex-col items-center w-14 h-14 justify-center text-black">
+          <i class="fas fa-sign-out-alt text-xl"></i>
+          <span class="text-xs mt-1">登出</span>
         </button>
-        <form id="searchForm" method="get" class="flex items-center">
-          <input
-            type="text"
-            name="search"
-            placeholder="search"
-            class="border border-gray-300 rounded px-3 py-1 mr-2"
-          />
-          <button
-            type="submit"
-            class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-          >搜尋</button>
-        </form>
+      </form>
+    </nav>
+
+    <!-- 右側主內容 -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <!-- Top 篩選+搜尋（如需） -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full cursor-pointer">
+          <span>篩選條件</span><i class="fas fa-chevron-down text-sm"></i>
+        </div>
+        <input type="search" placeholder="search"
+               class="w-1/3 min-w-[200px] px-3 py-2 bg-gray-100 border border-gray-300 rounded"/>
       </div>
 
-      <!-- 分頁選單（Tabs） -->
-      <nav class="flex border-b border-gray-200">
-        <a href="#" class="px-4 py-2 hover:text-purple-600">首頁</a>
-        <a href="#" class="px-4 py-2 hover:text-purple-600">分類篩選</a>
-        <a href="#" class="px-4 py-2 hover:text-purple-600">最近查看</a>
-        <a
-          href="latest.php"
-          class="px-4 py-2 text-purple-600 border-b-2 border-purple-600"
-        >最新作品</a>
-        <a href="work_detail.php" class="px-4 py-2 hover:text-purple-600">作品隨心看</a>
-      </nav>
+     
+      <!-- Tabs Bar -->
+<ul class="flex gap-4 text-sm mb-4 border-b pb-2">
+  <!-- 首頁 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='home' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="enterprise_portfolio.php" class="block">首頁</a>
+  </li>
 
+  <!-- 分類篩選 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='filter' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="category_filter.php?tab=filter" class="block">分類篩選</a>
+  </li>
+
+  <!-- 最近查看 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='recent' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="recent_views.php?tab=recent" class="block">最近查看</a>
+  </li>
+
+  <!-- 最新作品 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='newest' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="latest_works.php?tab=newest" class="block">最新作品</a>
+  </li>
+
+  <!-- 作品隨心看 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='random' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="work_detail.php?tab=random" class="block">作品隨心看</a>
+  </li>
+</ul>
       <!-- 作品列表 -->
       <div class="p-4 flex-1 space-y-4 overflow-auto">
-        <?php if (empty($works)): ?>
-          <p class="text-center text-gray-500">一週內沒有新作品。</p>
-        <?php else: ?>
-          <?php foreach ($works as $w): ?>
-            <div class="flex bg-white shadow rounded p-4">
-              <div
-                class="w-24 h-24 bg-gray-200 rounded mr-4 flex-shrink-0"
-                <?php if ($w['thumb']): ?>
-                  style="background-image:url('<?= htmlspecialchars($w['thumb']) ?>');background-size:cover;"
-                <?php endif; ?>
-              ></div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-lg"><?= htmlspecialchars($w['title']) ?></h3>
-                <p class="text-sm text-gray-500 mb-1"><?= date('Y-m-d', strtotime($w['created_at'])) ?></p>
-                <p class="text-gray-600"><?= nl2br(htmlspecialchars($w['description'])) ?></p>
-                <a
-                  href="work_detail.php?id=<?= $w['id'] ?>"
-                  class="mt-2 inline-block px-4 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100"
-                >查看作品</a>
-              </div>
+  <?php if (empty($works)): ?>
+    <p class="text-center text-gray-500">一週內沒有新作品。</p>
+  <?php else: ?>
+    <?php foreach ($works as $w): ?>
+      <div class="flex items-center bg-white shadow rounded-md p-4 space-x-4">
+        <!-- 左側縮圖 -->
+        <div class="w-24 h-24 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden">
+          <?php if ($w['thumb']): ?>
+            <img src="<?= htmlspecialchars($w['thumb']) ?>"
+                 class="w-full h-full object-cover">
+          <?php else: ?>
+            <div class="w-full h-full flex items-center justify-center text-gray-400">
+              <i class="fas fa-image fa-2x"></i>
             </div>
-          <?php endforeach; ?>
-        <?php endif; ?>
+          <?php endif; ?>
+        </div>
+
+        <!-- 中間文字區 -->
+        <div class="flex-1">
+          <h3 class="font-semibold text-lg mb-1"><?= htmlspecialchars($w['title']) ?></h3>
+          <p class="text-sm text-gray-600 mb-1">
+            <?= nl2br(htmlspecialchars($w['description'])) ?>
+          </p>
+          <p class="text-xs text-gray-400">
+            <?= date('Y-m-d', strtotime($w['created_at'])) ?>
+          </p>
+        </div>
+
+        
       </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</div>
 
       <!-- 分頁按鈕 -->
       <nav class="flex justify-center items-center space-x-1 mt-4 mb-4 text-gray-600">

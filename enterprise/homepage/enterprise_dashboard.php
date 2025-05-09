@@ -191,8 +191,7 @@ $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <img
     id="display-avatar"
     src="<?php echo htmlspecialchars($user['avatar'] ?? 'uploads/default.jpg'); ?>"
-    class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md"
-  >
+    class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md">
 
   <div class="flex-1">
     <h2 class="text-base font-bold" id="display-company-name">
@@ -227,7 +226,7 @@ $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
       
 
-<<!-- 2. Modal 彈窗表單 -->
+<!-- 2. Modal 彈窗表單 -->
 <div id="modal"
      class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center hidden">
   <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
@@ -314,7 +313,7 @@ $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="https://github.com/<?php echo htmlspecialchars($user['github'] ?? ''); ?>"
        target="_blank"
        class="hover:underline">
-      <?php echo htmlspecialchars($user['github'] ?? ''); ?> · GitHub
+      <?php echo htmlspecialchars($user['github'] ?? ''); ?>GitHub
     </a>
   </div>
 

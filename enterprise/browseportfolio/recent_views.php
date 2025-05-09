@@ -1,63 +1,88 @@
 <?php
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
-$activeTab = $_GET['tab'] ?? 'filter';
+
+$activeTab = $_GET['tab'] ?? 'recent';
 // 載入 EnterpriseDB 類別
-require $_SERVER['DOCUMENT_ROOT']
-    . '/portfolio/enterprise/config/enterprise.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/portfolio/enterprise/config/enterprise.php';
 
 $db  = new \Config\EnterpriseDB();
 $pdo = $db->getConnection();
 
-$user_id = $_SESSION['user_id'];
+try {
+  // 先載入、session 啟動、DB 連線等已在外頭做過，就不重覆
 
+  // 1. 處理 view_logs
+  $userId = $_SESSION['user_id'] ?? 0;
+  $workId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+  if ($userId && $workId) {
+    $logStmt = $pdo->prepare("
+      INSERT INTO view_logs (user_id, work_id)
+      VALUES (?, ?)
+    ");
+    $logStmt->execute([$userId, $workId]);
+  }
 
-$keyword = trim($_GET['keyword'] ?? '');
-$sortOrder = ($_GET['sort'] ?? '') === 'newest' ? 'DESC' : 'ASC';
-$page = max(1, intval($_GET['page'] ?? 1));
-$perPage = 5;
-$offset = ($page - 1) * $perPage;
-$keywordWildcard = '%' . $keyword . '%';
+  // 2. 分頁、搜尋、排序參數
+  $keyword     = trim($_GET['keyword'] ?? '');
+  $keywordWild = '%' . $keyword . '%';
+  $sortOrder   = (($_GET['sort'] ?? '') === 'newest') ? 'DESC' : 'ASC';
+  $page        = max(1, intval($_GET['page'] ?? 1));
+  $perPage     = 5;
+  $offset      = ($page - 1) * $perPage;
 
-// 計算總筆數
-$countSql = "
-  SELECT COUNT(DISTINCT w.id)
-  FROM view_logs v
-  JOIN works w ON v.work_id = w.id
-  WHERE v.user_id = ?
-";
-$countParams = [$user_id];
+  // 3. 計算總筆數
+  $countSql = "
+    SELECT COUNT(DISTINCT w.id)
+      FROM view_logs v
+      JOIN works w ON v.work_id = w.id
+     WHERE v.user_id = ?
+  ";
+  $countParams = [$userId];
+  if ($keyword !== '') {
+    $countSql .= " AND (w.title LIKE ? OR w.content LIKE ?)";
+    $countParams[] = $keywordWild;
+    $countParams[] = $keywordWild;
+  }
+  $countStmt = $pdo->prepare($countSql);
+  $countStmt->execute($countParams);
+  $totalItems = (int)$countStmt->fetchColumn();
+  $totalPages = (int)ceil($totalItems / $perPage);
 
-if (!empty($keyword)) {
-  $countSql .= " AND (w.title LIKE ? OR w.description LIKE ?)";
-  $countParams[] = $keywordWildcard;
-  $countParams[] = $keywordWildcard;
+  // 4. 撈本頁資料（全部用位置參數示範）
+  $sql = "
+    SELECT w.id, w.title, w.content AS description, w.thumb
+      FROM view_logs v
+      JOIN works w ON v.work_id = w.id
+     WHERE v.user_id = ?
+  ";
+  $params = [$userId];
+  if ($keyword !== '') {
+    $sql .= " AND (w.title LIKE ? OR w.content LIKE ?)";
+    $params[] = $keywordWild;
+    $params[] = $keywordWild;
+  }
+  $sql .= "
+    GROUP BY w.id
+    ORDER BY MAX(v.viewed_at) $sortOrder
+    LIMIT ? OFFSET ?
+  ";
+  $params[] = $perPage;
+  $params[] = $offset;
+
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute($params);
+  $recentWorks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (\Throwable $e) {
+  // 有任何例外就顯示錯誤並結束
+  echo '<pre style="color:red">';
+  echo 'Error: ' . htmlspecialchars($e->getMessage());
+  echo '</pre>';
+  exit;
 }
-
-$stmt = $pdo->prepare($countSql);
-$stmt->execute($countParams);
-$totalItems = $stmt->fetchColumn();
-$totalPages = ceil($totalItems / $perPage);
-
-// 撈最近查看作品
-$sql = "
-  SELECT w.id, w.title, w.thumb, w.description
-  FROM view_logs v
-  JOIN works w ON v.work_id = w.id
-  WHERE v.user_id = ?
-";
-$params = [$user_id];
-
-if (!empty($keyword)) {
-  $sql .= " AND (w.title LIKE ? OR w.description LIKE ?)";
-  $params[] = $keywordWildcard;
-  $params[] = $keywordWildcard;
-}
-
-$sql .= " GROUP BY w.id ORDER BY MAX(v.viewed_at) $sortOrder LIMIT $perPage OFFSET $offset";
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$recentWorks = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -65,95 +90,132 @@ $recentWorks = $stmt->fetchAll();
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>瀏覽作品頁面 – 最近查看</title>
+  <title>最近查看</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-  <style>
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 3px; }
-  </style>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        rel="stylesheet"/>
 </head>
 <body class="bg-white font-sans text-gray-800">
-  <div class="flex min-h-screen space-x-8">
-    <!-- Sidebar -->
-    <aside class="flex flex-col bg-gray-300 w-16 select-none">
-      <button class="flex items-center justify-center h-16 w-16 border-b border-gray-400 hover:bg-gray-400" aria-label="主頁">
-        <i class="fas fa-user-circle text-2xl text-black"></i>
+<div class="flex min-h-screen">
+    <!-- 左側欄 -->
+    <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
+        <i class="fas fa-user-circle text-xl"></i>
+        <span class="text-xs mt-1">主頁</span>
       </button>
-      <button class="flex items-center justify-center h-16 w-16 bg-blue-700 border-b border-gray-400 text-white" aria-label="瀏覽作品">
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-white bg-blue-700">
         <i class="fas fa-folder text-xl"></i>
+        <span class="text-xs mt-1">瀏覽</span>
       </button>
-      <button class="flex items-center justify-center h-16 w-16 border-b border-gray-400 hover:bg-gray-400" aria-label="通知">
-        <i class="fas fa-bell text-xl text-black"></i>
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
+        <i class="fas fa-bell text-xl"></i>
+        <span class="text-xs mt-1">通知</span>
       </button>
-      <button class="flex items-center justify-center h-16 w-16 border-b border-gray-400 hover:bg-gray-400" aria-label="設定">
-        <i class="fas fa-cog text-xl text-black"></i>
+      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
+        <i class="fas fa-cog text-xl"></i>
+        <span class="text-xs mt-1">設定</span>
       </button>
-      <button class="flex items-center justify-center h-16 w-16 border-b border-gray-400 hover:bg-gray-400 mt-auto" aria-label="登出">
-        <i class="fas fa-sign-out-alt text-xl text-black"></i>
-      </button>
-    </aside>
+      <form method="post" action="logout.php">
+        <button type="submit" class="flex flex-col items-center w-14 h-14 justify-center text-black">
+          <i class="fas fa-sign-out-alt text-xl"></i>
+          <span class="text-xs mt-1">登出</span>
+        </button>
+      </form>
+    </nav>
 
-    <!-- Main -->
-    <main class="flex-1 py-6 px-4">
-      <!-- 搜尋表單 -->
-      <div class="flex justify-end mb-6">
-        <form method="get" class="flex items-center bg-gray-200 rounded-md px-3 py-2 space-x-2 text-gray-600 text-sm">
-          <input type="text" name="keyword" placeholder="輸入關鍵字..." value="<?= htmlspecialchars($keyword) ?>" class="bg-transparent outline-none text-sm w-40" />
-          <input type="hidden" name="sort" value="<?= htmlspecialchars($_GET['sort'] ?? '') ?>" />
-          <button type="submit" class="text-purple-700 text-xs px-2 py-1 rounded hover:underline">搜尋</button>
+    <!-- 右側主內容 -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <!-- Top 篩選+搜尋（如需） -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full cursor-pointer">
+          <span>篩選條件</span><i class="fas fa-chevron-down text-sm"></i>
+        </div>
+        <input type="search" placeholder="search"
+               class="w-1/3 min-w-[200px] px-3 py-2 bg-gray-100 border border-gray-300 rounded"/>
+      </div>
+
+     
+      <!-- Tabs Bar -->
+<ul class="flex gap-4 text-sm mb-4 border-b pb-2">
+  <!-- 首頁 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='home' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="enterprise_portfolio.php" class="block">首頁</a>
+  </li>
+
+  <!-- 分類篩選 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='filter' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="category_filter.php?tab=filter" class="block">分類篩選</a>
+  </li>
+
+  <!-- 最近查看 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='recent' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="recent_views.php?tab=recent" class="block">最近查看</a>
+  </li>
+
+  <!-- 最新作品 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='newest' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="latest_works.php?tab=newest" class="block">最新作品</a>
+  </li>
+
+  <!-- 作品隨心看 -->
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='random' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+    <a href="work_detail.php?tab=random" class="block">作品隨心看</a>
+  </li>
+</ul>
+      <!-- 搜尋 + 排序 -->
+      <div class="flex items-center justify-between mb-4">
+        <form method="get" class="flex items-center space-x-2">
+          
         </form>
-      </div>
-
-      <!-- Tabs -->
-      <div class="max-w-lg mx-auto mb-4 border border-gray-300 rounded-full flex text-xs font-medium text-gray-700">
-        <button class="flex-1 py-1 rounded-full border-r border-gray-300 hover:bg-gray-100">首頁</button>
-        <button class="flex-1 py-1 rounded-full hover:bg-gray-100 border-r border-gray-300">分類篩選</button>
-        <button class="flex-1 py-1 rounded-full bg-gray-300 text-gray-900 border-r border-gray-300">最近查看</button>
-        <button class="flex-1 py-1 rounded-full hover:bg-gray-100 border-r border-gray-300">最新作品</button>
-        <button class="flex-1 py-1 rounded-full hover:bg-gray-100">作品關心榜</button>
-      </div>
-
-      <!-- 排序按鈕 -->
-      <div class="max-w-lg mx-auto mb-4">
-        <a href="?sort=newest&keyword=<?= urlencode($keyword) ?>" class="bg-purple-700 text-white text-xs rounded-full px-3 py-1">
+        <a href="?sort=newest&keyword=<?= urlencode($keyword) ?>"
+           class="px-3 py-1 bg-purple-700 text-white rounded-full text-xs">
           由新到舊
         </a>
       </div>
 
-      <!-- 作品列表 -->
-      <div class="max-w-lg mx-auto space-y-4">
+      <!-- 列表 -->
+      <div class="space-y-4">
         <?php if (empty($recentWorks)): ?>
           <p class="text-center text-gray-500">沒有符合的作品。</p>
         <?php else: ?>
-          <?php foreach ($recentWorks as $work): ?>
+          <?php foreach ($recentWorks as $w): ?>
             <div class="flex border border-gray-200 rounded-md p-3 space-x-4">
-              <img src="<?= htmlspecialchars($work['thumb']) ?>" alt="作品縮圖" class="w-20 h-20 bg-gray-200 flex-shrink-0 rounded" />
-              <div class="flex flex-col justify-start text-xs text-gray-700">
-                <strong class="text-sm mb-1"><?= htmlspecialchars($work['title']) ?></strong>
-                <p class="mb-2 leading-tight"><?= nl2br(htmlspecialchars($work['description'])) ?></p>
-                <a href="work_detail.php?id=<?= $work['id'] ?>" class="bg-gray-300 text-gray-700 text-xs rounded px-2 py-0.5 w-max">查看</a>
+              <img src="<?= htmlspecialchars($w['thumb']) ?>"
+                   alt="<?= htmlspecialchars($w['title']) ?>"
+                   class="w-20 h-20 bg-gray-100 rounded object-cover flex-shrink-0"/>
+              <div class="flex-1 text-sm text-gray-700">
+                <strong class="block text-base mb-1"><?= htmlspecialchars($w['title']) ?></strong>
+                <p class="mb-2"><?= nl2br(htmlspecialchars($w['description'])) ?></p>
+                <a href="work_detail.php?id=<?= $w['id'] ?>"
+                   class="inline-block px-2 py-0.5 bg-gray-200 text-gray-800 rounded text-xs hover:bg-gray-300">
+                  查看
+                </a>
               </div>
             </div>
           <?php endforeach; ?>
         <?php endif; ?>
       </div>
 
-      <!-- 分頁元件（最多6頁） -->
-      <?php
-        $start = max(1, $page - 2);
-        $end = min($totalPages, $start + 5);
-        $start = max(1, $end - 5); // 若靠近尾頁，往前補
-      ?>
-      <div class="max-w-lg mx-auto mt-8 flex justify-center space-x-2 text-sm text-gray-600">
+      <!-- 分頁 -->
+      <div class="mt-8 flex justify-center space-x-2 text-sm text-gray-600">
         <?php if ($page > 1): ?>
-          <a href="?page=<?= $page - 1 ?>&keyword=<?= urlencode($keyword) ?>&sort=<?= htmlspecialchars($_GET['sort'] ?? '') ?>" class="px-2 py-1 hover:underline">&larr; Previous</a>
+          <a href="?page=<?= $page-1 ?>&keyword=<?= urlencode($keyword) ?>&sort=<?= htmlspecialchars($_GET['sort'] ?? '') ?>"
+             class="px-2 py-1 hover:underline">&larr; 上一頁</a>
         <?php endif; ?>
-        <?php for ($i = $start; $i <= $end; $i++): ?>
-          <a href="?page=<?= $i ?>&keyword=<?= urlencode($keyword) ?>&sort=<?= htmlspecialchars($_GET['sort'] ?? '') ?>" class="px-2 py-1 rounded <?= $i === $page ? 'bg-gray-800 text-white' : 'hover:underline' ?>"><?= $i ?></a>
+        <?php
+          $start = max(1, $page - 2);
+          $end   = min($totalPages, $start + 4);
+          if ($end - $start < 4) $start = max(1, $end - 4);
+          for ($i = $start; $i <= $end; $i++):
+        ?>
+          <a href="?page=<?= $i ?>&keyword=<?= urlencode($keyword) ?>&sort=<?= htmlspecialchars($_GET['sort'] ?? '') ?>"
+             class="px-2 py-1 rounded <?= $i === $page ? 'bg-gray-800 text-white' : 'hover:underline' ?>">
+            <?= $i ?>
+          </a>
         <?php endfor; ?>
         <?php if ($page < $totalPages): ?>
-          <a href="?page=<?= $page + 1 ?>&keyword=<?= urlencode($keyword) ?>&sort=<?= htmlspecialchars($_GET['sort'] ?? '') ?>" class="px-2 py-1 hover:underline">Next &rarr;</a>
+          <a href="?page=<?= $page+1 ?>&keyword=<?= urlencode($keyword) ?>&sort=<?= htmlspecialchars($_GET['sort'] ?? '') ?>"
+             class="px-2 py-1 hover:underline">下一頁 &rarr;</a>
         <?php endif; ?>
       </div>
     </main>
