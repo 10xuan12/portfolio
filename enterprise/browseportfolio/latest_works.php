@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+$activeTab = $_GET['tab'] ?? 'filter';
 // 載入 EnterpriseDB 類別
 require $_SERVER['DOCUMENT_ROOT']
     . '/portfolio/enterprise/config/enterprise.php';

@@ -1,15 +1,16 @@
 <?php
-// work_detail.php
 session_start();
-require __DIR__ . '/config/db.php';
-$pdo = (new \Config\DB())->getConnection();
+ini_set('display_errors',1);
+error_reporting(E_ALL);
 
-// 取得並驗證 id
-$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-if (!$id) {
-  header('Location: latest.php');
-  exit;
-}
+// 決定當前活躍的 tab
+$activeTab = $_GET['tab'] ?? 'filter';
+
+// 載入 DB 類別
+require __DIR__ . '/../config/enterprise.php';
+$db  = new \Config\EnterpriseDB();
+$pdo = $db->getConnection();
+
 
 // 查單筆作品
 $stmt = $pdo->prepare("SELECT * FROM works WHERE id = :id");

@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+$activeTab = $_GET['tab'] ?? 'filter';
 // 載入 EnterpriseDB 類別
 require $_SERVER['DOCUMENT_ROOT']
     . '/portfolio/enterprise/config/enterprise.php';
@@ -9,7 +9,7 @@ $db  = new \Config\EnterpriseDB();
 $pdo = $db->getConnection();
 
 $user_id = $_SESSION['user_id'];
-$pdo = (new \Config\DB())->getConnection();
+
 
 $keyword = trim($_GET['keyword'] ?? '');
 $sortOrder = ($_GET['sort'] ?? '') === 'newest' ? 'DESC' : 'ASC';

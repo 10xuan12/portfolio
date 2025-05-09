@@ -64,30 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     exit;
 }
 
-// ===== 處理 HR 聯絡方式更新 =====
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_contact'])) {
-    $pdo->prepare("
-        UPDATE users
-           SET phone     = :phone,
-               email     = :email,
-               github    = :gh,
-               linkedin  = :li,
-               instagram = :ig,
-               facebook  = :fb
-         WHERE id = :id
-    ")->execute([
-        'phone' => trim($_POST['phone']),
-        'email' => trim($_POST['email']),
-        'gh'    => trim($_POST['github']),
-        'li'    => trim($_POST['linkedin']),
-        'ig'    => trim($_POST['instagram']),
-        'fb'    => trim($_POST['facebook']),
-        'id'    => $user_id,
-    ]);
 
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
-}
 
 // ===== 自動累加瀏覽次數 =====
 $pdo->prepare("UPDATE users SET view_count = view_count + 1 WHERE id = :id")
@@ -214,7 +191,6 @@ $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <img
     id="display-avatar"
     src="<?php echo htmlspecialchars($user['avatar'] ?? 'uploads/default.jpg'); ?>"
-    alt="企業頭像"
     class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md"
   >
 

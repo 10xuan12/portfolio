@@ -1,7 +1,12 @@
 <?php
-// notifications.php
-require __DIR__ . '/config/db.php';
-$pdo = (new \Config\DB())->getConnection();
+session_start();
+
+// 載入 EnterpriseDB 類別
+require $_SERVER['DOCUMENT_ROOT']
+    . '/portfolio/enterprise/config/enterprise.php';
+
+$db  = new \Config\EnterpriseDB();
+$pdo = $db->getConnection();
 
 // UTF-8 字元轉 code point
 function uniord(string $ch): int {

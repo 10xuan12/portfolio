@@ -20,11 +20,15 @@ class EnterpriseDB {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-
         try {
             $this->pdo = new PDO($dsn, $user, $password, $options);
         } catch (PDOException $e) {
-            echo '資料庫連線失敗: ' . htmlspecialchars($e->getMessage());
+            echo '<pre style="color:red">';
+            echo "PDO Connection Error:\n";
+            echo "Message: " . htmlspecialchars($e->getMessage()) . "\n";
+            echo "DSN:     " . htmlspecialchars($dsn) . "\n";
+            echo "User:    " . htmlspecialchars($user) . "\n";
+            echo '</pre>';
             exit;
         }
     }
