@@ -27,52 +27,53 @@ $portfolio_result = $stmt2->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>分類細項 - 作品集</title>
-    <link href="../css/category_projects.css?v=3" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="../css/category_projects.css?v=4" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-<div class="container-fluid">
-  <div class="row">
+<div class="container-fluid p-0">
+  <div class="row g-0">
     <!-- 側邊欄 -->
-    <nav class="col-auto col-md-3 col-lg-2 sidebar bg-light py-4">
-        <ul class="nav nav-pills flex-column text-center">
-            <li class="nav-item">
-               <a href="student_dashboard_view.php" class="nav-link">
-                  <i class="bi bi-house fs-4 d-block"></i>
-                  <strong>個人主頁</strong>
-               </a>
-            </li>
-            <li class="nav-item">
-                <a href="student_file_category.php" class="nav-link active">
-                    <i class="bi bi-collection fs-4 d-block"></i>
-                    <strong>作品集</strong>
+    <div class="col-auto">  
+      <nav class="sidebar">
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item">
+            <a href="student_dashboard_view.php" class="nav-link">
+                <i class="bi bi-house fs-4 d-block"></i>
+                <span>個人主頁</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="student_file_category.php" class="nav-link active">
+                <i class="bi bi-collection fs-4 d-block"></i>
+                <span>作品集</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="bi bi-bell fs-4 d-block"></i>
+                <span>通知</span>
                 </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                  <i class="bi bi-bell fs-4 d-block"></i>
-                  <strong>通知</strong>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                  <i class="bi bi-gear fs-4 d-block"></i>
-                  <strong>設定</strong>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="../login.php" class="nav-link">
-                  <i class="bi bi-box-arrow-right fs-4 d-block"></i>
-                  <strong>登出</strong>
-                </a>
-            </li>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="bi bi-gear fs-4 d-block"></i>
+                <span>設定</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="../login.html" class="nav-link">
+                <i class="bi bi-box-arrow-right fs-4 d-block"></i>
+                <strong>登出</strong>
+            </a>
+          </li>
         </ul>
-    </nav>
-
-    <!-- 主內容 -->
-    <div class="col py-3 main-content">
+     </nav>
+    </div>
+        <!-- 主內容 -->
+    <div class="col content">
         <!-- 分類資訊 -->
         <div class="card mb-4 shadow-sm">
             <div class="row g-0">

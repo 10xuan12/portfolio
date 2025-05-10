@@ -5,12 +5,11 @@ body {
 }
 
 /* 側邊欄樣式 */
-/* 側邊欄樣式 */
 .sidebar {
     background-color: #babcbd !important;
     height: 100vh;
     padding-top: 20px;
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100px;
@@ -29,7 +28,7 @@ body {
     padding: 10px 0;
 }
 
-.sidebar .nav-link i {
+.sidebar .nav-link i{
     font-size: 1.5rem; /* 圖示大小 */
     margin-bottom: 8px; /* 圖示與文字間距 */
 }
@@ -43,6 +42,10 @@ body {
 .main-content {
     margin-left: 100px; /* 主內容不會被側邊欄擋住 */
     padding: 20px;
+}
+.btn-primary {
+    background-color: #5d73a9;
+    color: #fafafa;
 }
 /* 側邊欄在小螢幕下改變 */
 @media (max-width: 768px) {
@@ -133,11 +136,21 @@ body {
     border-color: #5d73a9;
     color: #fafafa;
 }
-
 /* 響應式設計調整按鈕大小 */
 @media (max-width: 768px) {
     .btn {
         font-size: 14px; /* 小螢幕下按鈕文字稍微縮小 */
+    }
+    .sidebar {
+        width: 70px;
+      }
+      
+      .sidebar .nav-link {
+        padding: 10px 5px;
+      }
+      
+      .sidebar .nav-link span {
+        font-size: 0.7rem;
     }
 }
 

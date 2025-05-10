@@ -211,6 +211,32 @@ $conn->close();
                     <p><strong>最高學歷：</strong> <?php echo htmlspecialchars($student_data['school']); ?></p>
                 </div>
             </div>
+
+            <div class="card p-4 mt-4">
+                <h4>AI 履歷產生器</h4>
+                <div class="col-md-4">
+                <label for="resumeLanguage" class="form-label">履歷語言</label>
+                <select id="resumeLanguage" class="form-select">
+                    <option value="中文">中文</option>
+                    <option value="English">English</option>
+                </select>
+                </div>
+                <div class="col-md-8">
+                <label for="resumePosition" class="form-label">應徵職位</label>
+                <input type="text" id="resumePosition" class="form-control" placeholder="輸入職位名稱，例如：前端工程師">
+                </div>
+                <button id="generateResumeBtn" class="btn btn-primary">產生履歷</button>
+
+                <div id="resumeResult" class="mt-4" style="display: none;">
+                    <h5>📄 GPT 產生的履歷</h5>
+                    <pre id="resumeText" class="bg-light p-3 rounded" style="white-space: pre-wrap;"></pre>
+
+                    <h5 class="mt-4">✨ GPT 建議強化關鍵字</h5>
+                    <ul id="keywordSuggestions" class="list-group"></ul>
+
+                    <a id="downloadLink" class="btn btn-success mt-3" href="#" download="resume.pdf">下載 PDF</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -224,6 +250,76 @@ $conn->close();
         if (success) success.style.opacity = 0;
         if (warning) warning.style.opacity = 0;
     }, 3000);
+    // 修改後的 fetch 代碼，添加錯誤處理
+document.getElementById('generateResumeBtn').addEventListener('click', function () {
+    const language = document.getElementById('resumeLanguage').value;
+    const position = document.getElementById('resumePosition').value;
+
+    if (!position.trim()) {
+        alert('請輸入應徵職位名稱');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('language', language);
+    formData.append('position', position);
+
+    // 顯示 loading
+    const resultDiv = document.getElementById('resumeResult');
+    resultDiv.style.display = 'block';
+    document.getElementById('resumeText').innerText = '正在產生中，請稍候...';
+    document.getElementById('keywordSuggestions').innerHTML = '';
+    document.getElementById('downloadLink').style.display = 'none';
+
+    fetch('generate_resume.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        // 檢查 response 是否成功
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        // 檢查 Content-Type 是否為 application/json
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // 如果不是 JSON，先獲取文本內容，然後拋出錯誤
+            return response.text().then(text => {
+                throw new Error(`預期 JSON 格式，但收到: ${text}`);
+            });
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        document.getElementById('resumeText').innerText = data.resume_text || '無內容';
+        
+        const ul = document.getElementById('keywordSuggestions');
+        ul.innerHTML = '';
+        (data.keyword_suggestions || '').split('\n').forEach(kw => {
+            if (kw.trim()) {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.textContent = kw.trim();
+                ul.appendChild(li);
+            }
+        });
+
+        // 建立下載連結
+        const link = document.getElementById('downloadLink');
+        link.href = 'generate_resume.php?download_pdf=1&language=' + encodeURIComponent(language) + '&position=' + encodeURIComponent(position);
+        link.style.display = 'inline-block';
+    })
+    .catch(error => {
+        document.getElementById('resumeText').innerText = '產生失敗：' + error.message;
+        console.error('錯誤：', error);
+    });
+});
 </script>
 </body>
 </html>

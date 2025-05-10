@@ -4,26 +4,63 @@ session_start();
 require '../includes/db_connect.php'; // 資料庫連線
 
 // 取得所有作品資料
-$portfolio_sql = "SELECT * FROM portfolios";
+$search = $_GET['search'] ?? '';
+$page = $_GET['page'] ?? 1;
+$limit = 9; // 每頁顯示 9 個作品
+$offset = ($page - 1) * $limit;
+
+$portfolio_sql = "SELECT * FROM portfolios WHERE title LIKE ? OR description LIKE ? LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($portfolio_sql);
+$search_param = "%" . $search . "%";
+$stmt->bind_param("ssii", $search_param, $search_param, $limit, $offset);
 $stmt->execute();
 $portfolio_result = $stmt->get_result();
+
+// 獲取總數據量
+$total_sql = "SELECT COUNT(*) AS total FROM portfolios WHERE title LIKE ? OR description LIKE ?";
+$total_stmt = $conn->prepare($total_sql);
+$total_stmt->bind_param("ss", $search_param, $search_param);
+$total_stmt->execute();
+$total_result = $total_stmt->get_result();
+$total = $total_result->fetch_assoc()['total'];
+$total_pages = ceil($total / $limit);
 
 // 新增作品表單處理
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
     $title = $_POST['workTitle'];
     $description = $_POST['workDescription'];
-    $image = $_FILES['workImage']['name'];
+    $cover_image = $_FILES['workImage']['name'];
     $image_tmp = $_FILES['workImage']['tmp_name'];
-    $image_folder = "../uploads/" . $image;
+
+    // 安全性檢查
+    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+    $file_type = mime_content_type($image_tmp);
+
+    if (!in_array($file_type, $allowed_types)) {
+        echo "<script>alert('只允許上傳圖片類型的文件！');</script>";
+        exit;
+    }
+
+    // 生成唯一文件名
+    $image_name = uniqid() . "_" . basename($cover_image);
+    $image_folder = "../uploads/" . $image_name;
 
     // 移動圖片到指定資料夾
-    move_uploaded_file($image_tmp, $image_folder);
+    if (!move_uploaded_file($image_tmp, $image_folder)) {
+        echo "<script>alert('文件上傳失敗！');</script>";
+        exit;
+    }
 
-    $insert_sql = "INSERT INTO portfolios (title, description, image) VALUES (?, ?, ?)";
+    // 插入資料庫
+    $insert_sql = "INSERT INTO portfolios (title, description, cover_image) VALUES (?, ?, ?)";
     $stmt2 = $conn->prepare($insert_sql);
-    $stmt2->bind_param("sss", $title, $description, $image);
-    $stmt2->execute();
+    $stmt2->bind_param("sss", $title, $description, $image_name);
+
+    if (!$stmt2->execute()) {
+        error_log("Database error: " . $stmt2->error, 3, '../logs/error.log');
+        echo "<script>alert('新增作品失敗！');</script>";
+        exit;
+    }
 
     // 重定向到作品集頁面
     header("Location: works.php");
@@ -74,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
                 </a>
             </li>
             <li class="nav-item">
-                <a href="../login.php" class="nav-link text-gray">
+                <a href="../login.html" class="nav-link text-gray">
                   <i class="bi bi-box-arrow-right fs-4 d-block"></i>
                   <strong>登出</strong>
                 </a>
@@ -105,11 +142,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
             <?php while ($portfolio = $portfolio_result->fetch_assoc()): ?>
             <div class="col-12 col-sm-6 col-lg-4">
               <div class="card h-100 shadow-sm">
-                <img src="../uploads/<?php echo htmlspecialchars($portfolio['image']); ?>" class="card-img-top" alt="作品圖片">
+                <img src="uploads/<?php echo htmlspecialchars($portfolio['cover_image']); ?>" class="card-img-top" alt="作品圖片">
                 <div class="card-body text-center">
                   <h5 class="card-title"><?php echo htmlspecialchars($portfolio['title']); ?></h5>
                   <p class="card-text"><?php echo htmlspecialchars($portfolio['description']); ?></p>
-                  <a href="#" class="btn btn-outline-primary mt-2">查看作品 !</a>
+                  <a href="work_detail.php" class="btn btn-outline-primary mt-2">查看作品 !</a>
                 </div>
               </div>
             </div>
@@ -119,11 +156,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
         <!-- 分頁 -->
         <nav aria-label="Page navigation" class="mt-4">
           <ul class="pagination justify-content-center">
-            <li class="page-item disabled"><a class="page-link" href="#">上一頁</a></li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">下一頁</a></li>
+            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+              <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+                <a class="page-link" href="works.php?page=<?php echo $i; ?>&search=<?php echo htmlspecialchars($search); ?>"><?php echo $i; ?></a>
+              </li>
+            <?php endfor; ?>
           </ul>
         </nav>
       </div>
@@ -160,6 +197,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/works.js"></script>
+<script>
+  document.getElementById('search').addEventListener('input', function () {
+      const query = this.value;
+      window.location.href = `works.php?search=${encodeURIComponent(query)}`;
+  });
+</script>
 </body>
 </html>
