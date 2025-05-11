@@ -1,38 +1,33 @@
 <?php
 session_start();
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-// 1. 載入資料庫連線設定
 require __DIR__ . '/../config/enterprise.php';
-$db  = new \Config\EnterpriseDB();
-$pdo = $db->getConnection();
 
-// 2. 取得並驗證 id —— 一定要在任何使用 $id 之前
-$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-if ($id === null || $id === false) {
-    exit('<p class="text-red-600">缺少或錯誤的 id 參數。</p>');
-}
+$entPdo = (new \Config\EnterpriseDB())->getConnection();
 
-// 3. 決定當前活躍的 tab
-$activeTab = $_GET['tab'] ?? 'random';
-
-// 4. 查作品
-$stmt = $pdo->prepare("SELECT * FROM works WHERE id = :id");
-$stmt->execute([':id' => $id]);
-$w = $stmt->fetch();
+// 隨機取一筆作品
+$stmt = $entPdo->prepare("
+    SELECT *
+      FROM works
+  ORDER BY RAND()
+     LIMIT 1
+");
+$stmt->execute();
+$w = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$w) {
-    exit('<p class="text-red-600">找不到這件作品。</p>');
+    exit('<p class="text-red-600">目前沒有任何作品。</p>');
 }
 
-// 2. 撈作品列表
-$stmt  = $pdo->query("SELECT * FROM works ORDER BY created_at DESC");
-$works = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// 用同一條連線撈檔案列表
+$stmt2 = $entPdo->prepare("
+    SELECT file_name, file_path
+      FROM work_files
+     WHERE work_id = :id
+");
+$stmt2->execute([':id' => $w['id']]);
+$files = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-// 5. 抓檔案列表（可選）
-$stmt2 = $pdo->prepare("SELECT file_name, file_path FROM work_files WHERE work_id = :id");
-$stmt2->execute([':id' => $id]);
-$files = $stmt2->fetchAll();
+$fullPath = $_SERVER['PHP_SELF'];
+$current = basename($fullPath);
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -49,31 +44,59 @@ $files = $stmt2->fetchAll();
 </head>
 <body class="bg-white font-sans text-gray-800">
 <div class="flex min-h-screen">
-    <!-- 左側欄 -->
-    <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
-        <i class="fas fa-user-circle text-xl"></i>
-        <span class="text-xs mt-1">主頁</span>
-      </button>
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-white bg-blue-700">
-        <i class="fas fa-folder text-xl"></i>
-        <span class="text-xs mt-1">瀏覽</span>
-      </button>
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
-        <i class="fas fa-bell text-xl"></i>
-        <span class="text-xs mt-1">通知</span>
-      </button>
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
-        <i class="fas fa-cog text-xl"></i>
-        <span class="text-xs mt-1">設定</span>
-      </button>
-      <form method="post" action="logout.php">
-        <button type="submit" class="flex flex-col items-center w-14 h-14 justify-center text-black">
-          <i class="fas fa-sign-out-alt text-xl"></i>
-          <span class="text-xs mt-1">登出</span>
-        </button>
-      </form>
-    </nav>
+<!-- 左側欄 -->
+<nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+  <!-- 主頁 -->
+  <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_dashboard.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-user-circle text-xl"></i>
+    <span class="text-xs mt-1">主頁</span>
+  </a>
+
+  <!-- 瀏覽 -->
+  <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_portfolio.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-folder text-xl"></i>
+    <span class="text-xs mt-1">瀏覽</span>
+  </a>
+
+  <!-- 通知 -->
+  <a href="/portfolio/enterprise/notifications/notification.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'notification.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-bell text-xl"></i>
+    <span class="text-xs mt-1">通知</span>
+  </a>
+
+  <!-- 設定 -->
+  <a href="/portfolio/enterprise/setting.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'setting.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-cog text-xl"></i>
+    <span class="text-xs mt-1">設定</span>
+  </a>
+
+  <!-- 登出（不需要 active 樣式）-->
+  <form method="post" action="/portfolio/enterprise/loginout.php">
+    <button type="submit"
+            class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+      <i class="fas fa-sign-out-alt text-xl"></i>
+      <span class="text-xs mt-1">登出</span>
+    </button>
+  </form>
+</nav>
+
+
 
 
         <!-- 右側主內容 -->
@@ -129,45 +152,60 @@ $files = $stmt2->fetchAll();
 </ul>
  
 
-      <!-- 作品詳情 -->
-      <div class="p-6 space-y-6">
-        <div class="flex space-x-6">
-          <div class="w-1/2 bg-gray-200 rounded-lg h-48 overflow-hidden flex items-center justify-center">
-            <?php if ($w['thumb']): ?>
-              <img src="<?= htmlspecialchars($w['thumb']) ?>" alt="" class="object-cover w-full h-full"/>
-            <?php else: ?>
-              <i class="fas fa-image fa-3x text-gray-400"></i>
-            <?php endif; ?>
-          </div>
-          <div class="flex-1">
-            <h2 class="text-2xl font-bold"><?= htmlspecialchars($w['title']) ?></h2>
-            <p class="text-gray-500"><?= htmlspecialchars($w['category'] ?? '') ?></p>
-          </div>
-        </div>
+     <!-- 作品詳情 -->
+<div class="max-w-4xl mx-auto my-10 bg-white rounded-lg shadow">
+  <div class="p-6 space-y-6">
+    <div class="flex space-x-6">
+      <!-- 正方形封面圖 (寬度 48 – 你可以改成任何px或用%看需求) -->
+      <div class="w-48 aspect-square bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+        <?php if (!empty($w['thumb'])): ?>
+          <img src="<?= htmlspecialchars($w['thumb']) ?>"
+               alt=""
+               class="object-cover w-full h-full"/>
+        <?php else: ?>
+          <i class="fas fa-image fa-3x text-gray-400"></i>
+        <?php endif; ?>
+      </div>
 
-        <!-- 簡介 -->
-        <div>
-          <h3 class="inline-block bg-blue-700 text-white px-4 py-2 rounded-t">簡介</h3>
-          <div class="bg-pink-100 p-4 rounded-b">
-            <?= nl2br(htmlspecialchars($w['description'])) ?>
-          </div>
-        </div>
+      <!-- 標題與分類 -->
+      <div class="flex-1">
+        <h2 class="text-2xl font-bold"><?= htmlspecialchars($w['title']) ?></h2>
+        <p class="text-gray-500"><?= htmlspecialchars($w['category'] ?? '') ?></p>
+      </div>
+    </div>
 
-        <!-- 檔案列表 -->
-        <?php if ($files): ?>
-        <ul class="space-y-2">
-          <?php foreach($files as $f): ?>
+    <!-- 簡介 -->
+<div>
+  <h3 class="inline-block bg-blue-700 text-white px-4 py-2 rounded-t">簡介</h3>
+  <div class="bg-pink-100 p-4 rounded-b">
+    <?= nl2br(htmlspecialchars($w['content'] ?? '尚無簡介')) ?>
+  </div>
+</div>
+
+
+
+<!-- 檔案列表 -->
+<div class="mt-6">
+    <h3 class="inline-block bg-blue-700 text-white px-4 py-2 rounded-t">檔案</h3>
+    <div class="bg-white border rounded-b p-4">
+      <ul class="space-y-2">
+        <?php if (empty($files)): ?>
+          <li class="text-gray-500">目前沒有檔案。</li>
+        <?php else: ?>
+          <?php foreach ($files as $f): ?>
           <li class="flex items-center space-x-2">
             <i class="fas fa-folder text-gray-600"></i>
-            <a href="<?= htmlspecialchars($f['file_path']) ?>" download class="hover:underline">
+            <a href="<?= htmlspecialchars($f['file_path']) ?>"
+               download class="hover:underline">
               <?= htmlspecialchars($f['file_name']) ?>
             </a>
           </li>
           <?php endforeach; ?>
-        </ul>
         <?php endif; ?>
-      </div>
+      </ul>
     </div>
   </div>
+
+
 </body>
 </html>

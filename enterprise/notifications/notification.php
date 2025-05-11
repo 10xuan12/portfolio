@@ -85,6 +85,9 @@ $stmt->bindValue(':limit',  $perPage, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset,  PDO::PARAM_INT);
 $stmt->execute();
 $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$fullPath = $_SERVER['PHP_SELF'];
+$current = basename($fullPath);
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -99,24 +102,60 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
   />
 </head>
 <body class="flex h-screen bg-white font-sans text-gray-800">
-  <!-- Sidebar -->
-  <aside class="bg-gray-200 w-20 flex flex-col items-center py-4 space-y-4 text-gray-600">
-    <a href="notifications.php?filter=focus" class="flex flex-col items-center text-sm hover:text-purple-600">
-      <i class="fas fa-user-circle fa-lg"></i><span class="mt-1">主頁</span>
-    </a>
-    <a href="notifications.php?filter=promo" class="flex flex-col items-center text-sm hover:text-purple-600">
-      <i class="fas fa-folder fa-lg"></i><span class="mt-1">瀏覽作品</span>
-    </a>
-    <a href="notifications.php?filter=social" class="flex flex-col items-center text-sm text-white bg-blue-600 rounded-md px-2 py-1">
-      <i class="fas fa-bell fa-lg"></i><span class="mt-1">通知</span>
-    </a>
-    <a href="#" class="flex flex-col items-center text-sm hover:text-purple-600">
-      <i class="fas fa-cog fa-lg"></i><span class="mt-1">設定</span>
-    </a>
-    <a href="#" class="flex flex-col items-center text-sm hover:text-purple-600 mt-auto">
-      <i class="fas fa-sign-out-alt fa-lg"></i><span class="mt-1">登出</span>
-    </a>
-  </aside>
+ <!-- 左側欄 -->
+<nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+  <!-- 主頁 -->
+  <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_dashboard.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-user-circle text-xl"></i>
+    <span class="text-xs mt-1">主頁</span>
+  </a>
+
+  <!-- 瀏覽 -->
+  <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_portfolio.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-folder text-xl"></i>
+    <span class="text-xs mt-1">瀏覽</span>
+  </a>
+
+  <!-- 通知 -->
+  <a href="/portfolio/enterprise/notifications/notification.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'notification.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-bell text-xl"></i>
+    <span class="text-xs mt-1">通知</span>
+  </a>
+
+  <!-- 設定 -->
+  <a href="/portfolio/enterprise/setting.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'setting.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-cog text-xl"></i>
+    <span class="text-xs mt-1">設定</span>
+  </a>
+
+  <!-- 登出（不需要 active 樣式）-->
+  <form method="post" action="/portfolio/enterprise/loginout.php">
+    <button type="submit"
+            class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+      <i class="fas fa-sign-out-alt text-xl"></i>
+      <span class="text-xs mt-1">登出</span>
+    </button>
+  </form>
+</nav>
+
+
+
 
   <!-- Main content -->
   <main class="flex-1 p-8 overflow-y-auto">
