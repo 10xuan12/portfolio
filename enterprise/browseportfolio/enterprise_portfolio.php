@@ -3,12 +3,17 @@ session_start();
 ini_set('display_errors',1);
 error_reporting(E_ALL);
 
+// 取得當前 activeTab
 $activeTab = $_GET['tab'] ?? 'home';
 
-// 載入 EnterpriseDB 類別
+// 載入 EnterpriseDB 類別並取得 PDO
 require __DIR__ . '/../config/enterprise.php';
 $db  = new \Config\EnterpriseDB();
 $pdo = $db->getConnection();
+
+// 隨機選一筆 works 表的 ID，給「作品隨心看」用
+$randStmt = $pdo->query("SELECT id FROM works ORDER BY RAND() LIMIT 1");
+$randomId = $randStmt->fetchColumn();
 
 // --- 各 tab 所需資料 ---
 // 1. 首頁（輪播 + 公告）
@@ -20,28 +25,26 @@ $carouselItems = $pdo
 $annsPerPage = 5;
 $annPageRaw  = $_GET['ann_page'] ?? 1;
 
-// 如果請求 all，就一次撈全部
 if ($annPageRaw === 'all') {
     $announcements = $pdo
         ->query("SELECT id, message, created_at
                   FROM announcements
                  ORDER BY created_at DESC")
         ->fetchAll(PDO::FETCH_ASSOC);
-    $annPage      = 'all';
+    $annPage       = 'all';
     $annTotalPages = 1;
 } else {
-    // 走分頁模式
     $annPage       = max(1, (int)$annPageRaw);
     $totalAnns     = (int)$pdo->query("SELECT COUNT(*) FROM announcements")->fetchColumn();
     $annTotalPages = (int)ceil($totalAnns / $annsPerPage);
     $annOffset     = ($annPage - 1) * $annsPerPage;
 
-    $annStmt = $pdo->prepare("
-        SELECT id, message, created_at
+    $annStmt = $pdo->prepare(
+        "SELECT id, message, created_at
           FROM announcements
          ORDER BY created_at DESC
-         LIMIT :limit OFFSET :offset
-    ");
+         LIMIT :limit OFFSET :offset"
+    );
     $annStmt->bindValue(':limit',  $annsPerPage, PDO::PARAM_INT);
     $annStmt->bindValue(':offset', $annOffset,   PDO::PARAM_INT);
     $annStmt->execute();
@@ -112,43 +115,48 @@ $tabs = [
                class="w-1/3 min-w-[200px] px-3 py-2 bg-gray-100 border border-gray-300 rounded"/>
       </div>
 
-    <!-- Tabs Bar -->
+   <!-- Tabs Bar -->
 <ul class="flex gap-4 text-sm mb-4 border-b pb-2">
   <!-- 首頁 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='home' 
-       ? 'border-purple-700 text-purple-700 font-semibold' 
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='home'
+       ? 'border-purple-700 text-purple-700 font-semibold'
        : 'border-gray-300 text-gray-700' ?>">
-    <a href="enterprise_portfolio.php?tab=home" class="block">首頁</a>
+    <a href="enterprise_portfolio.php" class="block">首頁</a>
   </li>
 
   <!-- 分類篩選 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='filter' 
-       ? 'border-purple-700 text-purple-700 font-semibold' 
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='filter'
+       ? 'border-purple-700 text-purple-700 font-semibold'
        : 'border-gray-300 text-gray-700' ?>">
     <a href="category_filter.php?tab=filter" class="block">分類篩選</a>
   </li>
 
   <!-- 最近查看 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='recent' 
-       ? 'border-purple-700 text-purple-700 font-semibold' 
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='recent'
+       ? 'border-purple-700 text-purple-700 font-semibold'
        : 'border-gray-300 text-gray-700' ?>">
     <a href="recent_views.php?tab=recent" class="block">最近查看</a>
   </li>
 
   <!-- 最新作品 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='newest' 
-       ? 'border-purple-700 text-purple-700 font-semibold' 
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='newest'
+       ? 'border-purple-700 text-purple-700 font-semibold'
        : 'border-gray-300 text-gray-700' ?>">
     <a href="latest_works.php?tab=newest" class="block">最新作品</a>
   </li>
 
-  <!-- 作品隨心看 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='random' 
-       ? 'border-purple-700 text-purple-700 font-semibold' 
-       : 'border-gray-300 text-gray-700' ?>">
-    <a href="work_detail.php?tab=random" class="block">作品隨心看</a>
-  </li>
+ <!-- 作品隨心看 -->
+<li class="px-3 py-1 rounded-full border <?= $activeTab==='random'
+     ? 'border-purple-700 text-purple-700 font-semibold'
+     : 'border-gray-300 text-gray-700' ?>">
+  <a href="work_detail.php?id=<?= $randomId ?>&tab=random" class="block">
+    作品隨心看
+  </a>
+</li>
+
+
 </ul>
+
 
       <div class="max-w-4xl mx-auto">
        <!-- 首頁 -->

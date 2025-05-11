@@ -83,6 +83,10 @@ try {
   echo '</pre>';
   exit;
 }
+// 隨機選一筆作品的 ID
+$randStmt  = $pdo->query("SELECT id FROM works ORDER BY RAND() LIMIT 1");
+$randomId  = $randStmt->fetchColumn();
+
 ?>
 
 <!DOCTYPE html>
@@ -135,33 +139,48 @@ try {
       </div>
 
      
-      <!-- Tabs Bar -->
+     
+<!-- Tabs Bar -->
 <ul class="flex gap-4 text-sm mb-4 border-b pb-2">
   <!-- 首頁 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='home' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='home'
+       ? 'border-purple-700 text-purple-700 font-semibold'
+       : 'border-gray-300 text-gray-700' ?>">
     <a href="enterprise_portfolio.php" class="block">首頁</a>
   </li>
 
   <!-- 分類篩選 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='filter' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='filter'
+       ? 'border-purple-700 text-purple-700 font-semibold'
+       : 'border-gray-300 text-gray-700' ?>">
     <a href="category_filter.php?tab=filter" class="block">分類篩選</a>
   </li>
 
   <!-- 最近查看 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='recent' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='recent'
+       ? 'border-purple-700 text-purple-700 font-semibold'
+       : 'border-gray-300 text-gray-700' ?>">
     <a href="recent_views.php?tab=recent" class="block">最近查看</a>
   </li>
 
   <!-- 最新作品 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='newest' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='newest'
+       ? 'border-purple-700 text-purple-700 font-semibold'
+       : 'border-gray-300 text-gray-700' ?>">
     <a href="latest_works.php?tab=newest" class="block">最新作品</a>
   </li>
 
   <!-- 作品隨心看 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='random' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
-    <a href="work_detail.php?tab=random" class="block">作品隨心看</a>
-  </li>
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='random'
+     ? 'border-purple-700 text-purple-700 font-semibold'
+     : 'border-gray-300 text-gray-700' ?>">
+  <a href="work_detail.php?id=<?= $randomId ?>&tab=random" class="block">
+    作品隨心看
+  </a>
+</li>
+
 </ul>
+
       <!-- 搜尋 + 排序 -->
       <div class="flex items-center justify-between mb-4">
         <form method="get" class="flex items-center space-x-2">

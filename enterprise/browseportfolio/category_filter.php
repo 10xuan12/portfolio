@@ -18,6 +18,10 @@ $page    = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 5;
 $offset  = ($page - 1) * $perPage;
 
+// 隨機選一筆作品的 ID
+$randStmt  = $pdo->query("SELECT id FROM works ORDER BY RAND() LIMIT 1");
+$randomId  = $randStmt->fetchColumn();
+
 // 撈清單
 $categoryList = $pdo->query("SELECT id, name FROM categories")->fetchAll();
 $locationList = $pdo->query("SELECT id, name FROM locations")->fetchAll();
@@ -129,9 +133,14 @@ $tabs = [
   </li>
 
   <!-- 作品隨心看 -->
-  <li class="px-3 py-1 rounded-full border <?= $activeTab==='random' ? 'border-purple-700 text-purple-700 font-semibold' : 'border-gray-300 text-gray-700' ?>">
-    <a href="work_detail.php?tab=random" class="block">作品隨心看</a>
-  </li>
+  <li class="px-3 py-1 rounded-full border <?= $activeTab==='random'
+     ? 'border-purple-700 text-purple-700 font-semibold'
+     : 'border-gray-300 text-gray-700' ?>">
+  <a href="work_detail.php?id=<?= $randomId ?>&tab=random" class="block">
+    作品隨心看
+  </a>
+</li>
+
 </ul>
 
 
