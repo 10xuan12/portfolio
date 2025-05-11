@@ -59,6 +59,8 @@ $tabs = [
   'newest' => '最新作品',
   'random' => '作品隨心看',
 ];
+$fullPath = $_SERVER['PHP_SELF'];
+$current = basename($fullPath);
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -72,31 +74,61 @@ $tabs = [
 </head>
 <body class="bg-white font-sans text-gray-800">
   <div class="flex min-h-screen">
-    <!-- 左側欄 -->
-    <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
-        <i class="fas fa-user-circle text-xl"></i>
-        <span class="text-xs mt-1">主頁</span>
-      </button>
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-white bg-blue-700">
-        <i class="fas fa-folder text-xl"></i>
-        <span class="text-xs mt-1">瀏覽</span>
-      </button>
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
-        <i class="fas fa-bell text-xl"></i>
-        <span class="text-xs mt-1">通知</span>
-      </button>
-      <button class="flex flex-col items-center w-14 h-14 justify-center text-black">
-        <i class="fas fa-cog text-xl"></i>
-        <span class="text-xs mt-1">設定</span>
-      </button>
-      <form method="post" action="logout.php">
-        <button type="submit" class="flex flex-col items-center w-14 h-14 justify-center text-black">
-          <i class="fas fa-sign-out-alt text-xl"></i>
-          <span class="text-xs mt-1">登出</span>
-        </button>
-      </form>
-    </nav>
+   <!-- 左側欄 -->
+<nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+  <!-- 主頁 -->
+  <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_dashboard.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-user-circle text-xl"></i>
+    <span class="text-xs mt-1">主頁</span>
+  </a>
+
+  <!-- 瀏覽 -->
+  <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_portfolio.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-folder text-xl"></i>
+    <span class="text-xs mt-1">瀏覽</span>
+  </a>
+
+  <!-- 通知 -->
+  <a href="/portfolio/enterprise/notifications/notification.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'notification.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-bell text-xl"></i>
+    <span class="text-xs mt-1">通知</span>
+  </a>
+
+  <!-- 設定 -->
+  <a href="/portfolio/enterprise/setting.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'setting.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-cog text-xl"></i>
+    <span class="text-xs mt-1">設定</span>
+  </a>
+
+  <!-- 登出（不需要 active 樣式）-->
+  <form method="post" action="/portfolio/enterprise/loginout.php">
+    <button type="submit"
+            class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+      <i class="fas fa-sign-out-alt text-xl"></i>
+      <span class="text-xs mt-1">登出</span>
+    </button>
+  </form>
+</nav>
+
+
+
+
 
     <!-- 右側主內容 -->
     <main class="flex-1 p-6 overflow-y-auto">

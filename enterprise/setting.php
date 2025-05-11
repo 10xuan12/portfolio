@@ -4,8 +4,10 @@ session_start();
 // 確保有登入（如果需要）
 // if (!isset($_SESSION['user_id'])) { header('Location: login.php'); exit; }
 
-// 取得當前頁面給 sidebar 用
-$currentPage = basename($_SERVER['PHP_SELF']);
+
+
+$fullPath = $_SERVER['PHP_SELF'];
+$current = basename($fullPath);
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -22,8 +24,61 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   />
 </head>
 <body class="flex min-h-screen bg-gray-50">
-  <!-- 側邊欄 -->
-  <?php include __DIR__ . '/templates/sidebar.php'; ?>
+ 
+<!-- 左側欄 -->
+<nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+  <!-- 主頁 -->
+  <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_dashboard.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-user-circle text-xl"></i>
+    <span class="text-xs mt-1">主頁</span>
+  </a>
+
+  <!-- 瀏覽 -->
+  <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'enterprise_portfolio.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-folder text-xl"></i>
+    <span class="text-xs mt-1">瀏覽</span>
+  </a>
+
+  <!-- 通知 -->
+  <a href="/portfolio/enterprise/notifications/notification.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'notification.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-bell text-xl"></i>
+    <span class="text-xs mt-1">通知</span>
+  </a>
+
+  <!-- 設定 -->
+  <a href="/portfolio/enterprise/setting.php"
+     class="flex flex-col items-center w-14 h-14 justify-center
+       <?= $current === 'setting.php'
+           ? 'text-white bg-blue-700'
+           : 'text-black hover:bg-gray-400' ?>">
+    <i class="fas fa-cog text-xl"></i>
+    <span class="text-xs mt-1">設定</span>
+  </a>
+
+  <!-- 登出（不需要 active 樣式）-->
+  <form method="post" action="/portfolio/enterprise/loginout.php">
+    <button type="submit"
+            class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+      <i class="fas fa-sign-out-alt text-xl"></i>
+      <span class="text-xs mt-1">登出</span>
+    </button>
+  </form>
+</nav>
+
+
+
 
   <!-- 右側主區域：完全空白 -->
   <div class="flex-1 bg-white"></div>
