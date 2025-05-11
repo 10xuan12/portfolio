@@ -273,26 +273,28 @@ $current = basename($fullPath);
   </ul>
 
   <?php if ($annPage !== 'all'): ?>
-    <div class="flex justify-end bg-indigo-200 px-4 py-2 rounded-b-lg mt-4 text-indigo-800">
-      <?php if ($annPage > 1): ?>
-        <a href="?ann_page=<?= $annPage-1 ?>" class="hover:underline mr-4">← 上一頁</a>
+    <div class="flex justify-between items-center bg-indigo-200 px-4 py-2 rounded-b-lg mt-4 text-indigo-800">
+  <!-- 中間頁碼 -->
+  <div class="flex justify-center flex-1">
+    <?php if ($annPage > 1): ?>
+      <a href="?ann_page=<?= $annPage-1 ?>" class="hover:underline mr-4">← 上一頁</a>
+    <?php endif; ?>
+    <?php for ($i = 1; $i <= $annTotalPages; $i++): ?>
+      <?php if ($i === $annPage): ?>
+        <span class="font-bold px-2"><?= $i ?></span>
+      <?php else: ?>
+        <a href="?ann_page=<?= $i ?>" class="hover:underline px-2"><?= $i ?></a>
       <?php endif; ?>
-      <?php for ($i = 1; $i <= $annTotalPages; $i++): ?>
-        <?php if ($i === $annPage): ?>
-          <span class="font-bold px-2"><?= $i ?></span>
-        <?php else: ?>
-          <a href="?ann_page=<?= $i ?>" class="hover:underline px-2"><?= $i ?></a>
-        <?php endif; ?>
-      <?php endfor; ?>
-      <?php if ($annPage < $annTotalPages): ?>
-        <a href="?ann_page=<?= $annPage+1 ?>" class="hover:underline ml-4">下一頁 →</a>
-      <?php endif; ?>
-      <a href="?ann_page=all" class="font-semibold hover:underline ml-6">查看全部 &gt;&gt;</a>
-    </div>
-  <?php else: ?>
-    <div class="flex justify-end bg-indigo-200 px-4 py-2 rounded-b-lg mt-4 text-indigo-800">
-      <a href="?ann_page=1" class="font-semibold hover:underline">回分頁模式</a>
-    </div>
+    <?php endfor; ?>
+    <?php if ($annPage < $annTotalPages): ?>
+      <a href="?ann_page=<?= $annPage+1 ?>" class="hover:underline ml-4">下一頁 →</a>
+    <?php endif; ?>
+  </div>
+
+  <!-- 右邊固定的「查看全部」 -->
+  <a href="?ann_page=all" class="font-semibold hover:underline whitespace-nowrap ml-4">查看全部 &gt;&gt;</a>
+</div>
+
   <?php endif; ?>
 </section>
 

@@ -116,14 +116,23 @@ $current = basename($fullPath);
   </a>
 
   <!-- 瀏覽 -->
-  <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
-     class="flex flex-col items-center w-14 h-14 justify-center
-       <?= $current === 'enterprise_portfolio.php'
-           ? 'text-white bg-blue-700'
-           : 'text-black hover:bg-gray-400' ?>">
-    <i class="fas fa-folder text-xl"></i>
-    <span class="text-xs mt-1">瀏覽</span>
-  </a>
+<a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
+   class="flex flex-col items-center w-14 h-14 justify-center
+     <?= in_array(
+          $current,
+          [
+            'enterprise_portfolio.php',
+            'category_filter.php',     // 新增：分类筛选页
+            'latest_works.php',        // 如果还有最新作品页
+            'recent_views.php',        // 如果还有最近查看页
+            'work_detail.php'          // 如果详情页也要高亮
+          ]
+        )
+         ? 'text-white bg-blue-700'
+         : 'text-black hover:bg-gray-400' ?>">
+  <i class="fas fa-folder text-xl"></i>
+  <span class="text-xs mt-1">瀏覽</span>
+</a>
 
   <!-- 通知 -->
   <a href="/portfolio/enterprise/notifications/notification.php"

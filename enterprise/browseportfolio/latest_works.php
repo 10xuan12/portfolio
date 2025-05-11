@@ -75,7 +75,7 @@ $current = basename($fullPath);
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>近期新作品（一週內）</title>
+  <title>近期新作品</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
@@ -86,7 +86,8 @@ $current = basename($fullPath);
     ::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 3px; }
   </style>
 </head>
-<!-- 左側欄 -->
+<body class="bg-white font-sans text-gray-800">
+<div class="flex min-h-screen">
 <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
   <!-- 主頁 -->
   <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
@@ -98,15 +99,24 @@ $current = basename($fullPath);
     <span class="text-xs mt-1">主頁</span>
   </a>
 
-  <!-- 瀏覽 -->
-  <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
-     class="flex flex-col items-center w-14 h-14 justify-center
-       <?= $current === 'enterprise_portfolio.php'
-           ? 'text-white bg-blue-700'
-           : 'text-black hover:bg-gray-400' ?>">
-    <i class="fas fa-folder text-xl"></i>
-    <span class="text-xs mt-1">瀏覽</span>
-  </a>
+ <!-- 瀏覽 -->
+<a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
+   class="flex flex-col items-center w-14 h-14 justify-center
+     <?= in_array(
+          $current,
+          [
+            'enterprise_portfolio.php',
+            'category_filter.php',     // 新增：分类筛选页
+            'latest_works.php',        // 如果还有最新作品页
+            'recent_views.php',        // 如果还有最近查看页
+            'work_detail.php'          // 如果详情页也要高亮
+          ]
+        )
+         ? 'text-white bg-blue-700'
+         : 'text-black hover:bg-gray-400' ?>">
+  <i class="fas fa-folder text-xl"></i>
+  <span class="text-xs mt-1">瀏覽</span>
+</a>
 
   <!-- 通知 -->
   <a href="/portfolio/enterprise/notifications/notification.php"
@@ -128,7 +138,7 @@ $current = basename($fullPath);
     <span class="text-xs mt-1">設定</span>
   </a>
 
-  <!-- 登出（不需要 active 樣式）-->
+  <!-- 登出 -->
   <form method="post" action="/portfolio/enterprise/loginout.php">
     <button type="submit"
             class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
@@ -137,7 +147,6 @@ $current = basename($fullPath);
     </button>
   </form>
 </nav>
-
 
 
 

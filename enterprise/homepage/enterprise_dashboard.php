@@ -19,31 +19,30 @@ $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
 $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// ===== 處理上傳頭像 + 更新基本資料 =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-  // 1. 處理頭像上傳
-  if (!empty($_FILES['avatar']['name'])) {
-      $uploadDir = 'uploads/';
-      if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+  // 上传目录
+  $uploadDir = __DIR__ . '/uploads/';
+  if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
+  // 头像上传
+  if (!empty($_FILES['avatar']['name'])) {
       $ext     = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
       $allowed = ['jpg','jpeg','png','gif','webp'];
-
       if (in_array($ext, $allowed)) {
           $fn     = uniqid() . '.' . $ext;
           $target = $uploadDir . $fn;
-
           if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
+              // 存数据库时，只存相对路径
               $pdo->prepare("UPDATE users SET avatar = :avatar WHERE id = :id")
                   ->execute([
-                      'avatar' => $target,
+                      'avatar' => 'uploads/' . $fn,
                       'id'     => $user_id
                   ]);
           }
       }
   }
 
-  // 2. 處理其他欄位更新 (company_name, username, address, bio …)
+  // 更新其它欄位
   $pdo->prepare("
       UPDATE users
          SET company_name = :cn,
@@ -60,9 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
       'id'   => $user_id
   ]);
 
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
+  header("Location: " . $_SERVER['PHP_SELF']);
+  exit;
 }
+
+
 
 
 
@@ -92,21 +93,19 @@ if (isset($_GET['page']) && $_GET['page'] === 'all') {
 
   // 撈出本頁留言
   $stmt = $pdo->prepare("
-    SELECT 
-      c.id,
-      c.content,
-      c.created_at,
-      u.avatar,
-      u.username AS commenter_name
-    FROM comments AS c
-    JOIN users    AS u ON u.id = c.user_id
-    ORDER BY c.created_at DESC
-    LIMIT :limit OFFSET :offset
+  SELECT 
+    id,
+    username,
+    content,
+    created_at
+  FROM comments
+  ORDER BY created_at DESC
+  LIMIT :limit OFFSET :offset
 ");
 $stmt->bindValue(':limit',  $perPage,       PDO::PARAM_INT);
 $stmt->bindValue(':offset', $commentOffset, PDO::PARAM_INT);
 $stmt->execute();
-$comments = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+$comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 
@@ -214,11 +213,13 @@ $current = basename($fullPath);
     <!-- ✅ 右側主內容 -->
     <main class="flex-1 p-6 overflow-y-auto max-w-5xl mx-auto">
 
+ 
+
     <!-- 頭像與公司資料 -->
 <section class="flex items-start space-x-6 mb-6">
   <img
     id="display-avatar"
-    src="<?php echo htmlspecialchars($user['avatar'] ?? 'uploads/default.jpg'); ?>"
+    src="<?php echo htmlspecialchars($user['avatar']); ?>?t=<?php echo time(); ?>"
     class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md">
 
   <div class="flex-1">
@@ -234,8 +235,9 @@ $current = basename($fullPath);
       <span class="text-xs text-gray-600">上線中</span>
       <span class="w-2 h-2 bg-green-500 rounded-full inline-block"></span>
       <button
-        class="flex items-center space-x-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold py-2 px-4 rounded"
-        onclick="openEditModal()"
+  type="button"   
+  class="flex items-center space-x-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold py-2 px-4 rounded"
+  onclick="openEditModal()"
       >
         <i class="fas fa-cog"></i><span>編輯</span>
       </button>
@@ -243,92 +245,93 @@ $current = basename($fullPath);
   </div>
 </section>
 
-      <!-- 簡介 -->
-      <section class="mb-6">
-        <h3 class="text-sm font-bold mb-1">簡介</h3>
-        <p class="text-sm italic" id="display-bio">
-          <?php echo htmlspecialchars($user['bio'] ?? '尚未提供簡介'); ?>
-        </p>
-      </section>
+     
 
 
       
 
-<!-- 2. Modal 彈窗表單 -->
-<div id="modal"
-     class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center hidden">
+<!-- Modal 編輯表單 -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center hidden">
   <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-    <button onclick="document.getElementById('modal').classList.add('hidden')"
+    <!-- 關閉按鈕 -->
+    <button type="button" onclick="closeEditModal()"
             class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
       <i class="fas fa-times"></i>
     </button>
-
-    <form method="post"
-          enctype="multipart/form-data"
-          id="edit-form"
-          class="space-y-4">
+    <form method="post" enctype="multipart/form-data" id="edit-form" class="space-y-4">
       <h2 class="text-base font-bold">編輯企業基本資料</h2>
 
       <!-- 企業名稱 -->
       <label class="block">
         <span class="text-xs font-medium">企業名稱：</span>
-        <input type="text"
-               name="company_name"
-               value="<?= htmlspecialchars($user['company_name'] ?? '') ?>"
-               placeholder="尚未提供企業名稱"
-               class="w-full border p-2 rounded">
-      </label>
-
-      <!-- 負責人姓名 -->
-      <label class="block">
-        <span class="text-xs font-medium">負責人姓名：</span>
-        <input type="text"
-               name="username"
-               value="<?= htmlspecialchars($user['username'] ?? '') ?>"
-               placeholder="尚未提供負責人姓名"
-               class="w-full border p-2 rounded">
+        <input
+          id="input-company-name"
+          name="company_name"
+          type="text"
+          class="w-full border p-2 rounded"
+          placeholder="請輸入企業名稱"
+        >
       </label>
 
       <!-- 公司地址 -->
       <label class="block">
         <span class="text-xs font-medium">公司地址：</span>
-        <input type="text"
-               name="address"
-               value="<?= htmlspecialchars($user['address'] ?? '') ?>"
-               placeholder="尚未提供公司地址"
-               class="w-full border p-2 rounded">
+        <input
+          id="input-address"
+          name="address"
+          type="text"
+          class="w-full border p-2 rounded"
+          placeholder="請輸入公司地址"
+        >
       </label>
 
-      <!-- 上傳頭像 -->
+      <!-- 上傳頭像（可預覽） -->
       <label class="block">
         <span class="text-xs font-medium">上傳頭像：</span>
-        <input type="file"
-               name="avatar"
-               accept="image/*"
-               class="w-full border p-2 rounded">
+        <input
+          id="input-avatar"
+          name="avatar"
+          type="file"
+          accept="image/*"
+          class="w-full"
+        >
       </label>
 
       <!-- 簡介 -->
       <label class="block">
         <span class="text-xs font-medium">簡介：</span>
-        <textarea name="bio"
-                  rows="3"
-                  placeholder="尚未提供簡介"
-                  class="w-full border p-2 rounded"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+        <textarea
+          id="input-bio"
+          name="bio"
+          rows="3"
+          class="w-full border p-2 rounded"
+          placeholder="請輸入公司簡介"
+        ></textarea>
       </label>
 
-      <!-- 送出按鈕 -->
-      <button type="submit"
-              name="update_profile"
-              class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-        儲存修改
-      </button>
+      <!-- 按鈕群 -->
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeEditModal()"
+                class="px-4 py-2 border rounded hover:bg-gray-100">
+          取消
+        </button>
+        <button type="submit" name="update_profile"
+                class="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800">
+          儲存
+        </button>
+      </div>
     </form>
   </div>
 </div>
 
            
-
+<!-- 企業簡介顯示區塊 -->
+<?php if (!empty($user['bio'])): ?>
+  <section class="bg-white border-l-4 border-indigo-400 p-4 rounded shadow mb-6">
+    <h3 class="text-sm font-bold text-indigo-700 mb-2">企業簡介</h3>
+    <p class="text-sm text-gray-800 leading-relaxed"><?php echo nl2br(htmlspecialchars($user['bio'])); ?></p>
+  </section>
+<?php endif; ?>
 
 <!-- 聯絡方式區塊 -->
 <section class="bg-pink-50 rounded-md p-6 mb-6
@@ -402,13 +405,7 @@ $current = basename($fullPath);
 
 
 
-<!-- 企業簡介顯示區塊 -->
-<?php if (!empty($user['bio'])): ?>
-  <section class="bg-white border-l-4 border-indigo-400 p-4 rounded shadow mb-6">
-    <h3 class="text-sm font-bold text-indigo-700 mb-2">企業簡介</h3>
-    <p class="text-sm text-gray-800 leading-relaxed"><?php echo nl2br(htmlspecialchars($user['bio'])); ?></p>
-  </section>
-<?php endif; ?>
+
 
 <!-- 職缺區 -->
 <section class="bg-purple-50 border-2 border-purple-300 rounded-xl p-6">
@@ -416,23 +413,32 @@ $current = basename($fullPath);
     職缺
   </h3>
 
-  <ul class="divide-y divide-dotted divide-purple-400">
+  <ul class="divide-y divide-dotted divide-purple-300">
     <?php if (empty($jobs)): ?>
       <li class="py-3 text-center text-gray-500">目前沒有職缺。</li>
     <?php else: ?>
       <?php foreach ($jobs as $job): ?>
-        <li class="flex items-start space-x-3 py-3">
-          <div class="w-8 h-8 bg-purple-200 text-purple-700 rounded-full flex items-center justify-center font-medium">A</div>
+        <li class="flex items-start gap-4 py-3">
+          <!-- 用公司第一個字作為圓形頭像 -->
+          <div class="w-10 h-10 rounded-full bg-purple-200 text-purple-800 flex items-center justify-center font-bold text-lg">
+            <?= htmlspecialchars(mb_substr($job['company_name'], 0, 1, 'UTF-8')) ?>
+          </div>
+
+          <!-- 職缺內容 -->
           <div class="flex-1 text-gray-800">
-            <div class="font-semibold text-sm text-gray-700"><?= htmlspecialchars($job['company_name']) ?></div>
-            <div class="mt-1 font-medium text-lg text-gray-900"><?= htmlspecialchars($job['job_title']) ?></div>
-            <!-- ...其他欄位 -->
+            <div class="font-semibold text-sm text-purple-800">
+              <?= htmlspecialchars($job['company_name']) ?>
+            </div>
+            <div class="mt-1 font-medium text-lg text-gray-900">
+              <?= htmlspecialchars($job['job_title']) ?>
+            </div>
+            <!-- 可以補上職缺描述或地點等欄位 -->
           </div>
         </li>
       <?php endforeach; ?>
     <?php endif; ?>
   </ul>
-   
+
   <!-- 分頁 or 查看更多 -->
   <?php if ($commentPage !== 'all'): ?>
     <div class="flex justify-end bg-purple-200 px-4 py-2 rounded-b-lg mt-4 text-purple-800">
@@ -446,8 +452,9 @@ $current = basename($fullPath);
 
 
 
+
 <!-- 留言區 -->
-<section class="bg-cyan-50 border-2 border-cyan-300 rounded-xl p-6">
+<section class="bg-cyan-50 border-2 border-cyan-300 rounded-xl p-6 mb-6">
   <h3 class="text-xl font-semibold mb-4 bg-cyan-200 px-4 py-2 rounded-t-lg">
     留言
   </h3>
@@ -460,14 +467,14 @@ $current = basename($fullPath);
     <?php else: ?>
       <?php foreach ($comments as $comment): ?>
         <li class="flex items-start space-x-3 py-3">
-          <!-- 真實頭像 -->
-          <img src="<?= htmlspecialchars($comment['avatar']) ?>"
-               alt="avatar"
-               class="w-10 h-10 rounded-full object-cover">
+          <!-- 簡化為第一個字母的圓形頭像 -->
+          <div class="w-10 h-10 rounded-full bg-cyan-200 text-cyan-800 flex items-center justify-center font-bold text-lg">
+            <?= htmlspecialchars(mb_substr($comment['username'], 0, 1, 'UTF-8')) ?>
+          </div>
 
           <div class="flex-1 text-gray-800">
             <div class="font-semibold text-sm text-gray-700">
-              <?= htmlspecialchars($comment['commenter_name']) ?>
+              <?= htmlspecialchars($comment['username']) ?>
             </div>
             <div class="mt-1 text-sm">
               <?= nl2br(htmlspecialchars($comment['content'])) ?>
@@ -493,6 +500,26 @@ $current = basename($fullPath);
 
 
 <script>
+
+function openEditModal() {
+    // 先把現有文字塞進表單
+    const nameEl = document.getElementById('display-company-name');
+    const addrEl = document.getElementById('display-address');
+    document.getElementById('input-company-name').value =
+      nameEl ? nameEl.textContent.trim().split('\n')[0] : '';
+    document.getElementById('input-address').value =
+      addrEl ? addrEl.textContent.trim() : '';
+    // 顯示 modal
+    document.getElementById('modal').classList.remove('hidden');
+  }
+  function closeEditModal() {
+    document.getElementById('modal').classList.add('hidden');
+  }
+  // Esc 關閉
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeEditModal();
+  });
+
   // 1. 「載入全部職缺」按鈕
   document.getElementById('loadAllJobsBtn').addEventListener('click', function () {
     fetch('load_all_jobs.php')
@@ -514,6 +541,8 @@ $current = basename($fullPath);
         document.getElementById('pagination').style.display = 'none';
       });
   });
+
+ 
 
   // 打開／關閉編輯彈窗
   function openEditModal() {

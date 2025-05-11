@@ -1,19 +1,63 @@
 <?php
 session_start();
+require $_SERVER['DOCUMENT_ROOT'] . '/portfolio/enterprise/config/enterprise.php';
+$db    = new \Config\EnterpriseDB();
+$pdo   = $db->getConnection();
 
-// 載入 EnterpriseDB 類別
-require $_SERVER['DOCUMENT_ROOT']
-    . '/portfolio/enterprise/config/enterprise.php';
+// 1. 讀 filter 參數
+$valid      = ['focus','social','promo','other'];
+$filter     = $_GET['filter'] ?? 'focus';
+if (! in_array($filter, $valid, true)) {
+    $filter = 'focus';
+}
 
-$db  = new \Config\EnterpriseDB();
-$pdo = $db->getConnection();
+// 2. 取得社群 badge 數
+$socialCount = (int)$pdo
+    ->query("SELECT COUNT(*) FROM notifications WHERE category='social'")
+    ->fetchColumn();
 
-// UTF-8 字元轉 code point
+// 3. 分頁設定
+$perPage     = 10;
+$page        = max(1, intval($_GET['page'] ?? 1));
+$offset      = ($page - 1) * $perPage;
+
+// 4. 計算總筆數 & 總頁數
+$stmtCnt     = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE category = :cat");
+$stmtCnt->execute([':cat' => $filter]);
+$totalCount  = (int)$stmtCnt->fetchColumn();
+$totalPages  = max(1, (int)ceil($totalCount / $perPage));
+
+// 5. 拉出當前頁的通知
+$stmt = $pdo->prepare("
+  SELECT id, title, message, created_at
+    FROM notifications
+   WHERE category = :cat
+ORDER BY id DESC
+   LIMIT :lim OFFSET :off
+");
+$stmt->bindValue(':cat', $filter, PDO::PARAM_STR);
+$stmt->bindValue(':lim', $perPage, PDO::PARAM_INT);
+$stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// 6. 顏色與分頁函式
+$palette = [
+  ['bg'=>'bg-purple-100','text'=>'text-purple-600'],
+  ['bg'=>'bg-pink-100','text'=>'text-pink-600'],
+  ['bg'=>'bg-indigo-100','text'=>'text-indigo-600'],
+  ['bg'=>'bg-green-100','text'=>'text-green-600'],
+  ['bg'=>'bg-yellow-100','text'=>'text-yellow-600'],
+  ['bg'=>'bg-blue-100','text'=>'text-blue-600'],
+];
 function uniord(string $ch): int {
     $h = ord($ch[0]);
     if ($h <= 0x7F) return $h;
     if ($h < 0xC2) return 0;
-    if ($h <= 0xDF) return ($h & 0x1F) << 6 | (ord($ch[1]) & 0x3F);
+    if ($h <= 0xDF) {
+        return ($h & 0x1F) << 6
+             | (ord($ch[1]) & 0x3F);
+    }
     if ($h <= 0xEF) {
         return ($h & 0x0F) << 12
              | (ord($ch[1]) & 0x3F) << 6
@@ -24,70 +68,23 @@ function uniord(string $ch): int {
          | (ord($ch[2]) & 0x3F) << 6
          | (ord($ch[3]) & 0x3F);
 }
-
-// 配色調色盤
-$palette = [
-  ['bg'=>'bg-red-100',    'text'=>'text-red-600'],
-  ['bg'=>'bg-yellow-100', 'text'=>'text-yellow-600'],
-  ['bg'=>'bg-green-100',  'text'=>'text-green-600'],
-  ['bg'=>'bg-blue-100',   'text'=>'text-blue-600'],
-  ['bg'=>'bg-indigo-100', 'text'=>'text-indigo-600'],
-  ['bg'=>'bg-purple-100', 'text'=>'text-purple-600'],
-];
-
-// 讀 filter 參數
-$validFilters = ['focus','social','promo','other'];
-$filter = $_GET['filter'] ?? 'focus';
-if (!in_array($filter, $validFilters, true)) {
-    $filter = 'focus';
+function renderPagination($page, $totalPages, $filter) {
+    echo '<div class="mt-4 text-center">';
+    if ($page > 1) {
+        echo '<a href="?filter='.$filter.'&page='.($page-1).'" class="mx-1">&laquo; 上一頁</a>';
+    }
+    for ($i = 1; $i <= $totalPages; $i++) {
+        $cls = $i === $page ? 'font-bold underline' : '';
+        echo '<a href="?filter='.$filter.'&page='.$i.'" class="mx-1 '.$cls.'">'.$i.'</a>';
+    }
+    if ($page < $totalPages) {
+        echo '<a href="?filter='.$filter.'&page='.($page+1).'" class="mx-1">下一頁 &raquo;</a>';
+    }
+    echo '</div>';
 }
 
-// 取得社群 badge 數
-$socialCount = (int)$pdo
-    ->query("SELECT COUNT(*) FROM notifications WHERE category = 'social'")
-    ->fetchColumn();
-
-// 分頁設定
-$perPage = 10;
-$page    = max(1, intval($_GET['page'] ?? 1));
-$offset  = ($page - 1) * $perPage;
-
-// 計算總筆數與總頁數
-if ($filter === 'other') {
-    $totalCount = (int)$pdo
-        ->query("SELECT COUNT(*) FROM notifications WHERE category NOT IN ('focus','social','promo')")
-        ->fetchColumn();
-} else {
-    $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE category = :cat");
-    $stmtCount->execute([':cat' => $filter]);
-    $totalCount = (int)$stmtCount->fetchColumn();
-}
-$totalPages = (int)ceil($totalCount / $perPage);
-
-// 撈分頁後資料
-if ($filter === 'other') {
-    $sql = "SELECT id, title
-              FROM notifications
-             WHERE category NOT IN ('focus','social','promo')
-             ORDER BY id DESC
-             LIMIT :limit OFFSET :offset";
-    $stmt = $pdo->prepare($sql);
-} else {
-    $sql = "SELECT id, title
-              FROM notifications
-             WHERE category = :cat
-             ORDER BY id DESC
-             LIMIT :limit OFFSET :offset";
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':cat', $filter);
-}
-$stmt->bindValue(':limit',  $perPage, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset,  PDO::PARAM_INT);
-$stmt->execute();
-$notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$fullPath = $_SERVER['PHP_SELF'];
-$current = basename($fullPath);
+$labels = ['focus'=>'焦點','social'=>'社群','promo'=>'促銷','other'=>'其他'];
+$current = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
@@ -101,144 +98,129 @@ $current = basename($fullPath);
     rel="stylesheet"
   />
 </head>
-<body class="flex h-screen bg-white font-sans text-gray-800">
- <!-- 左側欄 -->
-<nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
-  <!-- 主頁 -->
-  <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
-     class="flex flex-col items-center w-14 h-14 justify-center
-       <?= $current === 'enterprise_dashboard.php'
-           ? 'text-white bg-blue-700'
-           : 'text-black hover:bg-gray-400' ?>">
-    <i class="fas fa-user-circle text-xl"></i>
-    <span class="text-xs mt-1">主頁</span>
-  </a>
+<body class="bg-white font-sans text-gray-800">
+  <div class="flex min-h-screen">
+    <!-- 側邊欄 -->
+    <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+      <!-- 主頁 -->
+      <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
+         class="flex flex-col items-center w-14 h-14 justify-center
+           <?= $current === 'enterprise_dashboard.php' ? 'text-white bg-blue-700' : 'text-black hover:bg-gray-400' ?>">
+        <i class="fas fa-user-circle text-xl"></i>
+        <span class="text-xs mt-1">主頁</span>
+      </a>
+      <!-- 瀏覽 -->
+      <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
+         class="flex flex-col items-center w-14 h-14 justify-center
+           <?= in_array($current, ['enterprise_portfolio.php','category_filter.php','latest_works.php','recent_views.php','work_detail.php'])
+               ? 'text-white bg-blue-700'
+               : 'text-black hover:bg-gray-400' ?>">
+        <i class="fas fa-folder text-xl"></i>
+        <span class="text-xs mt-1">瀏覽</span>
+      </a>
+      <!-- 通知 -->
+      <a href="/portfolio/enterprise/notifications/notification.php"
+         class="flex flex-col items-center w-14 h-14 justify-center
+           <?= $current === 'notification.php' ? 'text-white bg-blue-700' : 'text-black hover:bg-gray-400' ?>">
+        <i class="fas fa-bell text-xl"></i>
+        <span class="text-xs mt-1">通知</span>
+      </a>
+      <!-- 設定 -->
+      <a href="/portfolio/enterprise/setting.php"
+         class="flex flex-col items-center w-14 h-14 justify-center
+           <?= $current === 'setting.php' ? 'text-white bg-blue-700' : 'text-black hover:bg-gray-400' ?>">
+        <i class="fas fa-cog text-xl"></i>
+        <span class="text-xs mt-1">設定</span>
+      </a>
+      <!-- 登出 -->
+      <form method="post" action="/portfolio/enterprise/loginout.php">
+        <button type="submit"
+                class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+          <i class="fas fa-sign-out-alt text-xl"></i>
+          <span class="text-xs mt-1">登出</span>
+        </button>
+      </form>
+    </nav>
 
-  <!-- 瀏覽 -->
-  <a href="/portfolio/enterprise/browseportfolio/enterprise_portfolio.php"
-     class="flex flex-col items-center w-14 h-14 justify-center
-       <?= $current === 'enterprise_portfolio.php'
-           ? 'text-white bg-blue-700'
-           : 'text-black hover:bg-gray-400' ?>">
-    <i class="fas fa-folder text-xl"></i>
-    <span class="text-xs mt-1">瀏覽</span>
-  </a>
+    <!-- Main content -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <!-- Filter + Search -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <div class="inline-flex items-center bg-white border border-gray-200 rounded-full p-1 space-x-1">
+            <?php foreach ($labels as $key => $label): 
+              $active = ($filter === $key);
+              $baseCls = 'flex items-center px-4 py-2 rounded-full ';
+              $cls = $active
+                ? $baseCls . 'bg-purple-50 text-purple-700 font-medium'
+                : $baseCls . 'text-gray-600 hover:bg-gray-100';
+              if ($key === 'social') {
+                  $cls = 'relative ' . $cls;
+              }
+            ?>
+              <a href="?filter=<?= $key ?>" class="<?= $cls ?>">
+                <?php if ($active): ?><i class="fas fa-check mr-1 text-sm"></i><?php endif; ?>
+                <?= $label ?>
+                <?php if ($key === 'social'): ?>
+                  <span class="absolute -top-1 -right-1 inline-block bg-red-500 text-white text-xs rounded-full px-1.5">
+                    <?= $socialCount ?>
+                  </span>
+                <?php endif; ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        </div>
 
-  <!-- 通知 -->
-  <a href="/portfolio/enterprise/notifications/notification.php"
-     class="flex flex-col items-center w-14 h-14 justify-center
-       <?= $current === 'notification.php'
-           ? 'text-white bg-blue-700'
-           : 'text-black hover:bg-gray-400' ?>">
-    <i class="fas fa-bell text-xl"></i>
-    <span class="text-xs mt-1">通知</span>
-  </a>
-
-  <!-- 設定 -->
-  <a href="/portfolio/enterprise/setting.php"
-     class="flex flex-col items-center w-14 h-14 justify-center
-       <?= $current === 'setting.php'
-           ? 'text-white bg-blue-700'
-           : 'text-black hover:bg-gray-400' ?>">
-    <i class="fas fa-cog text-xl"></i>
-    <span class="text-xs mt-1">設定</span>
-  </a>
-
-  <!-- 登出（不需要 active 樣式）-->
-  <form method="post" action="/portfolio/enterprise/loginout.php">
-    <button type="submit"
-            class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
-      <i class="fas fa-sign-out-alt text-xl"></i>
-      <span class="text-xs mt-1">登出</span>
-    </button>
-  </form>
-</nav>
-
-
-
-
-  <!-- Main content -->
-  <main class="flex-1 p-8 overflow-y-auto">
-    <!-- Filter + Search -->
-    <div class="flex items-center justify-between mb-6">
-      <!-- 四合一 Filter 圖片框 -->
-      <div>
-        <div class="inline-flex items-center bg-white border border-gray-200 rounded-full p-1 space-x-1">
-          <?php
-          $labels = ['focus'=>'焦點','social'=>'社群','promo'=>'促銷','other'=>'其他'];
-          foreach ($labels as $key => $label):
-            $active = $filter === $key;
-            $classes = $active
-              ? 'flex items-center px-4 py-2 bg-purple-50 text-purple-700 rounded-full font-medium'
-              : 'flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-full';
-            if ($key === 'social') {
-              $classes = 'relative ' . $classes;
-            }
-          ?>
-            <a href="?filter=<?= $key ?>" class="<?= $classes ?>">
-              <?php if ($active): ?><i class="fas fa-check mr-1 text-sm"></i><?php endif; ?>
-              <?= $label ?>
-              <?php if ($key === 'social'): ?>
-                <span class="absolute -top-1 -right-1 inline-block bg-red-500 text-white text-xs rounded-full px-1.5"><?= $socialCount ?></span>
-              <?php endif; ?>
-            </a>
-          <?php endforeach; ?>
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Hinted search text"
+            class="pl-10 pr-4 py-2 rounded-full bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          />
+          <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
         </div>
       </div>
 
-      <!-- Search -->
-      <div class="relative">
-        <input
-          type="text"
-          placeholder="Hinted search text"
-          class="pl-10 pr-4 py-2 rounded-full bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        />
-        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-      </div>
-    </div>
+      <!-- Notification 卡片 -->
+      <section class="bg-purple-50 rounded-xl p-6 mb-10 mt-8">
+        <h3 class="text-xl font-semibold mb-4 bg-purple-200 px-4 py-2 rounded-t-lg text-purple-800">
+          通知
+        </h3>
 
-    <!-- Notification list -->
-    <div class="border border-gray-200 rounded-lg bg-white">
-      <ul>
-        <?php if (empty($notifications)): ?>
-          <li class="p-4 text-center text-gray-500">目前沒有任何通知</li>
-        <?php else: ?>
-          <?php foreach ($notifications as $n):
-            $first = mb_substr($n['title'], 0, 1, 'UTF-8');
-            $ch    = mb_strtoupper($first, 'UTF-8');
-            $idx   = uniord($ch) % count($palette);
-            $colors= $palette[$idx];
+        <ul id="notification-list" class="divide-y divide-dotted divide-purple-300">
+          <?php if (empty($notifications)): ?>
+            <li class="py-3 text-center text-gray-700">目前沒有任何通知。</li>
+          <?php else: foreach ($notifications as $n):
+            $first  = mb_substr($n['title'], 0, 1, 'UTF-8');
+            $ch     = mb_strtoupper($first, 'UTF-8');
+            $idx    = uniord($ch) % count($palette);
+            $colors = $palette[$idx];
           ?>
-            <li class="flex items-center justify-between px-4 py-3 border-b last:border-b-0">
-              <div class="flex items-center">
-                <div class="w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg <?= $colors['bg'] . ' ' . $colors['text'] ?>">
+            <li class="py-3">
+              <div class="flex items-start space-x-3">
+                <div class="w-10 h-10 <?= $colors['bg'] ?> <?= $colors['text'] ?>
+                            rounded-full flex items-center justify-center font-bold text-lg">
                   <?= htmlspecialchars($ch, ENT_QUOTES) ?>
                 </div>
-                <span class="ml-4"><?= htmlspecialchars($n['title'], ENT_QUOTES) ?></span>
+                <div class="flex-1 text-gray-800">
+                  <div class="font-semibold text-sm text-gray-700">
+                    <?= htmlspecialchars($n['title'], ENT_QUOTES) ?>
+                  </div>
+                  <div class="text-sm text-gray-700 mt-1">
+                    <?= nl2br(htmlspecialchars($n['message'], ENT_QUOTES)) ?>
+                  </div>
+                  <div class="text-xs text-gray-500 mt-1">
+                    <?= htmlspecialchars($n['created_at'], ENT_QUOTES) ?>
+                  </div>
+                </div>
               </div>
-              <input type="checkbox" checked class="form-checkbox h-5 w-5 text-purple-600" />
             </li>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </ul>
-    </div>
+          <?php endforeach; endif; ?>
+        </ul>
 
-    <!-- Pagination -->
-    <nav class="flex items-center justify-center space-x-2 mt-6 text-gray-600" aria-label="Pagination">
-      <?php if ($page > 1): ?>
-        <a href="?filter=<?= $filter ?>&page=<?= $page - 1 ?>" class="px-3 py-1 hover:underline">← Previous</a>
-      <?php endif; ?>
-      <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <?php if ($i === $page): ?>
-          <span class="px-3 py-1 rounded-full bg-gray-800 text-white font-medium"><?= $i ?></span>
-        <?php else: ?>
-          <a href="?filter=<?= $filter ?>&page=<?= $i ?>" class="px-3 py-1 rounded-full hover:bg-gray-100"><?= $i ?></a>
-        <?php endif; ?>
-      <?php endfor; ?>
-      <?php if ($page < $totalPages): ?>
-        <a href="?filter=<?= $filter ?>&page=<?= $page + 1 ?>" class="px-3 py-1 hover:underline">Next →</a>
-      <?php endif; ?>
-    </nav>
-  </main>
+        <?php renderPagination($page, $totalPages, $filter); ?>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
