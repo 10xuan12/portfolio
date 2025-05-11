@@ -123,7 +123,7 @@ $portfolio_result = $stmt2->get_result();
                                 <p class="text-muted"><?php echo htmlspecialchars($portfolio['description']); ?></p>
                             </div>
                             <div class="col-md-2 d-flex flex-column justify-content-center align-items-center gap-2">
-                                <a href="work_detail.php?id=<?php echo $portfolio['title']; ?>" class="btn btn-primary btn-sm">查看</a>
+                                <a href="work_detail.php?portfolio_id=<?php echo $portfolio['portfolio_id']; ?>" class="btn btn-primary btn-sm">查看</a>
                                 <a href="edit_portfolio.php?id=<?php echo $portfolio['portfolio_id']; ?>" class="btn btn-outline-secondary btn-sm">編輯</a>
                             </div>
                         </div>

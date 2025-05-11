@@ -2,15 +2,15 @@
 session_start();
 require '../includes/db_connect.php';
 
-if (!isset($_SESSION['student_id'])) {
+if (!isset($_SESSION['email'])) {
     header("Location: ../login.php");
     exit();
 }
 
-$student_id = $_SESSION['student_id'];
-$sql = "SELECT * FROM student_profiles WHERE student_id = ?";
+$email = $_SESSION['email'];
+$sql = "SELECT * FROM student_profiles WHERE email = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $student_id);
+$stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -37,23 +37,23 @@ $conn->close();
     <form action="student_update.php" method="POST" enctype="multipart/form-data" class="p-4 bg-white rounded shadow-sm">
         <div class="mb-3">
             <label for="name" class="form-label">姓名</label>
-            <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($student_data['name']) ?>" required>
+            <input id="name" type="text" name="name" class="form-control" value="<?= htmlspecialchars($student_data['name']) ?>" required>
         </div>
         <div class="mb-3">
             <label for="department" class="form-label">系所</label>
-            <input type="text" name="department" class="form-control" value="<?= htmlspecialchars($student_data['department']) ?>">
+            <input id="department" type="text" name="department" class="form-control" value="<?= htmlspecialchars($student_data['department']) ?>">
         </div>
         <div class="mb-3">
             <label for="grade" class="form-label">年級</label>
-            <input type="text" name="grade" class="form-control" value="<?= htmlspecialchars($student_data['grade']) ?>">
+            <input id="grade" type="text" name="grade" class="form-control" value="<?= htmlspecialchars($student_data['grade']) ?>">
         </div>
         <div class="mb-3">
             <label for="phone" class="form-label">聯絡電話</label>
-            <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($student_data['phone']) ?>">
+            <input id="phone" type="text" name="phone" class="form-control" value="<?= htmlspecialchars($student_data['phone']) ?>">
         </div>
         <div class="mb-3">
             <label for="email" class="form-label">電子郵件</label>
-            <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($student_data['email']) ?>">
+            <input id="email" type="email" name="email" class="form-control" value="<?= htmlspecialchars($student_data['email']) ?>">
         </div>
 
         <!-- 頭像預覽與上傳 -->
@@ -67,7 +67,7 @@ $conn->close();
         </div>
         <div class="mb-3">
             <label for="profile_picture" class="form-label">上傳新頭像</label>
-            <input type="file" name="profile_picture" class="form-control" accept="image/*">
+            <input id="profile_picture" type="file" name="profile_picture" class="form-control" accept="image/*">
         </div>
 
         <button type="submit" class="btn btn-primary"> 💾 儲存變更</button>

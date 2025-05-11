@@ -3,14 +3,21 @@
 session_start(); // 開啟 session
 require '../includes/db_connect.php'; // 資料庫連線
 
-// 假設網址是 ?portfolio_id=1
-$portfolio_id = $_GET['portfolio_id'] ?? 0;
+// 取得作品ID
+$portfolio_id = isset($_GET['portfolio_id']) ? intval($_GET['portfolio_id']) : 0;
+if ($portfolio_id <= 0) {
+    die("錯誤：無效的作品ID");
+}
 
 // 作品基本資料
-$stmt = $conn->prepare("SELECT p.*, c.name AS category_name FROM portfolios p JOIN categories c ON p.category_id = c.category_id WHERE portfolio_id = ?");
+$stmt = $conn->prepare("SELECT p.*, c.name AS category_name FROM portfolios p JOIN categories c ON p.category_id = c.category_id WHERE p.portfolio_id = ?");
 $stmt->bind_param("i", $portfolio_id);
 $stmt->execute();
 $portfolio = $stmt->get_result()->fetch_assoc();
+
+if (!$portfolio) {
+    die("錯誤：找不到作品");
+}
 
 // 作品的檔案
 $fileStmt = $conn->prepare("SELECT * FROM files WHERE portfolio_id = ?");
@@ -70,7 +77,7 @@ $comments = $commentStmt->get_result();
             </a>
           </li>
           <li class="nav-item">
-            <a href="../login.php" class="nav-link">
+            <a href="../login.html" class="nav-link">
               <i class="bi bi-box-arrow-right"></i>
               <span>登出</span>
             </a>

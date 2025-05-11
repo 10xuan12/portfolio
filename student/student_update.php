@@ -2,12 +2,12 @@
 session_start();
 require '../includes/db_connect.php';
 
-if (!isset($_SESSION['student_id'])) {
+if (!isset($_SESSION['email'])) {
     header("Location: ../login.php");
     exit();
 }
 
-$student_id = $_SESSION['student_id'];
+$email = $_SESSION['email'];
 
 // 取得表單資料
 $name = $_POST['name'];
@@ -69,13 +69,13 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
 
 // ✅ 更新資料
 if ($profile_picture_filename) {
-    $sql = "UPDATE student_profiles SET name = ?, department = ?, grade = ?, phone = ?, email = ?, profile_picture = ? WHERE student_id = ?";
+    $sql = "UPDATE student_profiles SET name = ?, department = ?, grade = ?, phone = ?, email = ?, profile_picture = ? WHERE email = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssssss", $name, $department, $grade, $phone, $email, $profile_picture_filename, $student_id);
+    $stmt->bind_param("sssssss", $name, $department, $grade, $phone, $email, $profile_picture_filename, $email);
 } else {
-    $sql = "UPDATE student_profiles SET name = ?, department = ?, grade = ?, phone = ?, email = ? WHERE student_id = ?";
+    $sql = "UPDATE student_profiles SET name = ?, department = ?, grade = ?, phone = ?, email = ? WHERE email = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssssss", $name, $department, $grade, $phone, $email, $student_id);
+    $stmt->bind_param("ssssss", $name, $department, $grade, $phone, $email, $email);
 }
 
 if ($stmt->execute()) {

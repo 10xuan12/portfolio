@@ -24,48 +24,6 @@ $total_stmt->execute();
 $total_result = $total_stmt->get_result();
 $total = $total_result->fetch_assoc()['total'];
 $total_pages = ceil($total / $limit);
-
-// 新增作品表單處理
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
-    $title = $_POST['workTitle'];
-    $description = $_POST['workDescription'];
-    $cover_image = $_FILES['workImage']['name'];
-    $image_tmp = $_FILES['workImage']['tmp_name'];
-
-    // 安全性檢查
-    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-    $file_type = mime_content_type($image_tmp);
-
-    if (!in_array($file_type, $allowed_types)) {
-        echo "<script>alert('只允許上傳圖片類型的文件！');</script>";
-        exit;
-    }
-
-    // 生成唯一文件名
-    $image_name = uniqid() . "_" . basename($cover_image);
-    $image_folder = "../uploads/" . $image_name;
-
-    // 移動圖片到指定資料夾
-    if (!move_uploaded_file($image_tmp, $image_folder)) {
-        echo "<script>alert('文件上傳失敗！');</script>";
-        exit;
-    }
-
-    // 插入資料庫
-    $insert_sql = "INSERT INTO portfolios (title, description, cover_image) VALUES (?, ?, ?)";
-    $stmt2 = $conn->prepare($insert_sql);
-    $stmt2->bind_param("sss", $title, $description, $image_name);
-
-    if (!$stmt2->execute()) {
-        error_log("Database error: " . $stmt2->error, 3, '../logs/error.log');
-        echo "<script>alert('新增作品失敗！');</script>";
-        exit;
-    }
-
-    // 重定向到作品集頁面
-    header("Location: works.php");
-    exit;
-}
 ?>
 
 <!DOCTYPE html>
@@ -127,14 +85,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
           <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-primary"></i>
         </div>
 
-        <div class="mb-4 d-flex flex-wrap align-items-center gap-2">
-          <div>
+        <!-- 按鈕區 -->
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+          <div class="d-flex gap-2">
             <a href="student_file_category.php" class="btn btn-outline-secondary">分類</a>
-            <a href="works.php" class="btn btn-primary ms-2">全部作品</a>
+            <a href="works.php" class="btn btn-primary">全部作品</a>
           </div>
-          <button class="btn btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#addWorkModal">
+          <a href="create_portfolio.php" class="btn btn-success">
             ＋ 新增作品
-          </button>
+          </a>
         </div>
 
         <!-- 作品列表 -->
@@ -146,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
                 <div class="card-body text-center">
                   <h5 class="card-title"><?php echo htmlspecialchars($portfolio['title']); ?></h5>
                   <p class="card-text"><?php echo htmlspecialchars($portfolio['description']); ?></p>
-                  <a href="work_detail.php" class="btn btn-outline-primary mt-2">查看作品 !</a>
+                  <a href="work_detail.php?portfolio_id=<?php echo $portfolio['portfolio_id']; ?>" class="btn btn-outline-primary mt-2">查看作品</a>
                 </div>
               </div>
             </div>
@@ -164,35 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_work'])) {
           </ul>
         </nav>
       </div>
-    </div>
-  </div>
-
-  <!-- 新增作品 Modal -->
-  <div class="modal fade" id="addWorkModal" tabindex="-1" aria-labelledby="addWorkModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="addWorkForm" class="modal-content" method="POST" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addWorkModalLabel">新增作品</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="workImage" class="form-label">作品圖片</label>
-            <input class="form-control" type="file" id="workImage" name="workImage" accept="image/*" required>
-          </div>
-          <div class="mb-3">
-            <label for="workTitle" class="form-label">作品標題</label>
-            <input type="text" class="form-control" id="workTitle" name="workTitle" required>
-          </div>
-          <div class="mb-3">
-            <label for="workDescription" class="form-label">作品描述</label>
-            <textarea class="form-control" id="workDescription" name="workDescription" rows="3" required></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" name="add_work">新增</button>
-        </div>
-      </form>
     </div>
   </div>
 
