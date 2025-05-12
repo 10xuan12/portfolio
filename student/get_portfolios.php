@@ -3,7 +3,7 @@ require '../includes/db_connect.php';
 
 $category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : 0;
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-$limit = 5;
+$limit = 5; // 每頁顯示數量
 $offset = ($page - 1) * $limit;
 
 // 取得總筆數
@@ -22,39 +22,22 @@ $stmt->bind_param("iii", $category_id, $offset, $limit);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// 輸出 HTML
-while ($portfolio = $result->fetch_assoc()):
-?>
-    <div class="card mb-3 shadow-sm portfolio-card animate__animated animate__fadeIn">
-        <div class="row g-0">
-            <div class="col-md-2 d-flex align-items-center justify-content-center">
-                <?php if (!empty($portfolio['cover_image'])): ?>
-                    <img src="uploads/<?php echo htmlspecialchars($portfolio['cover_image']); ?>" class="img-fluid rounded" alt="作品封面" style="max-height: 100px;">
-                <?php else: ?>
-                    <div class="bg-light text-muted d-flex align-items-center justify-content-center" style="height: 100px; width: 100px;">
-                        無封面
-                    </div>
-                <?php endif; ?>
-            </div>
-            <div class="col-md-8 d-flex flex-column justify-content-center p-3">
-                <h5><?php echo htmlspecialchars($portfolio['title']); ?></h5>
-                <p class="text-muted"><?php echo htmlspecialchars($portfolio['description']); ?></p>
-            </div>
-            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center gap-2">
-                <a href="work_detail.php?id=<?php echo urlencode($portfolio['title']); ?>" class="btn btn-primary btn-sm">查看</a>
-                <a href="edit_portfolio.php?id=<?php echo $portfolio['portfolio_id']; ?>" class="btn btn-outline-secondary btn-sm">編輯</a>
-            </div>
-        </div>
-    </div>
-<?php endwhile; ?>
+$portfolios = [];
+while ($portfolio = $result->fetch_assoc()) {
+    $portfolios[] = $portfolio;
+}
 
-<!-- 分頁 -->
-<nav aria-label="Page navigation">
-  <ul class="pagination justify-content-center">
-    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-        <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-            <a class="page-link page-link-btn" href="#" data-page="<?php echo $i; ?>"><?php echo $i; ?></a>
-        </li>
-    <?php endfor; ?>
-  </ul>
-</nav>
+// 回傳 JSON 格式的資料
+header('Content-Type: application/json');
+echo json_encode([
+    'success' => true,
+    'data' => [
+        'portfolios' => $portfolios,
+        'pagination' => [
+            'current_page' => $page,
+            'total_pages' => $total_pages,
+            'total_items' => $total,
+            'items_per_page' => $limit
+        ]
+    ]
+]);

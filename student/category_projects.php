@@ -31,6 +31,8 @@ $portfolio_result = $stmt2->get_result();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="../css/category_projects.css?v=4" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- 加入 animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 </head>
 <body>
 <div class="container-fluid p-0">
@@ -98,12 +100,13 @@ $portfolio_result = $stmt2->get_result();
 
         <!-- 新增作品按鈕 -->
         <div class="text-end mb-3">
-            <a href="create_portfolio.php?category_id=<?php echo $category_id; ?>" class="btn btn-primary rounded-pill">
+            <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addPortfolioModal">
                 ＋ 新增作品
-            </a>
+            </button>
         </div>
 
         <!-- 作品列表 -->
+        <input type="hidden" id="category-id" value="<?php echo $category_id; ?>">
         <div class="portfolio-list">
             <?php if ($portfolio_result->num_rows > 0): ?>
                 <?php while($portfolio = $portfolio_result->fetch_assoc()): ?>
@@ -134,14 +137,10 @@ $portfolio_result = $stmt2->get_result();
             <?php endif; ?>
         </div>
 
-        <!-- 分頁（可用 JS 改進） -->
+        <!-- 分頁 -->
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-                <li class="page-item disabled"><a class="page-link" href="#">上一頁</a></li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">下一頁</a></li>
+                <!-- 分頁將由 JavaScript 動態生成 -->
             </ul>
         </nav>
     </div>
@@ -150,5 +149,43 @@ $portfolio_result = $stmt2->get_result();
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/category_projects.js"></script>
+
+<!-- 新增作品 Modal -->
+<div class="modal fade" id="addPortfolioModal" tabindex="-1" aria-labelledby="addPortfolioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPortfolioModalLabel">新增作品</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPortfolioForm" enctype="multipart/form-data">
+                    <input type="hidden" name="category_id" value="<?php echo $category_id; ?>">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">作品標題</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">作品描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cover_image" class="form-label">封面圖片</label>
+                        <input class="form-control" type="file" id="cover_image" name="cover_image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="project_files" class="form-label">作品檔案（可多選）</label>
+                        <input class="form-control" type="file" id="project_files" name="project_files[]" multiple>
+                        <small class="text-muted">可以上傳多個檔案，例如：程式碼、文件、壓縮檔等</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submitPortfolio">新增</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

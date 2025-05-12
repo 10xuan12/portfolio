@@ -1,4 +1,146 @@
 document.addEventListener('DOMContentLoaded', function () {
+    console.log("DOM Content Loaded - Student File Category"); // 除錯訊息
+
+    const categoryList = document.getElementById('category-list');
+    const pagination = document.querySelector('.pagination');
+    const searchInput = document.getElementById('search');
+
+    console.log("Elements found:", { // 除錯訊息
+        categoryList,
+        pagination,
+        searchInput
+    });
+
+    let currentPage = 1;
+    let currentSearch = '';
+
+    function showLoading() {
+        console.log("Showing loading state"); // 除錯訊息
+        categoryList.innerHTML = `
+            <div class="col-12 text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">載入中...</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderCategory(category) {
+        return `
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm animate__animated animate__fadeIn">
+                    <img src="${category.image ? 'uploads/' + category.image : 'https://via.placeholder.com/300x150'}" 
+                         class="card-img-top" alt="${category.name}"
+                         style="height: 150px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">${category.name}</h5>
+                        <p class="card-text">${category.description || '無描述'}</p>
+                        <a href="category_projects.php?category_id=${category.category_id}" 
+                           class="btn btn-outline-primary mt-2">查看作品集</a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPagination(paginationData) {
+        const { current_page, total_pages } = paginationData;
+        let html = `
+            <li class="page-item ${current_page === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${current_page - 1}">上一頁</a>
+            </li>
+        `;
+
+        // 顯示當前頁碼前後的頁碼
+        for (let i = Math.max(1, current_page - 2); i <= Math.min(total_pages, current_page + 2); i++) {
+            html += `
+                <li class="page-item ${i === current_page ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        html += `
+            <li class="page-item ${current_page === total_pages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${current_page + 1}">下一頁</a>
+            </li>
+        `;
+
+        pagination.innerHTML = html;
+
+        // 綁定分頁按鈕事件
+        document.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = parseInt(this.dataset.page);
+                if (page && page !== currentPage) {
+                    loadCategories(page);
+                }
+            });
+        });
+    }
+
+    function loadCategories(page = 1) {
+        console.log("Loading categories, page:", page); // 除錯訊息
+        showLoading();
+        currentPage = page;
+
+        const url = new URL('get_categories.php', window.location.href);
+        url.searchParams.set('page', page);
+        if (currentSearch) {
+            url.searchParams.set('search', currentSearch);
+        }
+
+        console.log("Fetching URL:", url.toString()); // 除錯訊息
+
+        fetch(url)
+            .then(response => {
+                console.log("Response received:", response); // 除錯訊息
+                if (!response.ok) throw new Error("伺服器錯誤");
+                return response.json();
+            })
+            .then(data => {
+                console.log("Data received:", data); // 除錯訊息
+                if (data.success) {
+                    // 渲染分類列表
+                    categoryList.innerHTML = data.data.categories.map(category => 
+                        renderCategory(category)
+                    ).join('');
+
+                    // 渲染分頁
+                    renderPagination(data.data.pagination);
+                } else {
+                    throw new Error(data.message || "載入失敗");
+                }
+            })
+            .catch(error => {
+                console.error("載入失敗：", error);
+                categoryList.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger text-center" role="alert">
+                            載入分類時發生錯誤，請稍後再試
+                        </div>
+                    </div>
+                `;
+                pagination.innerHTML = '';
+            });
+    }
+
+    // 搜尋功能
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            currentSearch = this.value.trim();
+            
+            // 延遲 300ms 再搜尋，避免頻繁請求
+            searchTimeout = setTimeout(() => {
+                loadCategories(1); // 重置到第一頁
+            }, 300);
+        });
+    }
+
+    // 處理新增分類表單提交
     const addCategoryForm = document.querySelector('#addCategoryModal form');
     const imageInput = document.getElementById('image');
     const previewImage = document.createElement('img');
@@ -23,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     addCategoryForm.addEventListener('submit', function (e) {
-        e.preventDefault(); // 阻止表單預設送出行為
+        e.preventDefault();
 
         const formData = new FormData(this);
 
@@ -34,109 +176,39 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                addCardToPage(data.category);
-        
+                // 關閉 Modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+                modal.hide();
+                
+                // 重置表單
+                addCategoryForm.reset();
+                previewImage.src = '';
+                
+                // 顯示成功訊息
                 Swal.fire({
-                    title: '新增成功！',
+                    title: '新增分類成功！',
                     icon: 'success',
                     showConfirmButton: false,
                     timer: 1500
+                }).then(() => {
+                    // 重新載入分類列表
+                    loadCategories(1);
                 });
-        
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                modal.hide();
-                addCategoryForm.reset();
-                previewImage.src = '';
             } else {
-                Swal.fire({
-                    title: '新增失敗',
-                    text: data.message || '請稍後再試',
-                    icon: 'error'
-                });
+                throw new Error(data.message || '新增失敗');
             }
-        })        
+        })
         .catch(error => {
             console.error('錯誤:', error);
             Swal.fire({
-                title: '連線錯誤',
-                text: '無法新增分類，請稍後再試',
+                title: '新增分類失敗!',
+                text: error.message || '請稍後再試',
                 icon: 'error'
             });
         });
     });
 
-    function addCardToPage(category) {
-        const newCol = document.createElement('div');
-        newCol.className = 'col'; // 一列一格
-    
-        const imageUrl = category.image_url || 'https://via.placeholder.com/150';
-        const description = category.description || '這裡是簡短介紹～';
-        const id = category.id || generateIdFromName(category.name);
-    
-        newCol.innerHTML = `
-            <div class="card text-center p-3 h-100 shadow-sm animate-card">
-                <img src="${imageUrl}" class="card-img-top mx-auto" style="width: 100px; height: 100px; object-fit: cover;" alt="Category Image">
-                <div class="card-body">
-                    <h5 class="card-title">${category.name}</h5>
-                    <p class="card-text">${description}</p>
-                    <a href="category.php?id=${id}" class="btn btn-primary mt-2">查看作品</a>
-                </div>
-            </div>
-        `;
-    
-        const cardContainer = document.getElementById('cardContainer');
-        if (cardContainer) {
-            cardContainer.prepend(newCol);
-    
-            // 加入動畫class
-            const card = newCol.querySelector('.card');
-            setTimeout(() => {
-                card.classList.add('show');
-            }, 10);
-        } else {
-            console.error('找不到 cardContainer');
-        }
-    }
-    
-
-    // 如果後端沒給 id，自己產一個（名稱轉小寫+隨機數）
-    function generateIdFromName(name) {
-        const randomSuffix = Math.floor(Math.random() * 10000);
-        return name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + randomSuffix;
-    }
-    function renderPagination() {
-        pagination.innerHTML = "";
-
-        // Previous 按鈕
-        const prev = document.createElement("li");
-        prev.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
-        prev.innerHTML = `<a class="page-link" href="#">Previous</a>`;
-        prev.addEventListener("click", function(e) {
-            e.preventDefault();
-            if (currentPage > 1) showPage(currentPage - 1);
-        });
-        pagination.appendChild(prev);
-
-        // 頁數按鈕
-        for (let i = 1; i <= totalPages; i++) {
-            const pageItem = document.createElement("li");
-            pageItem.className = `page-item ${i === currentPage ? "active" : ""}`;
-            pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-            pageItem.addEventListener("click", function(e) {
-                e.preventDefault();
-                showPage(i);
-            });
-            pagination.appendChild(pageItem);
-        }
-
-        // Next 按鈕
-        const next = document.createElement("li");
-        next.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
-        next.innerHTML = `<a class="page-link" href="#">Next</a>`;
-        next.addEventListener("click", function(e) {
-            e.preventDefault();
-            if (currentPage < totalPages) showPage(currentPage + 1);
-        });
-        pagination.appendChild(next);
-    }
+    // 初始化載入
+    console.log("Starting initial load"); // 除錯訊息
+    loadCategories();
 });

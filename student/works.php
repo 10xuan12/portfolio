@@ -91,35 +91,20 @@ $total_pages = ceil($total / $limit);
             <a href="student_file_category.php" class="btn btn-outline-secondary">分類</a>
             <a href="works.php" class="btn btn-primary">全部作品</a>
           </div>
-          <a href="create_portfolio.php" class="btn btn-success">
+          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPortfolioModal">
             ＋ 新增作品
-          </a>
+          </button>
         </div>
 
-        <!-- 作品列表 -->
-        <div class="row" id="portfolioContainer">
-            <?php while ($portfolio = $portfolio_result->fetch_assoc()): ?>
-            <div class="col-12 col-sm-6 col-lg-4">
-              <div class="card h-100 shadow-sm">
-                <img src="uploads/<?php echo htmlspecialchars($portfolio['cover_image']); ?>" class="card-img-top" alt="作品圖片">
-                <div class="card-body text-center">
-                  <h5 class="card-title"><?php echo htmlspecialchars($portfolio['title']); ?></h5>
-                  <p class="card-text"><?php echo htmlspecialchars($portfolio['description']); ?></p>
-                  <a href="work_detail.php?portfolio_id=<?php echo $portfolio['portfolio_id']; ?>" class="btn btn-outline-primary mt-2">查看作品</a>
-                </div>
-              </div>
-            </div>
-            <?php endwhile; ?>
+        <!-- 卡片列表 -->
+        <div class="row g-4" id="portfolio-list">
+            <!-- 作品卡片將由 JavaScript 動態生成 -->
         </div>
 
         <!-- 分頁 -->
         <nav aria-label="Page navigation" class="mt-4">
           <ul class="pagination justify-content-center">
-            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-              <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                <a class="page-link" href="works.php?page=<?php echo $i; ?>&search=<?php echo htmlspecialchars($search); ?>"><?php echo $i; ?></a>
-              </li>
-            <?php endfor; ?>
+              <!-- 分頁將由 JavaScript 動態生成 -->
           </ul>
         </nav>
       </div>
@@ -127,11 +112,58 @@ $total_pages = ceil($total / $limit);
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.getElementById('search').addEventListener('input', function () {
-      const query = this.value;
-      window.location.href = `works.php?search=${encodeURIComponent(query)}`;
-  });
-</script>
+<script src="../js/works.js?v=<?php echo time(); ?>"></script>
+
+<!-- 新增作品 Modal -->
+<div class="modal fade" id="addPortfolioModal" tabindex="-1" aria-labelledby="addPortfolioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPortfolioModalLabel">新增作品</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPortfolioForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">選擇分類</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">請選擇分類</option>
+                            <?php
+                            $category_sql = "SELECT * FROM categories ORDER BY name";
+                            $category_result = $conn->query($category_sql);
+                            while($category = $category_result->fetch_assoc()):
+                            ?>
+                            <option value="<?php echo $category['category_id']; ?>">
+                                <?php echo htmlspecialchars($category['name']); ?>
+                            </option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">作品標題</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">作品描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cover_image" class="form-label">封面圖片</label>
+                        <input class="form-control" type="file" id="cover_image" name="cover_image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="project_files" class="form-label">作品檔案（可多選）</label>
+                        <input class="form-control" type="file" id="project_files" name="project_files[]" multiple>
+                        <small class="text-muted">可以上傳多個檔案，例如：程式碼、文件、壓縮檔等</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submitPortfolio">新增</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

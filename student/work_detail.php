@@ -124,53 +124,51 @@ $comments = $commentStmt->get_result();
       </div>
 
       <!-- 留言區 -->
-      <div class="bg-info text-white px-3 py-2">留言</div>
-      <div class="bg-light p-3" id="comment-section">
-        <ul class="list-group bg-light">
-          <?php if ($comments->num_rows > 0): ?>
-            <?php while($comment = $comments->fetch_assoc()): ?>
-              <li class="list-group-item bg-light">
-                <span class="badge bg-secondary rounded-circle">A</span>
-                <?php echo htmlspecialchars($comment['content']); ?>
-              </li>
-            <?php endwhile; ?>
-          <?php else: ?>
-            <li class="list-group-item">目前沒有留言。</li>
-          <?php endif; ?>
-        </ul>
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">💬 留言區</h5>
+        </div>
+        <div class="card-body">
+          <!-- 留言列表 -->
+          <div id="commentList" class="mb-4">
+            <!-- 留言將由 JavaScript 動態載入 -->
+          </div>
+
+          <!-- 分頁導航 -->
+          <div id="commentPagination" class="mt-4">
+            <!-- 分頁將由 JavaScript 動態載入 -->
+          </div>
+
+          <!-- 留言表單 -->
+          <form id="commentForm" class="mt-4">
+            <div class="mb-3">
+              <textarea class="form-control" name="content" rows="3" placeholder="留下你的留言..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">送出留言</button>
+          </form>
+        </div>
       </div>
 
-      <!-- 留言表單 -->
-      <div class="mt-4" id="comments-section">
-        <h4 class="mb-3">💬 留言</h4>
-        <form id="commentForm" method="POST">
-          <div class="mb-3">
-            <textarea class="form-control" name="content" rows="3" placeholder="留下你的留言..." required></textarea>
-          </div>
-          <input type="hidden" name="portfolio_id" value="<?= $portfolio_id ?>">
-          <button type="submit" class="btn btn-primary">送出留言</button>
-        </form>
-      </div>
       <!-- 編輯留言 Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editCommentModalLabel">編輯留言</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-      </div>
-      <div class="modal-body">
-        <form id="editCommentForm">
-          <div class="mb-3">
-            <textarea class="form-control" id="editContent" name="content" rows="4" required></textarea>
+      <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editCommentModalLabel">編輯留言</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+              <form id="editCommentForm">
+                <div class="mb-3">
+                  <textarea class="form-control" id="editContent" name="content" rows="4" required></textarea>
+                </div>
+                <input type="hidden" id="editCommentId" name="comment_id">
+                <button type="submit" class="btn btn-primary">儲存修改</button>
+              </form>
+            </div>
           </div>
-          <input type="hidden" id="editCommentId" name="comment_id">
-          <button type="submit" class="btn btn-primary">儲存修改</button>
-        </form>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
     </div>
   </div>

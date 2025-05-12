@@ -18,6 +18,8 @@ $category_result = $conn->query($category_sql);
         <link rel="stylesheet" href="../css/student_file_category.css?v=3">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- 加入 animate.css -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     </head>
 <body>
 
@@ -78,34 +80,17 @@ $category_result = $conn->query($category_sql);
       </div>
 
       <!-- 卡片列表 -->
-<div class="row g-4" id="category-list">
-    <?php while($category = $category_result->fetch_assoc()): ?>
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3"> <!-- 這裡調整為更小的列數 -->
-      <div class="card h-100 shadow-sm">
-      <img src="<?php echo !empty($category['image']) ? 'uploads/' . $category['image'] : 'https://via.placeholder.com/300x150'; ?>" class="card-img-top" alt="...">
-        <div class="card-body text-center">
-          <h5 class="card-title"><?php echo htmlspecialchars($category['name']); ?></h5>
-          <p class="card-text"><?php echo htmlspecialchars($category['description']); ?></p>
-          <a href="category_projects.php?category_id=<?php echo $category['category_id']; ?>" class="btn btn-outline-primary mt-2">查看作品集</a>
-        </div>
+      <div class="row g-4" id="category-list">
+          <!-- 分類卡片將由 JavaScript 動態生成 -->
       </div>
-    </div>
-    <?php endwhile; ?>
-</div>
-    </div>
-  </div>
-  
 
       <!-- 分頁 -->
       <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-          <li class="page-item disabled"><a class="page-link" href="#">上一頁</a></li>
-          <li class="page-item active"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item"><a class="page-link" href="#">下一頁</a></li>
-        </ul>
+          <ul class="pagination justify-content-center">
+              <!-- 分頁將由 JavaScript 動態生成 -->
+          </ul>
       </nav>
+
     </div>
   </div>
 </div>
@@ -139,7 +124,8 @@ $category_result = $conn->query($category_sql);
   </div>
 </div>
 
+<!-- 確保 JavaScript 檔案在 body 結束標籤前引入 -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/student_file_category.js"></script>
+<script src="../js/student_file_category.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
