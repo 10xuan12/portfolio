@@ -177,72 +177,135 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 處理新增作品表單提交
     const addPortfolioForm = document.getElementById('addPortfolioForm');
+    const submitPortfolioBtn = document.getElementById('submitPortfolio');
+    const addPortfolioModal = document.getElementById('addPortfolioModal');
+
     if (addPortfolioForm) {
+        // 驗證表單資料
+        function validateForm(formData) {
+            const title = formData.get('title')?.trim();
+            const description = formData.get('description')?.trim();
+            const category_id = formData.get('category_id');
+            const cover_image = formData.get('cover_image');
+            const project_files = formData.getAll('project_files[]');
+
+            if (!title) {
+                throw new Error('請輸入作品標題');
+            }
+            if (!description) {
+                throw new Error('請輸入作品描述');
+            }
+            if (!category_id || category_id === '0') {
+                throw new Error('請選擇作品分類');
+            }
+            if (cover_image && cover_image.size > 0) {
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(cover_image.type)) {
+                    throw new Error('封面圖片格式不正確，請上傳 JPG、PNG、GIF 或 WEBP 格式的圖片');
+                }
+                if (cover_image.size > 5 * 1024 * 1024) { // 5MB
+                    throw new Error('封面圖片大小不能超過 5MB');
+                }
+            }
+            if (project_files.length > 0) {
+                for (const file of project_files) {
+                    if (file.size > 10 * 1024 * 1024) { // 10MB
+                        throw new Error('檔案大小不能超過 10MB');
+                    }
+                }
+            }
+        }
+
+        // 處理表單提交
         addPortfolioForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
+            
+            if (submitPortfolioBtn.disabled) {
+                return;
+            }
+
+            const formData = new FormData(this);
             
             try {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `
+                // 驗證表單資料
+                validateForm(formData);
+
+                // 更新按鈕狀態
+                submitPortfolioBtn.disabled = true;
+                submitPortfolioBtn.innerHTML = `
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     處理中...
                 `;
 
-                const formData = new FormData(this);
+                // 發送請求
                 const response = await fetch('create_portfolio.php', {
                     method: 'POST',
                     body: formData
                 });
 
-                const result = await response.json();
-                
+                // 檢查回應狀態
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 解析 JSON 回應
+                let result;
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    throw new Error('伺服器回應格式錯誤');
+                }
+
                 if (result.success) {
-                    Swal.fire({
+                    // 成功處理
+                    await Swal.fire({
                         icon: 'success',
                         title: '成功！',
                         text: '作品已成功新增',
                         showConfirmButton: false,
                         timer: 1500
-                    }).then(() => {
-                        // 關閉 Modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('addPortfolioModal'));
-                        modal.hide();
-                        
-                        // 重置表單
-                        this.reset();
-                        
-                        // 重新載入作品列表
-                        currentPage = 1;
-                        loadPortfolios();
                     });
+
+                    // 關閉 Modal
+                    const modal = bootstrap.Modal.getInstance(addPortfolioModal);
+                    modal.hide();
+                    
+                    // 重置表單
+                    this.reset();
+                    
+                    // 重新載入作品列表
+                    currentPage = 1;
+                    await loadPortfolios();
                 } else {
                     throw new Error(result.message || '新增失敗');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                Swal.fire({
+                await Swal.fire({
                     icon: 'error',
                     title: '錯誤！',
                     text: error.message || '新增作品時發生錯誤，請稍後再試'
                 });
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+                // 恢復按鈕狀態
+                submitPortfolioBtn.disabled = false;
+                submitPortfolioBtn.innerHTML = '新增';
             }
         });
     }
 
     // 當 Modal 關閉時重置表單
-    const addPortfolioModal = document.getElementById('addPortfolioModal');
     if (addPortfolioModal) {
         addPortfolioModal.addEventListener('hidden.bs.modal', function() {
             if (addPortfolioForm) {
                 addPortfolioForm.reset();
-                const submitBtn = addPortfolioForm.querySelector('button[type="submit"]');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '新增作品';
+                submitPortfolioBtn.disabled = false;
+                submitPortfolioBtn.innerHTML = '新增';
+                
+                // 清除錯誤訊息
+                const errorElements = addPortfolioForm.querySelectorAll('.is-invalid');
+                errorElements.forEach(el => el.classList.remove('is-invalid'));
             }
         });
     }

@@ -144,7 +144,7 @@ $conn->close();
             </a>
           </li>
           <li class="nav-item">
-            <a href="../login.php" class="nav-link">
+            <a href="../login.html" class="nav-link">
               <i class="bi bi-box-arrow-right"></i>
               <span>登出</span>
             </a>

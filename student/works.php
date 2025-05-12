@@ -123,9 +123,9 @@ $total_pages = ceil($total / $limit);
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
             </div>
             <div class="modal-body">
-                <form id="addPortfolioForm" enctype="multipart/form-data">
+                <form id="addPortfolioForm" enctype="multipart/form-data" novalidate>
                     <div class="mb-3">
-                        <label for="category_id" class="form-label">選擇分類</label>
+                        <label for="category_id" class="form-label">選擇分類 <span class="text-danger">*</span></label>
                         <select class="form-select" id="category_id" name="category_id" required>
                             <option value="">請選擇分類</option>
                             <?php
@@ -138,29 +138,38 @@ $total_pages = ceil($total / $limit);
                             </option>
                             <?php endwhile; ?>
                         </select>
+                        <div class="invalid-feedback">請選擇作品分類</div>
                     </div>
                     <div class="mb-3">
-                        <label for="title" class="form-label">作品標題</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
+                        <label for="title" class="form-label">作品標題 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" required 
+                               minlength="2" maxlength="100" placeholder="請輸入作品標題（2-100字）">
+                        <div class="invalid-feedback">請輸入作品標題（2-100字）</div>
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label">作品描述</label>
-                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        <label for="description" class="form-label">作品描述 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required
+                                  minlength="10" maxlength="1000" placeholder="請輸入作品描述（10-1000字）"></textarea>
+                        <div class="invalid-feedback">請輸入作品描述（10-1000字）</div>
                     </div>
                     <div class="mb-3">
                         <label for="cover_image" class="form-label">封面圖片</label>
-                        <input class="form-control" type="file" id="cover_image" name="cover_image" accept="image/*">
+                        <input class="form-control" type="file" id="cover_image" name="cover_image" 
+                               accept="image/jpeg,image/png,image/gif,image/webp">
+                        <div class="form-text">支援 JPG、PNG、GIF、WEBP 格式，檔案大小不超過 5MB</div>
+                        <div class="invalid-feedback">請選擇正確的圖片格式，且檔案大小不超過 5MB</div>
                     </div>
                     <div class="mb-3">
                         <label for="project_files" class="form-label">作品檔案（可多選）</label>
                         <input class="form-control" type="file" id="project_files" name="project_files[]" multiple>
-                        <small class="text-muted">可以上傳多個檔案，例如：程式碼、文件、壓縮檔等</small>
+                        <div class="form-text">可以上傳多個檔案，每個檔案大小不超過 10MB</div>
+                        <div class="invalid-feedback">檔案大小不能超過 10MB</div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="submitPortfolio">新增</button>
+                <button type="submit" class="btn btn-primary" id="submitPortfolio" form="addPortfolioForm">新增</button>
             </div>
         </div>
     </div>

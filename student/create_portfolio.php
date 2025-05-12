@@ -1,4 +1,10 @@
 <?php
+// 關閉錯誤顯示，改為記錄到錯誤日誌
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error.log');
+
 session_start();
 require '../includes/db_connect.php';
 /*
@@ -20,10 +26,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = ['success' => false, 'message' => ''];
     
     try {
+        // 檢查必要欄位
+        if (empty($_POST['title'])) {
+            throw new Exception("標題不能為空");
+        }
+        if (empty($_POST['description'])) {
+            throw new Exception("描述不能為空");
+        }
+        if (empty($_POST['category_id'])) {
+            throw new Exception("請選擇分類");
+        }
+
         $title = trim($_POST['title']);
         $description = trim($_POST['description']);
         $cover_image = '';
-        $category_id = isset($_POST['category_id']) ? intval($_POST['category_id']) : 0;
+        $category_id = intval($_POST['category_id']);
         $student_id = 1; // 暫時固定為 1，之後改回使用 session
 
         // 開始交易
@@ -31,27 +48,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 處理封面圖片上傳
         if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] === UPLOAD_ERR_OK) {
-            $ext = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
+            $ext = strtolower(pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION));
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            if (!in_array($ext, $allowed_extensions)) {
+                throw new Exception("不支援的圖片格式，請上傳 JPG、PNG、GIF 或 WEBP 格式的圖片");
+            }
+
             $filename = uniqid('cover_', true) . '.' . $ext;
             $upload_dir = __DIR__ . '/uploads/';
+            
             if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
+                if (!mkdir($upload_dir, 0777, true)) {
+                    throw new Exception("無法建立上傳目錄");
+                }
             }
-            $target_path = $upload_dir . $filename;
-            if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_path)) {
-                $cover_image = $filename;
-            }
-        }
 
-        // 檢查必要欄位
-        if (empty($title)) {
-            throw new Exception("標題不能為空");
-        }
-        if (empty($description)) {
-            throw new Exception("描述不能為空");
-        }
-        if ($category_id <= 0) {
-            throw new Exception("無效的分類ID");
+            $target_path = $upload_dir . $filename;
+            if (!move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_path)) {
+                throw new Exception("圖片上傳失敗");
+            }
+            
+            $cover_image = $filename;
         }
 
         // 寫入作品資料
@@ -70,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $portfolio_id = $conn->insert_id;
         
         if ($portfolio_id <= 0) {
-            throw new Exception("無法取得作品ID。SQL 錯誤：" . $conn->error);
+            throw new Exception("無法取得作品ID");
         }
 
         // 處理檔案上傳
@@ -84,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $file_type = $files['type'][$i];
                     $file_tmp = $files['tmp_name'][$i];
                     
-                    $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+                    $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
                     $new_filename = uniqid('file_', true) . '.' . $ext;
                     
                     $upload_dir = __DIR__ . '/uploads/';
@@ -116,17 +134,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (Exception $e) {
         // 發生錯誤時回滾交易
-        $conn->rollback();
+        if ($conn->inTransaction()) {
+            $conn->rollback();
+        }
+        
         $response['message'] = '新增失敗：' . $e->getMessage();
         
-        // 輸出詳細的錯誤資訊（僅用於除錯）
+        // 記錄錯誤到日誌
         error_log("Portfolio creation error: " . $e->getMessage());
         error_log("SQL State: " . $conn->sqlstate);
         error_log("Error Code: " . $conn->errno);
         error_log("Error Message: " . $conn->error);
     }
 
-    echo json_encode($response);
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
     exit;
 }
 ?> 
