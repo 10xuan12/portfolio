@@ -5,7 +5,8 @@ use PDO;
 use PDOException;
 
 class EnterpriseDB {
-    private PDO $pdo;
+    /** @var PDO */
+    private $pdo;
 
     public function __construct() {
         $host     = 'localhost';
