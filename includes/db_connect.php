@@ -2,6 +2,7 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
 // 資料庫連線設定
 global $conn;
 $servername = "172.20.10.2";  // 遠端資料庫伺服器 IP
