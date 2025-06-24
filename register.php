@@ -10,9 +10,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
     $password = trim($_POST["password"]);
     $role = trim($_POST["role"]);
+    $student_id = isset($_POST["student_id"]) ? trim($_POST["student_id"]) : null;
 
-
-    if (empty($name) || empty($email) || empty($password) || empty($role)) {
+    if (empty($name) || empty($email) || empty($password) || empty($role) || ($role == "student" && empty($student_id))) {
         echo json_encode(["status" => "error", "message" => "所有欄位必須填寫"]);
         exit;
     }
@@ -41,15 +41,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 插入新使用者，依據不同角色插入不同資料表
     if($role == "student"){
-        $sql = "INSERT INTO students (name, email, password_hash) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO students (student_id, name, email, password_hash) VALUES (?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("isss", $student_id, $name, $email, $hashed_password);
     }else if($role == "admin"){
         $sql = "INSERT INTO admins (name, email, password_hash) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $name, $email, $hashed_password);
     }else if($role == "company"){
         $sql = "INSERT INTO companies (name, email, password_hash) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $name, $email, $hashed_password);
     }
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $name, $email, $hashed_password);
 
     if ($stmt->execute()) {
         echo json_encode(["status" => "success", "message" => "註冊成功"]);
@@ -59,4 +62,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 } else {
     echo json_encode(["status" => "error", "message" => "請求方式錯誤"]);
 }
+
+$conn->close();
 ?>

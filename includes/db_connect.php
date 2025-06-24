@@ -1,20 +1,8 @@
 <?php
-<<<<<<< HEAD
-$servername = "localhost";
-$username = "root";
-$password = ""; // 預設 XAMPP 是空密碼
-$dbname = "ephortfolio";
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-// 建立連線
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// 檢查連線
-if ($conn->connect_error) {
-    die(json_encode([
-        "status" => "error",
-        "message" => "資料庫連線失敗: " . $conn->connect_error
-    ]));
-=======
 // 資料庫連線設定
 global $conn;
 $servername = "172.20.10.2";  // 遠端資料庫伺服器 IP
@@ -38,6 +26,5 @@ try {
     }
 } catch (Exception $e) {
     die("資料庫連線錯誤: " . $e->getMessage() . "<br>請確認：<br>1. 遠端伺服器允許 teammate1 無密碼連線<br>2. teammate1 使用者有從您的 IP (172.20.10.3) 連線的權限");
->>>>>>> 7e45d79223ff2547a50cc7cfe848470c71167bbe
 }
 ?>
