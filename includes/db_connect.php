@@ -3,7 +3,7 @@
 $servername = "172.20.10.2";  // 遠端資料庫伺服器 IP
 $username = "teammate1";      // 資料庫使用者名稱
 $password = "securepass123";              // 無密碼
-$dbname = "enterprise_portal"; // 資料庫名稱
+$dbname = "ephortfolio"; // 資料庫名稱
 $charset = "utf8mb4";        // 字符集
 
 // 建立資料庫連線
