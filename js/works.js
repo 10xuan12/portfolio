@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("DOM Content Loaded - Works Page");
 
     const portfolioList = document.getElementById('portfolio-list');
-    const pagination = document.querySelector('.pagination');
+    const pagination = document.getElementById('pagination');
     const searchInput = document.getElementById('search');
     let currentPage = 1;
     let isLoading = false;
