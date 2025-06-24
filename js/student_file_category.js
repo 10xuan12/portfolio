@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function () {
     const categoryList = document.getElementById('category-list');
     const pagination = document.getElementById('pagination');
@@ -135,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('addCategoryModal').classList.add('hidden');
+                    document.getElementById('addCategoryModal').classList.add('d-none');
                     addCategoryForm.reset();
                     previewImage.src = '';
                     Swal.fire({ title: '新增分類成功！', icon: 'success', timer: 1500, showConfirmButton: false });

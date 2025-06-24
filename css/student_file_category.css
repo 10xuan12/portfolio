@@ -1,50 +1,45 @@
 /* ====== Bootstrap 優化版 student_file_category.css ====== */
 body {
   background-color: #f8f9fa;
-  font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+  font-family: 'Noto Sans TC', sans-serif;
   color: #212529;
 }
 
 /* 側邊欄樣式 */
 .sidebar {
-  background-color: #5d73a9;
+  background-color: #babcbd !important;
   height: 100vh;
   padding-top: 20px;
   position: fixed;
   top: 0;
   left: 0;
-  width: 160px;
+  width: 100px;
+  font-family: 'Comic Sans MS', sans-serif;
   transition: width 0.3s ease;
-  z-index: 1030;
 }
 .sidebar .nav-link {
-  color: #fff;
-  font-weight: 500;
+  color: #000000;
+  font-weight: bold;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 12px 0;
-  font-size: 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 8px;
-  transition: background 0.2s, color 0.2s;
+  padding: 10px 0;
 }
 .sidebar .nav-link i {
-  font-size: 1.4rem;
-  margin-bottom: 4px;
+  font-size: 1.5rem;
+  margin-bottom: 8px;
 }
-.sidebar .nav-link:hover, .sidebar .nav-link.active {
-  background-color: #3b4e7e;
-  color: #ffe082;
+.sidebar .nav-link:hover {
+  background-color: #6e3ced;
+  color: #ffffff;
+  border-radius: 5px;
 }
 
 .main-content {
-  margin-left: 160px;
-  padding: 24px 16px;
-  min-height: 100vh;
-  background: #f8f9fa;
+  margin-left: 250px;
+  padding: 20px;
 }
 
 /* 分類標題與介紹 */
@@ -81,14 +76,9 @@ body {
 
 /* 按鈕樣式 */
 .btn-primary {
-  background-color: #fff;
-  color: #5d73a9;
-  border: 1px solid #5d73a9;
-  border-radius: 50rem;
-  font-weight: 500;
-  padding: 8px 20px;
-  transition: background 0.2s, color 0.2s;
-} 
+  background-color: #5d73a9;
+  color: white;
+}
 
 .btn-view, .btn-success {
   background-color: #5d73a9;
@@ -106,57 +96,36 @@ body {
 }
 
 .btn-outline-secondary {
-  background: #5d73a9;
-  color: #fff;
-  border: 1px solid #5d73a9;
-  border-radius: 50rem;
-  font-weight: 500;
-  padding: 8px 20px;
-  transition: background 0.2s, color 0.2s;
+  border-color: #555;
+  color: #555;
+  background-color: #f8f9fa;
 }
 .btn-outline-secondary:hover {
-  background: #5d73a9;
-  color: #fff;
+  background-color: #5d73a9;
+  color: white;
 }
 
 /* 卡片樣式 */
-.project-card {
-  border-radius: 1rem;
-  overflow: hidden;
-  transition: box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(61, 81, 120, 0.08);
-  background: #fff;
-  border: 1px solid #dee2e6;
+.card {
+  border-radius: 0.75rem;
+  border: none;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-.project-card:hover {
-  box-shadow: 0 6px 18px rgba(61, 81, 120, 0.13);
-}
-.project-card img {
+.card-img-top {
   object-fit: cover;
   height: 180px;
-  width: 100%;
+  border-radius: 0.5rem 0.5rem 0 0;
 }
-.project-card .card-body {
-  padding: 1rem 1.2rem;
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(99, 132, 255, 0.3);
 }
-.project-card .card-title {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #3b4e7e;
+.card .btn {
+  transition: transform 0.2s ease;
 }
-.project-card .card-text {
-  font-size: 0.95rem;
-  color: #6c757d;
-  height: 48px;
-  overflow: hidden;
-}
-.project-card .card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: transparent;
-  border-top: none;
-  padding: 0.75rem 1.2rem;
+.card .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(99, 132, 255, 0.3);
 }
 
 /* 無資料區塊 */
@@ -168,19 +137,41 @@ body {
 }
 
 /* 響應式 */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
+  /* 收合側邊欄 */
+  .sidebar {
+    width: 200px;
+    padding: 0;
+  }
+
+  .sidebar .fs-4 {
+    font-size: 1rem !important;
+    padding: 0.75rem 0;
+  }
+
+  .sidebar .nav-link {
+    padding: 5rem;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .sidebar .nav-link span {
+    display: none;
+  }
+
+  .sidebar .nav-link i,
+  .sidebar .nav-link .bi {
+    margin-right: 0;
+    font-size: 1.2rem;
+  }
+
   .main-content {
     margin-left: 0;
-    padding: 12px 4px;
   }
-  .sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    display: flex;
-    justify-content: space-around;
-    padding: 0;
+
+  /* 調整搜尋框樣式，讓其更適應小螢幕 */
+  #search {
+    padding-left: 2rem;
   }
 }
 @media (max-width: 600px) {

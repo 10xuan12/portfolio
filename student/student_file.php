@@ -28,7 +28,7 @@ $category_result = $conn->query($category_sql);
                 <i class="fas fa-user-circle"></i>
                 <span class="sidebar-label">主頁</span>
             </a>
-            <a href="student_file_category.php" class="text-white text-center bg-primary rounded mb-3">
+            <a href="student_file.php" class="text-white text-center bg-primary rounded mb-3">
                 <i class="fas fa-folder fs-4"></i>
                 <span class="sidebar-label">作品集</span>
             </a>
@@ -57,7 +57,7 @@ $category_result = $conn->query($category_sql);
             <!-- 按鈕列 -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <a href="student_file_category.php" class="btn btn-outline-secondary me-2">分類</a>
+                    <a href="student_file.php" class="btn btn-outline-secondary me-2">分類</a>
                     <a href="works.php" class="btn btn-primary">全部作品</a>
                 </div>
                 <button class="btn btn-success" onclick="document.getElementById('addCategoryModal').classList.remove('d-none')">

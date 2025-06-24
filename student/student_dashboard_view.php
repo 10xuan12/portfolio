@@ -50,7 +50,7 @@ $conn->close();
             </a>
 
             <!-- 作品集 -->
-            <a href="student_file_category.php" class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+            <a href="student_file.php" class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
                 <i class="fas fa-folder text-xl"></i>
                 <span class="text-xs mt-1">作品集</span>
             </a>

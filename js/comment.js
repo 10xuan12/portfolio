@@ -3,8 +3,8 @@ const form = document.getElementById("commentForm");
 const pagination = document.getElementById("commentPagination");
 
 // 正確抓到 modal 元素
-const editModalEl = document.getElementById("myModal");
-const editModal = new bootstrap.Modal(document.getElementById("myModal"));
+const editModalEl = document.getElementById("editCommentModal");
+const editModal = new bootstrap.Modal(document.getElementById("editCommentModal"));
 
 // 編輯表單元素
 const editForm = document.getElementById("editCommentForm");
