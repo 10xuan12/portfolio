@@ -1,5 +1,9 @@
 <?php
-require 'includes/db_connect.php'; // 確保這個檔案連接到 MySQL
+require 'test_db_connection.php';
+global $conn; // 確保這個檔案連接到 MySQL
+if (!$conn || !$conn->ping()) {
+    die("資料庫連線已關閉，請檢查 db_connect.php 或其他程式碼有無提前關閉連線。");
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
@@ -19,6 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else if ($role == "company") {
         $sql = "SELECT * FROM companies WHERE email = ?";
     }
+
+    
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);

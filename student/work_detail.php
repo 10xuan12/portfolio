@@ -35,147 +35,175 @@ $comments = $commentStmt->get_result();
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>作品詳細頁面</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/work_detail.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品詳細頁面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <!-- 左側欄 -->
+        <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
+            <!-- 主頁 -->
+            <a href="student_dashboard_view.php" class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+                <i class="fas fa-user-circle text-xl"></i>
+                <span class="text-xs mt-1">主頁</span>
+            </a>
 
-<div class="container-fluid p-0">
-  <div class="row g-0">
-    <!-- 側邊欄 -->
-    <div class="col-auto">
-      <nav class="sidebar">
-        <ul class="nav nav-pills flex-column">
-          <li class="nav-item">
-            <a href="student_dashboard_view.php" class="nav-link">
-              <i class="bi bi-house"></i>
-              <span>個人主頁</span>
+            <!-- 作品集 -->
+            <a href="student_file_category.php" class="flex flex-col items-center w-14 h-14 justify-center text-white bg-blue-700">
+                <i class="fas fa-folder text-xl"></i>
+                <span class="text-xs mt-1">作品集</span>
             </a>
-          </li>
-          <li class="nav-item">
-            <a href="student_file_category.php" class="nav-link active">
-              <i class="bi bi-collection"></i>
-              <span>作品集</span>
+
+            <!-- 通知 -->
+            <a href="#" class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+                <i class="fas fa-bell text-xl"></i>
+                <span class="text-xs mt-1">通知</span>
             </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="bi bi-bell"></i>
-              <span>通知</span>
+
+            <!-- 設定 -->
+            <a href="#" class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+                <i class="fas fa-cog text-xl"></i>
+                <span class="text-xs mt-1">設定</span>
             </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="bi bi-gear"></i>
-              <span>設定</span>
+
+            <!-- 登出 -->
+            <a href="../login.html" class="flex flex-col items-center w-14 h-14 justify-center text-black hover:bg-gray-400">
+                <i class="fas fa-sign-out-alt text-xl"></i>
+                <span class="text-xs mt-1">登出</span>
             </a>
-          </li>
-          <li class="nav-item">
-            <a href="../login.html" class="nav-link">
-              <i class="bi bi-box-arrow-right"></i>
-              <span>登出</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
+        </nav>
+
+        <!-- 右側主內容 -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- 作品資訊區 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="md:w-1/3">
+                        <img src="uploads/<?php echo htmlspecialchars($portfolio['cover_image']); ?>" 
+                             class="w-full h-48 object-cover rounded-lg" 
+                             alt="作品封面">
+                    </div>
+                    <div class="md:w-2/3 flex flex-col justify-center">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                            <?php echo htmlspecialchars($portfolio['title'] ?? '未知標題'); ?>
+                        </h2>
+                        <p class="text-gray-600">
+                            <?php echo htmlspecialchars($portfolio['category_name'] ?? '未分類'); ?>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 簡介區塊 -->
+            <div class="mb-6">
+                <div class="bg-blue-700 text-white px-4 py-2 rounded-t-lg">
+                    <h3 class="text-lg font-medium">簡介</h3>
+                </div>
+                <div class="bg-white p-4 rounded-b-lg shadow-md">
+                    <p class="text-gray-700 whitespace-pre-line">
+                        <?php echo nl2br(htmlspecialchars($portfolio['description'] ?? '暫無描述')); ?>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 檔案區 -->
+            <div class="bg-white rounded-lg shadow-md mb-6">
+                <div class="border-b px-4 py-3">
+                    <h3 class="text-lg font-medium text-gray-900">檔案資料</h3>
+                </div>
+                <div class="p-4">
+                    <?php if($fileResult->num_rows > 0): ?>
+                        <div class="space-y-2">
+                            <?php while($file = $fileResult->fetch_assoc()): ?>
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas fa-file mr-2"></i>
+                                    <span><?php echo htmlspecialchars($file['file_name']); ?></span>
+                                </div>
+                            <?php endwhile; ?>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-gray-500">暫無檔案</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- 留言區 -->
+            <div class="bg-white rounded-lg shadow-md">
+                <div class="bg-blue-700 text-white px-4 py-3 rounded-t-lg">
+                    <h3 class="text-lg font-medium">💬 留言區</h3>
+                </div>
+                <div class="p-4">
+                    <!-- 留言列表 -->
+                    <div id="commentList" class="space-y-4 mb-6">
+                        <!-- 留言將由 JavaScript 動態載入 -->
+                    </div>
+
+                    <!-- 分頁導航 -->
+                    <div id="commentPagination" class="mt-6">
+                        <!-- 分頁將由 JavaScript 動態載入 -->
+                    </div>
+
+                    <!-- 留言表單 -->
+                    <form id="commentForm" class="mt-6 space-y-4">
+                        <div>
+                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                      name="content" 
+                                      rows="3" 
+                                      placeholder="留下你的留言..." 
+                                      required></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                送出留言
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- 主內容 -->
-    <div class="col content">
-      <!-- 作品資訊區 -->
-      <div class="card mb-4 p-4">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <img src="uploads/<?php echo htmlspecialchars($portfolio['cover_image']); ?>" class="img-fluid rounded" alt="作品封面" style="max-height: 100px;">
-          </div>
-          <div class="col-md-8 d-flex flex-column justify-content-center">
-            <h3><?php echo htmlspecialchars($portfolio['title'] ?? '未知標題'); ?></h3>
-            <p class="text-muted"><?php echo htmlspecialchars($portfolio['category_name'] ?? '未分類'); ?></p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 簡介區塊 -->
-      <div class="mb-4">
-        <div class="bg-primary text-white px-3 py-2">簡介</div>
-        <div class="p-3" style="background-color: #f4e7e7;">
-          <p><?php echo nl2br(htmlspecialchars($portfolio['description'] ?? '暫無描述')); ?></p>
-        </div>
-      </div>
-
-      <!-- 檔案區 -->
-      <div class="card mb-4">
-        <div class="card-header">檔案資料</div>
-        <div class="card-body">
-          <?php if($fileResult->num_rows > 0): ?>
-            <?php while($file = $fileResult->fetch_assoc()): ?>
-              <p><i class="bi bi-file-earmark"></i> <?php echo htmlspecialchars($file['file_name']); ?></p>
-            <?php endwhile; ?>
-          <?php else: ?>
-            <p class="text-muted">暫無檔案</p>
-          <?php endif; ?>
-        </div>
-      </div>
-
-      <!-- 留言區 -->
-      <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">💬 留言區</h5>
-        </div>
-        <div class="card-body">
-          <!-- 留言列表 -->
-          <div id="commentList" class="mb-4">
-            <!-- 留言將由 JavaScript 動態載入 -->
-          </div>
-
-          <!-- 分頁導航 -->
-          <div id="commentPagination" class="mt-4">
-            <!-- 分頁將由 JavaScript 動態載入 -->
-          </div>
-
-          <!-- 留言表單 -->
-          <form id="commentForm" class="mt-4">
-            <div class="mb-3">
-              <textarea class="form-control" name="content" rows="3" placeholder="留下你的留言..." required></textarea>
+    <!-- 編輯留言 Modal -->
+    <div id="editCommentModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">編輯留言</h3>
+                <button onclick="document.getElementById('editCommentModal').classList.add('hidden')"
+                        class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <button type="submit" class="btn btn-primary">送出留言</button>
-          </form>
-        </div>
-      </div>
-
-      <!-- 編輯留言 Modal -->
-      <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="editCommentModalLabel">編輯留言</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
-            </div>
-            <div class="modal-body">
-              <form id="editCommentForm">
-                <div class="mb-3">
-                  <textarea class="form-control" id="editContent" name="content" rows="4" required></textarea>
+            <form id="editCommentForm" class="space-y-4">
+                <div>
+                    <textarea id="editContent" 
+                              name="content" 
+                              rows="4" 
+                              required
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
                 <input type="hidden" id="editCommentId" name="comment_id">
-                <button type="submit" class="btn btn-primary">儲存修改</button>
-              </form>
-            </div>
-          </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" 
+                            onclick="document.getElementById('editCommentModal').classList.add('hidden')"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        取消
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        儲存修改
+                    </button>
+                </div>
+            </form>
         </div>
-      </div>
-
     </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/work_detail.js"></script>
-<script src="../js/comment.js"></script>
+    <script src="../js/work_detail.js"></script>
+    <script src="../js/comment.js"></script>
 </body>
 </html>

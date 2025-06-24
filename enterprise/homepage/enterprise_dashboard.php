@@ -1,4 +1,5 @@
 <?php
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -20,11 +21,11 @@ $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-  // 上传目录
+  // 上傳目錄
   $uploadDir = __DIR__ . '/uploads/';
   if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
-  // 头像上传
+  // 處理頭像上傳
   if (!empty($_FILES['avatar']['name'])) {
       $ext     = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
       $allowed = ['jpg','jpeg','png','gif','webp'];
@@ -32,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
           $fn     = uniqid() . '.' . $ext;
           $target = $uploadDir . $fn;
           if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
-              // 存数据库时，只存相对路径
+              // 存資料庫為相對路徑
               $pdo->prepare("UPDATE users SET avatar = :avatar WHERE id = :id")
                   ->execute([
                       'avatar' => 'uploads/' . $fn,
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
       }
   }
 
-  // 更新其它欄位
+  // 更新其他欄位
   $pdo->prepare("
       UPDATE users
          SET company_name = :cn,
@@ -144,6 +145,8 @@ $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $fullPath = $_SERVER['PHP_SELF'];
 $current = basename($fullPath);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -217,10 +220,10 @@ $current = basename($fullPath);
 
     <!-- 頭像與公司資料 -->
 <section class="flex items-start space-x-6 mb-6">
-  <img
-    id="display-avatar"
-    src="<?php echo htmlspecialchars($user['avatar']); ?>?t=<?php echo time(); ?>"
-    class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md">
+<img
+  id="display-avatar"
+  src="uploads/<?php echo htmlspecialchars(basename($user['avatar'])); ?>?t=<?php echo time(); ?>"
+  class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md">
 
   <div class="flex-1">
     <h2 class="text-base font-bold" id="display-company-name">
@@ -568,14 +571,15 @@ function openEditModal() {
     document.getElementById('display-company-name').childNodes[0].nodeValue = newName;
     document.getElementById('display-address').textContent = newAddr;
 
-    // 如果有新頭像，預覽
-    if (fileInput.files && fileInput.files[0]) {
-      const reader = new FileReader();
-      reader.onload = evt => {
-        document.getElementById('display-avatar').src = evt.target.result;
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-    }
+   // 如果有新頭像，預覽
+if (fileInput.files && fileInput.files[0]) {
+  const reader = new FileReader();
+  reader.onload = evt => {
+    document.getElementById('display-avatar').src = evt.target.result;
+  };
+  reader.readAsDataURL(fileInput.files[0]);
+}
+
 
     // 4. 把資料送到後端（範例用 fetch + FormData）
     const formData = new FormData(this);
