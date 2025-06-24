@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $school = $_POST['school'] ?? 'N/A';
 
     // 處理頭像上傳
-    $profile_picture_path = null;
+    $profile_picture_db = null;
     if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
         $upload_dir = 'uploads/';
         if (!is_dir($upload_dir)) {
@@ -35,28 +35,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $profile_picture_name = time() . "_" . uniqid() . "." . $ext;
         $profile_picture_path = $upload_dir . $profile_picture_name;
         move_uploaded_file($_FILES['profile_picture']['tmp_name'], $profile_picture_path);
+        // 只存檔名
+        $profile_picture_db = $profile_picture_name;
     }
 
     // 檢查是否有必要的欄位為空
     if (empty($name) || empty($student_id) || empty($email)) {
         echo "請填寫完整資料！";
         exit(); // 停止執行
-    }
-
-    // 插入或更新 students 表，確保學號與 email 都有資料
-    $insert_student_sql = "INSERT INTO students (student_id, email, name)
-                           VALUES (?, ?, ?)
-                           ON DUPLICATE KEY UPDATE 
-                               email = VALUES(email),
-                               name = VALUES(name)";
-    $stmt = $conn->prepare($insert_student_sql);
-    if ($stmt) {
-        $stmt->bind_param("iss", $student_id, $email, $name);
-        $stmt->execute();
-        $stmt->close();
-    } else {
-        echo json_encode(["status" => "error", "message" => "插入 students 表失敗：" . $conn->error]);
-        exit;
     }
 
     // 插入或更新 student_profiles 表
@@ -73,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 phone = VALUES(phone),
                 email = VALUES(email),
                 address = VALUES(address),
-                profile_picture = VALUES(profile_picture),
+                profile_picture = IF(VALUES(profile_picture) IS NULL OR VALUES(profile_picture) = '', profile_picture, VALUES(profile_picture)),
                 github = VALUES(github),
                 instagram = VALUES(instagram),
                 facebook = VALUES(facebook),
@@ -87,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $conn->prepare($sql);
     if ($stmt) {
         $stmt->bind_param("isssssssssssssssss",
-            $student_id, $name, $gender, $birth, $department, $grade, $phone, $email, $address, $profile_picture_path,
+            $student_id, $name, $gender, $birth, $department, $grade, $phone, $email, $address, $profile_picture_db,
             $github, $instagram, $facebook, $bio, $professional_background, $skills, $languages, $school
         );
 

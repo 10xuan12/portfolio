@@ -53,8 +53,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: admin/admin_dashboard.php");
                 exit();
             } else if ($role == "company") {
+                $_SESSION["email"] = $row["email"];
                 $_SESSION["company_id"] = $row["company_id"];
-                header("Location: company/company_dashboard.php");
+                header("Location: enterprise/enterprise_dashboard.php");
                 exit();
             }
         } else {

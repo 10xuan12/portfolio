@@ -18,13 +18,21 @@
             </div>
             <form id="registerForm" action="register.php" method="POST">
                 <div class="mb-3">
+                    <label for="regRole" class="form-label">選擇身分</label>
+                    <select id="regRole" name = "role" class="form-select" autocomplete="off" required>
+                        <option value="student">👩‍💻學生</option>
+                        <option value="admin">👩‍🔧管理員</option>
+                        <option value="company">🏢企業</option>
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label for="regName" class="form-label">姓名</label>
                     <input type="text" id="regName" name = "name" class="form-control" placeholder="請輸入姓名" autocomplete="name" required>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-3" id="studentIdGroup">
                     <label for="regStudentId" class="form-label">學號</label>
-                    <input type="text" id="regStudentId" name="student_id" class="form-control" placeholder="請輸入學號" required>
+                    <input type="text" id="regStudentId" name="student_id" class="form-control" placeholder="請輸入學號">
                 </div>
 
                 <div class="mb-3">
@@ -37,14 +45,6 @@
                     <input type="password" id="regPassword" name = "password" class="form-control" placeholder="請輸入密碼" autocomplete="password" required>
                 </div>
 
-                <div class="mb-3">
-                    <label for="regRole" class="form-label">選擇身分</label>
-                    <select id="regRole" name = "role" class="form-select" autocomplete="off" required>
-                        <option value="student">👩‍💻學生</option>
-                        <option value="admin">👩‍🔧管理員</option>
-                        <option value="company">🏢企業</option>
-                    </select>
-                </div>
 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-custom">註冊囉</button>
@@ -58,5 +58,23 @@
     </div>
 
     <script src="js/scripts.js"></script>
+    <script>
+    document.getElementById('regRole').addEventListener('change', function() {
+        var role = this.value;
+        var studentIdGroup = document.getElementById('studentIdGroup');
+        if (role === 'student') {
+            studentIdGroup.style.display = '';
+            document.getElementById('regStudentId').required = true;
+        } else {
+            studentIdGroup.style.display = 'none';
+            document.getElementById('regStudentId').required = false;
+        }
+    });
+    // 頁面載入時自動判斷
+    window.addEventListener('DOMContentLoaded', function() {
+        var event = new Event('change');
+        document.getElementById('regRole').dispatchEvent(event);
+    });
+    </script>
 </body>
 </html>

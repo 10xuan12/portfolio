@@ -1,149 +1,33 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+<?php 
 session_start();
+require '../includes/db_connect.php';
 
-$_SESSION['user_id'] = 1;
-
-require $_SERVER['DOCUMENT_ROOT'] . '/portfolio/enterprise/config/enterprise.php';
-
-$db  = new \Config\EnterpriseDB();
-$pdo = $db->getConnection();
-
-
-$user_id       = $_SESSION['user_id'];
-
-// 取得用戶資料
-$stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-$stmt->execute(['id' => $user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-  // 上传目录
-  $uploadDir = __DIR__ . '/uploads/';
-  if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-
-  // 头像上传
-  if (!empty($_FILES['avatar']['name'])) {
-      $ext     = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
-      $allowed = ['jpg','jpeg','png','gif','webp'];
-      if (in_array($ext, $allowed)) {
-          $fn     = uniqid() . '.' . $ext;
-          $target = $uploadDir . $fn;
-          if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
-              // 存数据库时，只存相对路径
-              $pdo->prepare("UPDATE users SET avatar = :avatar WHERE id = :id")
-                  ->execute([
-                      'avatar' => 'uploads/' . $fn,
-                      'id'     => $user_id
-                  ]);
-          }
-      }
-  }
-
-  // 更新其它欄位
-  $pdo->prepare("
-      UPDATE users
-         SET company_name = :cn,
-             username     = :un,
-             address      = :addr,
-             bio          = :bio,
-             is_online    = 1
-       WHERE id = :id
-  ")->execute([
-      'cn'   => trim($_POST['company_name']),
-      'un'   => trim($_POST['username']),
-      'addr' => trim($_POST['address']),
-      'bio'  => trim($_POST['bio']),
-      'id'   => $user_id
-  ]);
-
-  header("Location: " . $_SERVER['PHP_SELF']);
-  exit;
+if (!isset($_SESSION['email'])) {
+    header("Location: /portfolio/login.php");
+    exit();
 }
 
-
-
-
-
-// ===== 自動累加瀏覽次數 =====
-$pdo->prepare("UPDATE users SET view_count = view_count + 1 WHERE id = :id")
-    ->execute(['id' => $user_id]);
-
-// ===== 取得最新使用者資料 =====
-$user = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-$user->execute(['id' => $user_id]);
-$user = $user->fetch(PDO::FETCH_ASSOC);
-
-
-  
-// -- 留言分頁 or all --
-if (isset($_GET['page']) && $_GET['page'] === 'all') {
-
-  $stmt = $pdo->query("SELECT * FROM comments ORDER BY created_at DESC");
-  $comments   = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  $commentPage = 'all';
-} else {
-  $perPage       = 10;
-  $commentPage   = max(1, (int)($_GET['page'] ?? 1));
-  $commentOffset = ($commentPage - 1) * $perPage;
-  $totalComments = $pdo->query("SELECT COUNT(*) FROM comments")->fetchColumn();
-  $totalPages    = ceil($totalComments / $perPage);
-
-  // 撈出本頁留言
-  $stmt = $pdo->prepare("
-  SELECT 
-    id,
-    username,
-    content,
-    created_at
-  FROM comments
-  ORDER BY created_at DESC
-  LIMIT :limit OFFSET :offset
-");
-$stmt->bindValue(':limit',  $perPage,       PDO::PARAM_INT);
-$stmt->bindValue(':offset', $commentOffset, PDO::PARAM_INT);
+$email = $_SESSION['email'];
+$sql = "SELECT * FROM company_profiles WHERE email = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $email);
 $stmt->execute();
-$comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+$result = $stmt->get_result();
 
-
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-// -- 職缺分頁 --
-$jobsPerPage   = 10;
-$rawPage       = $_GET['job_page'] ?? 1;
-$jobPage       = ($rawPage === 'all') ? 'all' : max(1, (int)$rawPage);
-$totalJobs     = (int)$pdo->query("SELECT COUNT(*) FROM jobs")->fetchColumn();
-$jobTotalPages = ($jobsPerPage > 0) ? ceil($totalJobs / $jobsPerPage) : 1;
-
-if ($jobPage === 'all') {
-  $sql = "SELECT j.id, j.title AS job_title, u.company_name, j.description AS job_description,
-                 j.location AS job_location, j.created_at
-          FROM jobs j
-          JOIN users u ON j.user_id = u.id
-          ORDER BY j.created_at DESC";
-  $stmt = $pdo->prepare($sql);
+if ($result->num_rows === 1) {
+    $company_data = $result->fetch_assoc();
+    $required_fields = ['name', 'email'];
+    foreach ($required_fields as $field) {
+        if (empty($company_data[$field])) {
+            header("Location: /portfolio/enterprise/enterprise.php?need_info=1");
+            exit();
+        }
+    }
 } else {
-  $offset = ($jobPage - 1) * $jobsPerPage;
-  $sql = "SELECT j.id, j.title AS job_title, u.company_name, j.description AS job_description,
-                 j.location AS job_location, j.created_at
-          FROM jobs j
-          JOIN users u ON j.user_id = u.id
-          ORDER BY j.created_at DESC
-          LIMIT :limit OFFSET :offset";
-  $stmt = $pdo->prepare($sql);
-  $stmt->bindValue(':limit',  $jobsPerPage, PDO::PARAM_INT);
-  $stmt->bindValue(':offset', $offset,      PDO::PARAM_INT);
+    header("Location: /portfolio/enterprise/enterprise.php?need_info=1");
+    exit();
 }
-
-$stmt->execute();
-$jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$fullPath = $_SERVER['PHP_SELF'];
-$current = basename($fullPath);
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -161,7 +45,7 @@ $current = basename($fullPath);
     <!-- 左側欄 -->
 <nav class="flex flex-col items-center bg-gray-300 w-14 py-6 space-y-6 shadow-md border-r">
   <!-- 主頁 -->
-  <a href="/portfolio/enterprise/homepage/enterprise_dashboard.php"
+  <a href="/portfolio/enterprise/enterprise_dashboard.php"
      class="flex flex-col items-center w-14 h-14 justify-center
        <?= $current === 'enterprise_dashboard.php'
            ? 'text-white bg-blue-700'
@@ -217,31 +101,25 @@ $current = basename($fullPath);
 
     <!-- 頭像與公司資料 -->
 <section class="flex items-start space-x-6 mb-6">
-  <img
-    id="display-avatar"
-    src="<?php echo htmlspecialchars($user['avatar']); ?>?t=<?php echo time(); ?>"
-    class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md">
-
+  <div>
+    <img src="https://via.placeholder.com/120" alt="頭像" class="w-24 h-24 rounded-full object-cover border-2 border-gray-300 shadow-md">
+  </div>
   <div class="flex-1">
-    <h2 class="text-base font-bold" id="display-company-name">
-      <?php echo htmlspecialchars($user['company_name'] ?? '企業名稱'); ?>
-      <br>
-      <span class="font-normal text-sm" id="display-address">
-        <?php echo htmlspecialchars($user['address'] ?? '尚未提供地址'); ?>
-      </span>
+    <h2 class="text-base font-bold">
+      <?php echo htmlspecialchars($company['name'] ?? '企業名稱'); ?>
     </h2>
-
-    <div class="flex items-center space-x-2 mt-2">
-      <span class="text-xs text-gray-600">上線中</span>
-      <span class="w-2 h-2 bg-green-500 rounded-full inline-block"></span>
-      <button
-  type="button"   
-  class="flex items-center space-x-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold py-2 px-4 rounded"
-  onclick="openEditModal()"
-      >
-        <i class="fas fa-cog"></i><span>編輯</span>
-      </button>
-    </div>
+    <p class="text-sm text-gray-600 mb-2">
+      <?php echo htmlspecialchars($company['email']); ?>
+    </p>
+    <p class="text-sm text-gray-600 mb-2">
+      公司ID: <?php echo htmlspecialchars($company['company_id']); ?>
+    </p>
+    <p class="text-sm text-gray-600 mb-2">
+      建立時間: <?php echo htmlspecialchars($company['created_at']); ?>
+    </p>
+    <p class="text-sm text-gray-600 mb-2">
+      更新時間: <?php echo htmlspecialchars($company['updated_at']); ?>
+    </p>
   </div>
 </section>
 
@@ -326,10 +204,10 @@ $current = basename($fullPath);
 
            
 <!-- 企業簡介顯示區塊 -->
-<?php if (!empty($user['bio'])): ?>
+<?php if (!empty($company['bio'])): ?>
   <section class="bg-white border-l-4 border-indigo-400 p-4 rounded shadow mb-6">
     <h3 class="text-sm font-bold text-indigo-700 mb-2">企業簡介</h3>
-    <p class="text-sm text-gray-800 leading-relaxed"><?php echo nl2br(htmlspecialchars($user['bio'])); ?></p>
+    <p class="text-sm text-gray-800 leading-relaxed"><?php echo nl2br(htmlspecialchars($company['bio'])); ?></p>
   </section>
 <?php endif; ?>
 
@@ -341,64 +219,64 @@ $current = basename($fullPath);
   <!-- GitHub -->
   <div class="flex items-center space-x-2">
     <i class="fab fa-github"></i>
-    <a href="https://github.com/<?php echo htmlspecialchars($user['github'] ?? ''); ?>"
+    <a href="https://github.com/<?php echo htmlspecialchars($company['github'] ?? ''); ?>"
        target="_blank"
        class="hover:underline">
-      <?php echo htmlspecialchars($user['github'] ?? ''); ?>GitHub
+      <?php echo htmlspecialchars($company['github'] ?? ''); ?>GitHub
     </a>
   </div>
 
   <!-- LinkedIn -->
   <div class="flex items-center space-x-2">
     <i class="fab fa-linkedin"></i>
-    <a href=https://www.linkedin.com/login/zh-tw<?php echo htmlspecialchars($user['linkedin'] ?? ''); ?>"
+    <a href=https://www.linkedin.com/login/zh-tw<?php echo htmlspecialchars($company['linkedin'] ?? ''); ?>"
        target="_blank"
        class="hover:underline">
-      <?php echo htmlspecialchars($user['linkedin'] ?? ''); ?>LinkedIn
+      <?php echo htmlspecialchars($company['linkedin'] ?? ''); ?>LinkedIn
     </a>
   </div>
 
   <!-- Email -->
   <div class="flex items-center space-x-2">
     <i class="fas fa-envelope"></i>
-    <a href=https://accounts.google.com/<?php echo htmlspecialchars($user['email'] ?? ''); ?>
+    <a href=https://accounts.google.com/<?php echo htmlspecialchars($company['email'] ?? ''); ?>
        target="_blank"
        class="hover:underline">
-      <?php echo htmlspecialchars($user['email'] ?? ''); ?>email
+      <?php echo htmlspecialchars($company['email'] ?? ''); ?>email
     </a>
   </div>
 
   <!-- Instagram -->
   <div class="flex items-center space-x-2">
     <i class="fab fa-instagram"></i>
-    <a href=https://www.instagram.com/<?php echo htmlspecialchars($user['instagram'] ?? ''); ?>
+    <a href=https://www.instagram.com/<?php echo htmlspecialchars($company['instagram'] ?? ''); ?>
     target="_blank"
        class="hover:underline">
-      <?php echo htmlspecialchars($user['instagram'] ?? ''); ?>instagram 
+      <?php echo htmlspecialchars($company['instagram'] ?? ''); ?>instagram 
     </a>
   </div>
 
   <!-- Facebook -->
   <div class="flex items-center space-x-2">
     <i class="fab fa-facebook-f"></i>
-    <a href="https://facebook.com/<?php echo htmlspecialchars($user['facebook'] ?? ''); ?>"
+    <a href="https://facebook.com/<?php echo htmlspecialchars($company['facebook'] ?? ''); ?>"
        target="_blank"
        class="hover:underline">
-      <?php echo htmlspecialchars($user['facebook'] ?? ''); ?> Facebook
+      <?php echo htmlspecialchars($company['facebook'] ?? ''); ?> Facebook
     </a>
   </div>
 
   <!-- 電話 -->
   <div class="flex items-center space-x-2">
     <i class="fas fa-phone-alt"></i>
-    <span>0423567777<?php echo htmlspecialchars($user['phone'] ?? ''); ?></span>
+    <span>0423567777<?php echo htmlspecialchars($company['phone'] ?? ''); ?></span>
   </div>
 
   <!-- 檔案瀏覽次數 -->
   <div class="col-span-full text-right text-sm mt-2">
     瀏覽次數
     <span class="font-bold text-blue-800">
-      <?php echo htmlspecialchars($user['view_count'] ?? 20); ?>
+      <?php echo htmlspecialchars($company['view_count'] ?? 20); ?>
     </span>
   </div>
 </section>
