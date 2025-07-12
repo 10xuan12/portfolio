@@ -1,3 +1,7 @@
+<?php
+// 若要查詢資料庫，請先引入連線檔
+// include 'includes/db_connect.php';
+?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -187,11 +191,11 @@
 <body>
   <!-- ✅ 固定左欄 -->
   <div class="sidebar">
-    <a href="admin-index.html" class="sidebar-item">🏠<br>主頁</a>
-    <a href="admin-accounts.html" class="sidebar-item">🧑‍💼<br>帳號管理</a>
-    <a href="admin-works.html" class="sidebar-item">📁<br>管理審核</a>
-    <a href="admin-notifications.html" class="sidebar-item selected">🔔<br>通知</a>
-    <a href="admin-settings.html" class="sidebar-item">⚙️<br>設定</a>
+    <a href="admin-index.php" class="sidebar-item">🏠<br>主頁</a>
+    <a href="admin-accounts.php" class="sidebar-item">🧑‍💼<br>帳號管理</a>
+    <a href="admin-works.php" class="sidebar-item">📁<br>管理審核</a>
+    <a href="admin-notifications.php" class="sidebar-item selected">🔔<br>通知</a>
+    <a href="admin-settings.php" class="sidebar-item">⚙️<br>設定</a>
     <div class="sidebar-item">↩️<br>登出</div>
   </div>
 
@@ -215,7 +219,25 @@
       <button>🔍 搜尋</button>
     </div>
 
-    <div class="notification-list"></div>
+    <div class="notification-list">
+      <?php
+      // 範例：從資料庫撈通知
+      // include 'includes/db_connect.php';
+      // $sql = "SELECT title, content FROM notifications ORDER BY id DESC LIMIT 10";
+      // $result = $conn->query($sql);
+      // if ($result && $result->num_rows > 0) {
+      //   while($row = $result->fetch_assoc()) {
+      //     echo '<div class="notification-item">'
+      //         .'<div><span style="background:#e9d5ff; border-radius:50%; padding:0.2rem 0.6rem; margin-right:1rem;">🔔</span> '
+      //         .htmlspecialchars($row['title']).' '.htmlspecialchars($row['content']).'</div>'
+      //         .'<input type="checkbox" checked class="checkbox">'
+      //         .'</div>';
+      //   }
+      // } else {
+      //   echo '<div class="notification-item"><div>暫無通知</div></div>';
+      // }
+      ?>
+    </div>
 
     <div class="pagination">
       <button onclick="goToPage(1)">第一頁</button>

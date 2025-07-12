@@ -413,11 +413,11 @@
 <body>
   <!-- 側邊欄選單 -->
   <div class="sidebar">
-    <a href="admin-index.html" class="sidebar-item">🏠<br>主頁</a>
-    <a href="admin-accounts.html" class="sidebar-item selected">🧑‍💼<br>帳號管理</a>
-    <a href="admin-works.html" class="sidebar-item">📁<br>管理審核</a>
-    <a href="admin-notifications.html" class="sidebar-item">🔔<br>通知</a>
-    <a href="admin-settings.html" class="sidebar-item">⚙️<br>設定</a>
+    <a href="admin-index.php" class="sidebar-item">🏠<br>主頁</a>
+    <a href="admin-accounts.php" class="sidebar-item selected">🧑‍💼<br>帳號管理</a>
+    <a href="admin-works.php" class="sidebar-item">📁<br>管理審核</a>
+    <a href="admin-notifications.php" class="sidebar-item">🔔<br>通知</a>
+    <a href="admin-settings.php" class="sidebar-item">⚙️<br>設定</a>
     <div class="sidebar-item">↩️<br>登出</div>
   </div>
 
@@ -480,7 +480,28 @@
             <th>操作</th>
           </tr>
         </thead>
-        <tbody id="account-body"></tbody>
+        <tbody id="account-body">
+        <?php
+        include 'includes/db_connect.php'; // 依你的專案結構調整
+        $sql = "SELECT student_id, name, email, created_at FROM students";
+        $result = $conn->query($sql);
+        if ($result && $result->num_rows > 0) {
+          while($row = $result->fetch_assoc()) {
+            echo "<tr>
+              <td>{$row['student_id']}</td>
+              <td>{$row['name']}</td>
+              <td>{$row['email']}</td>
+              <td>-</td>
+              <td>-</td>
+              <td>{$row['created_at']}</td>
+              <td>操作按鈕...</td>
+            </tr>";
+          }
+        } else {
+          echo "<tr><td colspan='7'>查無資料</td></tr>";
+        }
+        ?>
+        </tbody>
       </table>
     </div>
 

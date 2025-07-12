@@ -1,3 +1,9 @@
+<?php
+// 若要查詢資料庫，請先引入連線檔
+// include 'includes/db_connect.php';
+// $sql = "SELECT * FROM works ORDER BY id DESC LIMIT 8";
+// $result = $conn->query($sql);
+?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -194,11 +200,11 @@
 <body>
   <!-- 側邊欄 -->
   <div class="sidebar">
-    <a href="admin-index.html" class="sidebar-item">🏠<br>主頁</a>
-    <a href="admin-accounts.html" class="sidebar-item">🧑‍💼<br>帳號管理</a>
-    <a href="admin-works.html" class="sidebar-item selected">📁<br>管理審核</a>
-    <a href="admin-notifications.html" class="sidebar-item">🔔<br>通知</a>
-    <a href="admin-settings.html" class="sidebar-item">⚙️<br>設定</a>
+    <a href="admin-index.php" class="sidebar-item">🏠<br>主頁</a>
+    <a href="admin-accounts.php" class="sidebar-item">🧑‍💼<br>帳號管理</a>
+    <a href="admin-works.php" class="sidebar-item selected">📁<br>管理審核</a>
+    <a href="admin-notifications.php" class="sidebar-item">🔔<br>通知</a>
+    <a href="admin-settings.php" class="sidebar-item">⚙️<br>設定</a>
     <div class="sidebar-item">↩️<br>登出</div>
   </div>
 
@@ -211,18 +217,24 @@
 
     <!-- 作品區 -->
     <div id="作品區" class="grid">
-      <a href="admin-review-detail.html" style="text-decoration:none; color:inherit;">
-        <div class="card">
-          <img src="#" alt="">
-          <strong>資訊</strong>
-          <p>作品簡介文字...</p>
-        </div>
-      </a>
-      <div class="card">
-        <img src="#" alt="">
-        <strong>SDGs</strong>
-        <p>作品簡介文字...</p>
-      </div>
+      <?php
+      // 範例：從資料庫撈作品
+      // if (isset($result) && $result && $result->num_rows > 0) {
+      //   while($row = $result->fetch_assoc()) {
+      //     echo '<a href="admin-review-detail.php?id=' . $row['id'] . '" style="text-decoration:none; color:inherit;">';
+      //     echo '<div class="card">';
+      //     echo '<img src="#" alt="">';
+      //     echo '<strong>' . htmlspecialchars($row['category']) . '</strong>';
+      //     echo '<p>' . htmlspecialchars($row['description']) . '</p>';
+      //     echo '</div></a>';
+      //   }
+      // } else {
+      //   echo '<div class="card"><img src=\"#\" alt=""><strong>資訊</strong><p>作品簡介文字...</p></div>';
+      //   echo '<div class="card"><img src=\"#\" alt=""><strong>SDGs</strong><p>作品簡介文字...</p></div>';
+      // }
+      echo '<a href="admin-review-detail.html" style="text-decoration:none; color:inherit;"><div class="card"><img src="#" alt=""><strong>資訊</strong><p>作品簡介文字...</p></div></a>';
+      echo '<div class="card"><img src="#" alt=""><strong>SDGs</strong><p>作品簡介文字...</p></div>';
+      ?>
       <!-- 更多作品卡片... -->
     </div>
 

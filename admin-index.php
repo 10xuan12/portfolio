@@ -1,3 +1,7 @@
+<?php
+// 若要查詢資料庫，請先引入連線檔
+// include 'includes/db_connect.php';
+?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -324,11 +328,11 @@
 <body>
   <!--  左側欄：導覽列 -->
   <div class="sidebar">
-    <a href="index.html" class="sidebar-item selected">🏠<br>主頁</a>
-    <a href="admin-accounts.html" class="sidebar-item">🧑‍💼<br>帳號管理</a>
-    <a href="admin-works.html" class="sidebar-item">📁<br>管理審核</a>
-    <a href="admin-notifications.html" class="sidebar-item">🔔<br>通知</a>
-    <a href="admin-settings.html" class="sidebar-item">⚙️<br>設定</a>
+    <a href="admin-index.php" class="sidebar-item selected">🏠<br>主頁</a>
+    <a href="admin-accounts.php" class="sidebar-item">🧑‍💼<br>帳號管理</a>
+    <a href="admin-works.php" class="sidebar-item">📁<br>管理審核</a>
+    <a href="admin-notifications.php" class="sidebar-item">🔔<br>通知</a>
+    <a href="admin-settings.php" class="sidebar-item">⚙️<br>設定</a>
     <div class="sidebar-item">↩️<br>登出</div>
   </div>
 
@@ -351,7 +355,24 @@
       <!--  下卡片：公告設定 -->
       <div class="card">
         <h2>公告設定</h2>
-        <ul class="announcement-list" id="announcement-list"></ul>
+        <ul class="announcement-list" id="announcement-list">
+        <?php
+        // 範例：從資料庫撈公告
+        // include 'includes/db_connect.php';
+        // $sql = "SELECT title, content FROM announcements ORDER BY id DESC LIMIT 5";
+        // $result = $conn->query($sql);
+        // if ($result && $result->num_rows > 0) {
+        //   while($row = $result->fetch_assoc()) {
+        //     echo '<li><div class="announcement-content">'
+        //         .'<div style="font-weight: bold; margin-bottom: 4px;">'.htmlspecialchars($row['title']).'</div>'
+        //         .'<div>'.htmlspecialchars($row['content']).'</div>'
+        //         .'</div><button class="del-btn" onclick="deleteAnnouncement(this)">刪除</button></li>';
+        //   }
+        // } else {
+        //   echo '<li><div class="announcement-content">暫無公告</div></li>';
+        // }
+        ?>
+        </ul>
         <div style="text-align: right;">
           <button class="add-btn" onclick="openModal()">新增公告</button>
         </div>

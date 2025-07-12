@@ -1,3 +1,11 @@
+<?php
+// 若要查詢資料庫，請先引入連線檔
+// include 'includes/db_connect.php';
+// $admin_id = 1; // 假設管理員ID
+// $sql = "SELECT * FROM admins WHERE id = $admin_id";
+// $result = $conn->query($sql);
+// $admin = $result ? $result->fetch_assoc() : null;
+?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -121,11 +129,11 @@
 
   <!-- 左側欄 -->
   <div class="sidebar">
-    <a href="admin-index.html" class="sidebar-item">🏠<br>主頁</a>
-    <a href="admin-accounts.html" class="sidebar-item">🧑‍💼<br>帳號管理</a>
-    <a href="admin-works.html" class="sidebar-item">📁<br>管理審核</a>
-    <a href="admin-notifications.html" class="sidebar-item">🔔<br>通知</a>
-    <a href="admin-settings.html" class="sidebar-item selected">⚙️<br>設定</a>
+    <a href="admin-index.php" class="sidebar-item">🏠<br>主頁</a>
+    <a href="admin-accounts.php" class="sidebar-item">🧑‍💼<br>帳號管理</a>
+    <a href="admin-works.php" class="sidebar-item">📁<br>管理審核</a>
+    <a href="admin-notifications.php" class="sidebar-item">🔔<br>通知</a>
+    <a href="admin-settings.php" class="sidebar-item selected">⚙️<br>設定</a>
     <div class="sidebar-item">↩️<br>登出</div>
   </div>
 
@@ -138,9 +146,17 @@
       <div class="section">
         <h2>個人資訊</h2>
         <label for="name">姓名</label>
-        <input type="text" id="name" value="管理員">
+        <input type="text" id="name" value="<?php
+        // 範例：顯示管理員姓名
+        // echo $admin ? htmlspecialchars($admin['name']) : '管理員';
+        echo '管理員';
+        ?>">
         <label for="email">電子郵件</label>
-        <input type="email" id="email" value="admin@example.com">
+        <input type="email" id="email" value="<?php
+        // 範例：顯示管理員Email
+        // echo $admin ? htmlspecialchars($admin['email']) : 'admin@example.com';
+        echo 'admin@example.com';
+        ?>">
       </div>
 
       <div class="section">
