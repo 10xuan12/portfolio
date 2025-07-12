@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統計分析 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .analytics-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .analytics-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .analytics-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .date-filter {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-md);
+            font-size: var(--text-xl);
+            color: var(--white);
+        }
+        
+        .icon-users { background: var(--primary-color); }
+        .icon-portfolios { background: var(--accent-color); }
+        .icon-jobs { background: var(--success-color); }
+        .icon-activity { background: var(--warning-color); }
+        
+        .stat-number {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .stat-change {
+            font-size: var(--text-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+        }
+        
+        .change-positive {
+            background: var(--success-color);
+            color: var(--white);
+        }
+        
+        .change-negative {
+            background: var(--error-color);
+            color: var(--white);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .chart-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .chart-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .chart-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            font-size: var(--text-xs);
+            transition: all 0.2s ease;
+        }
+        
+        .chart-btn.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        .analytics-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .analytics-list {
+            list-style: none;
+        }
+        
+        .analytics-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .analytics-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            color: var(--white);
+        }
+        
+        .icon-student { background: var(--primary-color); }
+        .icon-enterprise { background: var(--accent-color); }
+        .icon-web { background: var(--success-color); }
+        .icon-mobile { background: var(--warning-color); }
+        .icon-design { background: var(--error-color); }
+        
+        .item-details h4 {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .item-details p {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .item-stats {
+            text-align: right;
+        }
+        
+        .item-number {
+            font-size: var(--text-lg);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .item-percentage {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .export-section {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .export-item {
+            text-align: center;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .export-item:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-50);
+        }
+        
+        .export-icon {
+            font-size: var(--text-2xl);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    儀表板
+                </a>
+                <a href="users.html" class="navbar-link">
+                    <i class="fas fa-users"></i>
+                    使用者管理
+                </a>
+                <a href="content.html" class="navbar-link">
+                    <i class="fas fa-file-alt"></i>
+                    內容審核
+                </a>
+                <a href="reports.html" class="navbar-link">
+                    <i class="fas fa-flag"></i>
+                    報告管理
+                </a>
+                <a href="analytics.html" class="navbar-link active">
+                    <i class="fas fa-chart-bar"></i>
+                    統計分析
+                </a>
+                <a href="settings.html" class="navbar-link">
+                    <i class="fas fa-cog"></i>
+                    系統設定
+                </a>
+            </div>
+            <div class="navbar-user">
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32x32/667eea/ffffff?text=管" alt="管理員頭像" class="user-avatar">
+                    <span class="user-name">系統管理員</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="analytics-container">
+        <div class="container">
+            <div class="analytics-header">
+                <h1 class="analytics-title">統計分析</h1>
+                <div class="analytics-actions">
+                    <button class="btn btn-outline" onclick="exportAnalytics()">
+                        <i class="fas fa-download"></i>
+                        匯出報告
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshAnalytics()">
+                        <i class="fas fa-sync-alt"></i>
+                        重新整理
+                    </button>
+                </div>
+            </div>
+
+            <!-- 日期篩選 -->
+            <div class="date-filter">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="dateRange">時間範圍</label>
+                        <select id="dateRange" onchange="updateDateRange()">
+                            <option value="7">最近 7 天</option>
+                            <option value="30" selected>最近 30 天</option>
+                            <option value="90">最近 90 天</option>
+                            <option value="365">最近一年</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="startDate">開始日期</label>
+                        <input type="date" id="startDate" onchange="updateCharts()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="endDate">結束日期</label>
+                        <input type="date" id="endDate" onchange="updateCharts()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="chartType">圖表類型</label>
+                        <select id="chartType" onchange="updateChartType()">
+                            <option value="line">折線圖</option>
+                            <option value="bar">長條圖</option>
+                            <option value="pie">圓餅圖</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 統計概覽 -->
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon icon-users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">1,234</div>
+                    <div class="stat-label">總使用者數</div>
+                    <div class="stat-change change-positive">+12.5%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-portfolios">
+                        <i class="fas fa-folder"></i>
+                    </div>
+                    <div class="stat-number">2,345</div>
+                    <div class="stat-label">總作品數</div>
+                    <div class="stat-change change-positive">+8.3%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-jobs">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-number">89</div>
+                    <div class="stat-label">活躍職缺</div>
+                    <div class="stat-change change-positive">+15.2%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-activity">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-number">456</div>
+                    <div class="stat-label">今日活動</div>
+                    <div class="stat-change change-negative">-2.1%</div>
+                </div>
+            </div>
+
+            <!-- 圖表區域 -->
+            <div class="charts-grid">
+                <!-- 主要圖表 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">使用者成長趨勢</h3>
+                        <div class="chart-actions">
+                            <button class="chart-btn active" onclick="switchChart('users')">使用者</button>
+                            <button class="chart-btn" onclick="switchChart('portfolios')">作品</button>
+                            <button class="chart-btn" onclick="switchChart('jobs')">職缺</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 圓餅圖 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">使用者分布</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 詳細分析 -->
+            <div class="analytics-grid">
+                <!-- 熱門科系 -->
+                <div class="analytics-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">熱門科系</h3>
+                    </div>
+                    <ul class="analytics-list">
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-student">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>資訊管理學系</h4>
+                                    <p>學生人數最多</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">456</div>
+                                <div class="item-percentage">36.9%</div>
+                            </div>
+                        </li>
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-student">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>資訊工程學系</h4>
+                                    <p>作品品質最高</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">234</div>
+                                <div class="item-percentage">19.0%</div>
+                            </div>
+                        </li>
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-student">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>設計學系</h4>
+                                    <p>創意作品豐富</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">189</div>
+                                <div class="item-percentage">15.3%</div>
+                            </div>
+                        </li>
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-student">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>商學院</h4>
+                                    <p>商業分析專長</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">156</div>
+                                <div class="item-percentage">12.6%</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 作品分類 -->
+                <div class="analytics-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">作品分類統計</h3>
+                    </div>
+                    <ul class="analytics-list">
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-web">
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>網頁設計</h4>
+                                    <p>最受歡迎的類型</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">1,234</div>
+                                <div class="item-percentage">52.6%</div>
+                            </div>
+                        </li>
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-mobile">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>行動應用</h4>
+                                    <p>快速成長中</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">567</div>
+                                <div class="item-percentage">24.2%</div>
+                            </div>
+                        </li>
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-design">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>UI/UX 設計</h4>
+                                    <p>設計品質優良</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">345</div>
+                                <div class="item-percentage">14.7%</div>
+                            </div>
+                        </li>
+                        <li class="analytics-item">
+                            <div class="item-info">
+                                <div class="item-icon icon-student">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div class="item-details">
+                                    <h4>數據分析</h4>
+                                    <p>專業技能展示</p>
+                                </div>
+                            </div>
+                            <div class="item-stats">
+                                <div class="item-number">199</div>
+                                <div class="item-percentage">8.5%</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 匯出區域 -->
+            <div class="export-section">
+                <div class="chart-header">
+                    <h3 class="chart-title">匯出分析報告</h3>
+                </div>
+                <div class="export-grid">
+                    <div class="export-item" onclick="exportReport('users')">
+                        <div class="export-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>使用者分析</h4>
+                        <p>包含註冊趨勢、活躍度等</p>
+                    </div>
+                    <div class="export-item" onclick="exportReport('portfolios')">
+                        <div class="export-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <h4>作品分析</h4>
+                        <p>包含上傳趨勢、分類統計等</p>
+                    </div>
+                    <div class="export-item" onclick="exportReport('jobs')">
+                        <div class="export-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <h4>職缺分析</h4>
+                        <p>包含發布趨勢、申請統計等</p>
+                    </div>
+                    <div class="export-item" onclick="exportReport('activity')">
+                        <div class="export-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>活動分析</h4>
+                        <p>包含系統使用情況、互動統計等</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+    <script src="analytics.js"></script>
+</body>
+</html> 

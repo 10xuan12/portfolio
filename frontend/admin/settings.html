@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統設定 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .settings-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .settings-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .settings-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .settings-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .settings-tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            background: none;
+            color: var(--gray-600);
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .settings-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .settings-tab:hover {
+            color: var(--primary-color);
+        }
+        
+        .settings-section {
+            display: none;
+        }
+        
+        .settings-section.active {
+            display: block;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        .settings-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .settings-card h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .toggle-info h4 {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .toggle-info p {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        
+        .color-input {
+            width: 50px;
+            height: 40px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+        
+        .color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        .color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: var(--radius-md);
+        }
+        
+        .backup-section {
+            background: var(--gray-50);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .backup-info {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .backup-status {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .status-success { background: var(--success-color); color: var(--white); }
+        .status-warning { background: var(--warning-color); color: var(--white); }
+        .status-error { background: var(--error-color); color: var(--white); }
+        
+        .backup-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .log-section {
+            background: var(--gray-900);
+            color: var(--white);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            font-family: 'Courier New', monospace;
+            font-size: var(--text-sm);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: var(--spacing-xs);
+            padding: var(--spacing-xs);
+            border-radius: var(--radius-sm);
+        }
+        
+        .log-info { background: rgba(59, 130, 246, 0.2); }
+        .log-warning { background: rgba(245, 158, 11, 0.2); }
+        .log-error { background: rgba(239, 68, 68, 0.2); }
+        
+        .sidebar {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .quick-actions {
+            list-style: none;
+        }
+        
+        .quick-actions li {
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .quick-action i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        @media (max-width: 1024px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    儀表板
+                </a>
+                <a href="users.html" class="navbar-link">
+                    <i class="fas fa-users"></i>
+                    使用者管理
+                </a>
+                <a href="content.html" class="navbar-link">
+                    <i class="fas fa-file-alt"></i>
+                    內容審核
+                </a>
+                <a href="reports.html" class="navbar-link">
+                    <i class="fas fa-flag"></i>
+                    報告管理
+                </a>
+                <a href="analytics.html" class="navbar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    統計分析
+                </a>
+                <a href="settings.html" class="navbar-link active">
+                    <i class="fas fa-cog"></i>
+                    系統設定
+                </a>
+            </div>
+            <div class="navbar-user">
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32x32/667eea/ffffff?text=管" alt="管理員頭像" class="user-avatar">
+                    <span class="user-name">系統管理員</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="settings-container">
+        <div class="container">
+            <div class="settings-header">
+                <h1 class="settings-title">系統設定</h1>
+                <div class="settings-actions">
+                    <button class="btn btn-outline" onclick="resetSettings()">
+                        <i class="fas fa-undo"></i>
+                        重設設定
+                    </button>
+                    <button class="btn btn-primary" onclick="saveSettings()">
+                        <i class="fas fa-save"></i>
+                        儲存設定
+                    </button>
+                </div>
+            </div>
+
+            <!-- 設定標籤 -->
+            <div class="settings-tabs">
+                <button class="settings-tab active" onclick="switchTab('general')">
+                    <i class="fas fa-cog"></i>
+                    一般設定
+                </button>
+                <button class="settings-tab" onclick="switchTab('security')">
+                    <i class="fas fa-shield-alt"></i>
+                    安全設定
+                </button>
+                <button class="settings-tab" onclick="switchTab('notifications')">
+                    <i class="fas fa-bell"></i>
+                    通知設定
+                </button>
+                <button class="settings-tab" onclick="switchTab('appearance')">
+                    <i class="fas fa-palette"></i>
+                    外觀設定
+                </button>
+                <button class="settings-tab" onclick="switchTab('backup')">
+                    <i class="fas fa-database"></i>
+                    備份還原
+                </button>
+                <button class="settings-tab" onclick="switchTab('logs')">
+                    <i class="fas fa-file-alt"></i>
+                    系統日誌
+                </button>
+            </div>
+
+            <div class="settings-grid">
+                <!-- 主要設定區域 -->
+                <div class="settings-content">
+                    <!-- 一般設定 -->
+                    <div class="settings-section active" id="generalSection">
+                        <div class="settings-card">
+                            <h3><i class="fas fa-info-circle"></i> 基本資訊</h3>
+                            <div class="form-group">
+                                <label for="siteName">網站名稱</label>
+                                <input type="text" id="siteName" value="Portfolio+" placeholder="輸入網站名稱">
+                            </div>
+                            <div class="form-group">
+                                <label for="siteDescription">網站描述</label>
+                                <textarea id="siteDescription" placeholder="輸入網站描述">學生作品展示與企業招募平台</textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="adminEmail">管理員信箱</label>
+                                    <input type="email" id="adminEmail" value="admin@portfolio.com" placeholder="管理員信箱">
+                                </div>
+                                <div class="form-group">
+                                    <label for="supportEmail">客服信箱</label>
+                                    <input type="email" id="supportEmail" value="support@portfolio.com" placeholder="客服信箱">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3><i class="fas fa-globe"></i> 系統設定</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="timezone">時區</label>
+                                    <select id="timezone">
+                                        <option value="Asia/Taipei" selected>台北 (UTC+8)</option>
+                                        <option value="Asia/Tokyo">東京 (UTC+9)</option>
+                                        <option value="America/New_York">紐約 (UTC-5)</option>
+                                        <option value="Europe/London">倫敦 (UTC+0)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="language">語言</label>
+                                    <select id="language">
+                                        <option value="zh-TW" selected>繁體中文</option>
+                                        <option value="en-US">English</option>
+                                        <option value="ja-JP">日本語</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="maxFileSize">最大檔案大小 (MB)</label>
+                                    <input type="number" id="maxFileSize" value="10" min="1" max="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sessionTimeout">會話超時 (分鐘)</label>
+                                    <input type="number" id="sessionTimeout" value="120" min="30" max="1440">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 安全設定 -->
+                    <div class="settings-section" id="securitySection">
+                        <div class="settings-card">
+                            <h3><i class="fas fa-lock"></i> 密碼政策</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="minPasswordLength">最小密碼長度</label>
+                                    <input type="number" id="minPasswordLength" value="8" min="6" max="20">
+                                </div>
+                                <div class="form-group">
+                                    <label for="passwordExpiry">密碼有效期 (天)</label>
+                                    <input type="number" id="passwordExpiry" value="90" min="30" max="365">
+                                </div>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>要求複雜密碼</h4>
+                                    <p>密碼必須包含大小寫字母、數字和特殊符號</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="requireComplexPassword" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>雙因素認證</h4>
+                                    <p>要求管理員使用雙因素認證登入</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="require2FA">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3><i class="fas fa-shield-alt"></i> 存取控制</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="maxLoginAttempts">最大登入嘗試次數</label>
+                                    <input type="number" id="maxLoginAttempts" value="5" min="3" max="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lockoutDuration">鎖定時間 (分鐘)</label>
+                                    <input type="number" id="lockoutDuration" value="30" min="15" max="1440">
+                                </div>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>IP 白名單</h4>
+                                    <p>只允許特定 IP 位址存取管理後台</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableIPWhitelist">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="allowedIPs">允許的 IP 位址</label>
+                                <textarea id="allowedIPs" placeholder="每行一個 IP 位址&#10;例如：&#10;192.168.1.1&#10;10.0.0.0/24"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 通知設定 -->
+                    <div class="settings-section" id="notificationsSection">
+                        <div class="settings-card">
+                            <h3><i class="fas fa-bell"></i> 電子郵件通知</h3>
+                            <div class="form-group">
+                                <label for="smtpHost">SMTP 主機</label>
+                                <input type="text" id="smtpHost" value="smtp.gmail.com" placeholder="SMTP 主機">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="smtpPort">SMTP 埠號</label>
+                                    <input type="number" id="smtpPort" value="587" min="1" max="65535">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtpEncryption">加密方式</label>
+                                    <select id="smtpEncryption">
+                                        <option value="tls" selected>TLS</option>
+                                        <option value="ssl">SSL</option>
+                                        <option value="none">無</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="smtpUsername">SMTP 使用者名稱</label>
+                                    <input type="text" id="smtpUsername" placeholder="SMTP 使用者名稱">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtpPassword">SMTP 密碼</label>
+                                    <input type="password" id="smtpPassword" placeholder="SMTP 密碼">
+                                </div>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>啟用電子郵件通知</h4>
+                                    <p>發送系統通知和提醒到指定信箱</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableEmailNotifications" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3><i class="fas fa-bell-slash"></i> 通知類型</h3>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>新使用者註冊</h4>
+                                    <p>當有新使用者註冊時發送通知</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="notifyNewUsers" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>新作品上傳</h4>
+                                    <p>當有新作品上傳時發送通知</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="notifyNewPortfolios" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>新職缺發布</h4>
+                                    <p>當有新職缺發布時發送通知</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="notifyNewJobs">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>系統錯誤</h4>
+                                    <p>當發生系統錯誤時發送通知</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="notifySystemErrors" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 外觀設定 -->
+                    <div class="settings-section" id="appearanceSection">
+                        <div class="settings-card">
+                            <h3><i class="fas fa-palette"></i> 主題設定</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="primaryColor">主要色彩</label>
+                                    <div class="color-picker">
+                                        <input type="color" id="primaryColor" class="color-input" value="#667eea">
+                                        <span>#667eea</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="accentColor">強調色彩</label>
+                                    <div class="color-picker">
+                                        <input type="color" id="accentColor" class="color-input" value="#f093fb">
+                                        <span>#f093fb</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="themeMode">主題模式</label>
+                                <select id="themeMode">
+                                    <option value="light" selected>淺色主題</option>
+                                    <option value="dark">深色主題</option>
+                                    <option value="auto">自動</option>
+                                </select>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>顯示動畫效果</h4>
+                                    <p>啟用頁面切換和互動動畫</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableAnimations" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3><i class="fas fa-image"></i> 品牌設定</h3>
+                            <div class="form-group">
+                                <label for="logoUpload">網站標誌</label>
+                                <input type="file" id="logoUpload" accept="image/*">
+                                <p class="form-help">建議尺寸：200x60 像素，支援 PNG、JPG 格式</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="faviconUpload">網站圖示</label>
+                                <input type="file" id="faviconUpload" accept="image/*">
+                                <p class="form-help">建議尺寸：32x32 像素，支援 ICO、PNG 格式</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="customCSS">自訂 CSS</label>
+                                <textarea id="customCSS" placeholder="輸入自訂 CSS 樣式"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 備份還原 -->
+                    <div class="settings-section" id="backupSection">
+                        <div class="settings-card">
+                            <h3><i class="fas fa-download"></i> 資料備份</h3>
+                            <div class="backup-section">
+                                <div class="backup-info">
+                                    <div>
+                                        <h4>最後備份時間</h4>
+                                        <p>2024-01-20 14:30:25</p>
+                                    </div>
+                                    <span class="backup-status status-success">成功</span>
+                                </div>
+                                <div class="backup-actions">
+                                    <button class="btn btn-outline" onclick="createBackup()">
+                                        <i class="fas fa-download"></i> 建立備份
+                                    </button>
+                                    <button class="btn btn-outline" onclick="scheduleBackup()">
+                                        <i class="fas fa-clock"></i> 排程備份
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="backupFrequency">備份頻率</label>
+                                <select id="backupFrequency">
+                                    <option value="daily">每日</option>
+                                    <option value="weekly" selected>每週</option>
+                                    <option value="monthly">每月</option>
+                                </select>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>自動備份</h4>
+                                    <p>啟用自動備份功能</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableAutoBackup" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3><i class="fas fa-upload"></i> 資料還原</h3>
+                            <div class="form-group">
+                                <label for="backupFile">選擇備份檔案</label>
+                                <input type="file" id="backupFile" accept=".sql,.zip,.json">
+                            </div>
+                            <div class="backup-actions">
+                                <button class="btn btn-outline" onclick="restoreBackup()">
+                                    <i class="fas fa-upload"></i> 還原備份
+                                </button>
+                                <button class="btn btn-outline" onclick="testBackup()">
+                                    <i class="fas fa-vial"></i> 測試備份
+                                </button>
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>還原前確認</h4>
+                                    <p>還原前顯示確認對話框</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="confirmRestore" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 系統日誌 -->
+                    <div class="settings-section" id="logsSection">
+                        <div class="settings-card">
+                            <h3><i class="fas fa-file-alt"></i> 系統日誌</h3>
+                            <div class="form-group">
+                                <label for="logLevel">日誌等級</label>
+                                <select id="logLevel">
+                                    <option value="debug">Debug</option>
+                                    <option value="info" selected>Info</option>
+                                    <option value="warning">Warning</option>
+                                    <option value="error">Error</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="logRetention">日誌保留天數</label>
+                                <input type="number" id="logRetention" value="30" min="7" max="365">
+                            </div>
+                            <div class="toggle-group">
+                                <div class="toggle-info">
+                                    <h4>即時日誌</h4>
+                                    <p>顯示即時系統日誌</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableLiveLogs">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="log-section" id="logOutput">
+                                <div class="log-entry log-info">[2024-01-20 14:30:25] INFO: 系統啟動完成</div>
+                                <div class="log-entry log-info">[2024-01-20 14:30:26] INFO: 資料庫連接成功</div>
+                                <div class="log-entry log-warning">[2024-01-20 14:30:27] WARNING: 快取空間不足</div>
+                                <div class="log-entry log-info">[2024-01-20 14:30:28] INFO: 使用者登入: admin</div>
+                                <div class="log-entry log-error">[2024-01-20 14:30:29] ERROR: 檔案上傳失敗</div>
+                            </div>
+                            <div class="backup-actions">
+                                <button class="btn btn-outline" onclick="clearLogs()">
+                                    <i class="fas fa-trash"></i> 清除日誌
+                                </button>
+                                <button class="btn btn-outline" onclick="exportLogs()">
+                                    <i class="fas fa-download"></i> 匯出日誌
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 側邊欄 -->
+                <div class="sidebar">
+                    <h3>快速操作</h3>
+                    <ul class="quick-actions">
+                        <li>
+                            <a href="#" class="quick-action" onclick="testEmailSettings()">
+                                <i class="fas fa-envelope"></i>
+                                測試郵件設定
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="quick-action" onclick="clearCache()">
+                                <i class="fas fa-broom"></i>
+                                清除快取
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="quick-action" onclick="optimizeDatabase()">
+                                <i class="fas fa-database"></i>
+                                最佳化資料庫
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="quick-action" onclick="checkSystemHealth()">
+                                <i class="fas fa-heartbeat"></i>
+                                系統健康檢查
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="quick-action" onclick="updateSystem()">
+                                <i class="fas fa-sync-alt"></i>
+                                檢查系統更新
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="quick-action" onclick="generateReport()">
+                                <i class="fas fa-file-alt"></i>
+                                生成系統報告
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html> 

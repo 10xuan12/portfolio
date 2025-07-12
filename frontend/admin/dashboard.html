@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理員儀表板 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 管理員儀表板特定樣式 */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%);
+            color: var(--white);
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-card .number {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-card .label {
+            font-size: var(--text-sm);
+            opacity: 0.9;
+        }
+        
+        .dashboard-content {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        .main-content {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        
+        .sidebar-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .quick-action {
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+            text-decoration: none;
+            color: var(--gray-700);
+            transition: all 0.2s ease;
+        }
+        
+        .quick-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .quick-action i {
+            font-size: var(--text-2xl);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--spacing-lg);
+        }
+        
+        .admin-table th,
+        .admin-table td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .admin-table th {
+            background: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .admin-table tr:hover {
+            background: var(--gray-50);
+        }
+        
+        .status-badge {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .status-active { background: var(--success-color); color: var(--white); }
+        .status-pending { background: var(--warning-color); color: var(--white); }
+        .status-suspended { background: var(--error-color); color: var(--white); }
+        .status-published { background: var(--success-color); color: var(--white); }
+        .status-draft { background: var(--gray-400); color: var(--white); }
+        .status-review { background: var(--warning-color); color: var(--white); }
+        
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .btn-sm {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: var(--text-xs);
+        }
+        
+        .recent-activity {
+            list-style: none;
+        }
+        
+        .recent-activity li {
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .recent-activity li:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+        }
+        
+        .activity-user { background: var(--primary-color); color: var(--white); }
+        .activity-enterprise { background: var(--secondary-color); color: var(--white); }
+        .activity-portfolio { background: var(--success-color); color: var(--white); }
+        .activity-review { background: var(--warning-color); color: var(--white); }
+        
+        .chart-container {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .chart-placeholder {
+            height: 200px;
+            background: var(--white);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+            border: 2px dashed var(--gray-300);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .admin-table {
+                font-size: var(--text-sm);
+            }
+            
+            .admin-table th,
+            .admin-table td {
+                padding: var(--spacing-sm);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link">儀表板</a>
+                <a href="users.html" class="nav-link">使用者管理</a>
+                <a href="content.html" class="nav-link">內容審核</a>
+                <a href="settings.html" class="nav-link">系統設定</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="../index.html" class="btn btn-outline">返回首頁</a>
+                <a href="../login.html" class="btn btn-primary">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 儀表板標題 -->
+    <section class="dashboard-header">
+        <div class="container">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="number">1,234</div>
+                    <div class="label">總使用者數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">567</div>
+                    <div class="label">總作品數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">89</div>
+                    <div class="label">待審核內容</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">45</div>
+                    <div class="label">今日活躍使用者</div>
+                </div>
+            </div>
+            
+            <h1>管理員儀表板</h1>
+            <p>平台管理與監控中心</p>
+        </div>
+    </section>
+
+    <!-- 主要內容 -->
+    <section class="dashboard-content">
+        <div class="container">
+            <div class="dashboard-grid">
+                <div class="main-content">
+                    <h2>快速操作</h2>
+                    <div class="quick-actions">
+                        <a href="users.html" class="quick-action">
+                            <i class="fas fa-users"></i>
+                            <span>使用者管理</span>
+                        </a>
+                        <a href="content.html" class="quick-action">
+                            <i class="fas fa-eye"></i>
+                            <span>內容審核</span>
+                        </a>
+                        <a href="reports.html" class="quick-action">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>數據報表</span>
+                        </a>
+                        <a href="settings.html" class="quick-action">
+                            <i class="fas fa-cog"></i>
+                            <span>系統設定</span>
+                        </a>
+                    </div>
+
+                    <h2>平台統計</h2>
+                    <div class="chart-container">
+                        <h3>使用者註冊趨勢</h3>
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-line" style="font-size: var(--text-2xl); margin-right: var(--spacing-sm);"></i>
+                            圖表載入中...
+                        </div>
+                    </div>
+
+                    <h2>待審核內容</h2>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>類型</th>
+                                <th>標題</th>
+                                <th>提交者</th>
+                                <th>提交時間</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- TODO: 從資料庫載入待審核內容 -->
+                            <!-- 假資料開始 -->
+                            <tr>
+                                <td>作品集</td>
+                                <td>數據視覺化專案</td>
+                                <td>張小明</td>
+                                <td>2024-01-15 14:30</td>
+                                <td><span class="status-badge status-review">待審核</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm">審核</button>
+                                        <button class="btn btn-outline btn-sm">查看</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>企業資料</td>
+                                <td>新創科技公司</td>
+                                <td>科技公司 B</td>
+                                <td>2024-01-15 13:45</td>
+                                <td><span class="status-badge status-review">待審核</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm">審核</button>
+                                        <button class="btn btn-outline btn-sm">查看</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>作品集</td>
+                                <td>UI/UX 設計作品</td>
+                                <td>王小美</td>
+                                <td>2024-01-15 12:20</td>
+                                <td><span class="status-badge status-review">待審核</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm">審核</button>
+                                        <button class="btn btn-outline btn-sm">查看</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>評論</td>
+                                <td>對「響應式網站設計」的評論</td>
+                                <td>企業用戶 A</td>
+                                <td>2024-01-15 11:15</td>
+                                <td><span class="status-badge status-review">待審核</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm">審核</button>
+                                        <button class="btn btn-outline btn-sm">查看</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- 假資料結束 -->
+                        </tbody>
+                    </table>
+
+                    <h2>系統狀態</h2>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>服務項目</th>
+                                <th>狀態</th>
+                                <th>最後檢查</th>
+                                <th>回應時間</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- TODO: 從系統監控 API 載入服務狀態 -->
+                            <!-- 假資料開始 -->
+                            <tr>
+                                <td>網站服務</td>
+                                <td><span class="status-badge status-active">正常</span></td>
+                                <td>2024-01-15 15:00</td>
+                                <td>120ms</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline btn-sm">重啟</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>資料庫服務</td>
+                                <td><span class="status-badge status-active">正常</span></td>
+                                <td>2024-01-15 15:00</td>
+                                <td>45ms</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline btn-sm">重啟</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>檔案上傳服務</td>
+                                <td><span class="status-badge status-active">正常</span></td>
+                                <td>2024-01-15 15:00</td>
+                                <td>200ms</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline btn-sm">重啟</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>電子郵件服務</td>
+                                <td><span class="status-badge status-pending">警告</span></td>
+                                <td>2024-01-15 15:00</td>
+                                <td>500ms</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline btn-sm">重啟</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- 假資料結束 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-card">
+                        <h3>最近活動</h3>
+                        <ul class="recent-activity">
+                            <!-- TODO: 從資料庫載入管理員活動記錄 -->
+                            <!-- 假資料開始 -->
+                            <li>
+                                <div class="activity-icon activity-user">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div>
+                                    <div>新使用者註冊</div>
+                                    <small>2 分鐘前</small>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="activity-icon activity-enterprise">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div>
+                                    <div>新企業註冊</div>
+                                    <small>15 分鐘前</small>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="activity-icon activity-portfolio">
+                                    <i class="fas fa-upload"></i>
+                                </div>
+                                <div>
+                                    <div>新作品上傳</div>
+                                    <small>30 分鐘前</small>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="activity-icon activity-review">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div>
+                                    <div>內容審核完成</div>
+                                    <small>1 小時前</small>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="activity-icon activity-user">
+                                    <i class="fas fa-user-times"></i>
+                                </div>
+                                <div>
+                                    <div>使用者帳號停用</div>
+                                    <small>2 小時前</small>
+                                </div>
+                            </li>
+                            <!-- 假資料結束 -->
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3>平台統計</h3>
+                        <!-- TODO: 從資料庫載入平台統計資料 -->
+                        <!-- 假資料開始 -->
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>學生使用者</span>
+                                <span style="color: var(--primary-color); font-weight: 600;">856 人</span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>企業使用者</span>
+                                <span style="color: var(--secondary-color); font-weight: 600;">234 家</span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>已發布作品</span>
+                                <span style="color: var(--success-color); font-weight: 600;">478 件</span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>待審核內容</span>
+                                <span style="color: var(--warning-color); font-weight: 600;">89 件</span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>今日活躍使用者</span>
+                                <span style="color: var(--accent-color); font-weight: 600;">45 人</span>
+                            </div>
+                        </div>
+                        <!-- 假資料結束 -->
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3>系統通知</h3>
+                        <!-- TODO: 從系統監控載入通知 -->
+                        <!-- 假資料開始 -->
+                        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--warning-color); color: var(--white); border-radius: var(--radius-md);">
+                            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">電子郵件服務延遲</div>
+                            <div style="font-size: var(--text-sm); opacity: 0.9;">回應時間超過 500ms</div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--success-color); color: var(--white); border-radius: var(--radius-md);">
+                            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">備份完成</div>
+                            <div style="font-size: var(--text-sm); opacity: 0.9;">每日資料備份已成功</div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--primary-color); color: var(--white); border-radius: var(--radius-md);">
+                            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">新版本可用</div>
+                            <div style="font-size: var(--text-sm); opacity: 0.9;">系統更新 v2.1.0</div>
+                        </div>
+                        <!-- 假資料結束 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>管理功能</h4>
+                    <ul>
+                        <li><a href="users.html">使用者管理</a></li>
+                        <li><a href="content.html">內容審核</a></li>
+                        <li><a href="reports.html">數據報表</a></li>
+                        <li><a href="settings.html">系統設定</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>支援</h4>
+                    <ul>
+                        <li><a href="#">管理員指南</a></li>
+                        <li><a href="#">系統文件</a></li>
+                        <li><a href="#">技術支援</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>系統資訊</h4>
+                    <ul>
+                        <li>版本: v2.0.1</li>
+                        <li>最後更新: 2024-01-15</li>
+                        <li>狀態: 正常運行</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/app.js"></script>
+    <script>
+        // TODO: 載入管理員資料和統計資訊
+        // 這裡應該從後端 API 獲取資料
+        // 例如：fetch('/api/admin/dashboard')
+        
+        // 假資料載入模擬
+        console.log('載入管理員儀表板資料...');
+        
+        // TODO: 實作內容審核功能
+        // 當管理員點擊審核按鈕時，更新內容狀態
+        document.querySelectorAll('.btn-primary').forEach(button => {
+            if (button.textContent === '審核') {
+                button.addEventListener('click', function() {
+                    console.log('執行內容審核...');
+                    // TODO: 發送審核請求到後端
+                });
+            }
+        });
+        
+        // TODO: 實作系統監控功能
+        // 定期檢查系統服務狀態
+        setInterval(() => {
+            console.log('檢查系統狀態...');
+            // TODO: 發送系統狀態檢查請求
+        }, 60000); // 每分鐘檢查一次
+        
+        // TODO: 實作即時通知功能
+        // 例如：WebSocket 連接來接收系統通知
+        
+        // TODO: 實作圖表載入
+        // 載入平台統計圖表
+        setTimeout(() => {
+            const chartPlaceholder = document.querySelector('.chart-placeholder');
+            if (chartPlaceholder) {
+                chartPlaceholder.innerHTML = '<i class="fas fa-chart-line" style="font-size: var(--text-2xl); margin-right: var(--spacing-sm);"></i>圖表載入完成';
+            }
+        }, 2000);
+    </script>
+</body>
+</html> 

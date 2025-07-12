@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品詳情 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .detail-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .detail-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--white);
+            padding: var(--spacing-2xl) 0;
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .detail-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .main-content {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .portfolio-hero {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+        
+        .portfolio-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: var(--white);
+            padding: var(--spacing-xl);
+        }
+        
+        .hero-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .hero-meta {
+            display: flex;
+            gap: var(--spacing-lg);
+            font-size: var(--text-sm);
+            opacity: 0.9;
+        }
+        
+        .portfolio-info {
+            padding: var(--spacing-xl);
+        }
+        
+        .info-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .info-title {
+            flex: 1;
+        }
+        
+        .info-title h1 {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .info-status {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .status-published { background: var(--success-color); color: var(--white); }
+        .status-draft { background: var(--gray-400); color: var(--white); }
+        .status-review { background: var(--warning-color); color: var(--white); }
+        
+        .info-stats {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            color: var(--gray-600);
+            font-size: var(--text-sm);
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .portfolio-description {
+            color: var(--gray-700);
+            line-height: 1.8;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .portfolio-tags {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .portfolio-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        
+        .action-btn.primary {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .action-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .action-btn.outline {
+            background: transparent;
+            color: var(--gray-700);
+            border: 2px solid var(--gray-200);
+        }
+        
+        .action-btn.outline:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .portfolio-files {
+            border-top: 1px solid var(--gray-200);
+            padding-top: var(--spacing-lg);
+        }
+        
+        .files-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .file-list {
+            display: grid;
+            gap: var(--spacing-sm);
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            transition: background 0.2s ease;
+        }
+        
+        .file-item:hover {
+            background: var(--gray-100);
+        }
+        
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-600);
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .file-size {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .file-download {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: var(--spacing-xs);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        
+        .sidebar-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .sidebar-card h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: var(--text-lg);
+        }
+        
+        .author-details h4 {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .author-details p {
+            color: var(--gray-600);
+            font-size: var(--text-sm);
+        }
+        
+        .contact-info {
+            list-style: none;
+        }
+        
+        .contact-info li {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .contact-info li:last-child {
+            border-bottom: none;
+        }
+        
+        .contact-info i {
+            width: 20px;
+            color: var(--gray-500);
+        }
+        
+        .comments-section {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .comments-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .comments-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .comment-form {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .comment-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        
+        .comment-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .comment-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: var(--spacing-md);
+        }
+        
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        
+        .comment-item {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--gray-600);
+            flex-shrink: 0;
+        }
+        
+        .comment-content {
+            flex: 1;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .comment-time {
+            font-size: var(--text-sm);
+            color: var(--gray-500);
+        }
+        
+        .comment-text {
+            color: var(--gray-700);
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .comment-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .comment-action {
+            background: none;
+            border: none;
+            color: var(--gray-500);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .comment-action:hover {
+            color: var(--primary-color);
+        }
+        
+        .share-section {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .share-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .share-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+        
+        .share-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .share-facebook { background: #1877f2; }
+        .share-twitter { background: #1da1f2; }
+        .share-linkedin { background: #0077b5; }
+        .share-copy { background: var(--gray-600); }
+        
+        @media (max-width: 768px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .portfolio-actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link">儀表板</a>
+                <a href="portfolio.html" class="nav-link">作品集</a>
+                <a href="upload.html" class="nav-link">上傳作品</a>
+                <a href="profile.html" class="nav-link">個人資料</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="../index.html" class="btn btn-outline">返回首頁</a>
+                <a href="../login.html" class="btn btn-primary">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 作品詳情標題 -->
+    <section class="detail-header">
+        <div class="container">
+            <div class="portfolio-hero">
+                <img src="https://via.placeholder.com/1200x400/667eea/ffffff?text=Portfolio+Detail" alt="作品封面">
+                <div class="hero-overlay">
+                    <div class="hero-title">響應式網站設計</div>
+                    <div class="hero-meta">
+                        <span><i class="fas fa-user"></i> 張小明</span>
+                        <span><i class="fas fa-calendar"></i> 2024-01-15</span>
+                        <span><i class="fas fa-eye"></i> 156 次瀏覽</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主要內容 -->
+    <section class="detail-container">
+        <div class="container">
+            <div class="detail-content">
+                <div class="main-content">
+                    <div class="portfolio-info">
+                        <div class="info-header">
+                            <div class="info-title">
+                                <h1>響應式網站設計</h1>
+                                <p>使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。</p>
+                            </div>
+                            <span class="info-status status-published">已發布</span>
+                        </div>
+                        
+                        <div class="info-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-eye"></i>
+                                <span>156 次瀏覽</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-heart"></i>
+                                <span>23 個讚</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-comment"></i>
+                                <span>8 則評論</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-download"></i>
+                                <span>12 次下載</span>
+                            </div>
+                        </div>
+                        
+                        <div class="portfolio-description">
+                            <p>這是一個使用現代化技術開發的響應式網站專案。專案採用 HTML5 語義化標籤，CSS3 的 Flexbox 和 Grid 佈局，以及 JavaScript ES6+ 語法。</p>
+                            
+                            <p>主要特色包括：</p>
+                            <ul>
+                                <li>完全響應式設計，支援桌面、平板和手機</li>
+                                <li>現代化的使用者介面設計</li>
+                                <li>優化的載入速度和效能</li>
+                                <li>無障礙設計，符合 WCAG 2.1 標準</li>
+                                <li>跨瀏覽器相容性</li>
+                            </ul>
+                            
+                            <p>技術棧：HTML5, CSS3, JavaScript, Bootstrap 5, jQuery</p>
+                        </div>
+                        
+                        <div class="portfolio-tags">
+                            <span class="tag">HTML5</span>
+                            <span class="tag">CSS3</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">響應式</span>
+                            <span class="tag">Bootstrap</span>
+                            <span class="tag">jQuery</span>
+                        </div>
+                        
+                        <div class="portfolio-actions">
+                            <button class="action-btn primary" onclick="likePortfolio()">
+                                <i class="fas fa-heart"></i>
+                                讚
+                            </button>
+                            <button class="action-btn outline" onclick="sharePortfolio()">
+                                <i class="fas fa-share"></i>
+                                分享
+                            </button>
+                            <button class="action-btn outline" onclick="editPortfolio()">
+                                <i class="fas fa-edit"></i>
+                                編輯
+                            </button>
+                            <button class="action-btn outline" onclick="deletePortfolio()">
+                                <i class="fas fa-trash"></i>
+                                刪除
+                            </button>
+                        </div>
+                        
+                        <div class="portfolio-files">
+                            <h3 class="files-title">相關檔案</h3>
+                            <div class="file-list">
+                                <div class="file-item">
+                                    <div class="file-icon">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                    <div class="file-info">
+                                        <div class="file-name">網站截圖.png</div>
+                                        <div class="file-size">2.3 MB</div>
+                                    </div>
+                                    <button class="file-download" onclick="downloadFile('screenshot.png')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="file-item">
+                                    <div class="file-icon">
+                                        <i class="fas fa-file-archive"></i>
+                                    </div>
+                                    <div class="file-info">
+                                        <div class="file-name">原始碼.zip</div>
+                                        <div class="file-size">1.8 MB</div>
+                                    </div>
+                                    <button class="file-download" onclick="downloadFile('source-code.zip')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="file-item">
+                                    <div class="file-icon">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="file-info">
+                                        <div class="file-name">專案說明.pdf</div>
+                                        <div class="file-size">856 KB</div>
+                                    </div>
+                                    <button class="file-download" onclick="downloadFile('documentation.pdf')">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="sidebar-card">
+                        <h3>作者資訊</h3>
+                        <div class="author-info">
+                            <div class="author-avatar">
+                                張
+                            </div>
+                            <div class="author-details">
+                                <h4>張小明</h4>
+                                <p>資訊管理學系 • 大學三年級</p>
+                            </div>
+                        </div>
+                        
+                        <ul class="contact-info">
+                            <li>
+                                <i class="fas fa-envelope"></i>
+                                <span>zhang@example.com</span>
+                            </li>
+                            <li>
+                                <i class="fab fa-github"></i>
+                                <span>github.com/zhangxiaoming</span>
+                            </li>
+                            <li>
+                                <i class="fab fa-linkedin"></i>
+                                <span>linkedin.com/in/zhangxiaoming</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sidebar-card">
+                        <h3>相關作品</h3>
+                        <div class="related-works">
+                            <!-- TODO: 載入相關作品 -->
+                            <div class="related-item" style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">
+                                <h4 style="font-size: var(--text-sm); margin-bottom: var(--spacing-xs);">行動應用程式</h4>
+                                <p style="font-size: var(--text-xs); color: var(--gray-600);">使用 React Native 開發的跨平台應用</p>
+                            </div>
+                            <div class="related-item" style="padding: var(--spacing-md);">
+                                <h4 style="font-size: var(--text-sm); margin-bottom: var(--spacing-xs);">UI/UX 設計作品</h4>
+                                <p style="font-size: var(--text-xs); color: var(--gray-600);">使用 Figma 設計的現代化介面</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-card">
+                        <h3>分享作品</h3>
+                        <div class="share-section">
+                            <div class="share-title">分享給朋友</div>
+                            <div class="share-buttons">
+                                <a href="#" class="share-btn share-facebook" onclick="shareToFacebook()">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="share-btn share-twitter" onclick="shareToTwitter()">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="share-btn share-linkedin" onclick="shareToLinkedIn()">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <button class="share-btn share-copy" onclick="copyLink()">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 評論區 -->
+            <div class="comments-section">
+                <div class="comments-header">
+                    <h2 class="comments-title">評論 (8)</h2>
+                </div>
+                
+                <div class="comment-form">
+                    <textarea class="comment-input" placeholder="寫下您的評論..." id="commentInput"></textarea>
+                    <div class="comment-actions">
+                        <button class="btn btn-primary" onclick="submitComment()">
+                            <i class="fas fa-paper-plane"></i>
+                            發表評論
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="comments-list" id="commentsList">
+                    <!-- TODO: 從資料庫載入評論 -->
+                    <!-- 假資料開始 -->
+                    <div class="comment-item">
+                        <div class="comment-avatar">
+                            李
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">李大明</span>
+                                <span class="comment-time">2 小時前</span>
+                            </div>
+                            <div class="comment-text">
+                                設計很漂亮！響應式做得很好，在不同裝置上都能正常顯示。期待看到更多作品！
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-action" onclick="likeComment(1)">
+                                    <i class="fas fa-thumbs-up"></i> 讚 (3)
+                                </button>
+                                <button class="comment-action" onclick="replyComment(1)">
+                                    <i class="fas fa-reply"></i> 回覆
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comment-item">
+                        <div class="comment-avatar">
+                            王
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">王小美</span>
+                                <span class="comment-time">1 天前</span>
+                            </div>
+                            <div class="comment-text">
+                                程式碼結構很清晰，註解也很詳細。對於初學者來說是很好的學習範例。
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-action" onclick="likeComment(2)">
+                                    <i class="fas fa-thumbs-up"></i> 讚 (1)
+                                </button>
+                                <button class="comment-action" onclick="replyComment(2)">
+                                    <i class="fas fa-reply"></i> 回覆
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comment-item">
+                        <div class="comment-avatar">
+                            陳
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">陳小華</span>
+                                <span class="comment-time">3 天前</span>
+                            </div>
+                            <div class="comment-text">
+                                整體設計感很棒，配色也很協調。建議可以加入一些動畫效果來提升使用者體驗。
+                            </div>
+                            <div class="comment-actions">
+                                <button class="comment-action" onclick="likeComment(3)">
+                                    <i class="fas fa-thumbs-up"></i> 讚 (5)
+                                </button>
+                                <button class="comment-action" onclick="replyComment(3)">
+                                    <i class="fas fa-reply"></i> 回覆
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 假資料結束 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul>
+                        <li><a href="dashboard.html">儀表板</a></li>
+                        <li><a href="portfolio.html">作品集</a></li>
+                        <li><a href="upload.html">上傳作品</a></li>
+                        <li><a href="profile.html">個人資料</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>支援</h4>
+                    <ul>
+                        <li><a href="#">使用指南</a></li>
+                        <li><a href="#">常見問題</a></li>
+                        <li><a href="#">聯絡支援</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>社群媒體</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/app.js"></script>
+    <script src="portfolio-detail.js"></script>
+</body>
+</html> 

@@ -1,2 +1,0 @@
-[15-May-2025 06:29:46 Europe/Berlin] PHP Warning:  move_uploaded_file(D:\xampp\htdocs\portfolio\student/uploads/file_68256dba917562.99195740.): Failed to open stream: Permission denied in D:\xampp\htdocs\portfolio\student\create_portfolio.php on line 111
-[15-May-2025 06:29:46 Europe/Berlin] PHP Warning:  move_uploaded_file(): Unable to move &quot;D:\xampp\tmp\php7B35.tmp&quot; to &quot;D:\xampp\htdocs\portfolio\student/uploads/file_68256dba917562.99195740.&quot; in D:\xampp\htdocs\portfolio\student\create_portfolio.php on line 111

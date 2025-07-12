@@ -1,67 +1,101 @@
 <?php
-header('Content-Type: application/json'); // 確保回應 JSON
-require 'includes/db_connect.php';
+/**
+ * 註冊處理
+ * 使用新的安全架構處理用戶註冊
+ */
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// 載入應用程式初始化檔案
+require_once 'includes/init.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST["name"]);
-    $email = trim($_POST["email"]);
-    $password = trim($_POST["password"]);
-    $role = trim($_POST["role"]);
-    $student_id = isset($_POST["student_id"]) ? trim($_POST["student_id"]) : null;
-
-    if (empty($name) || empty($email) || empty($password) || empty($role) || ($role == "student" && empty($student_id))) {
-        echo json_encode(["status" => "error", "message" => "所有欄位必須填寫"]);
-        exit;
-    }
-
-    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-
-    // 檢查 email 是否已存在 依不同角色檢查不同資料表
-    $check_sql = "";
-    if($role == "student"){
-        $check_sql = "SELECT student_id FROM students WHERE email = ?";
-    }else if($role == "admin"){
-        $check_sql = "SELECT admin_id FROM admins WHERE email = ?";
-    }else if($role == "company"){
-        $check_sql = "SELECT company_id FROM companies WHERE email = ?";
-    }
-
-    $stmt = $conn->prepare($check_sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->store_result();
-
-    if ($stmt->num_rows > 0) {
-        echo json_encode(["status" => "error", "message" => "該 Email 已被註冊"]);
-        exit;
-    }
-
-    // 插入新使用者，依據不同角色插入不同資料表
-    if($role == "student"){
-        $sql = "INSERT INTO students (student_id, name, email, password_hash) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("isss", $student_id, $name, $email, $hashed_password);
-    }else if($role == "admin"){
-        $sql = "INSERT INTO admins (name, email, password_hash) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sss", $name, $email, $hashed_password);
-    }else if($role == "company"){
-        $sql = "INSERT INTO companies (name, email, password_hash) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sss", $name, $email, $hashed_password);
-    }
-
-    if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "註冊成功"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "註冊失敗"]);
-    }
-} else {
-    echo json_encode(["status" => "error", "message" => "請求方式錯誤"]);
+// 檢查是否為 POST 請求
+if (!is_post()) {
+    json_response([
+        'success' => false,
+        'error' => '請使用 POST 方法提交表單'
+    ], 405);
 }
 
-$conn->close();
+try {
+    // 獲取表單數據
+    $userData = [
+        'name' => post('name'),
+        'email' => post('email'),
+        'password' => post('password'),
+        'confirmPassword' => post('confirmPassword'),
+        'role' => post('role'),
+        'companyName' => post('companyName'),
+        'adminCode' => post('adminCode'),
+        'agree' => post('agree')
+    ];
+
+    // 驗證確認密碼
+    if ($userData['password'] !== $userData['confirmPassword']) {
+        json_response([
+            'success' => false,
+            'error' => '密碼不一致'
+        ]);
+    }
+
+    // 驗證同意條款
+    if (!$userData['agree']) {
+        json_response([
+            'success' => false,
+            'error' => '請同意服務條款和隱私政策'
+        ]);
+    }
+
+    // 根據角色進行額外驗證
+    switch ($userData['role']) {
+        case 'enterprise':
+            if (empty($userData['companyName'])) {
+                json_response([
+                    'success' => false,
+                    'error' => '企業用戶必須填寫公司名稱'
+                ]);
+            }
+            break;
+        case 'admin':
+            if (empty($userData['adminCode'])) {
+                json_response([
+                    'success' => false,
+                    'error' => '管理員必須填寫管理員代碼'
+                ]);
+            }
+            // 驗證管理員代碼
+            if ($userData['adminCode'] !== 'ADMIN2024') {
+                json_response([
+                    'success' => false,
+                    'error' => '管理員代碼錯誤'
+                ]);
+            }
+            break;
+    }
+
+    // 使用安全類別處理註冊
+    $security = security();
+    $result = $security->register($userData);
+
+    // 返回結果
+    json_response($result);
+
+} catch (Exception $e) {
+    // 記錄錯誤
+    if (config('log.enabled', false)) {
+        $logMessage = sprintf(
+            "[%s] Registration Error: %s\nEmail: %s\nRole: %s\n",
+            date('Y-m-d H:i:s'),
+            $e->getMessage(),
+            $userData['email'] ?? 'N/A',
+            $userData['role'] ?? 'N/A'
+        );
+        
+        $logFile = log_path('auth_' . date('Y-m-d') . '.log');
+        file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+    }
+
+    json_response([
+        'success' => false,
+        'error' => '註冊時發生錯誤，請稍後再試'
+    ], 500);
+}
 ?>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio+ - 專業的作品集展示平台</title>
+    <meta name="description" content="Portfolio+ 是專為學生、企業和管理員設計的作品集展示平台。學生可以上傳作品，企業可以搜尋人才，管理員可以管理平台。">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="#features" class="nav-link">特色</a>
+                <a href="#how-it-works" class="nav-link">如何使用</a>
+                <a href="#categories" class="nav-link">分類</a>
+                <a href="#contact" class="nav-link">聯絡我們</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="login.html" class="btn btn-outline">登入</a>
+                <a href="register.html" class="btn btn-primary">註冊</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄區塊 -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    以作品為核心的
+                    <span class="text-gradient">人才媒合平台</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Portfolio+ 打破傳統履歷制式模板，強調作品本身即履歷，視覺化展示為主，
+                    特別適合設計、數位、實作類學生。企業可以透過作品直接評估人才能力。
+                </p>
+                <div class="hero-actions">
+                    <a href="register.html" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket"></i>
+                        立即開始
+                    </a>
+                    <a href="#how-it-works" class="btn btn-outline btn-lg">
+                        <i class="fas fa-play"></i>
+                        了解更多
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-visual">
+                    <div class="floating-card card-1">
+                        <i class="fas fa-code"></i>
+                        <span>程式作品</span>
+                    </div>
+                    <div class="floating-card card-2">
+                        <i class="fas fa-palette"></i>
+                        <span>設計作品</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <i class="fas fa-chart-line"></i>
+                        <span>數據分析</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 統計區塊 -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">1,234</div>
+                    <div class="stat-label">作品數量</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">45,678</div>
+                    <div class="stat-label">總瀏覽次數</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">8,901</div>
+                    <div class="stat-label">總讚數</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">2,345</div>
+                    <div class="stat-label">總評論數</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 特色區塊 -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>平台特色</h2>
+                <p>Portfolio+ 的三大核心優勢</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>以作品為核心</h3>
+                    <p>打破傳統履歷制式模板，強調作品本身即履歷，視覺化展示為主，特別適合設計、數位、實作類學生。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h3>簡單上手</h3>
+                    <p>提供學生一頁式、可分類、支援多格式的作品管理與上傳功能，操作簡單直觀。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>智能推薦</h3>
+                    <p>抓作品簡介裡的關鍵字比對，主動推薦作品給企業，提高媒合效率。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 如何使用區塊 -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>如何使用</h2>
+                <p>三個角色，一個平台</p>
+            </div>
+            
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-header">
+                        <div class="role-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3>學生</h3>
+                    </div>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check"></i> 上傳作品集</li>
+                        <li><i class="fas fa-check"></i> 製作個人作品集</li>
+                        <li><i class="fas fa-check"></i> 上傳履歷</li>
+                        <li><i class="fas fa-check"></i> 獲得徽章</li>
+                        <li><i class="fas fa-check"></i> 與企業互動</li>
+                    </ul>
+                    <a href="student/dashboard.html" class="btn btn-primary">學生入口</a>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-header">
+                        <div class="role-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3>企業</h3>
+                    </div>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check"></i> 瀏覽作品集</li>
+                        <li><i class="fas fa-check"></i> 搜尋人才</li>
+                        <li><i class="fas fa-check"></i> 發送邀請</li>
+                        <li><i class="fas fa-check"></i> 管理職缺</li>
+                        <li><i class="fas fa-check"></i> 查看統計</li>
+                    </ul>
+                    <a href="enterprise/dashboard.html" class="btn btn-primary">企業入口</a>
+                </div>
+                
+                <div class="role-card">
+                    <div class="role-header">
+                        <div class="role-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3>管理員</h3>
+                    </div>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check"></i> 管理使用者</li>
+                        <li><i class="fas fa-check"></i> 審核內容</li>
+                        <li><i class="fas fa-check"></i> 系統設定</li>
+                        <li><i class="fas fa-check"></i> 查看統計</li>
+                        <li><i class="fas fa-check"></i> 維護平台</li>
+                    </ul>
+                    <a href="admin/dashboard.html" class="btn btn-primary">管理員入口</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 熱門作品區塊 -->
+    <section id="categories" class="categories">
+        <div class="container">
+            <div class="section-header">
+                <h2>熱門作品</h2>
+                <p>看看其他學生的精彩作品</p>
+            </div>
+            
+            <div class="portfolios-grid">
+                <div class="portfolio-card">
+                    <div class="portfolio-image">
+                        <img src="https://via.placeholder.com/300x200/667eea/ffffff?text=Web+Design" alt="作品圖片">
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>響應式網站設計</h3>
+                        <p>使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站</p>
+                        <div class="portfolio-tags">
+                            <span class="tag">HTML5</span>
+                            <span class="tag">CSS3</span>
+                            <span class="tag">JavaScript</span>
+                        </div>
+                        <div class="portfolio-stats">
+                            <span><i class="fas fa-eye"></i> 156</span>
+                            <span><i class="fas fa-heart"></i> 23</span>
+                            <span><i class="fas fa-comment"></i> 8</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-image">
+                        <img src="https://via.placeholder.com/300x200/764ba2/ffffff?text=Mobile+App" alt="作品圖片">
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>行動應用程式</h3>
+                        <p>使用 React Native 開發的跨平台行動應用程式</p>
+                        <div class="portfolio-tags">
+                            <span class="tag">React Native</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">Firebase</span>
+                        </div>
+                        <div class="portfolio-stats">
+                            <span><i class="fas fa-eye"></i> 203</span>
+                            <span><i class="fas fa-heart"></i> 45</span>
+                            <span><i class="fas fa-comment"></i> 12</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-image">
+                        <img src="https://via.placeholder.com/300x200/f093fb/ffffff?text=Data+Viz" alt="作品圖片">
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>數據視覺化</h3>
+                        <p>使用 D3.js 製作的互動式數據視覺化專案</p>
+                        <div class="portfolio-tags">
+                            <span class="tag">D3.js</span>
+                            <span class="tag">Python</span>
+                            <span class="tag">Pandas</span>
+                        </div>
+                        <div class="portfolio-stats">
+                            <span><i class="fas fa-eye"></i> 89</span>
+                            <span><i class="fas fa-heart"></i> 17</span>
+                            <span><i class="fas fa-comment"></i> 5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 聯絡我們區塊 -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2>聯絡我們</h2>
+                <p>有任何問題或建議嗎？</p>
+            </div>
+            
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>電子郵件</h3>
+                            <p>support@portfolio-plus.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h3>聯絡電話</h3>
+                            <p>+886 2 1234 5678</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h3>地址</h3>
+                            <p>台北市大安區復興南路一段 390 號</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="您的姓名" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="您的電子郵件" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="您的訊息" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">發送訊息</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul>
+                        <li><a href="#features">特色</a></li>
+                        <li><a href="#how-it-works">如何使用</a></li>
+                        <li><a href="#categories">作品</a></li>
+                        <li><a href="#contact">聯絡我們</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>使用者</h4>
+                    <ul>
+                        <li><a href="student/dashboard.html">學生入口</a></li>
+                        <li><a href="enterprise/dashboard.html">企業入口</a></li>
+                        <li><a href="admin/dashboard.html">管理員入口</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>社群媒體</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html> 

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用者管理 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .users-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .users-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .users-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .users-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .filter-bar {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .users-table {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .table-header {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .table-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .table-controls {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .users-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .users-table th {
+            background: var(--gray-50);
+            padding: var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .users-table td {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: middle;
+        }
+        
+        .users-table tr:hover {
+            background: var(--gray-50);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            color: var(--white);
+        }
+        
+        .avatar-student { background: var(--primary-color); }
+        .avatar-enterprise { background: var(--accent-color); }
+        .avatar-admin { background: var(--success-color); }
+        
+        .user-details h4 {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .user-details p {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .user-status {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .status-active { background: var(--success-color); color: var(--white); }
+        .status-inactive { background: var(--gray-400); color: var(--white); }
+        .status-suspended { background: var(--error-color); color: var(--white); }
+        .status-pending { background: var(--warning-color); color: var(--white); }
+        
+        .user-stats {
+            display: flex;
+            gap: var(--spacing-sm);
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .action-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            font-size: var(--text-xs);
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .action-btn.danger {
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .action-btn.danger:hover {
+            background: var(--error-color);
+            color: var(--white);
+        }
+        
+        .bulk-actions {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .bulk-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .bulk-selection {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .bulk-actions-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .page-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .page-btn.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .page-btn:hover:not(.active) {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--gray-500);
+        }
+        
+        .empty-state i {
+            font-size: var(--text-4xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--gray-300);
+        }
+        
+        @media (max-width: 768px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .users-table {
+                font-size: var(--text-sm);
+            }
+            
+            .user-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    儀表板
+                </a>
+                <a href="users.html" class="navbar-link active">
+                    <i class="fas fa-users"></i>
+                    使用者管理
+                </a>
+                <a href="content.html" class="navbar-link">
+                    <i class="fas fa-file-alt"></i>
+                    內容審核
+                </a>
+                <a href="reports.html" class="navbar-link">
+                    <i class="fas fa-flag"></i>
+                    報告管理
+                </a>
+                <a href="analytics.html" class="navbar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    統計分析
+                </a>
+                <a href="settings.html" class="navbar-link">
+                    <i class="fas fa-cog"></i>
+                    系統設定
+                </a>
+            </div>
+            <div class="navbar-user">
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32x32/667eea/ffffff?text=管" alt="管理員頭像" class="user-avatar">
+                    <span class="user-name">系統管理員</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="users-container">
+        <div class="container">
+            <div class="users-header">
+                <h1 class="users-title">使用者管理</h1>
+                <div class="users-actions">
+                    <button class="btn btn-outline" onclick="exportUsers()">
+                        <i class="fas fa-download"></i>
+                        匯出資料
+                    </button>
+                    <button class="btn btn-primary" onclick="createUser()">
+                        <i class="fas fa-plus"></i>
+                        新增使用者
+                    </button>
+                </div>
+            </div>
+
+            <!-- 篩選欄 -->
+            <div class="filter-bar">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="searchFilter">搜尋使用者</label>
+                        <input type="text" id="searchFilter" placeholder="搜尋姓名、信箱、科系...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="typeFilter">使用者類型</label>
+                        <select id="typeFilter">
+                            <option value="">全部類型</option>
+                            <option value="student">學生</option>
+                            <option value="enterprise">企業</option>
+                            <option value="admin">管理員</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">狀態</label>
+                        <select id="statusFilter">
+                            <option value="">全部狀態</option>
+                            <option value="active">啟用</option>
+                            <option value="inactive">停用</option>
+                            <option value="suspended">暫停</option>
+                            <option value="pending">待審核</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="departmentFilter">科系</label>
+                        <select id="departmentFilter">
+                            <option value="">全部科系</option>
+                            <option value="資訊管理學系">資訊管理學系</option>
+                            <option value="資訊工程學系">資訊工程學系</option>
+                            <option value="設計學系">設計學系</option>
+                            <option value="商學院">商學院</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 批量操作 -->
+            <div class="bulk-actions" id="bulkActions" style="display: none;">
+                <div class="bulk-header">
+                    <div class="bulk-selection">
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                        <label for="selectAll">已選擇 <span id="selectedCount">0</span> 個使用者</label>
+                    </div>
+                    <div class="bulk-actions-buttons">
+                        <button class="btn btn-outline" onclick="bulkActivate()">
+                            <i class="fas fa-check"></i> 啟用
+                        </button>
+                        <button class="btn btn-outline" onclick="bulkDeactivate()">
+                            <i class="fas fa-pause"></i> 停用
+                        </button>
+                        <button class="btn btn-outline danger" onclick="bulkDelete()">
+                            <i class="fas fa-trash"></i> 刪除
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 使用者表格 -->
+            <div class="users-table">
+                <div class="table-header">
+                    <div class="table-title">使用者列表</div>
+                    <div class="table-controls">
+                        <button class="btn btn-outline" onclick="refreshUsers()">
+                            <i class="fas fa-sync-alt"></i> 重新整理
+                        </button>
+                        <button class="btn btn-outline" onclick="toggleBulkActions()">
+                            <i class="fas fa-tasks"></i> 批量操作
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="50">
+                                    <input type="checkbox" id="selectAllHeader" onchange="toggleSelectAll()">
+                                </th>
+                                <th>使用者</th>
+                                <th>類型</th>
+                                <th>狀態</th>
+                                <th>統計</th>
+                                <th>註冊時間</th>
+                                <th>最後登入</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- TODO: 從資料庫載入使用者列表 -->
+                            <!-- 假資料開始 -->
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="user-select" value="1">
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-avatar avatar-student">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div class="user-details">
+                                            <h4>張小明</h4>
+                                            <p>zhang@example.com</p>
+                                            <p>資訊管理學系</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>學生</td>
+                                <td>
+                                    <span class="user-status status-active">啟用</span>
+                                </td>
+                                <td>
+                                    <div class="user-stats">
+                                        <span>8 作品</span>
+                                        <span>1,234 瀏覽</span>
+                                        <span>89 讚</span>
+                                    </div>
+                                </td>
+                                <td>2024-01-15</td>
+                                <td>2024-01-20 14:30</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <button class="action-btn" onclick="viewUser(1)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="editUser(1)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="suspendUser(1)">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                        <button class="action-btn danger" onclick="deleteUser(1)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="user-select" value="2">
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-avatar avatar-enterprise">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                        <div class="user-details">
+                                            <h4>台灣微軟</h4>
+                                            <p>hr@microsoft.com.tw</p>
+                                            <p>科技公司</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>企業</td>
+                                <td>
+                                    <span class="user-status status-active">啟用</span>
+                                </td>
+                                <td>
+                                    <div class="user-stats">
+                                        <span>5 職缺</span>
+                                        <span>23 申請</span>
+                                        <span>567 瀏覽</span>
+                                    </div>
+                                </td>
+                                <td>2024-01-10</td>
+                                <td>2024-01-20 16:45</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <button class="action-btn" onclick="viewUser(2)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="editUser(2)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="suspendUser(2)">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                        <button class="action-btn danger" onclick="deleteUser(2)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="user-select" value="3">
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-avatar avatar-student">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div class="user-details">
+                                            <h4>李大明</h4>
+                                            <p>li@example.com</p>
+                                            <p>資訊工程學系</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>學生</td>
+                                <td>
+                                    <span class="user-status status-pending">待審核</span>
+                                </td>
+                                <td>
+                                    <div class="user-stats">
+                                        <span>6 作品</span>
+                                        <span>890 瀏覽</span>
+                                        <span>67 讚</span>
+                                    </div>
+                                </td>
+                                <td>2024-01-18</td>
+                                <td>2024-01-19 09:15</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <button class="action-btn" onclick="viewUser(3)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="approveUser(3)">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="rejectUser(3)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        <button class="action-btn danger" onclick="deleteUser(3)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- 假資料結束 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 分頁 -->
+            <div class="pagination">
+                <button class="page-btn" onclick="changePage(1)">1</button>
+                <button class="page-btn active" onclick="changePage(2)">2</button>
+                <button class="page-btn" onclick="changePage(3)">3</button>
+                <button class="page-btn" onclick="changePage(4)">4</button>
+                <button class="page-btn" onclick="changePage(5)">5</button>
+                <button class="page-btn" onclick="changePage('next')">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+    <script src="users.js"></script>
+</body>
+</html> 

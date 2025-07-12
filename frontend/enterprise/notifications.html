@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .notifications-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .notifications-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .notifications-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .notifications-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .notifications-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: var(--spacing-xl);
+        }
+        
+        .notifications-list {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .notifications-header-bar {
+            padding: var(--spacing-lg);
+            border-bottom: 2px solid var(--gray-200);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .notifications-count {
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .notifications-filters {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .filter-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: var(--text-sm);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .notification-item {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--gray-200);
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .notification-item:hover {
+            background: var(--gray-50);
+        }
+        
+        .notification-item.unread {
+            background: var(--primary-50);
+        }
+        
+        .notification-item.unread:hover {
+            background: var(--primary-100);
+        }
+        
+        .notification-header {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            flex-shrink: 0;
+        }
+        
+        .notification-application { background: var(--success-color); color: var(--white); }
+        .notification-job { background: var(--primary-color); color: var(--white); }
+        .notification-view { background: var(--accent-color); color: var(--white); }
+        .notification-contact { background: var(--warning-color); color: var(--white); }
+        .notification-system { background: var(--gray-500); color: var(--white); }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .notification-message {
+            color: var(--gray-600);
+            line-height: 1.5;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .notification-meta {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            font-size: var(--text-sm);
+            color: var(--gray-500);
+        }
+        
+        .notification-time {
+            font-size: var(--text-xs);
+        }
+        
+        .notification-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .notification-action {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            font-size: var(--text-xs);
+            transition: all 0.2s ease;
+        }
+        
+        .notification-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .notification-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        
+        .sidebar-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .sidebar-card h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .notification-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: var(--spacing-md);
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+        
+        .stat-number {
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .notification-types {
+            list-style: none;
+        }
+        
+        .type-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .type-item:last-child {
+            border-bottom: none;
+        }
+        
+        .type-label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .type-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        
+        .type-count {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 600;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--gray-500);
+        }
+        
+        .empty-state i {
+            font-size: var(--text-4xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--gray-300);
+        }
+        
+        @media (max-width: 1024px) {
+            .notifications-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .notifications-filters {
+                flex-direction: column;
+            }
+            
+            .notification-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    儀表板
+                </a>
+                <a href="portfolios.html" class="navbar-link">
+                    <i class="fas fa-folder"></i>
+                    作品瀏覽
+                </a>
+                <a href="search.html" class="navbar-link">
+                    <i class="fas fa-search"></i>
+                    人才搜尋
+                </a>
+                <a href="jobs.html" class="navbar-link">
+                    <i class="fas fa-briefcase"></i>
+                    職缺管理
+                </a>
+                <a href="profile.html" class="navbar-link">
+                    <i class="fas fa-building"></i>
+                    企業資料
+                </a>
+                <a href="notifications.html" class="navbar-link active">
+                    <i class="fas fa-bell"></i>
+                    通知
+                </a>
+                <a href="settings.html" class="navbar-link">
+                    <i class="fas fa-cog"></i>
+                    設定
+                </a>
+            </div>
+            <div class="navbar-user">
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32x32/667eea/ffffff?text=企" alt="企業頭像" class="user-avatar">
+                    <span class="user-name">台灣微軟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="notifications-container">
+        <div class="container">
+            <div class="notifications-header">
+                <h1 class="notifications-title">通知</h1>
+                <div class="notifications-actions">
+                    <button class="btn btn-outline" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double"></i>
+                        全部標記已讀
+                    </button>
+                    <button class="btn btn-outline" onclick="clearNotifications()">
+                        <i class="fas fa-trash"></i>
+                        清除通知
+                    </button>
+                </div>
+            </div>
+
+            <div class="notifications-grid">
+                <!-- 通知列表 -->
+                <div class="notifications-list">
+                    <div class="notifications-header-bar">
+                        <div class="notifications-count">
+                            <span id="notificationsCount">12</span> 個通知
+                        </div>
+                        <div class="notifications-filters">
+                            <button class="filter-btn active" onclick="filterNotifications('all')">全部</button>
+                            <button class="filter-btn" onclick="filterNotifications('unread')">未讀</button>
+                            <button class="filter-btn" onclick="filterNotifications('application')">申請</button>
+                            <button class="filter-btn" onclick="filterNotifications('job')">職缺</button>
+                            <button class="filter-btn" onclick="filterNotifications('system')">系統</button>
+                        </div>
+                    </div>
+                    
+                    <div id="notificationsList">
+                        <!-- TODO: 從資料庫載入通知列表 -->
+                        <!-- 假資料開始 -->
+                        <div class="notification-item unread" data-type="application" data-id="1">
+                            <div class="notification-header">
+                                <div class="notification-icon notification-application">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">新的實習申請</div>
+                                    <div class="notification-message">
+                                        張小明申請了「前端開發實習生」職缺。請查看申請資料並回覆。
+                                    </div>
+                                    <div class="notification-meta">
+                                        <span class="notification-time">2 小時前</span>
+                                        <div class="notification-actions">
+                                            <button class="notification-action" onclick="viewApplication(1)">
+                                                查看申請
+                                            </button>
+                                            <button class="notification-action" onclick="markAsRead(1)">
+                                                標記已讀
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item unread" data-type="job" data-id="2">
+                            <div class="notification-header">
+                                <div class="notification-icon notification-job">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">職缺瀏覽數增加</div>
+                                    <div class="notification-message">
+                                        「UI/UX 設計師」職缺今日瀏覽次數增加 15 次，共有 89 次瀏覽。
+                                    </div>
+                                    <div class="notification-meta">
+                                        <span class="notification-time">4 小時前</span>
+                                        <div class="notification-actions">
+                                            <button class="notification-action" onclick="viewJob(2)">
+                                                查看職缺
+                                            </button>
+                                            <button class="notification-action" onclick="markAsRead(2)">
+                                                標記已讀
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item" data-type="view" data-id="3">
+                            <div class="notification-header">
+                                <div class="notification-icon notification-view">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">作品被瀏覽</div>
+                                    <div class="notification-message">
+                                        李大明瀏覽了您的企業資料頁面，並對「前端開發實習生」職缺表示興趣。
+                                    </div>
+                                    <div class="notification-meta">
+                                        <span class="notification-time">6 小時前</span>
+                                        <div class="notification-actions">
+                                            <button class="notification-action" onclick="viewStudent(3)">
+                                                查看學生
+                                            </button>
+                                            <button class="notification-action" onclick="contactStudent(3)">
+                                                聯絡學生
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item" data-type="contact" data-id="4">
+                            <div class="notification-header">
+                                <div class="notification-icon notification-contact">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">學生聯絡訊息</div>
+                                    <div class="notification-message">
+                                        王小美發送了一則聯絡訊息，詢問關於實習機會的詳細資訊。
+                                    </div>
+                                    <div class="notification-meta">
+                                        <span class="notification-time">1 天前</span>
+                                        <div class="notification-actions">
+                                            <button class="notification-action" onclick="viewMessage(4)">
+                                                查看訊息
+                                            </button>
+                                            <button class="notification-action" onclick="replyMessage(4)">
+                                                回覆
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item" data-type="system" data-id="5">
+                            <div class="notification-header">
+                                <div class="notification-icon notification-system">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">系統維護通知</div>
+                                    <div class="notification-message">
+                                        系統將於今晚 23:00-02:00 進行維護，期間可能無法使用部分功能。
+                                    </div>
+                                    <div class="notification-meta">
+                                        <span class="notification-time">2 天前</span>
+                                        <div class="notification-actions">
+                                            <button class="notification-action" onclick="markAsRead(5)">
+                                                標記已讀
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 假資料結束 -->
+                    </div>
+                </div>
+
+                <!-- 側邊欄 -->
+                <div class="notification-sidebar">
+                    <!-- 通知統計 -->
+                    <div class="sidebar-card">
+                        <h3>通知統計</h3>
+                        <div class="notification-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">12</div>
+                                <div class="stat-label">總通知</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">5</div>
+                                <div class="stat-label">未讀</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">3</div>
+                                <div class="stat-label">申請</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">2</div>
+                                <div class="stat-label">職缺</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 通知類型 -->
+                    <div class="sidebar-card">
+                        <h3>通知類型</h3>
+                        <ul class="notification-types">
+                            <li class="type-item">
+                                <div class="type-label">
+                                    <div class="type-icon notification-application"></div>
+                                    申請通知
+                                </div>
+                                <span class="type-count">3</span>
+                            </li>
+                            <li class="type-item">
+                                <div class="type-label">
+                                    <div class="type-icon notification-job"></div>
+                                    職缺通知
+                                </div>
+                                <span class="type-count">2</span>
+                            </li>
+                            <li class="type-item">
+                                <div class="type-label">
+                                    <div class="type-icon notification-view"></div>
+                                    瀏覽通知
+                                </div>
+                                <span class="type-count">4</span>
+                            </li>
+                            <li class="type-item">
+                                <div class="type-label">
+                                    <div class="type-icon notification-contact"></div>
+                                    聯絡通知
+                                </div>
+                                <span class="type-count">2</span>
+                            </li>
+                            <li class="type-item">
+                                <div class="type-label">
+                                    <div class="type-icon notification-system"></div>
+                                    系統通知
+                                </div>
+                                <span class="type-count">1</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 快速操作 -->
+                    <div class="sidebar-card">
+                        <h3>快速操作</h3>
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                            <button class="btn btn-outline" onclick="window.location.href='applications.html'">
+                                <i class="fas fa-list"></i>
+                                查看所有申請
+                            </button>
+                            <button class="btn btn-outline" onclick="window.location.href='jobs.html'">
+                                <i class="fas fa-briefcase"></i>
+                                管理職缺
+                            </button>
+                            <button class="btn btn-outline" onclick="window.location.href='search.html'">
+                                <i class="fas fa-search"></i>
+                                搜尋人才
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+    <script src="notifications.js"></script>
+</body>
+</html> 

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企業儀表板 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 企業儀表板特定樣式 */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            color: var(--white);
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-card .number {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-card .label {
+            font-size: var(--text-sm);
+            opacity: 0.9;
+        }
+        
+        .dashboard-content {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        .main-content {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        
+        .sidebar-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .candidate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .candidate-card {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .candidate-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .candidate-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .candidate-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+        }
+        
+        .candidate-info h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .candidate-info p {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .candidate-skills {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin: var(--spacing-md) 0;
+            flex-wrap: wrap;
+        }
+        
+        .skill-tag {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+        }
+        
+        .candidate-stats {
+            display: flex;
+            gap: var(--spacing-md);
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .quick-action {
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+            text-decoration: none;
+            color: var(--gray-700);
+            transition: all 0.2s ease;
+        }
+        
+        .quick-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .quick-action i {
+            font-size: var(--text-2xl);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+        
+        .search-filters {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            margin-bottom: var(--spacing-xs);
+            color: var(--gray-700);
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .recent-activity {
+            list-style: none;
+        }
+        
+        .recent-activity li {
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .recent-activity li:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+        }
+        
+        .activity-view { background: var(--primary-color); color: var(--white); }
+        .activity-contact { background: var(--success-color); color: var(--white); }
+        .activity-save { background: var(--warning-color); color: var(--white); }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-building"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link">儀表板</a>
+                <a href="browse.html" class="nav-link">瀏覽作品</a>
+                <a href="jobs.html" class="nav-link">職缺管理</a>
+                <a href="profile.html" class="nav-link">企業資料</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="../index.html" class="btn btn-outline">返回首頁</a>
+                <a href="../login.html" class="btn btn-primary">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 儀表板標題 -->
+    <section class="dashboard-header">
+        <div class="container">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="number">156</div>
+                    <div class="label">瀏覽作品數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">23</div>
+                    <div class="label">收藏作品</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">8</div>
+                    <div class="label">聯絡學生</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">5</div>
+                    <div class="label">發布職缺</div>
+                </div>
+            </div>
+            
+            <h1>歡迎回來，科技公司 A！</h1>
+            <p>以下是您的人才搜尋概況</p>
+        </div>
+    </section>
+
+    <!-- 主要內容 -->
+    <section class="dashboard-content">
+        <div class="container">
+            <div class="dashboard-grid">
+                <div class="main-content">
+                    <h2>快速操作</h2>
+                    <div class="quick-actions">
+                        <a href="browse.html" class="quick-action">
+                            <i class="fas fa-search"></i>
+                            <span>搜尋人才</span>
+                        </a>
+                        <a href="jobs.html" class="quick-action">
+                            <i class="fas fa-briefcase"></i>
+                            <span>發布職缺</span>
+                        </a>
+                        <a href="profile.html" class="quick-action">
+                            <i class="fas fa-building"></i>
+                            <span>企業資料</span>
+                        </a>
+                        <a href="analytics.html" class="quick-action">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>數據分析</span>
+                        </a>
+                    </div>
+
+                    <h2>搜尋篩選</h2>
+                    <div class="search-filters">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>技能</label>
+                                <select>
+                                    <option>全部技能</option>
+                                    <option>JavaScript</option>
+                                    <option>React</option>
+                                    <option>Python</option>
+                                    <option>UI/UX 設計</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>科系</label>
+                                <select>
+                                    <option>全部科系</option>
+                                    <option>資訊管理學系</option>
+                                    <option>財務金融學系</option>
+                                    <option>國際企業學系</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>年級</label>
+                                <select>
+                                    <option>全部年級</option>
+                                    <option>大學三年級</option>
+                                    <option>大學四年級</option>
+                                    <option>碩士生</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>關鍵字搜尋</label>
+                                <input type="text" placeholder="搜尋作品標題或描述...">
+                            </div>
+                            <div class="filter-group">
+                                <label>排序方式</label>
+                                <select>
+                                    <option>最新上傳</option>
+                                    <option>最多瀏覽</option>
+                                    <option>最多讚數</option>
+                                    <option>最多評論</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary" style="width: 100%;">搜尋</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>推薦人才</h2>
+                    <div class="candidate-grid">
+                        <!-- TODO: 從資料庫載入推薦的人才列表 -->
+                        <!-- 假資料開始 -->
+                        <div class="candidate-card">
+                            <div class="candidate-header">
+                                <div class="candidate-avatar">張</div>
+                                <div class="candidate-info">
+                                    <h3>張小明</h3>
+                                    <p>資訊管理學系 • 大學三年級</p>
+                                </div>
+                            </div>
+                            <div class="candidate-skills">
+                                <span class="skill-tag">JavaScript</span>
+                                <span class="skill-tag">React</span>
+                                <span class="skill-tag">Node.js</span>
+                                <span class="skill-tag">MongoDB</span>
+                            </div>
+                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
+                                專精於前端開發，有豐富的 React 專案經驗，作品包含響應式網站和行動應用程式。
+                            </p>
+                            <div class="candidate-stats">
+                                <span><i class="fas fa-eye"></i> 156 次瀏覽</span>
+                                <span><i class="fas fa-heart"></i> 23 個讚</span>
+                                <span><i class="fas fa-star"></i> 4.8 分</span>
+                            </div>
+                        </div>
+
+                        <div class="candidate-card">
+                            <div class="candidate-header">
+                                <div class="candidate-avatar">李</div>
+                                <div class="candidate-info">
+                                    <h3>李小華</h3>
+                                    <p>資訊管理學系 • 大學四年級</p>
+                                </div>
+                            </div>
+                            <div class="candidate-skills">
+                                <span class="skill-tag">Python</span>
+                                <span class="skill-tag">Django</span>
+                                <span class="skill-tag">PostgreSQL</span>
+                                <span class="skill-tag">Docker</span>
+                            </div>
+                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
+                                後端開發專家，熟悉 Python 生態系統，有完整的全端專案開發經驗。
+                            </p>
+                            <div class="candidate-stats">
+                                <span><i class="fas fa-eye"></i> 203 次瀏覽</span>
+                                <span><i class="fas fa-heart"></i> 45 個讚</span>
+                                <span><i class="fas fa-star"></i> 4.9 分</span>
+                            </div>
+                        </div>
+
+                        <div class="candidate-card">
+                            <div class="candidate-header">
+                                <div class="candidate-avatar">王</div>
+                                <div class="candidate-info">
+                                    <h3>王小美</h3>
+                                    <p>資訊管理學系 • 碩士生</p>
+                                </div>
+                            </div>
+                            <div class="candidate-skills">
+                                <span class="skill-tag">UI/UX</span>
+                                <span class="skill-tag">Figma</span>
+                                <span class="skill-tag">Adobe XD</span>
+                                <span class="skill-tag">Sketch</span>
+                            </div>
+                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
+                                專業的 UI/UX 設計師，擅長使用者體驗設計和視覺設計，作品風格現代簡潔。
+                            </p>
+                            <div class="candidate-stats">
+                                <span><i class="fas fa-eye"></i> 89 次瀏覽</span>
+                                <span><i class="fas fa-heart"></i> 17 個讚</span>
+                                <span><i class="fas fa-star"></i> 4.7 分</span>
+                            </div>
+                        </div>
+
+                        <div class="candidate-card">
+                            <div class="candidate-header">
+                                <div class="candidate-avatar">陳</div>
+                                <div class="candidate-info">
+                                    <h3>陳小強</h3>
+                                    <p>資訊管理學系 • 大學四年級</p>
+                                </div>
+                            </div>
+                            <div class="candidate-skills">
+                                <span class="skill-tag">Java</span>
+                                <span class="skill-tag">Spring Boot</span>
+                                <span class="skill-tag">MySQL</span>
+                                <span class="skill-tag">Redis</span>
+                            </div>
+                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
+                                企業級應用開發專家，熟悉 Java 生態系統，有豐富的微服務架構經驗。
+                            </p>
+                            <div class="candidate-stats">
+                                <span><i class="fas fa-eye"></i> 134 次瀏覽</span>
+                                <span><i class="fas fa-heart"></i> 31 個讚</span>
+                                <span><i class="fas fa-star"></i> 4.6 分</span>
+                            </div>
+                        </div>
+                        <!-- 假資料結束 -->
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-card">
+                        <h3>最近活動</h3>
+                        <ul class="recent-activity">
+                            <!-- TODO: 從資料庫載入企業的最近活動 -->
+                            <!-- 假資料開始 -->
+                            <li>
+                                <div class="activity-icon activity-view">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div>
+                                    <div>瀏覽了張小明的作品</div>
+                                    <small>2 小時前</small>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="activity-icon activity-contact">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <div>聯絡了李小華</div>
+                                    <small>4 小時前</small>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="activity-icon activity-save">
+                                    <i class="fas fa-bookmark"></i>
+                                </div>
+                                <div>
+                                    <div>收藏了王小美的作品</div>
+                                    <small>6 小時前</small>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="activity-icon activity-view">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div>
+                                    <div>瀏覽了陳小強的作品</div>
+                                    <small>1 天前</small>
+                                </div>
+                            </li>
+                            <!-- 假資料結束 -->
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3>收藏作品</h3>
+                        <!-- TODO: 從資料庫載入企業收藏的作品 -->
+                        <!-- 假資料開始 -->
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="font-weight: 600; color: var(--gray-900);">響應式網站設計</div>
+                            <div style="font-size: var(--text-sm); color: var(--gray-600);">張小明</div>
+                            <small style="color: var(--gray-500);">收藏於 2 天前</small>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="font-weight: 600; color: var(--gray-900);">行動應用程式</div>
+                            <div style="font-size: var(--text-sm); color: var(--gray-600);">李小華</div>
+                            <small style="color: var(--gray-500);">收藏於 3 天前</small>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="font-weight: 600; color: var(--gray-900);">UI/UX 設計作品</div>
+                            <div style="font-size: var(--text-sm); color: var(--gray-600);">王小美</div>
+                            <small style="color: var(--gray-500);">收藏於 1 週前</small>
+                        </div>
+                        <!-- 假資料結束 -->
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3>職缺統計</h3>
+                        <!-- TODO: 從資料庫載入企業職缺統計 -->
+                        <!-- 假資料開始 -->
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>前端工程師</span>
+                                <span style="color: var(--success-color); font-weight: 600;">12 人申請</span>
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--gray-600);">發布於 1 週前</div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>後端工程師</span>
+                                <span style="color: var(--success-color); font-weight: 600;">8 人申請</span>
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--gray-600);">發布於 2 週前</div>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>UI/UX 設計師</span>
+                                <span style="color: var(--success-color); font-weight: 600;">5 人申請</span>
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--gray-600);">發布於 3 週前</div>
+                        </div>
+                        <!-- 假資料結束 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul>
+                        <li><a href="../index.html">首頁</a></li>
+                        <li><a href="browse.html">瀏覽作品</a></li>
+                        <li><a href="jobs.html">職缺管理</a></li>
+                        <li><a href="profile.html">企業資料</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>支援</h4>
+                    <ul>
+                        <li><a href="#">使用指南</a></li>
+                        <li><a href="#">常見問題</a></li>
+                        <li><a href="#">聯絡支援</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>社群媒體</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/app.js"></script>
+    <script>
+        // TODO: 載入企業資料和統計資訊
+        // 這裡應該從後端 API 獲取資料
+        // 例如：fetch('/api/enterprise/dashboard')
+        
+        // 假資料載入模擬
+        console.log('載入企業儀表板資料...');
+        
+        // TODO: 實作搜尋篩選功能
+        // 當使用者選擇篩選條件時，更新推薦人才列表
+        document.querySelector('button').addEventListener('click', function() {
+            console.log('執行搜尋...');
+            // TODO: 發送搜尋請求到後端
+        });
+        
+        // TODO: 實作即時通知功能
+        // 例如：WebSocket 連接來接收即時通知
+        
+        // TODO: 實作收藏功能
+        // 當企業收藏作品時，更新收藏列表
+        
+        // TODO: 實作聯絡功能
+        // 當企業聯絡學生時，記錄活動並發送通知
+    </script>
+</body>
+</html> 

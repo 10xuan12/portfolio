@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊 - Portfolio+</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: var(--spacing-md);
+        }
+        
+        .register-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            padding: var(--spacing-2xl);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .register-header h1 {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .register-header p {
+            color: var(--gray-600);
+        }
+        
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .role-option {
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .role-option:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .role-option.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .role-option i {
+            font-size: var(--text-xl);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+        
+        .form-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .form-section h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: var(--text-base);
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .terms-checkbox input[type="checkbox"] {
+            width: auto;
+            margin-top: var(--spacing-xs);
+        }
+        
+        .terms-checkbox label {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+            line-height: 1.5;
+        }
+        
+        .terms-checkbox a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .terms-checkbox a:hover {
+            text-decoration: underline;
+        }
+        
+        .register-btn {
+            width: 100%;
+            padding: var(--spacing-md);
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: var(--text-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .register-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            color: var(--gray-600);
+        }
+        
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-home {
+            position: absolute;
+            top: var(--spacing-lg);
+            left: var(--spacing-lg);
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-weight: 500;
+        }
+        
+        .back-home:hover {
+            text-decoration: underline;
+        }
+        
+        .form-toggle {
+            display: none;
+        }
+        
+        .form-toggle.show {
+            display: block;
+        }
+        
+        @media (max-width: 480px) {
+            .register-card {
+                padding: var(--spacing-xl);
+            }
+            
+            .role-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-home">
+        <i class="fas fa-arrow-left"></i>
+        返回首頁
+    </a>
+
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <h1>註冊 Portfolio+</h1>
+                <p>選擇您的身份並建立帳號</p>
+            </div>
+
+            <form id="registerForm">
+                <div class="role-selector">
+                    <div class="role-option active" data-role="student">
+                        <i class="fas fa-user-graduate"></i>
+                        <div>學生</div>
+                    </div>
+                    <div class="role-option" data-role="enterprise">
+                        <i class="fas fa-building"></i>
+                        <div>企業</div>
+                    </div>
+                    <div class="role-option" data-role="admin">
+                        <i class="fas fa-user-shield"></i>
+                        <div>管理員</div>
+                    </div>
+                </div>
+
+                <!-- 學生註冊表單 -->
+                <div class="form-toggle show" id="studentForm">
+                    <div class="form-section">
+                        <h3>基本資料</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="student-name">姓名</label>
+                                <input type="text" id="student-name" name="name" required placeholder="請輸入您的姓名">
+                            </div>
+                            <div class="form-group">
+                                <label for="student-email">電子郵件</label>
+                                <input type="email" id="student-email" name="email" required placeholder="請輸入您的電子郵件">
+                            </div>
+                            <div class="form-group">
+                                <label for="student-password">密碼</label>
+                                <input type="password" id="student-password" name="password" required placeholder="請輸入密碼">
+                            </div>
+                            <div class="form-group">
+                                <label for="student-confirm-password">確認密碼</label>
+                                <input type="password" id="student-confirm-password" name="confirm_password" required placeholder="請再次輸入密碼">
+                            </div>
+                            <div class="form-group">
+                                <label for="student-department">科系</label>
+                                <select id="student-department" name="department" required>
+                                    <option value="">請選擇科系</option>
+                                    <option value="資訊管理學系">資訊管理學系</option>
+                                    <option value="財務金融學系">財務金融學系</option>
+                                    <option value="國際企業學系">國際企業學系</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="student-grade">年級</label>
+                                <select id="student-grade" name="grade" required>
+                                    <option value="">請選擇年級</option>
+                                    <option value="大學三年級">大學三年級</option>
+                                    <option value="大學四年級">大學四年級</option>
+                                    <option value="碩士生">碩士生</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>聯絡資訊</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="student-phone">聯絡電話</label>
+                                <input type="tel" id="student-phone" name="phone" placeholder="請輸入聯絡電話">
+                            </div>
+                            <div class="form-group">
+                                <label for="student-address">聯絡地址</label>
+                                <input type="text" id="student-address" name="address" placeholder="請輸入聯絡地址">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 企業註冊表單 -->
+                <div class="form-toggle" id="enterpriseForm">
+                    <div class="form-section">
+                        <h3>企業資料</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="enterprise-name">公司名稱</label>
+                                <input type="text" id="enterprise-name" name="name" required placeholder="請輸入公司名稱">
+                            </div>
+                            <div class="form-group">
+                                <label for="enterprise-email">公司電子郵件</label>
+                                <input type="email" id="enterprise-email" name="email" required placeholder="請輸入公司電子郵件">
+                            </div>
+                            <div class="form-group">
+                                <label for="enterprise-password">密碼</label>
+                                <input type="password" id="enterprise-password" name="password" required placeholder="請輸入密碼">
+                            </div>
+                            <div class="form-group">
+                                <label for="enterprise-confirm-password">確認密碼</label>
+                                <input type="password" id="enterprise-confirm-password" name="confirm_password" required placeholder="請再次輸入密碼">
+                            </div>
+                            <div class="form-group">
+                                <label for="enterprise-industry">產業類型</label>
+                                <select id="enterprise-industry" name="industry" required>
+                                    <option value="">請選擇產業類型</option>
+                                    <option value="科技業">科技業</option>
+                                    <option value="金融業">金融業</option>
+                                    <option value="製造業">製造業</option>
+                                    <option value="服務業">服務業</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="enterprise-size">公司規模</label>
+                                <select id="enterprise-size" name="size" required>
+                                    <option value="">請選擇公司規模</option>
+                                    <option value="1-10人">1-10人</option>
+                                    <option value="11-50人">11-50人</option>
+                                    <option value="51-200人">51-200人</option>
+                                    <option value="201-1000人">201-1000人</option>
+                                    <option value="1000人以上">1000人以上</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>聯絡資訊</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="enterprise-phone">聯絡電話</label>
+                                <input type="tel" id="enterprise-phone" name="phone" placeholder="請輸入聯絡電話">
+                            </div>
+                            <div class="form-group">
+                                <label for="enterprise-address">公司地址</label>
+                                <input type="text" id="enterprise-address" name="address" placeholder="請輸入公司地址">
+                            </div>
+                            <div class="form-group">
+                                <label for="enterprise-website">公司網站</label>
+                                <input type="url" id="enterprise-website" name="website" placeholder="請輸入公司網站">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>公司簡介</h3>
+                        <div class="form-group full-width">
+                            <label for="enterprise-description">公司描述</label>
+                            <textarea id="enterprise-description" name="description" placeholder="請簡介您的公司..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 管理員註冊表單 -->
+                <div class="form-toggle" id="adminForm">
+                    <div class="form-section">
+                        <h3>管理員資料</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="admin-name">姓名</label>
+                                <input type="text" id="admin-name" name="name" required placeholder="請輸入您的姓名">
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-email">電子郵件</label>
+                                <input type="email" id="admin-email" name="email" required placeholder="請輸入您的電子郵件">
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-password">密碼</label>
+                                <input type="password" id="admin-password" name="password" required placeholder="請輸入密碼">
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-confirm-password">確認密碼</label>
+                                <input type="password" id="admin-confirm-password" name="confirm_password" required placeholder="請再次輸入密碼">
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-role">管理員角色</label>
+                                <select id="admin-role" name="role" required>
+                                    <option value="">請選擇角色</option>
+                                    <option value="super_admin">超級管理員</option>
+                                    <option value="content_moderator">內容審核員</option>
+                                    <option value="user_manager">使用者管理員</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">
+                        我同意 <a href="#" target="_blank">服務條款</a> 和 <a href="#" target="_blank">隱私政策</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="register-btn">
+                    <i class="fas fa-user-plus"></i>
+                    註冊帳號
+                </button>
+            </form>
+
+            <div class="login-link">
+                已有帳號？ <a href="login.html">立即登入</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: 實作角色選擇功能
+        const roleOptions = document.querySelectorAll('.role-option');
+        const formToggles = document.querySelectorAll('.form-toggle');
+        let selectedRole = 'student';
+
+        roleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // 移除所有 active 類別
+                roleOptions.forEach(opt => opt.classList.remove('active'));
+                // 添加 active 類別到選中的選項
+                this.classList.add('active');
+                // 更新選中的角色
+                selectedRole = this.dataset.role;
+                
+                // 切換表單顯示
+                formToggles.forEach(form => {
+                    form.classList.remove('show');
+                });
+                document.getElementById(selectedRole + 'Form').classList.add('show');
+            });
+        });
+
+        // TODO: 實作密碼確認驗證
+        function validatePasswords() {
+            const passwordField = document.getElementById(selectedRole + '-password');
+            const confirmPasswordField = document.getElementById(selectedRole + '-confirm-password');
+            
+            if (passwordField && confirmPasswordField) {
+                if (passwordField.value !== confirmPasswordField.value) {
+                    confirmPasswordField.setCustomValidity('密碼不匹配');
+                    return false;
+                } else {
+                    confirmPasswordField.setCustomValidity('');
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        // 監聽密碼欄位變化
+        document.addEventListener('input', function(e) {
+            if (e.target.name === 'password' || e.target.name === 'confirm_password') {
+                validatePasswords();
+            }
+        });
+
+        // TODO: 實作註冊表單提交
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validatePasswords()) {
+                alert('請確認密碼輸入正確');
+                return;
+            }
+
+            // 收集表單資料
+            const formData = new FormData(this);
+            const registerData = {
+                role: selectedRole,
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                confirm_password: formData.get('confirm_password'),
+                terms: formData.get('terms')
+            };
+
+            // 根據角色添加額外欄位
+            if (selectedRole === 'student') {
+                registerData.department = formData.get('department');
+                registerData.grade = formData.get('grade');
+                registerData.phone = formData.get('phone');
+                registerData.address = formData.get('address');
+            } else if (selectedRole === 'enterprise') {
+                registerData.industry = formData.get('industry');
+                registerData.size = formData.get('size');
+                registerData.phone = formData.get('phone');
+                registerData.address = formData.get('address');
+                registerData.website = formData.get('website');
+                registerData.description = formData.get('description');
+            } else if (selectedRole === 'admin') {
+                registerData.role = formData.get('role');
+            }
+
+            console.log('註冊資訊:', registerData);
+
+            // TODO: 發送註冊請求到後端 API
+            // 例如：fetch('/api/register', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(registerData)
+            // })
+
+            // 模擬註冊成功
+            alert(`註冊成功！歡迎加入 Portfolio+ ${selectedRole} 社群`);
+            
+            // 導向登入頁面
+            window.location.href = 'login.html';
+        });
+
+        // TODO: 實作表單驗證
+        // 添加即時驗證功能
+        document.addEventListener('input', function(e) {
+            const field = e.target;
+            const value = field.value;
+            
+            // 電子郵件驗證
+            if (field.type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (value && !emailRegex.test(value)) {
+                    field.setCustomValidity('請輸入有效的電子郵件地址');
+                } else {
+                    field.setCustomValidity('');
+                }
+            }
+            
+            // 密碼強度驗證
+            if (field.type === 'password' && field.name === 'password') {
+                if (value && value.length < 8) {
+                    field.setCustomValidity('密碼至少需要 8 個字元');
+                } else {
+                    field.setCustomValidity('');
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

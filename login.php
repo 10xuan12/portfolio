@@ -1,72 +1,59 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+/**
+ * 登入處理
+ * 使用新的安全架構處理用戶登入
+ */
 
-// 資料庫連線
-$conn = mysqli_connect("172.20.10.2", "teammate1", "securepass123", "ephortfolio");
-if (!$conn) {
-    die("資料庫連線失敗");
+// 載入應用程式初始化檔案
+require_once 'includes/init.php';
+
+// 檢查是否為 POST 請求
+if (!is_post()) {
+    json_response([
+        'success' => false,
+        'error' => '請使用 POST 方法提交表單'
+    ], 405);
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST["email"] ?? '');
-    $password = $_POST["password"] ?? '';
-    $role = trim($_POST["role"] ?? '');
+try {
+    // 獲取表單數據
+    $email = post('email');
+    $password = post('password');
+    $role = post('role');
+    $remember = post('remember', false);
 
-    if (empty($email) || empty($password) || empty($role)) {
-        echo "<script>alert('所有欄位必須填寫');window.history.back();</script>";
-        $conn->close();
-        exit;
+    // 使用安全類別處理登入
+    $security = security();
+    $result = $security->login($email, $password, $role);
+
+    // 處理記住我功能
+    if ($result['success'] && $remember) {
+        $token = random_string(32);
+        setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/');
+        // 這裡可以將 token 儲存到資料庫中
     }
 
-    // 根據角色選擇資料表
-    if ($role == "student") {
-        $sql = "SELECT student_id, name, email, password_hash FROM students WHERE email = ?";
-    } else if ($role == "admin") {
-        $sql = "SELECT admin_id, name, email, password_hash FROM admins WHERE email = ?";
-    } else if ($role == "company") {
-        $sql = "SELECT company_id, name, email, password_hash FROM companies WHERE email = ?";
-    } else {
-        echo "<script>alert('角色選擇錯誤');window.history.back();</script>";
-        $conn->close();
-        exit;
+    // 返回結果
+    json_response($result);
+
+} catch (Exception $e) {
+    // 記錄錯誤
+    if (config('log.enabled', false)) {
+        $logMessage = sprintf(
+            "[%s] Login Error: %s\nEmail: %s\nRole: %s\n",
+            date('Y-m-d H:i:s'),
+            $e->getMessage(),
+            $email ?? 'N/A',
+            $role ?? 'N/A'
+        );
+        
+        $logFile = log_path('auth_' . date('Y-m-d') . '.log');
+        file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
     }
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($row = $result->fetch_assoc()) {
-        if (password_verify($password, $row["password_hash"])) {
-            session_start();
-            $_SESSION["role"] = $role;
-            $_SESSION["email"] = $row["email"];
-            $_SESSION["name"] = $row["name"];
-            if ($role == "student") {
-                $_SESSION["student_id"] = $row["student_id"];
-                header("Location: student/student_dashboard_view.php");
-                exit();
-            } else if ($role == "admin") {
-                $_SESSION["admin_id"] = $row["admin_id"];
-                header("Location: admin/admin_dashboard.php");
-                exit();
-            } else if ($role == "company") {
-                $_SESSION["email"] = $row["email"];
-                $_SESSION["company_id"] = $row["company_id"];
-                header("Location: enterprise/enterprise_dashboard.php");
-                exit();
-            }
-        } else {
-            echo "<script>alert('密碼錯誤，請重新輸入');window.history.back();</script>";
-        }
-    } else {
-        echo "<script>alert('帳號不存在，請確認Email或註冊新帳號');window.history.back();</script>";
-    }
-} else {
-    echo "<script>alert('請用表單登入');window.location.href='login.html';</script>";
+    json_response([
+        'success' => false,
+        'error' => '登入時發生錯誤，請稍後再試'
+    ], 500);
 }
-
-$conn->close();
 ?>

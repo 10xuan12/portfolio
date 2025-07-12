@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>報告管理 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .reports-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .reports-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .reports-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .reports-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .filter-bar {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .reports-grid {
+            display: grid;
+            gap: var(--spacing-lg);
+        }
+        
+        .report-item {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--gray-200);
+        }
+        
+        .report-item.inappropriate {
+            border-left-color: var(--error-color);
+        }
+        
+        .report-item.spam {
+            border-left-color: var(--warning-color);
+        }
+        
+        .report-item.fake {
+            border-left-color: var(--accent-color);
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .report-info h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .report-meta {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .report-status {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .status-pending { background: var(--warning-color); color: var(--white); }
+        .status-resolved { background: var(--success-color); color: var(--white); }
+        .status-dismissed { background: var(--gray-400); color: var(--white); }
+        
+        .report-content {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .report-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .report-details {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .report-details p {
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--text-sm);
+        }
+        
+        .report-details strong {
+            color: var(--gray-900);
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: var(--text-sm);
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .action-btn.resolve {
+            background: var(--success-color);
+            color: var(--white);
+            border-color: var(--success-color);
+        }
+        
+        .action-btn.resolve:hover {
+            background: var(--success-dark);
+        }
+        
+        .action-btn.dismiss {
+            background: var(--error-color);
+            color: var(--white);
+            border-color: var(--error-color);
+        }
+        
+        .action-btn.dismiss:hover {
+            background: var(--error-dark);
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-md);
+            font-size: var(--text-xl);
+            color: var(--white);
+        }
+        
+        .icon-pending { background: var(--warning-color); }
+        .icon-resolved { background: var(--success-color); }
+        .icon-dismissed { background: var(--gray-400); }
+        .icon-total { background: var(--primary-color); }
+        
+        .stat-number {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--gray-500);
+        }
+        
+        .empty-state i {
+            font-size: var(--text-4xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--gray-300);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .page-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .page-btn.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .page-btn:hover:not(.active) {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    儀表板
+                </a>
+                <a href="users.html" class="navbar-link">
+                    <i class="fas fa-users"></i>
+                    使用者管理
+                </a>
+                <a href="content.html" class="navbar-link">
+                    <i class="fas fa-file-alt"></i>
+                    內容審核
+                </a>
+                <a href="reports.html" class="navbar-link active">
+                    <i class="fas fa-flag"></i>
+                    報告管理
+                </a>
+                <a href="analytics.html" class="navbar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    統計分析
+                </a>
+                <a href="settings.html" class="navbar-link">
+                    <i class="fas fa-cog"></i>
+                    系統設定
+                </a>
+            </div>
+            <div class="navbar-user">
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32x32/667eea/ffffff?text=管" alt="管理員頭像" class="user-avatar">
+                    <span class="user-name">系統管理員</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="reports-container">
+        <div class="container">
+            <div class="reports-header">
+                <h1 class="reports-title">報告管理</h1>
+                <div class="reports-actions">
+                    <button class="btn btn-outline" onclick="exportReports()">
+                        <i class="fas fa-download"></i>
+                        匯出報告
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshReports()">
+                        <i class="fas fa-sync-alt"></i>
+                        重新整理
+                    </button>
+                </div>
+            </div>
+
+            <!-- 統計卡片 -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon icon-pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">待處理報告</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-resolved">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="stat-number">23</div>
+                    <div class="stat-label">已處理報告</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-dismissed">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">已駁回報告</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-total">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <div class="stat-number">36</div>
+                    <div class="stat-label">總報告數</div>
+                </div>
+            </div>
+
+            <!-- 篩選欄 -->
+            <div class="filter-bar">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="searchFilter">搜尋報告</label>
+                        <input type="text" id="searchFilter" placeholder="搜尋報告者、被報告者、原因...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="typeFilter">報告類型</label>
+                        <select id="typeFilter">
+                            <option value="">全部類型</option>
+                            <option value="inappropriate">不當內容</option>
+                            <option value="spam">垃圾訊息</option>
+                            <option value="fake">虛假資訊</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">處理狀態</label>
+                        <select id="statusFilter">
+                            <option value="">全部狀態</option>
+                            <option value="pending">待處理</option>
+                            <option value="resolved">已處理</option>
+                            <option value="dismissed">已駁回</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFilter">報告日期</label>
+                        <select id="dateFilter">
+                            <option value="">全部日期</option>
+                            <option value="today">今天</option>
+                            <option value="week">本週</option>
+                            <option value="month">本月</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 報告列表 -->
+            <div class="reports-grid" id="reportsGrid">
+                <!-- TODO: 從資料庫載入報告列表 -->
+                <!-- 假資料開始 -->
+                <div class="report-item inappropriate">
+                    <div class="report-header">
+                        <div class="report-info">
+                            <h3>不當內容報告</h3>
+                            <div class="report-meta">
+                                <span>報告者：張小明</span>
+                                <span>報告時間：2024-01-20 16:20</span>
+                            </div>
+                        </div>
+                        <span class="report-status status-pending">待處理</span>
+                    </div>
+                    <div class="report-content">
+                        <p class="report-description">報告李大明作品「行動應用程式」包含不當內容，違反平台規範。</p>
+                        <div class="report-details">
+                            <p><strong>報告類型：</strong>不當內容</p>
+                            <p><strong>被報告者：</strong>李大明</p>
+                            <p><strong>報告原因：</strong>作品描述包含不當用語</p>
+                            <p><strong>詳細說明：</strong>作品描述中使用了不適合的語言，可能對其他使用者造成困擾。</p>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="action-btn" onclick="viewReport(1)">
+                            <i class="fas fa-eye"></i> 查看詳情
+                        </button>
+                        <button class="action-btn resolve" onclick="resolveReport(1)">
+                            <i class="fas fa-check"></i> 處理完成
+                        </button>
+                        <button class="action-btn dismiss" onclick="dismissReport(1)">
+                            <i class="fas fa-times"></i> 駁回報告
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-item spam">
+                    <div class="report-header">
+                        <div class="report-info">
+                            <h3>垃圾訊息報告</h3>
+                            <div class="report-meta">
+                                <span>報告者：系統</span>
+                                <span>報告時間：2024-01-20 14:30</span>
+                            </div>
+                        </div>
+                        <span class="report-status status-resolved">已處理</span>
+                    </div>
+                    <div class="report-content">
+                        <p class="report-description">系統自動檢測到某企業發布的職缺包含垃圾訊息內容。</p>
+                        <div class="report-details">
+                            <p><strong>報告類型：</strong>垃圾訊息</p>
+                            <p><strong>被報告者：</strong>某企業</p>
+                            <p><strong>報告原因：</strong>職缺描述包含過多連結和推銷內容</p>
+                            <p><strong>處理結果：</strong>已移除該職缺並警告企業</p>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="action-btn" onclick="viewReport(2)">
+                            <i class="fas fa-eye"></i> 查看詳情
+                        </button>
+                        <button class="action-btn" onclick="reopenReport(2)">
+                            <i class="fas fa-redo"></i> 重新開啟
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-item fake">
+                    <div class="report-header">
+                        <div class="report-info">
+                            <h3>虛假資訊報告</h3>
+                            <div class="report-meta">
+                                <span>報告者：王小美</span>
+                                <span>報告時間：2024-01-20 12:15</span>
+                            </div>
+                        </div>
+                        <span class="report-status status-dismissed">已駁回</span>
+                    </div>
+                    <div class="report-content">
+                        <p class="report-description">報告某學生作品包含虛假的技能和經驗描述。</p>
+                        <div class="report-details">
+                            <p><strong>報告類型：</strong>虛假資訊</p>
+                            <p><strong>被報告者：</strong>某學生</p>
+                            <p><strong>報告原因：</strong>作品描述與實際技能不符</p>
+                            <p><strong>駁回原因：</strong>經查證後發現報告內容不實</p>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="action-btn" onclick="viewReport(3)">
+                            <i class="fas fa-eye"></i> 查看詳情
+                        </button>
+                        <button class="action-btn" onclick="reopenReport(3)">
+                            <i class="fas fa-redo"></i> 重新開啟
+                        </button>
+                    </div>
+                </div>
+                <!-- 假資料結束 -->
+            </div>
+
+            <!-- 分頁 -->
+            <div class="pagination">
+                <button class="page-btn" onclick="changePage(1)">1</button>
+                <button class="page-btn active" onclick="changePage(2)">2</button>
+                <button class="page-btn" onclick="changePage(3)">3</button>
+                <button class="page-btn" onclick="changePage(4)">4</button>
+                <button class="page-btn" onclick="changePage(5)">5</button>
+                <button class="page-btn" onclick="changePage('next')">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+    <script src="reports.js"></script>
+</body>
+</html> 

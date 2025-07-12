@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人資料 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .profile-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--white);
+            padding: var(--spacing-2xl) 0;
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xl);
+            flex-wrap: wrap;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-4xl);
+            font-weight: 700;
+            color: var(--primary-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            padding: var(--spacing-xs);
+            text-align: center;
+            font-size: var(--text-xs);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .profile-avatar:hover .avatar-upload {
+            opacity: 1;
+        }
+        
+        .profile-details h1 {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .profile-details p {
+            font-size: var(--text-lg);
+            opacity: 0.9;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-md);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: var(--text-xl);
+            font-weight: 700;
+        }
+        
+        .stat-label {
+            font-size: var(--text-sm);
+            opacity: 0.8;
+        }
+        
+        .profile-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        .main-content {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        
+        .sidebar-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .form-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .form-section h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+        
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: var(--text-base);
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .badge-item {
+            text-align: center;
+            padding: var(--spacing-md);
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .badge-item.earned {
+            border-color: var(--success-color);
+            background: var(--success-color);
+            color: var(--white);
+        }
+        
+        .badge-item i {
+            font-size: var(--text-2xl);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+        
+        .badge-item .badge-name {
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .activity-list {
+            list-style: none;
+        }
+        
+        .activity-item {
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+        }
+        
+        .activity-upload { background: var(--success-color); color: var(--white); }
+        .activity-view { background: var(--primary-color); color: var(--white); }
+        .activity-like { background: var(--accent-color); color: var(--white); }
+        .activity-comment { background: var(--warning-color); color: var(--white); }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-content .activity-text {
+            font-size: var(--text-sm);
+            color: var(--gray-700);
+        }
+        
+        .activity-content .activity-time {
+            font-size: var(--text-xs);
+            color: var(--gray-500);
+        }
+        
+        .password-form {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .password-form h4 {
+            margin-bottom: var(--spacing-md);
+            color: var(--gray-900);
+        }
+        
+        @media (max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-stats {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link">儀表板</a>
+                <a href="portfolio.html" class="nav-link">作品集</a>
+                <a href="upload.html" class="nav-link">上傳作品</a>
+                <a href="profile.html" class="nav-link active">個人資料</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="../index.html" class="btn btn-outline">返回首頁</a>
+                <a href="../login.html" class="btn btn-primary">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 個人資料標題 -->
+    <section class="profile-header">
+        <div class="container">
+            <div class="profile-info">
+                <div class="profile-avatar" id="profileAvatar">
+                    <img src="https://via.placeholder.com/120x120/667eea/ffffff?text=張" alt="個人頭像" id="avatarImage">
+                    <div class="avatar-upload" onclick="document.getElementById('avatarInput').click()">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                
+                <div class="profile-details">
+                    <h1>張小明</h1>
+                    <p>資訊管理學系 • 大學三年級</p>
+                    <p>學生編號: 12345678</p>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">作品</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">1,234</div>
+                            <div class="stat-label">瀏覽</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">89</div>
+                            <div class="stat-label">讚數</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">5</div>
+                            <div class="stat-label">徽章</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主要內容 -->
+    <section class="profile-container">
+        <div class="container">
+            <div class="profile-content">
+                <div class="main-content">
+                    <form id="profileForm">
+                        <div class="form-section">
+                            <h3>基本資料</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="name">姓名</label>
+                                    <input type="text" id="name" name="name" value="張小明" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="gender">性別</label>
+                                    <select id="gender" name="gender" required>
+                                        <option value="男" selected>男</option>
+                                        <option value="女">女</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="birth">生日</label>
+                                    <input type="date" id="birth" name="birth" value="2002-05-15" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student_id">學號</label>
+                                    <input type="text" id="student_id" name="student_id" value="12345678" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="department">科系</label>
+                                    <select id="department" name="department" required>
+                                        <option value="資訊管理學系" selected>資訊管理學系</option>
+                                        <option value="財務金融學系">財務金融學系</option>
+                                        <option value="國際企業學系">國際企業學系</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="grade">年級</label>
+                                    <select id="grade" name="grade" required>
+                                        <option value="大學三年級" selected>大學三年級</option>
+                                        <option value="大學四年級">大學四年級</option>
+                                        <option value="碩士生">碩士生</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>聯絡資訊</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="email">電子郵件</label>
+                                    <input type="email" id="email" name="email" value="zhang@example.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">聯絡電話</label>
+                                    <input type="tel" id="phone" name="phone" value="0912-345-678">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="address">聯絡地址</label>
+                                    <input type="text" id="address" name="address" value="台北市大安區復興南路一段 390 號">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>社群媒體</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="github">
+                                        <i class="fab fa-github"></i> GitHub
+                                    </label>
+                                    <input type="url" id="github" name="github" value="https://github.com/zhangxiaoming">
+                                </div>
+                                <div class="form-group">
+                                    <label for="linkedin">
+                                        <i class="fab fa-linkedin"></i> LinkedIn
+                                    </label>
+                                    <input type="url" id="linkedin" name="linkedin" value="https://linkedin.com/in/zhangxiaoming">
+                                </div>
+                                <div class="form-group">
+                                    <label for="instagram">
+                                        <i class="fab fa-instagram"></i> Instagram
+                                    </label>
+                                    <input type="text" id="instagram" name="instagram" value="@zhangxiaoming">
+                                </div>
+                                <div class="form-group">
+                                    <label for="facebook">
+                                        <i class="fab fa-facebook"></i> Facebook
+                                    </label>
+                                    <input type="text" id="facebook" name="facebook" value="張小明">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>專業資訊</h3>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="bio">個人簡介</label>
+                                    <textarea id="bio" name="bio" rows="4">我是一名資訊管理學系的學生，專精於前端開發和 UI/UX 設計。我熱愛學習新技術，並且喜歡將創意轉化為實際的作品。</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="skills">技能專長</label>
+                                    <input type="text" id="skills" name="skills" value="JavaScript, React, Node.js, UI/UX Design">
+                                </div>
+                                <div class="form-group">
+                                    <label for="languages">語言能力</label>
+                                    <input type="text" id="languages" name="languages" value="中文（母語）, 英文（流利）, 日文（基礎）">
+                                </div>
+                                <div class="form-group">
+                                    <label for="interests">興趣愛好</label>
+                                    <input type="text" id="interests" name="interests" value="程式設計, 設計, 攝影, 旅行">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" onclick="resetForm()">重置</button>
+                            <button type="submit" class="btn btn-primary">儲存變更</button>
+                        </div>
+                    </form>
+
+                    <!-- 密碼修改 -->
+                    <div class="password-form">
+                        <h4>修改密碼</h4>
+                        <form id="passwordForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="currentPassword">目前密碼</label>
+                                    <input type="password" id="currentPassword" name="currentPassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newPassword">新密碼</label>
+                                    <input type="password" id="newPassword" name="newPassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmPassword">確認新密碼</label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">修改密碼</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-card">
+                        <h3>徽章成就</h3>
+                        <div class="badge-grid">
+                            <div class="badge-item earned">
+                                <i class="fas fa-star"></i>
+                                <div class="badge-name">新手上傳者</div>
+                            </div>
+                            <div class="badge-item earned">
+                                <i class="fas fa-eye"></i>
+                                <div class="badge-name">瀏覽達人</div>
+                            </div>
+                            <div class="badge-item earned">
+                                <i class="fas fa-heart"></i>
+                                <div class="badge-name">受歡迎</div>
+                            </div>
+                            <div class="badge-item earned">
+                                <i class="fas fa-trophy"></i>
+                                <div class="badge-name">作品大師</div>
+                            </div>
+                            <div class="badge-item earned">
+                                <i class="fas fa-comment"></i>
+                                <div class="badge-name">互動王</div>
+                            </div>
+                            <div class="badge-item">
+                                <i class="fas fa-crown"></i>
+                                <div class="badge-name">超級明星</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3>最近活動</h3>
+                        <ul class="activity-list">
+                            <!-- TODO: 從資料庫載入學生活動記錄 -->
+                            <!-- 假資料開始 -->
+                            <li class="activity-item">
+                                <div class="activity-icon activity-upload">
+                                    <i class="fas fa-upload"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">上傳了新作品「UI/UX 設計作品」</div>
+                                    <div class="activity-time">2 小時前</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon activity-view">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">有人瀏覽了您的作品「響應式網站設計」</div>
+                                    <div class="activity-time">4 小時前</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon activity-like">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">有人對您的作品「行動應用程式」按讚</div>
+                                    <div class="activity-time">6 小時前</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon activity-comment">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">有人評論了您的作品「響應式網站設計」</div>
+                                    <div class="activity-time">1 天前</div>
+                                </div>
+                            </li>
+                            <!-- 假資料結束 -->
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3>帳號設定</h3>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <label style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                <input type="checkbox" checked>
+                                <span>接收電子郵件通知</span>
+                            </label>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <label style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                <input type="checkbox" checked>
+                                <span>公開個人資料</span>
+                            </label>
+                        </div>
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <label style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                <input type="checkbox">
+                                <span>雙重認證</span>
+                            </label>
+                        </div>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: var(--spacing-md);">
+                            <i class="fas fa-download"></i>
+                            匯出個人資料
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul>
+                        <li><a href="dashboard.html">儀表板</a></li>
+                        <li><a href="portfolio.html">作品集</a></li>
+                        <li><a href="upload.html">上傳作品</a></li>
+                        <li><a href="profile.html">個人資料</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>支援</h4>
+                    <ul>
+                        <li><a href="#">使用指南</a></li>
+                        <li><a href="#">常見問題</a></li>
+                        <li><a href="#">聯絡支援</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>社群媒體</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/app.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html> 

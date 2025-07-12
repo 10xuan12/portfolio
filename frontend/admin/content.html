@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>內容審核 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .content-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .content-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .content-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .content-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .content-tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            background: none;
+            color: var(--gray-600);
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .content-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .content-tab:hover {
+            color: var(--primary-color);
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .review-item {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--gray-200);
+        }
+        
+        .review-item.pending {
+            border-left-color: var(--warning-color);
+        }
+        
+        .review-item.approved {
+            border-left-color: var(--success-color);
+        }
+        
+        .review-item.rejected {
+            border-left-color: var(--error-color);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .review-info h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .review-meta {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .review-status {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .status-pending { background: var(--warning-color); color: var(--white); }
+        .status-approved { background: var(--success-color); color: var(--white); }
+        .status-rejected { background: var(--error-color); color: var(--white); }
+        
+        .review-content {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .review-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .review-preview {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .review-preview img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .review-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: var(--text-sm);
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .action-btn.approve {
+            background: var(--success-color);
+            color: var(--white);
+            border-color: var(--success-color);
+        }
+        
+        .action-btn.approve:hover {
+            background: var(--success-dark);
+        }
+        
+        .action-btn.reject {
+            background: var(--error-color);
+            color: var(--white);
+            border-color: var(--error-color);
+        }
+        
+        .action-btn.reject:hover {
+            background: var(--error-dark);
+        }
+        
+        .filter-bar {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--gray-500);
+        }
+        
+        .empty-state i {
+            font-size: var(--text-4xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--gray-300);
+        }
+        
+        @media (max-width: 768px) {
+            .review-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    儀表板
+                </a>
+                <a href="users.html" class="navbar-link">
+                    <i class="fas fa-users"></i>
+                    使用者管理
+                </a>
+                <a href="content.html" class="navbar-link active">
+                    <i class="fas fa-file-alt"></i>
+                    內容審核
+                </a>
+                <a href="reports.html" class="navbar-link">
+                    <i class="fas fa-flag"></i>
+                    報告管理
+                </a>
+                <a href="analytics.html" class="navbar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    統計分析
+                </a>
+                <a href="settings.html" class="navbar-link">
+                    <i class="fas fa-cog"></i>
+                    系統設定
+                </a>
+            </div>
+            <div class="navbar-user">
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32x32/667eea/ffffff?text=管" alt="管理員頭像" class="user-avatar">
+                    <span class="user-name">系統管理員</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="content-container">
+        <div class="container">
+            <div class="content-header">
+                <h1 class="content-title">內容審核</h1>
+                <div class="content-actions">
+                    <button class="btn btn-outline" onclick="exportReviews()">
+                        <i class="fas fa-download"></i>
+                        匯出審核記錄
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshReviews()">
+                        <i class="fas fa-sync-alt"></i>
+                        重新整理
+                    </button>
+                </div>
+            </div>
+
+            <!-- 統計卡片 -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">待審核作品</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">待審核職缺</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">待審核使用者</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">待處理報告</div>
+                </div>
+            </div>
+
+            <!-- 內容標籤 -->
+            <div class="content-tabs">
+                <button class="content-tab active" onclick="switchTab('portfolios')">
+                    <i class="fas fa-folder"></i>
+                    作品審核
+                </button>
+                <button class="content-tab" onclick="switchTab('jobs')">
+                    <i class="fas fa-briefcase"></i>
+                    職缺審核
+                </button>
+                <button class="content-tab" onclick="switchTab('users')">
+                    <i class="fas fa-users"></i>
+                    使用者審核
+                </button>
+                <button class="content-tab" onclick="switchTab('reports')">
+                    <i class="fas fa-flag"></i>
+                    報告處理
+                </button>
+            </div>
+
+            <!-- 篩選欄 -->
+            <div class="filter-bar">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="searchFilter">搜尋內容</label>
+                        <input type="text" id="searchFilter" placeholder="搜尋標題、作者、描述...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">審核狀態</label>
+                        <select id="statusFilter">
+                            <option value="">全部狀態</option>
+                            <option value="pending">待審核</option>
+                            <option value="approved">已核准</option>
+                            <option value="rejected">已拒絕</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="typeFilter">內容類型</label>
+                        <select id="typeFilter">
+                            <option value="">全部類型</option>
+                            <option value="web">網頁設計</option>
+                            <option value="mobile">行動應用</option>
+                            <option value="design">UI/UX 設計</option>
+                            <option value="data">數據分析</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFilter">提交日期</label>
+                        <select id="dateFilter">
+                            <option value="">全部日期</option>
+                            <option value="today">今天</option>
+                            <option value="week">本週</option>
+                            <option value="month">本月</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作品審核 -->
+            <div class="content-section active" id="portfoliosSection">
+                <div class="review-grid" id="portfoliosGrid">
+                    <!-- TODO: 從資料庫載入作品審核列表 -->
+                    <!-- 假資料開始 -->
+                    <div class="review-item pending">
+                        <div class="review-header">
+                            <div class="review-info">
+                                <h3>響應式網站設計</h3>
+                                <div class="review-meta">
+                                    <span>作者：張小明</span>
+                                    <span>提交時間：2024-01-20 14:30</span>
+                                </div>
+                            </div>
+                            <span class="review-status status-pending">待審核</span>
+                        </div>
+                        <div class="review-content">
+                            <p class="review-description">使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。</p>
+                            <div class="review-preview">
+                                <img src="https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design" alt="作品預覽">
+                                <p><strong>技能標籤：</strong>HTML5, CSS3, JavaScript, 響應式</p>
+                            </div>
+                        </div>
+                        <div class="review-actions">
+                            <button class="action-btn" onclick="viewPortfolio(1)">
+                                <i class="fas fa-eye"></i> 查看詳情
+                            </button>
+                            <button class="action-btn approve" onclick="approvePortfolio(1)">
+                                <i class="fas fa-check"></i> 核准
+                            </button>
+                            <button class="action-btn reject" onclick="rejectPortfolio(1)">
+                                <i class="fas fa-times"></i> 拒絕
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="review-item pending">
+                        <div class="review-header">
+                            <div class="review-info">
+                                <h3>行動應用程式</h3>
+                                <div class="review-meta">
+                                    <span>作者：李大明</span>
+                                    <span>提交時間：2024-01-20 12:15</span>
+                                </div>
+                            </div>
+                            <span class="review-status status-pending">待審核</span>
+                        </div>
+                        <div class="review-content">
+                            <p class="review-description">使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。</p>
+                            <div class="review-preview">
+                                <img src="https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App" alt="作品預覽">
+                                <p><strong>技能標籤：</strong>React Native, JavaScript, Firebase, 跨平台</p>
+                            </div>
+                        </div>
+                        <div class="review-actions">
+                            <button class="action-btn" onclick="viewPortfolio(2)">
+                                <i class="fas fa-eye"></i> 查看詳情
+                            </button>
+                            <button class="action-btn approve" onclick="approvePortfolio(2)">
+                                <i class="fas fa-check"></i> 核准
+                            </button>
+                            <button class="action-btn reject" onclick="rejectPortfolio(2)">
+                                <i class="fas fa-times"></i> 拒絕
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 假資料結束 -->
+                </div>
+            </div>
+
+            <!-- 職缺審核 -->
+            <div class="content-section" id="jobsSection">
+                <div class="review-grid" id="jobsGrid">
+                    <!-- TODO: 從資料庫載入職缺審核列表 -->
+                    <!-- 假資料開始 -->
+                    <div class="review-item pending">
+                        <div class="review-header">
+                            <div class="review-info">
+                                <h3>前端開發實習生</h3>
+                                <div class="review-meta">
+                                    <span>企業：台灣微軟</span>
+                                    <span>提交時間：2024-01-20 10:45</span>
+                                </div>
+                            </div>
+                            <span class="review-status status-pending">待審核</span>
+                        </div>
+                        <div class="review-content">
+                            <p class="review-description">我們正在尋找對前端開發有熱情的實習生，協助開發公司內部系統和客戶專案。</p>
+                            <div class="review-preview">
+                                <p><strong>職缺類型：</strong>實習</p>
+                                <p><strong>工作地點：</strong>台北市</p>
+                                <p><strong>技能要求：</strong>JavaScript, React, HTML/CSS, Git</p>
+                                <p><strong>薪資範圍：</strong>月薪 30,000-35,000</p>
+                            </div>
+                        </div>
+                        <div class="review-actions">
+                            <button class="action-btn" onclick="viewJob(1)">
+                                <i class="fas fa-eye"></i> 查看詳情
+                            </button>
+                            <button class="action-btn approve" onclick="approveJob(1)">
+                                <i class="fas fa-check"></i> 核准
+                            </button>
+                            <button class="action-btn reject" onclick="rejectJob(1)">
+                                <i class="fas fa-times"></i> 拒絕
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 假資料結束 -->
+                </div>
+            </div>
+
+            <!-- 使用者審核 -->
+            <div class="content-section" id="usersSection">
+                <div class="review-grid" id="usersGrid">
+                    <!-- TODO: 從資料庫載入使用者審核列表 -->
+                    <!-- 假資料開始 -->
+                    <div class="review-item pending">
+                        <div class="review-header">
+                            <div class="review-info">
+                                <h3>新企業註冊</h3>
+                                <div class="review-meta">
+                                    <span>企業：Google 台灣</span>
+                                    <span>提交時間：2024-01-20 09:30</span>
+                                </div>
+                            </div>
+                            <span class="review-status status-pending">待審核</span>
+                        </div>
+                        <div class="review-content">
+                            <p class="review-description">Google 台灣分公司申請註冊企業帳號，用於招募實習生和正職員工。</p>
+                            <div class="review-preview">
+                                <p><strong>企業類型：</strong>科技公司</p>
+                                <p><strong>公司規模：</strong>1000人以上</p>
+                                <p><strong>聯絡信箱：</strong>hr@google.com.tw</p>
+                                <p><strong>公司網站：</strong>https://careers.google.com</p>
+                            </div>
+                        </div>
+                        <div class="review-actions">
+                            <button class="action-btn" onclick="viewUser(1)">
+                                <i class="fas fa-eye"></i> 查看詳情
+                            </button>
+                            <button class="action-btn approve" onclick="approveUser(1)">
+                                <i class="fas fa-check"></i> 核准
+                            </button>
+                            <button class="action-btn reject" onclick="rejectUser(1)">
+                                <i class="fas fa-times"></i> 拒絕
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 假資料結束 -->
+                </div>
+            </div>
+
+            <!-- 報告處理 -->
+            <div class="content-section" id="reportsSection">
+                <div class="review-grid" id="reportsGrid">
+                    <!-- TODO: 從資料庫載入報告處理列表 -->
+                    <!-- 假資料開始 -->
+                    <div class="review-item pending">
+                        <div class="review-header">
+                            <div class="review-info">
+                                <h3>不當內容報告</h3>
+                                <div class="review-meta">
+                                    <span>報告者：張小明</span>
+                                    <span>提交時間：2024-01-20 16:20</span>
+                                </div>
+                            </div>
+                            <span class="review-status status-pending">待處理</span>
+                        </div>
+                        <div class="review-content">
+                            <p class="review-description">報告李大明作品「行動應用程式」包含不當內容，違反平台規範。</p>
+                            <div class="review-preview">
+                                <p><strong>報告類型：</strong>不當內容</p>
+                                <p><strong>被報告者：</strong>李大明</p>
+                                <p><strong>報告原因：</strong>作品描述包含不當用語</p>
+                                <p><strong>詳細說明：</strong>作品描述中使用了不適合的語言</p>
+                            </div>
+                        </div>
+                        <div class="review-actions">
+                            <button class="action-btn" onclick="viewReport(1)">
+                                <i class="fas fa-eye"></i> 查看詳情
+                            </button>
+                            <button class="action-btn approve" onclick="resolveReport(1)">
+                                <i class="fas fa-check"></i> 處理完成
+                            </button>
+                            <button class="action-btn reject" onclick="dismissReport(1)">
+                                <i class="fas fa-times"></i> 駁回報告
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 假資料結束 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+    <script src="content.js"></script>
+</body>
+</html> 

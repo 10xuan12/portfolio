@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜尋作品 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .search-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .search-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--white);
+            padding: var(--spacing-2xl) 0;
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .search-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search-input-group {
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            padding-left: 3rem;
+            border: none;
+            border-radius: var(--radius-xl);
+            font-size: var(--text-lg);
+            background: var(--white);
+            color: var(--gray-900);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: var(--spacing-lg);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            font-size: var(--text-lg);
+        }
+        
+        .search-suggestions {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            margin-top: var(--spacing-sm);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: var(--gray-50);
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-filters {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: var(--spacing-lg);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+        
+        .filter-group label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .result-item {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease;
+        }
+        
+        .result-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .result-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .result-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .result-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .result-item:hover .result-overlay {
+            opacity: 1;
+        }
+        
+        .overlay-btn {
+            background: var(--white);
+            color: var(--gray-900);
+            border: none;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            transition: all 0.2s ease;
+        }
+        
+        .overlay-btn:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .result-content {
+            padding: var(--spacing-lg);
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .result-title {
+            flex: 1;
+        }
+        
+        .result-title h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .result-author {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .result-stats {
+            display: flex;
+            gap: var(--spacing-md);
+            color: var(--gray-500);
+            font-size: var(--text-sm);
+        }
+        
+        .result-description {
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.6;
+        }
+        
+        .result-tags {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .result-btn {
+            flex: 1;
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--gray-700);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            transition: all 0.2s ease;
+        }
+        
+        .result-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .result-btn.primary {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .result-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .search-stats {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            color: var(--gray-600);
+        }
+        
+        .results-count {
+            font-weight: 500;
+        }
+        
+        .sort-options {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .sort-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--gray-600);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            transition: all 0.2s ease;
+        }
+        
+        .sort-btn.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-3xl);
+            color: var(--gray-500);
+        }
+        
+        .empty-state i {
+            font-size: var(--text-5xl);
+            margin-bottom: var(--spacing-lg);
+            color: var(--gray-300);
+        }
+        
+        .search-history {
+            background: var(--gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .history-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .history-tags {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        
+        .history-tag {
+            background: var(--white);
+            color: var(--gray-700);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .history-tag:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                min-width: auto;
+            }
+            
+            .search-results {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-stats {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link">儀表板</a>
+                <a href="portfolio.html" class="nav-link">作品集</a>
+                <a href="upload.html" class="nav-link">上傳作品</a>
+                <a href="profile.html" class="nav-link">個人資料</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="../index.html" class="btn btn-outline">返回首頁</a>
+                <a href="../login.html" class="btn btn-primary">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 搜尋標題 -->
+    <section class="search-header">
+        <div class="container">
+            <div class="search-form">
+                <h1 style="text-align: center; margin-bottom: var(--spacing-lg); font-size: var(--text-3xl);">
+                    搜尋作品
+                </h1>
+                <p style="text-align: center; margin-bottom: var(--spacing-xl); opacity: 0.9;">
+                    發現優秀的作品，啟發您的創意
+                </p>
+                
+                <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜尋作品、作者、技術標籤..." autocomplete="off">
+                    <div class="search-suggestions" id="searchSuggestions"></div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn btn-primary" onclick="performSearch()">
+                        <i class="fas fa-search"></i>
+                        搜尋
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主要內容 -->
+    <section class="search-container">
+        <div class="container">
+            <!-- 搜尋篩選 -->
+            <div class="search-filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>分類</label>
+                        <select id="categoryFilter">
+                            <option value="">全部分類</option>
+                            <option value="web">網頁設計</option>
+                            <option value="mobile">行動應用</option>
+                            <option value="design">UI/UX 設計</option>
+                            <option value="data">數據分析</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>技術標籤</label>
+                        <input type="text" id="tagFilter" placeholder="JavaScript, React, Python...">
+                    </div>
+                    <div class="filter-group">
+                        <label>作者</label>
+                        <input type="text" id="authorFilter" placeholder="搜尋作者姓名...">
+                    </div>
+                    <div class="filter-group">
+                        <label>時間範圍</label>
+                        <select id="timeFilter">
+                            <option value="">全部時間</option>
+                            <option value="week">本週</option>
+                            <option value="month">本月</option>
+                            <option value="year">今年</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i>
+                            篩選
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 搜尋統計和排序 -->
+            <div class="search-stats">
+                <div class="results-count" id="resultsCount">
+                    找到 0 個結果
+                </div>
+                <div class="sort-options">
+                    <button class="sort-btn active" data-sort="relevance" onclick="changeSort('relevance')">
+                        相關性
+                    </button>
+                    <button class="sort-btn" data-sort="date" onclick="changeSort('date')">
+                        最新
+                    </button>
+                    <button class="sort-btn" data-sort="views" onclick="changeSort('views')">
+                        瀏覽量
+                    </button>
+                    <button class="sort-btn" data-sort="likes" onclick="changeSort('likes')">
+                        讚數
+                    </button>
+                </div>
+            </div>
+
+            <!-- 搜尋結果 -->
+            <div class="search-results" id="searchResults">
+                <!-- TODO: 從資料庫載入搜尋結果 -->
+                <!-- 假資料開始 -->
+                <div class="result-item">
+                    <div class="result-image">
+                        <img src="https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design" alt="響應式網站設計">
+                        <div class="result-overlay">
+                            <button class="overlay-btn" onclick="viewPortfolio(1)">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="overlay-btn" onclick="likePortfolio(1)">
+                                <i class="fas fa-heart"></i> 讚
+                            </button>
+                        </div>
+                    </div>
+                    <div class="result-content">
+                        <div class="result-header">
+                            <div class="result-title">
+                                <h3>響應式網站設計</h3>
+                                <div class="result-author">by 張小明</div>
+                            </div>
+                            <div class="result-stats">
+                                <span><i class="fas fa-eye"></i> 156</span>
+                                <span><i class="fas fa-heart"></i> 23</span>
+                            </div>
+                        </div>
+                        <p class="result-description">
+                            使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。
+                        </p>
+                        <div class="result-tags">
+                            <span class="tag">HTML5</span>
+                            <span class="tag">CSS3</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">響應式</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="result-btn" onclick="viewPortfolio(1)">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="result-btn" onclick="likePortfolio(1)">
+                                <i class="fas fa-heart"></i> 讚
+                            </button>
+                            <button class="result-btn primary" onclick="contactAuthor(1)">
+                                <i class="fas fa-envelope"></i> 聯絡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-image">
+                        <img src="https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App" alt="行動應用程式">
+                        <div class="result-overlay">
+                            <button class="overlay-btn" onclick="viewPortfolio(2)">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="overlay-btn" onclick="likePortfolio(2)">
+                                <i class="fas fa-heart"></i> 讚
+                            </button>
+                        </div>
+                    </div>
+                    <div class="result-content">
+                        <div class="result-header">
+                            <div class="result-title">
+                                <h3>行動應用程式</h3>
+                                <div class="result-author">by 李大明</div>
+                            </div>
+                            <div class="result-stats">
+                                <span><i class="fas fa-eye"></i> 203</span>
+                                <span><i class="fas fa-heart"></i> 45</span>
+                            </div>
+                        </div>
+                        <p class="result-description">
+                            使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。
+                        </p>
+                        <div class="result-tags">
+                            <span class="tag">React Native</span>
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">Firebase</span>
+                            <span class="tag">跨平台</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="result-btn" onclick="viewPortfolio(2)">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="result-btn" onclick="likePortfolio(2)">
+                                <i class="fas fa-heart"></i> 讚
+                            </button>
+                            <button class="result-btn primary" onclick="contactAuthor(2)">
+                                <i class="fas fa-envelope"></i> 聯絡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-image">
+                        <img src="https://via.placeholder.com/400x200/f093fb/ffffff?text=UI+Design" alt="UI/UX 設計作品">
+                        <div class="result-overlay">
+                            <button class="overlay-btn" onclick="viewPortfolio(3)">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="overlay-btn" onclick="likePortfolio(3)">
+                                <i class="fas fa-heart"></i> 讚
+                            </button>
+                        </div>
+                    </div>
+                    <div class="result-content">
+                        <div class="result-header">
+                            <div class="result-title">
+                                <h3>UI/UX 設計作品</h3>
+                                <div class="result-author">by 王小美</div>
+                            </div>
+                            <div class="result-stats">
+                                <span><i class="fas fa-eye"></i> 89</span>
+                                <span><i class="fas fa-heart"></i> 12</span>
+                            </div>
+                        </div>
+                        <p class="result-description">
+                            使用 Figma 設計的現代化使用者介面，注重使用者體驗和視覺美感。
+                        </p>
+                        <div class="result-tags">
+                            <span class="tag">Figma</span>
+                            <span class="tag">UI/UX</span>
+                            <span class="tag">設計系統</span>
+                            <span class="tag">原型設計</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="result-btn" onclick="viewPortfolio(3)">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="result-btn" onclick="likePortfolio(3)">
+                                <i class="fas fa-heart"></i> 讚
+                            </button>
+                            <button class="result-btn primary" onclick="contactAuthor(3)">
+                                <i class="fas fa-envelope"></i> 聯絡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 假資料結束 -->
+            </div>
+
+            <!-- 空狀態 -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h3>沒有找到相關作品</h3>
+                <p>嘗試調整搜尋條件或關鍵字</p>
+            </div>
+
+            <!-- 搜尋歷史 -->
+            <div class="search-history" id="searchHistory" style="display: none;">
+                <div class="history-title">最近搜尋</div>
+                <div class="history-tags" id="historyTags">
+                    <span class="history-tag" onclick="searchFromHistory('JavaScript')">JavaScript</span>
+                    <span class="history-tag" onclick="searchFromHistory('React')">React</span>
+                    <span class="history-tag" onclick="searchFromHistory('UI/UX')">UI/UX</span>
+                    <span class="history-tag" onclick="searchFromHistory('響應式')">響應式</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul>
+                        <li><a href="dashboard.html">儀表板</a></li>
+                        <li><a href="portfolio.html">作品集</a></li>
+                        <li><a href="upload.html">上傳作品</a></li>
+                        <li><a href="profile.html">個人資料</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>支援</h4>
+                    <ul>
+                        <li><a href="#">使用指南</a></li>
+                        <li><a href="#">常見問題</a></li>
+                        <li><a href="#">聯絡支援</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>社群媒體</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/app.js"></script>
+    <script src="search.js"></script>
+</body>
+</html> 

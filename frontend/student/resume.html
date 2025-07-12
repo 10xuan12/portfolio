@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>履歷生成 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .resume-container {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .resume-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .resume-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .resume-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .resume-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        .resume-editor {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .resume-preview {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: var(--spacing-xl);
+        }
+        
+        .template-selector {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .template-option {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .template-option:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .template-option.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .template-preview {
+            width: 100%;
+            height: 120px;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+        }
+        
+        .form-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .form-section h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: var(--spacing-sm);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-md);
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: var(--spacing-sm);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .experience-item,
+        .education-item,
+        .skill-item {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            position: relative;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .item-title {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--gray-500);
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-icon:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+        
+        .btn-icon.danger:hover {
+            background: var(--error-color);
+            color: var(--white);
+        }
+        
+        .add-item-btn {
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            transition: all 0.2s ease;
+        }
+        
+        .add-item-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .preview-container {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            min-height: 800px;
+        }
+        
+        .preview-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .preview-name {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .preview-title {
+            font-size: var(--text-lg);
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .preview-contact {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+        
+        .preview-section {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .preview-section h3 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: var(--spacing-xs);
+        }
+        
+        .preview-item {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .preview-item-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .preview-item-title {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .preview-item-date {
+            font-size: var(--text-sm);
+            color: var(--gray-500);
+        }
+        
+        .preview-item-company {
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .preview-item-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+        
+        .preview-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+        }
+        
+        .preview-skill {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--text-xs);
+        }
+        
+        .export-options {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        @media (max-width: 1024px) {
+            .resume-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .resume-preview {
+                position: static;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .template-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    儀表板
+                </a>
+                <a href="portfolio.html" class="navbar-link">
+                    <i class="fas fa-folder"></i>
+                    作品集
+                </a>
+                <a href="upload.html" class="navbar-link">
+                    <i class="fas fa-upload"></i>
+                    上傳
+                </a>
+                <a href="profile.html" class="navbar-link">
+                    <i class="fas fa-user"></i>
+                    個人資料
+                </a>
+                <a href="search.html" class="navbar-link">
+                    <i class="fas fa-search"></i>
+                    搜尋
+                </a>
+                <a href="notifications.html" class="navbar-link">
+                    <i class="fas fa-bell"></i>
+                    通知
+                </a>
+                <a href="settings.html" class="navbar-link">
+                    <i class="fas fa-cog"></i>
+                    設定
+                </a>
+            </div>
+            <div class="navbar-user">
+                <div class="user-menu">
+                    <img src="https://via.placeholder.com/32x32/667eea/ffffff?text=張" alt="用戶頭像" class="user-avatar">
+                    <span class="user-name">張小明</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="resume-container">
+        <div class="container">
+            <div class="resume-header">
+                <h1 class="resume-title">履歷生成</h1>
+                <div class="resume-actions">
+                    <button class="btn btn-outline" onclick="saveResume()">
+                        <i class="fas fa-save"></i>
+                        儲存草稿
+                    </button>
+                    <button class="btn btn-primary" onclick="exportResume()">
+                        <i class="fas fa-download"></i>
+                        匯出履歷
+                    </button>
+                </div>
+            </div>
+
+            <div class="resume-grid">
+                <!-- 編輯區域 -->
+                <div class="resume-editor">
+                    <!-- 模板選擇 -->
+                    <div class="template-selector">
+                        <h3>選擇履歷模板</h3>
+                        <div class="template-grid">
+                            <div class="template-option selected" data-template="modern">
+                                <div class="template-preview">現代簡約</div>
+                                <div>現代簡約</div>
+                            </div>
+                            <div class="template-option" data-template="professional">
+                                <div class="template-preview">專業商務</div>
+                                <div>專業商務</div>
+                            </div>
+                            <div class="template-option" data-template="creative">
+                                <div class="template-preview">創意設計</div>
+                                <div>創意設計</div>
+                            </div>
+                            <div class="template-option" data-template="minimal">
+                                <div class="template-preview">極簡風格</div>
+                                <div>極簡風格</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 基本資料 -->
+                    <div class="form-section">
+                        <h3>基本資料</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name">姓名 *</label>
+                                <input type="text" id="name" name="name" value="張小明" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="title">職稱</label>
+                                <input type="text" id="title" name="title" value="前端開發工程師">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">電子郵件 *</label>
+                                <input type="email" id="email" name="email" value="zhang@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">電話</label>
+                                <input type="tel" id="phone" name="phone" value="0912-345-678">
+                            </div>
+                            <div class="form-group">
+                                <label for="address">地址</label>
+                                <input type="text" id="address" name="address" value="台北市大安區復興南路一段 390 號">
+                            </div>
+                            <div class="form-group">
+                                <label for="website">個人網站</label>
+                                <input type="url" id="website" name="website" value="https://zhangxiaoming.dev">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="summary">個人簡介</label>
+                                <textarea id="summary" name="summary" rows="4">我是一名資訊管理學系的學生，專精於前端開發和 UI/UX 設計。我熱愛學習新技術，並且喜歡將創意轉化為實際的作品。我具備良好的團隊合作能力和溝通技巧，能夠快速適應新環境。</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 工作經驗 -->
+                    <div class="form-section">
+                        <h3>工作經驗</h3>
+                        <div id="experienceList">
+                            <div class="experience-item">
+                                <div class="item-header">
+                                    <div class="item-title">前端開發實習生</div>
+                                    <div class="item-actions">
+                                        <button class="btn-icon" onclick="editExperience(this)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon danger" onclick="removeExperience(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>公司名稱</label>
+                                        <input type="text" value="台灣微軟股份有限公司">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>職位</label>
+                                        <input type="text" value="前端開發實習生">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>開始日期</label>
+                                        <input type="date" value="2024-06-01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>結束日期</label>
+                                        <input type="date" value="2024-08-31">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>工作描述</label>
+                                        <textarea rows="3">負責公司內部系統的前端開發，使用 React 和 TypeScript 開發響應式網頁應用程式。參與敏捷開發流程，與後端團隊協作完成專案。</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="add-item-btn" onclick="addExperience()">
+                            <i class="fas fa-plus"></i>
+                            新增工作經驗
+                        </button>
+                    </div>
+
+                    <!-- 教育背景 -->
+                    <div class="form-section">
+                        <h3>教育背景</h3>
+                        <div id="educationList">
+                            <div class="education-item">
+                                <div class="item-header">
+                                    <div class="item-title">資訊管理學系</div>
+                                    <div class="item-actions">
+                                        <button class="btn-icon" onclick="editEducation(this)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon danger" onclick="removeEducation(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>學校名稱</label>
+                                        <input type="text" value="國立台灣大學">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>科系</label>
+                                        <input type="text" value="資訊管理學系">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>學位</label>
+                                        <input type="text" value="學士">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>畢業年份</label>
+                                        <input type="number" value="2025" min="2000" max="2030">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>GPA</label>
+                                        <input type="text" value="3.8/4.0">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>相關課程</label>
+                                        <textarea rows="2">程式設計、資料結構、演算法、資料庫系統、網路程式設計、軟體工程</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="add-item-btn" onclick="addEducation()">
+                            <i class="fas fa-plus"></i>
+                            新增教育背景
+                        </button>
+                    </div>
+
+                    <!-- 技能專長 -->
+                    <div class="form-section">
+                        <h3>技能專長</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="skills">技能列表（用逗號分隔）</label>
+                                <textarea id="skills" name="skills" rows="3">JavaScript, React, Node.js, TypeScript, HTML5, CSS3, Git, Docker, AWS, UI/UX Design, Figma, Adobe Creative Suite</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 專案作品 -->
+                    <div class="form-section">
+                        <h3>專案作品</h3>
+                        <div id="projectList">
+                            <div class="experience-item">
+                                <div class="item-header">
+                                    <div class="item-title">響應式網站設計</div>
+                                    <div class="item-actions">
+                                        <button class="btn-icon" onclick="editProject(this)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon danger" onclick="removeProject(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>專案名稱</label>
+                                        <input type="text" value="響應式網站設計">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>技術棧</label>
+                                        <input type="text" value="HTML5, CSS3, JavaScript">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>專案連結</label>
+                                        <input type="url" value="https://example.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>GitHub</label>
+                                        <input type="url" value="https://github.com/example/web-design">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>專案描述</label>
+                                        <textarea rows="3">使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。包含動畫效果和互動功能。</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="add-item-btn" onclick="addProject()">
+                            <i class="fas fa-plus"></i>
+                            新增專案作品
+                        </button>
+                    </div>
+
+                    <!-- 證照獎項 -->
+                    <div class="form-section">
+                        <h3>證照獎項</h3>
+                        <div id="certificateList">
+                            <div class="experience-item">
+                                <div class="item-header">
+                                    <div class="item-title">AWS 認證</div>
+                                    <div class="item-actions">
+                                        <button class="btn-icon" onclick="editCertificate(this)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon danger" onclick="removeCertificate(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>證照名稱</label>
+                                        <input type="text" value="AWS Certified Solutions Architect">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>發證機構</label>
+                                        <input type="text" value="Amazon Web Services">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>取得日期</label>
+                                        <input type="date" value="2024-03-15">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>有效期限</label>
+                                        <input type="date" value="2027-03-15">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="add-item-btn" onclick="addCertificate()">
+                            <i class="fas fa-plus"></i>
+                            新增證照獎項
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 預覽區域 -->
+                <div class="resume-preview">
+                    <h3>履歷預覽</h3>
+                    <div class="preview-container" id="resumePreview">
+                        <!-- 預覽內容將由 JavaScript 動態生成 -->
+                    </div>
+                    <div class="export-options">
+                        <button class="btn btn-outline" onclick="exportPDF()">
+                            <i class="fas fa-file-pdf"></i>
+                            匯出 PDF
+                        </button>
+                        <button class="btn btn-outline" onclick="exportWord()">
+                            <i class="fas fa-file-word"></i>
+                            匯出 Word
+                        </button>
+                        <button class="btn btn-outline" onclick="printResume()">
+                            <i class="fas fa-print"></i>
+                            列印
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/app.js"></script>
+    <script src="resume.js"></script>
+</body>
+</html> 
