@@ -566,7 +566,35 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('未處理的 Promise 拒絕:', e.reason);
         Utils.showNotification('網路連線錯誤', 'error');
     });
+
+    var footer = document.getElementById('footer-placeholder');
+    if (footer) {
+        var path = '';
+        if (location.pathname.includes('/student/')) {
+            path = '../footer.html';
+        } else if (location.pathname.includes('/enterprise/')) {
+            path = '../footer.html';
+        } else if (location.pathname.includes('/admin/')) {
+            path = '../footer.html';
+        } else {
+            path = 'footer.html';
+        }
+        fetch(path)
+            .then(function(response) { return response.text(); })
+            .then(function(html) {
+                var temp = document.createElement('div');
+                temp.innerHTML = html;
+                var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+                var tplId = 'footer-visitor';
+                if (role === 'student') tplId = 'footer-student';
+                else if (role === 'enterprise') tplId = 'footer-enterprise';
+                else if (role === 'admin') tplId = 'footer-admin';
+                var tpl = temp.querySelector('#' + tplId);
+                if (tpl) footer.innerHTML = tpl.innerHTML;
+            });
+    }
 });
+
 
 // TODO: 實作全域函數供其他腳本使用
 window.PortfolioApp = {

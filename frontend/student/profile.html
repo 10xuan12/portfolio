@@ -6,320 +6,29 @@
     <title>個人資料 - Portfolio+</title>
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .profile-container {
-            padding: var(--spacing-2xl) 0;
-        }
-        
-        .profile-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: var(--white);
-            padding: var(--spacing-2xl) 0;
-            margin-bottom: var(--spacing-2xl);
-        }
-        
-        .profile-info {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xl);
-            flex-wrap: wrap;
-        }
-        
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: var(--white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--text-4xl);
-            font-weight: 700;
-            color: var(--primary-color);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .avatar-upload {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            color: var(--white);
-            padding: var(--spacing-xs);
-            text-align: center;
-            font-size: var(--text-xs);
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        
-        .profile-avatar:hover .avatar-upload {
-            opacity: 1;
-        }
-        
-        .profile-details h1 {
-            font-size: var(--text-3xl);
-            font-weight: 700;
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .profile-details p {
-            font-size: var(--text-lg);
-            opacity: 0.9;
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .profile-stats {
-            display: flex;
-            gap: var(--spacing-lg);
-            margin-top: var(--spacing-md);
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: var(--text-xl);
-            font-weight: 700;
-        }
-        
-        .stat-label {
-            font-size: var(--text-sm);
-            opacity: 0.8;
-        }
-        
-        .profile-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: var(--spacing-xl);
-        }
-        
-        .main-content {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-xl);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-lg);
-        }
-        
-        .sidebar-card {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-lg);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .form-section {
-            margin-bottom: var(--spacing-xl);
-        }
-        
-        .form-section h3 {
-            font-size: var(--text-lg);
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: var(--spacing-lg);
-            padding-bottom: var(--spacing-sm);
-            border-bottom: 2px solid var(--gray-200);
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-lg);
-        }
-        
-        .form-group {
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            color: var(--gray-700);
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: var(--spacing-md);
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            font-size: var(--text-base);
-            transition: border-color 0.2s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: var(--spacing-md);
-            margin-top: var(--spacing-xl);
-        }
-        
-        .badge-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: var(--spacing-md);
-            margin-top: var(--spacing-lg);
-        }
-        
-        .badge-item {
-            text-align: center;
-            padding: var(--spacing-md);
-            background: var(--gray-50);
-            border-radius: var(--radius-lg);
-            border: 2px solid transparent;
-            transition: all 0.2s ease;
-        }
-        
-        .badge-item.earned {
-            border-color: var(--success-color);
-            background: var(--success-color);
-            color: var(--white);
-        }
-        
-        .badge-item i {
-            font-size: var(--text-2xl);
-            margin-bottom: var(--spacing-sm);
-            display: block;
-        }
-        
-        .badge-item .badge-name {
-            font-size: var(--text-xs);
-            font-weight: 500;
-        }
-        
-        .activity-list {
-            list-style: none;
-        }
-        
-        .activity-item {
-            padding: var(--spacing-sm) 0;
-            border-bottom: 1px solid var(--gray-200);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-        
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        
-        .activity-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--text-sm);
-        }
-        
-        .activity-upload { background: var(--success-color); color: var(--white); }
-        .activity-view { background: var(--primary-color); color: var(--white); }
-        .activity-like { background: var(--accent-color); color: var(--white); }
-        .activity-comment { background: var(--warning-color); color: var(--white); }
-        
-        .activity-content {
-            flex: 1;
-        }
-        
-        .activity-content .activity-text {
-            font-size: var(--text-sm);
-            color: var(--gray-700);
-        }
-        
-        .activity-content .activity-time {
-            font-size: var(--text-xs);
-            color: var(--gray-500);
-        }
-        
-        .password-form {
-            background: var(--gray-50);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-lg);
-            margin-top: var(--spacing-lg);
-        }
-        
-        .password-form h4 {
-            margin-bottom: var(--spacing-md);
-            color: var(--gray-900);
-        }
-        
-        @media (max-width: 768px) {
-            .profile-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .profile-info {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .profile-stats {
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../css/student/profile.css">
 </head>
 <body>
-    <!-- 導航欄 -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-brand">
-                <a href="../index.html" class="navbar-logo">
-                    <i class="fas fa-briefcase"></i>
-                    <span>Portfolio+</span>
-                </a>
-            </div>
-            
-            <div class="navbar-menu">
-                <a href="dashboard.html" class="nav-link">儀表板</a>
-                <a href="portfolio.html" class="nav-link">作品集</a>
-                <a href="upload.html" class="nav-link">上傳作品</a>
-                <a href="profile.html" class="nav-link active">個人資料</a>
-            </div>
-            
-            <div class="navbar-actions">
-                <a href="../index.html" class="btn btn-outline">返回首頁</a>
-                <a href="../login.html" class="btn btn-primary">登出</a>
-            </div>
-        </div>
-    </nav>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(res => res.text())
+        .then(html => {
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        });
+    })();
+    </script>
 
     <!-- 個人資料標題 -->
     <section class="profile-header">
@@ -339,21 +48,29 @@
                     <p>學生編號: 12345678</p>
                     
                     <div class="profile-stats">
-                        <div class="stat-item">
-                            <div class="stat-number">12</div>
-                            <div class="stat-label">作品</div>
+                        <div class="stat-card">
+                            <div class="stat-content-box">
+                                <div class="number">12</div>
+                                <div class="label">作品</div>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-number">1,234</div>
-                            <div class="stat-label">瀏覽</div>
+                        <div class="stat-card">
+                            <div class="stat-content-box">
+                                <div class="number">1,234</div>
+                                <div class="label">瀏覽</div>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-number">89</div>
-                            <div class="stat-label">讚數</div>
+                        <div class="stat-card">
+                            <div class="stat-content-box">
+                                <div class="number">89</div>
+                                <div class="label">讚數</div>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-number">5</div>
-                            <div class="stat-label">徽章</div>
+                        <div class="stat-card">
+                            <div class="stat-content-box">
+                                <div class="number">5</div>
+                                <div class="label">徽章</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -617,51 +334,9 @@
     </section>
 
     <!-- 頁腳 -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Portfolio+</h3>
-                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>快速連結</h4>
-                    <ul>
-                        <li><a href="dashboard.html">儀表板</a></li>
-                        <li><a href="portfolio.html">作品集</a></li>
-                        <li><a href="upload.html">上傳作品</a></li>
-                        <li><a href="profile.html">個人資料</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>支援</h4>
-                    <ul>
-                        <li><a href="#">使用指南</a></li>
-                        <li><a href="#">常見問題</a></li>
-                        <li><a href="#">聯絡支援</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>社群媒體</h4>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2024 Portfolio+. 版權所有。</p>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-placeholder"></div>
 
     <script src="../js/app.js"></script>
-    <script src="profile.js"></script>
+    <script src="../js/student/profile.js"></script>
 </body>
 </html> 

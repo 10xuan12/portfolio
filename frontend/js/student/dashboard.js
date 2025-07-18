@@ -343,7 +343,27 @@ function refreshDashboard() {
     loadDashboardData();
     Utils.showNotification('儀表板已重新整理', 'success');
 }
-
+// Dashboard 統計數據動態渲染
+if (window.location.pathname.includes('student/dashboard.html')) {
+    document.addEventListener('DOMContentLoaded', function() {
+        API.get('/student/stats')
+            .then(data => {
+                if (data) {
+                    if (document.getElementById('stat-works'))
+                        document.getElementById('stat-works').textContent = Utils.formatNumber(data.works);
+                    if (document.getElementById('stat-views'))
+                        document.getElementById('stat-views').textContent = Utils.formatNumber(data.views);
+                    if (document.getElementById('stat-likes'))
+                        document.getElementById('stat-likes').textContent = Utils.formatNumber(data.likes);
+                    if (document.getElementById('stat-comments'))
+                        document.getElementById('stat-comments').textContent = Utils.formatNumber(data.comments);
+                }
+            })
+            .catch(error => {
+                console.error('載入統計資料失敗', error);
+            });
+    });
+}
 // 匯出儀表板資料
 function exportDashboardData() {
     try {

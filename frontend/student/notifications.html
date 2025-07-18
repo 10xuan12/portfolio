@@ -6,301 +6,30 @@
     <title>通知中心 - Portfolio+</title>
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .notifications-container {
-            padding: var(--spacing-2xl) 0;
-        }
-        
-        .notifications-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: var(--spacing-xl);
-            flex-wrap: wrap;
-            gap: var(--spacing-md);
-        }
-        
-        .notifications-title {
-            font-size: var(--text-2xl);
-            font-weight: 700;
-            color: var(--gray-900);
-        }
-        
-        .notifications-actions {
-            display: flex;
-            gap: var(--spacing-md);
-        }
-        
-        .filter-bar {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-md);
-            margin-bottom: var(--spacing-xl);
-        }
-        
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--spacing-md);
-        }
-        
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .filter-group label {
-            font-size: var(--text-sm);
-            font-weight: 500;
-            color: var(--gray-700);
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .filter-group select {
-            padding: var(--spacing-sm);
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-md);
-            font-size: var(--text-sm);
-        }
-        
-        .filter-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .notifications-list {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-        }
-        
-        .notification-item {
-            display: flex;
-            gap: var(--spacing-lg);
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--gray-200);
-            transition: background 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .notification-item:hover {
-            background: var(--gray-50);
-        }
-        
-        .notification-item.unread {
-            background: var(--primary-color);
-            color: var(--white);
-        }
-        
-        .notification-item.unread:hover {
-            background: var(--primary-dark);
-        }
-        
-        .notification-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--text-lg);
-            flex-shrink: 0;
-        }
-        
-        .notification-icon.like { background: var(--accent-color); color: var(--white); }
-        .notification-icon.comment { background: var(--primary-color); color: var(--white); }
-        .notification-icon.view { background: var(--success-color); color: var(--white); }
-        .notification-icon.system { background: var(--warning-color); color: var(--white); }
-        .notification-icon.enterprise { background: var(--secondary-color); color: var(--white); }
-        
-        .notification-content {
-            flex: 1;
-        }
-        
-        .notification-header {
-            display: flex;
-            justify-content: between;
-            align-items: flex-start;
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .notification-title {
-            font-weight: 600;
-            color: inherit;
-        }
-        
-        .notification-time {
-            font-size: var(--text-sm);
-            opacity: 0.8;
-        }
-        
-        .notification-text {
-            color: inherit;
-            opacity: 0.9;
-            line-height: 1.5;
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .notification-actions {
-            display: flex;
-            gap: var(--spacing-sm);
-        }
-        
-        .notification-action {
-            background: none;
-            border: none;
-            color: inherit;
-            font-size: var(--text-sm);
-            cursor: pointer;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--radius-md);
-            transition: background 0.2s ease;
-        }
-        
-        .notification-action:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .notification-item.unread .notification-action:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .notification-checkbox {
-            margin-right: var(--spacing-md);
-        }
-        
-        .bulk-actions {
-            background: var(--gray-50);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-lg);
-            margin-bottom: var(--spacing-lg);
-            display: none;
-        }
-        
-        .bulk-actions.show {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: var(--spacing-md);
-        }
-        
-        .bulk-actions-left {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-        }
-        
-        .bulk-actions-right {
-            display: flex;
-            gap: var(--spacing-sm);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: var(--spacing-3xl);
-            color: var(--gray-500);
-        }
-        
-        .empty-state i {
-            font-size: var(--text-5xl);
-            margin-bottom: var(--spacing-lg);
-            color: var(--gray-300);
-        }
-        
-        .notification-stats {
-            display: flex;
-            gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .stat-card {
-            background: var(--white);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            text-align: center;
-            flex: 1;
-        }
-        
-        .stat-number {
-            font-size: var(--text-2xl);
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .stat-label {
-            font-size: var(--text-sm);
-            color: var(--gray-600);
-        }
-        
-        .notification-preview {
-            background: var(--gray-50);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-lg);
-            margin-top: var(--spacing-sm);
-            font-size: var(--text-sm);
-            color: var(--gray-600);
-        }
-        
-        @media (max-width: 768px) {
-            .notifications-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .notifications-actions {
-                justify-content: center;
-            }
-            
-            .filter-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .notification-item {
-                flex-direction: column;
-                gap: var(--spacing-md);
-            }
-            
-            .notification-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .bulk-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../css/student/notification.css">
+
 </head>
 <body>
-    <!-- 導航欄 -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-brand">
-                <a href="../index.html" class="navbar-logo">
-                    <i class="fas fa-briefcase"></i>
-                    <span>Portfolio+</span>
-                </a>
-            </div>
-            
-            <div class="navbar-menu">
-                <a href="dashboard.html" class="nav-link">儀表板</a>
-                <a href="portfolio.html" class="nav-link">作品集</a>
-                <a href="upload.html" class="nav-link">上傳作品</a>
-                <a href="profile.html" class="nav-link">個人資料</a>
-            </div>
-            
-            <div class="navbar-actions">
-                <a href="../index.html" class="btn btn-outline">返回首頁</a>
-                <a href="../login.html" class="btn btn-primary">登出</a>
-            </div>
-        </div>
-    </nav>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(res => res.text())
+        .then(html => {
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        });
+    })();
+    </script>
 
     <!-- 主要內容 -->
     <section class="notifications-container">
@@ -558,51 +287,9 @@
     </section>
 
     <!-- 頁腳 -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Portfolio+</h3>
-                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>快速連結</h4>
-                    <ul>
-                        <li><a href="dashboard.html">儀表板</a></li>
-                        <li><a href="portfolio.html">作品集</a></li>
-                        <li><a href="upload.html">上傳作品</a></li>
-                        <li><a href="profile.html">個人資料</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>支援</h4>
-                    <ul>
-                        <li><a href="#">使用指南</a></li>
-                        <li><a href="#">常見問題</a></li>
-                        <li><a href="#">聯絡支援</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>社群媒體</h4>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2024 Portfolio+. 版權所有。</p>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-placeholder"></div>
 
     <script src="../js/app.js"></script>
-    <script src="notifications.js"></script>
+    <script src="../js/student/notifications.js"></script>
 </body>
 </html> 

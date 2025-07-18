@@ -2,29 +2,28 @@
 
 /* CSS 變數定義 */
 :root {
-    /* 顏色 */
-    --primary-color: #667eea;
-    --primary-dark: #5a6fd8;
-    --secondary-color: #080484;
-    --accent-color: #f52525;
-    --success-color: #4ade80;
-    --warning-color: #fbbf24;
-    --error-color: #f87171;
-    
-    /* 中性色 */
+    /* === Portfolio+ 配色方案 === */
+    --primary-color: #273ec3;         /* 主色，使用 #273ec3 */
+    --primary-dark: #00AEEF;          /* 輔色 Indigo Blue：冷靜專業，側邊欄、分頁列、hover */
+    --background-color: #F4F9FD;      /* 整體背景色，乾淨清新 */
+    --card-bg: #FFFFFF;               /* 卡片白底 */
+    --text-main: #1E1E1E;             /* 主字體色，標題、主要段落 */
+    --text-secondary: #4A4A4A;        /* 次字體色，次標題、提示、標籤 */
+    --error-color: #ea4f4f;           /* 強調色（錯誤） */
+    --success-color: #5ead73;         /* 強調色（成功） */
     --white: #ffffff;
+    --yellow: #ffdd00;
+    /* 其餘灰階與 spacing、圓角、陰影等保留原設定 */
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
     --gray-200: #e5e7eb;
     --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
+    --gray-400: #e5e8ed;
     --gray-500: #6b7280;
     --gray-600: #4b5563;
     --gray-700: #374151;
     --gray-800: #1f2937;
     --gray-900: #111827;
-    
-    /* 間距 */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
@@ -32,8 +31,6 @@
     --spacing-xl: 2rem;
     --spacing-2xl: 3rem;
     --spacing-3xl: 4rem;
-    
-    /* 字體大小 */
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
     --text-base: 1rem;
@@ -43,15 +40,11 @@
     --text-3xl: 1.875rem;
     --text-4xl: 2.25rem;
     --text-5xl: 3rem;
-    
-    /* 圓角 */
     --radius-sm: 0.25rem;
     --radius-md: 0.375rem;
     --radius-lg: 0.5rem;
     --radius-xl: 0.75rem;
     --radius-2xl: 1rem;
-    
-    /* 陰影 */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -68,8 +61,8 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
-    color: var(--gray-800);
-    background-color: var(--white);
+    color: var(--text-main);
+    background-color: var(--background-color);
 }
 
 /* 容器 */
@@ -81,7 +74,7 @@ body {
 
 /* 導航欄 */
 .navbar {
-    background: var(--white);
+    background: var(--primary-color);
     box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
@@ -93,6 +86,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    
 }
 
 .navbar-brand {
@@ -100,11 +94,15 @@ body {
     align-items: center;
 }
 
+.navbar.scrolled {
+    background: var(--primary-color) !important;
+} 
+
 .navbar-logo {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: var(--primary-color);
+    color: var(--white);
     font-size: var(--text-xl);
     font-weight: 700;
 }
@@ -121,7 +119,7 @@ body {
 
 .nav-link {
     text-decoration: none;
-    color: var(--gray-600);
+    color: var(--white);
     font-weight: 500;
     transition: color 0.2s ease;
 }
@@ -156,7 +154,7 @@ body {
 }
 
 .btn-primary:hover {
-    background: var(--primary-dark);
+    background: var(--primary-color);
     transform: translateY(-1px);
 }
 
@@ -179,8 +177,8 @@ body {
 /* 英雄區塊 */
 .hero {
     padding: var(--spacing-3xl) 0;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: var(--white);
+    background: var(--gray-400);
+    color: var(--text-main);
     position: relative;
     overflow: hidden;
 }
@@ -291,6 +289,30 @@ body {
     background: var(--white);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-content-box {
+    width: 180px;
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin: 0 auto;
+    color: var(--text-main);
+    text-align: center;
+}
+
+.stat-content-box .number,
+.stat-content-box .label {
+    text-align: center;
 }
 
 .stat-number {
@@ -469,6 +491,26 @@ body {
 
 .portfolio-content {
     padding: var(--spacing-lg);
+}
+
+.portfolio-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.portfolio-title {
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.portfolio-status {
+    margin-left: auto;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: 500;
 }
 
 .portfolio-content h3 {
@@ -707,3 +749,125 @@ body {
         max-width: 300px;
     }
 } 
+
+/* 卡片、區塊背景 */
+.card, .portfolio-card, .feature-card, .floating-card {
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+/* 標題、主字體、次字體 */
+h1, h2, h3, h4, h5, h6, .section-header h2, .hero-title {
+    color: var(--text-main);
+}
+
+.section-header p, .hero-subtitle, .portfolio-content p, .feature-card p, .stat-label, .form-group label, .tag {
+    color: var(--text-secondary);
+}
+
+/* 表單欄位 */
+.form-group label {
+    color: var(--text-main);
+}
+.form-group input, .form-group textarea, .form-group select {
+    background: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid var(--gray-200);
+}
+.form-group input::placeholder, .form-group textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+/* 錯誤/成功訊息 */
+.form-error, .error-message {
+    color: var(--error-color);
+}
+.form-success, .success-message {
+    color: var(--success-color);
+} 
+
+/* 通知條/警告條 */
+.alert-error {
+    background: var(--error-color);
+    color: var(--white);
+}
+.alert-success {
+    background: var(--success-color);
+    color: var(--white);
+} 
+
+.navbar-actions .btn,
+.navbar-actions .btn-primary,
+.navbar-actions .btn-outline {
+    background: var(--white) !important;
+    color: var(--primary-color) !important;
+    border: 2px solid var(--primary-color) !important;
+    box-shadow: none;
+}
+
+.navbar-actions .btn:hover,
+.navbar-actions .btn-primary:hover,
+.navbar-actions .btn-outline:hover {
+    background: var(--primary-color) !important;
+    color: var(--white) !important;
+    border: 2px solid var(--primary-color) !important;
+} 
+
+.navbar-actions .btn i,
+.navbar-actions .btn-primary i,
+.navbar-actions .btn-outline i {
+    color: var(--primary-color) !important;
+    transition: color 0.2s;
+}
+
+.navbar-actions .btn:hover i,
+.navbar-actions .btn-primary:hover i,
+.navbar-actions .btn-outline:hover i {
+    color: var(--white) !important;
+} 
+
+/* 徽章成就區塊 icon 樣式 */
+.badge-item {
+    text-align: center;
+    padding: var(--spacing-md);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+.badge-item.earned {
+    border-color: var(--success-color);
+    background: var(--primary-color);
+    color: var(--white);
+}
+.badge-item.earned i {
+    color: var(--white) !important;
+    background: var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-2xl);
+    margin: 0 auto var(--spacing-xs);
+}
+.badge-item:not(.earned) i {
+    color: var(--primary-color) !important;
+    background: var(--gray-200);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-2xl);
+    margin: 0 auto var(--spacing-xs);
+    opacity: 0.5;
+}
+.badge-name {
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-top: var(--spacing-xs);
+}
