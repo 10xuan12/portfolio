@@ -696,59 +696,306 @@ body {
 }
 
 /* 響應式設計 */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 var(--spacing-lg);
+    }
+    
+    .hero .container {
+        gap: var(--spacing-xl);
+    }
+    
+    .hero-title {
+        font-size: var(--text-4xl);
+    }
+    
+    .features-grid,
+    .roles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+    
+    .portfolios-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+    
+    /* 導航欄響應式 */
     .navbar .container {
-        flex-direction: column;
-        gap: var(--spacing-md);
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
     }
     
     .navbar-menu {
         display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--primary-color);
+        flex-direction: column;
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
     }
     
+    .navbar-menu.active {
+        display: flex;
+    }
+    
+    .navbar-menu .nav-link {
+        padding: var(--spacing-sm) 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-menu .nav-link:last-child {
+        border-bottom: none;
+    }
+    
+    /* 行動裝置選單按鈕 */
+    .mobile-menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        color: var(--white);
+        font-size: var(--text-xl);
+        cursor: pointer;
+        padding: var(--spacing-sm);
+    }
+    
+    .mobile-menu-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+    }
+    
+    /* 英雄區塊響應式 */
     .hero .container {
         grid-template-columns: 1fr;
         text-align: center;
+        gap: var(--spacing-xl);
     }
     
     .hero-title {
         font-size: var(--text-3xl);
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: var(--text-lg);
     }
     
     .hero-actions {
         justify-content: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
     }
     
-    .contact-content {
-        grid-template-columns: 1fr;
-    }
-    
+    /* 統計區塊響應式 */
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
     }
     
+    /* 特色和角色區塊響應式 */
     .features-grid,
     .roles-grid,
     .portfolios-grid {
         grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+    
+    /* 聯絡區塊響應式 */
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+    }
+    
+    /* 表單響應式 */
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        font-size: var(--text-base);
+        padding: var(--spacing-md);
+    }
+    
+    /* 按鈕響應式 */
+    .btn {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: var(--text-base);
+    }
+    
+    /* 卡片響應式 */
+    .card,
+    .portfolio-card,
+    .feature-card {
+        padding: var(--spacing-lg);
+    }
+    
+    /* 頁腳響應式 */
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+        text-align: center;
     }
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+    
+    /* 統計區塊小螢幕 */
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .stat-item {
+        padding: var(--spacing-lg);
+    }
+    
+    /* 英雄區塊小螢幕 */
+    .hero {
+        padding: var(--spacing-2xl) 0;
+    }
+    
+    .hero-title {
+        font-size: var(--text-2xl);
+    }
+    
+    .hero-subtitle {
+        font-size: var(--text-base);
     }
     
     .hero-actions {
         flex-direction: column;
         align-items: center;
+        width: 100%;
     }
     
+    .hero-actions .btn {
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    /* 按鈕小螢幕 */
     .btn {
         width: 100%;
         max-width: 300px;
+        justify-content: center;
     }
-} 
+    
+    /* 表單小螢幕 */
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        font-size: var(--text-base);
+        padding: var(--spacing-md);
+    }
+    
+    /* 導航欄小螢幕 */
+    .navbar-actions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .navbar-actions .btn {
+        width: auto;
+        min-width: 120px;
+    }
+    
+    /* 卡片小螢幕 */
+    .card,
+    .portfolio-card,
+    .feature-card {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    /* 標籤小螢幕 */
+    .tag {
+        font-size: var(--text-xs);
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+    
+    /* 圖片響應式 */
+    .portfolio-image img,
+    .hero-image img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+}
+
+/* 平板橫向模式 */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .hero .container {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .features-grid,
+    .roles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .portfolios-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 高解析度螢幕 */
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1400px;
+    }
+    
+    .hero-title {
+        font-size: var(--text-5xl);
+    }
+    
+    .features-grid,
+    .roles-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .portfolios-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* 列印樣式 */
+@media print {
+    .navbar,
+    .footer,
+    .btn,
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+    
+    .card,
+    .portfolio-card,
+    .feature-card {
+        box-shadow: none;
+        border: 1px solid var(--gray-300);
+    }
+}
 
 /* 卡片、區塊背景 */
 .card, .portfolio-card, .feature-card, .floating-card {

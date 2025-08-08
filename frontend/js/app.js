@@ -245,6 +245,100 @@ const UI = {
         this.initFormValidation();
         this.initTooltips();
         this.initModals();
+        this.loadNavbar(); // 新增：載入導航欄
+    },
+    
+    // 新增：載入導航欄函數
+    loadNavbar: function() {
+        const navbarPlaceholder = document.getElementById('navbar-placeholder');
+        if (!navbarPlaceholder) return;
+        
+        const role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+        const path = this.getNavbarPath();
+        
+        fetch(path)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                
+                let tplId = 'navbar-visitor';
+                if (role === 'student') tplId = 'navbar-student';
+                else if (role === 'enterprise') tplId = 'navbar-enterprise';
+                else if (role === 'admin') tplId = 'navbar-admin';
+                
+                const tpl = temp.querySelector('#' + tplId);
+                if (tpl) {
+                    navbarPlaceholder.innerHTML = tpl.innerHTML;
+                    // 載入完成後初始化導航功能
+                    this.initNavigationAfterLoad();
+                } else {
+                    console.error('找不到導航欄模板:', tplId);
+                    navbarPlaceholder.innerHTML = '<nav class="navbar"><div class="container"><div class="navbar-brand"><a href="../index.html" class="navbar-logo"><i class="fas fa-briefcase"></i><span>Portfolio+</span></a></div></div></nav>';
+                }
+            })
+            .catch(error => {
+                console.error('載入導航欄失敗:', error);
+                // 顯示錯誤訊息並使用預設導航欄
+                navbarPlaceholder.innerHTML = '<nav class="navbar"><div class="container"><div class="navbar-brand"><a href="../index.html" class="navbar-logo"><i class="fas fa-briefcase"></i><span>Portfolio+</span></a></div></div></nav>';
+                Utils.showNotification('導航欄載入失敗，請重新整理頁面', 'error');
+            });
+    },
+    
+    // 新增：取得導航欄路徑
+    getNavbarPath: function() {
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/student/') || currentPath.includes('/enterprise/') || currentPath.includes('/admin/')) {
+            return '../navbar.html';
+        } else {
+            return 'navbar.html';
+        }
+    },
+    
+    // 新增：導航欄載入完成後的初始化
+    initNavigationAfterLoad: function() {
+        const navbar = document.querySelector('.navbar');
+        if (!navbar) return;
+        
+        // 滾動時改變導航欄樣式
+        window.addEventListener('scroll', Utils.throttle(() => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }, 100));
+        
+        // 行動裝置選單切換
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const navbarMenu = document.querySelector('.navbar-menu');
+        
+        if (mobileMenuToggle && navbarMenu) {
+            mobileMenuToggle.addEventListener('click', () => {
+                navbarMenu.classList.toggle('active');
+            });
+        }
+        
+        // 初始化導航連結
+        this.initNavLinks();
+    },
+    
+    // 新增：初始化導航連結
+    initNavLinks: function() {
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                // 移除其他連結的活動狀態
+                navLinks.forEach(l => l.classList.remove('active'));
+                // 添加當前連結的活動狀態
+                link.classList.add('active');
+            });
+        });
     },
     
     // 初始化導航功能
@@ -299,9 +393,25 @@ const UI = {
         const forms = document.querySelectorAll('form');
         
         forms.forEach(form => {
+            // 即時驗證
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => {
+                    this.validateField(input);
+                });
+                
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('error')) {
+                        this.validateField(input);
+                    }
+                });
+            });
+            
+            // 提交驗證
             form.addEventListener('submit', (e) => {
                 if (!this.validateForm(form)) {
                     e.preventDefault();
+                    Utils.showNotification('請檢查表單中的錯誤', 'error');
                 }
             });
         });
@@ -310,18 +420,138 @@ const UI = {
     // 表單驗證
     validateForm: function(form) {
         let isValid = true;
-        const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+        const inputs = form.querySelectorAll('input, select, textarea');
         
         inputs.forEach(input => {
-            if (!input.value.trim()) {
-                this.showFieldError(input, '此欄位為必填');
+            if (!this.validateField(input)) {
                 isValid = false;
-            } else {
-                this.clearFieldError(input);
             }
         });
         
         return isValid;
+    },
+    
+    // 欄位驗證
+    validateField: function(field) {
+        const value = field.value.trim();
+        const type = field.type;
+        const required = field.hasAttribute('required');
+        const minLength = field.getAttribute('minlength');
+        const maxLength = field.getAttribute('maxlength');
+        const pattern = field.getAttribute('pattern');
+        
+        // 清除之前的錯誤
+        this.clearFieldError(field);
+        
+        // 必填驗證
+        if (required && !value) {
+            this.showFieldError(field, '此欄位為必填');
+            return false;
+        }
+        
+        // 如果欄位為空且非必填，則跳過其他驗證
+        if (!value && !required) {
+            return true;
+        }
+        
+        // 長度驗證
+        if (minLength && value.length < parseInt(minLength)) {
+            this.showFieldError(field, `最少需要 ${minLength} 個字元`);
+            return false;
+        }
+        
+        if (maxLength && value.length > parseInt(maxLength)) {
+            this.showFieldError(field, `最多只能 ${maxLength} 個字元`);
+            return false;
+        }
+        
+        // 類型驗證
+        switch (type) {
+            case 'email':
+                if (!this.isValidEmail(value)) {
+                    this.showFieldError(field, '請輸入有效的電子郵件地址');
+                    return false;
+                }
+                break;
+            case 'tel':
+                if (!this.isValidPhone(value)) {
+                    this.showFieldError(field, '請輸入有效的電話號碼');
+                    return false;
+                }
+                break;
+            case 'url':
+                if (!this.isValidUrl(value)) {
+                    this.showFieldError(field, '請輸入有效的網址');
+                    return false;
+                }
+                break;
+            case 'password':
+                if (!this.isValidPassword(value)) {
+                    this.showFieldError(field, '密碼至少需要8個字元，包含大小寫字母和數字');
+                    return false;
+                }
+                break;
+        }
+        
+        // 正則表達式驗證
+        if (pattern && !new RegExp(pattern).test(value)) {
+            const customMessage = field.getAttribute('data-error-message');
+            this.showFieldError(field, customMessage || '格式不正確');
+            return false;
+        }
+        
+        // 自定義驗證
+        const customValidation = field.getAttribute('data-validation');
+        if (customValidation && !this.customValidation(customValidation, value)) {
+            const customMessage = field.getAttribute('data-error-message');
+            this.showFieldError(field, customMessage || '驗證失敗');
+            return false;
+        }
+        
+        return true;
+    },
+    
+    // 電子郵件驗證
+    isValidEmail: function(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    },
+    
+    // 電話號碼驗證
+    isValidPhone: function(phone) {
+        const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+        return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 8;
+    },
+    
+    // URL驗證
+    isValidUrl: function(url) {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    },
+    
+    // 密碼驗證
+    isValidPassword: function(password) {
+        // 至少8個字元，包含大小寫字母和數字
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
+        return passwordRegex.test(password);
+    },
+    
+    // 自定義驗證
+    customValidation: function(type, value) {
+        switch (type) {
+            case 'username':
+                return /^[a-zA-Z0-9_]{3,20}$/.test(value);
+            case 'chinese-name':
+                return /^[\u4e00-\u9fa5]{2,10}$/.test(value);
+            case 'student-id':
+                return /^\d{8,10}$/.test(value);
+            default:
+                return true;
+        }
     },
     
     // 顯示欄位錯誤
@@ -335,9 +565,11 @@ const UI = {
             color: #f87171;
             font-size: 0.875rem;
             margin-top: 0.25rem;
+            animation: slideIn 0.3s ease;
         `;
         
         field.parentNode.appendChild(errorDiv);
+        field.classList.add('error');
         field.style.borderColor = '#f87171';
     },
     
@@ -347,6 +579,7 @@ const UI = {
         if (errorDiv) {
             errorDiv.remove();
         }
+        field.classList.remove('error');
         field.style.borderColor = '';
     },
     
@@ -538,63 +771,389 @@ const DataLoader = {
 
 // TODO: 實作事件監聽器
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化 UI
-    UI.init();
-    
-    // 載入假資料（如果頁面需要）
-    const portfolioContainer = document.querySelector('.portfolios-grid');
-    if (portfolioContainer) {
-        const portfolios = DataLoader.loadMockData('portfolios');
-        DataLoader.renderPortfolios(portfolioContainer, portfolios);
-    }
-    
-    // 檢查登入狀態
-    if (Auth.isLoggedIn()) {
-        console.log('使用者已登入:', Auth.getUser());
-    } else {
-        console.log('使用者未登入');
+    try {
+        // 初始化 UI
+        UI.init();
+        
+        // 載入假資料（如果頁面需要）
+        const portfolioContainer = document.querySelector('.portfolios-grid');
+        if (portfolioContainer) {
+            const portfolios = DataLoader.loadMockData('portfolios');
+            DataLoader.renderPortfolios(portfolioContainer, portfolios);
+        }
+        
+        // 檢查登入狀態
+        if (Auth.isLoggedIn()) {
+            console.log('使用者已登入:', Auth.getUser());
+        } else {
+            console.log('使用者未登入');
+        }
+        
+        // 初始化頁面特定功能
+        initPageSpecificFeatures();
+        
+    } catch (error) {
+        console.error('頁面初始化錯誤:', error);
+        Utils.showNotification('頁面載入失敗，請重新整理', 'error');
     }
     
     // 全域錯誤處理
     window.addEventListener('error', function(e) {
         console.error('全域錯誤:', e.error);
-        Utils.showNotification('發生錯誤，請重新整理頁面', 'error');
+        handleGlobalError(e.error);
     });
     
     // 未處理的 Promise 拒絕
     window.addEventListener('unhandledrejection', function(e) {
         console.error('未處理的 Promise 拒絕:', e.reason);
-        Utils.showNotification('網路連線錯誤', 'error');
+        handleGlobalError(e.reason);
     });
+    
+    // 載入頁腳
+    loadFooter();
+});
 
-    var footer = document.getElementById('footer-placeholder');
-    if (footer) {
-        var path = '';
-        if (location.pathname.includes('/student/')) {
-            path = '../footer.html';
-        } else if (location.pathname.includes('/enterprise/')) {
-            path = '../footer.html';
-        } else if (location.pathname.includes('/admin/')) {
-            path = '../footer.html';
-        } else {
-            path = 'footer.html';
+// 新增：初始化頁面特定功能
+function initPageSpecificFeatures() {
+    const currentPage = window.location.pathname;
+    
+    try {
+        // 根據頁面類型初始化特定功能
+        if (currentPage.includes('dashboard')) {
+            initDashboardFeatures();
+        } else if (currentPage.includes('portfolio')) {
+            initPortfolioFeatures();
+        } else if (currentPage.includes('upload')) {
+            initUploadFeatures();
+        } else if (currentPage.includes('profile')) {
+            initProfileFeatures();
+        } else if (currentPage.includes('search')) {
+            initSearchFeatures();
         }
+    } catch (error) {
+        console.error('頁面特定功能初始化失敗:', error);
+    }
+}
+
+// 新增：儀表板功能初始化
+function initDashboardFeatures() {
+    // 初始化統計數據
+    const statElements = document.querySelectorAll('.stat-item .number');
+    statElements.forEach(element => {
+        animateNumber(element);
+    });
+    
+    // 初始化圖表（如果有）
+    const charts = document.querySelectorAll('canvas');
+    charts.forEach(canvas => {
+        if (typeof Chart !== 'undefined') {
+            initChart(canvas);
+        }
+    });
+}
+
+// 新增：作品集功能初始化
+function initPortfolioFeatures() {
+    // 初始化作品篩選
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            filterPortfolios(filter);
+        });
+    });
+    
+    // 初始化作品排序
+    const sortSelect = document.querySelector('.sort-select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            sortPortfolios(this.value);
+        });
+    }
+}
+
+// 新增：上傳功能初始化
+function initUploadFeatures() {
+    // 初始化檔案上傳
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileUpload);
+    }
+    
+    // 初始化拖拽上傳
+    const dropZone = document.querySelector('.drop-zone');
+    if (dropZone) {
+        initDropZone(dropZone);
+    }
+}
+
+// 新增：個人資料功能初始化
+function initProfileFeatures() {
+    // 初始化圖片上傳
+    const avatarInput = document.querySelector('.avatar-input');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', handleAvatarUpload);
+    }
+    
+    // 初始化表單自動儲存
+    const form = document.querySelector('form');
+    if (form) {
+        initAutoSave(form);
+    }
+}
+
+// 新增：搜尋功能初始化
+function initSearchFeatures() {
+    // 初始化搜尋建議
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        initSearchSuggestions(searchInput);
+    }
+    
+    // 初始化進階篩選
+    const filterForm = document.querySelector('.filter-form');
+    if (filterForm) {
+        initAdvancedFilters(filterForm);
+    }
+}
+
+// 新增：全域錯誤處理
+function handleGlobalError(error) {
+    let errorMessage = '發生未知錯誤';
+    
+    if (error instanceof TypeError) {
+        errorMessage = '資料載入失敗，請檢查網路連線';
+    } else if (error instanceof ReferenceError) {
+        errorMessage = '頁面功能異常，請重新整理';
+    } else if (error.message) {
+        errorMessage = error.message;
+    }
+    
+    Utils.showNotification(errorMessage, 'error');
+    
+    // 記錄錯誤到控制台
+    console.error('錯誤詳情:', {
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent
+    });
+}
+
+// 新增：載入頁腳
+function loadFooter() {
+    const footer = document.getElementById('footer-placeholder');
+    if (!footer) return;
+    
+    try {
+        const path = getFooterPath();
         fetch(path)
-            .then(function(response) { return response.text(); })
-            .then(function(html) {
-                var temp = document.createElement('div');
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                const temp = document.createElement('div');
                 temp.innerHTML = html;
-                var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
-                var tplId = 'footer-visitor';
+                
+                const role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+                let tplId = 'footer-visitor';
+                
                 if (role === 'student') tplId = 'footer-student';
                 else if (role === 'enterprise') tplId = 'footer-enterprise';
                 else if (role === 'admin') tplId = 'footer-admin';
-                var tpl = temp.querySelector('#' + tplId);
-                if (tpl) footer.innerHTML = tpl.innerHTML;
+                
+                const tpl = temp.querySelector('#' + tplId);
+                if (tpl) {
+                    footer.innerHTML = tpl.innerHTML;
+                } else {
+                    footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2024 Portfolio+. All rights reserved.</p></div></footer>';
+                }
+            })
+            .catch(error => {
+                console.error('載入頁腳失敗:', error);
+                footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2024 Portfolio+. All rights reserved.</p></div></footer>';
             });
+    } catch (error) {
+        console.error('頁腳載入錯誤:', error);
+        footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2024 Portfolio+. All rights reserved.</p></div></footer>';
     }
-});
+}
 
+// 新增：取得頁腳路徑
+function getFooterPath() {
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/student/') || currentPath.includes('/enterprise/') || currentPath.includes('/admin/')) {
+        return '../footer.html';
+    } else {
+        return 'footer.html';
+    }
+}
+
+// 新增：數字動畫
+function animateNumber(element) {
+    const target = parseInt(element.textContent.replace(/,/g, ''));
+    const duration = 1000;
+    const step = target / (duration / 16);
+    let current = 0;
+    
+    const timer = setInterval(() => {
+        current += step;
+        if (current >= target) {
+            current = target;
+            clearInterval(timer);
+        }
+        element.textContent = Math.floor(current).toLocaleString();
+    }, 16);
+}
+
+// 新增：圖表初始化
+function initChart(canvas) {
+    const ctx = canvas.getContext('2d');
+    const chartType = canvas.dataset.chartType || 'line';
+    
+    // 這裡可以根據需要初始化不同的圖表類型
+    console.log('初始化圖表:', chartType);
+}
+
+// 新增：作品篩選
+function filterPortfolios(filter) {
+    const portfolios = document.querySelectorAll('.portfolio-card');
+    portfolios.forEach(portfolio => {
+        if (filter === 'all' || portfolio.dataset.category === filter) {
+            portfolio.style.display = 'block';
+        } else {
+            portfolio.style.display = 'none';
+        }
+    });
+}
+
+// 新增：作品排序
+function sortPortfolios(sortBy) {
+    const container = document.querySelector('.portfolios-grid');
+    const portfolios = Array.from(container.children);
+    
+    portfolios.sort((a, b) => {
+        const aValue = a.dataset[sortBy] || 0;
+        const bValue = b.dataset[sortBy] || 0;
+        return bValue - aValue;
+    });
+    
+    portfolios.forEach(portfolio => container.appendChild(portfolio));
+}
+
+// 新增：檔案上傳處理
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // 這裡可以添加檔案驗證和上傳邏輯
+        console.log('檔案已選擇:', file.name);
+    }
+}
+
+// 新增：拖拽上傳初始化
+function initDropZone(dropZone) {
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileUpload({ target: { files } });
+        }
+    });
+}
+
+// 新增：頭像上傳處理
+function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatar = document.querySelector('.avatar-preview');
+            if (avatar) {
+                avatar.src = e.target.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 新增：自動儲存初始化
+function initAutoSave(form) {
+    const inputs = form.querySelectorAll('input, textarea, select');
+    let saveTimeout;
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveFormData(form);
+            }, 1000);
+        });
+    });
+}
+
+// 新增：儲存表單資料
+function saveFormData(form) {
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    // 儲存到 localStorage
+    localStorage.setItem('form_autosave', JSON.stringify(data));
+    console.log('表單資料已自動儲存');
+}
+
+// 新增：搜尋建議初始化
+function initSearchSuggestions(searchInput) {
+    let suggestionTimeout;
+    
+    searchInput.addEventListener('input', () => {
+        clearTimeout(suggestionTimeout);
+        suggestionTimeout = setTimeout(() => {
+            const query = searchInput.value.trim();
+            if (query.length > 2) {
+                loadSearchSuggestions(query);
+            }
+        }, 300);
+    });
+}
+
+// 新增：載入搜尋建議
+function loadSearchSuggestions(query) {
+    // 這裡可以實作搜尋建議邏輯
+    console.log('載入搜尋建議:', query);
+}
+
+// 新增：進階篩選初始化
+function initAdvancedFilters(filterForm) {
+    const filterInputs = filterForm.querySelectorAll('input, select');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            applyFilters(filterForm);
+        });
+    });
+}
+
+// 新增：套用篩選
+function applyFilters(filterForm) {
+    const formData = new FormData(filterForm);
+    const filters = Object.fromEntries(formData);
+    
+    // 這裡可以實作篩選邏輯
+    console.log('套用篩選:', filters);
+}
 
 // TODO: 實作全域函數供其他腳本使用
 window.PortfolioApp = {
@@ -639,6 +1198,19 @@ const globalStyles = `
         backdrop-filter: blur(10px);
     }
     
+    .field-error {
+        animation: slideIn 0.3s ease;
+    }
+    
+    .error {
+        border-color: #f87171 !important;
+    }
+    
+    .dragover {
+        border-color: var(--primary-color);
+        background-color: rgba(39, 62, 195, 0.1);
+    }
+    
     @media (max-width: 768px) {
         .navbar-menu {
             display: none;
@@ -661,4 +1233,4 @@ const globalStyles = `
 // 注入全域樣式
 const styleSheet = document.createElement('style');
 styleSheet.textContent = globalStyles;
-document.head.appendChild(styleSheet); 
+document.head.appendChild(styleSheet);

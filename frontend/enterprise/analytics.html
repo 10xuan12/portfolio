@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數據分析 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/enterprise/analytics.css">
+</head>
+<body>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(res => res.text())
+        .then(html => {
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        });
+    })();
+    </script>
+
+    <!-- 主要內容 -->
+    <main class="analytics-container">
+        <div class="container">
+            <div class="analytics-header">
+                <h1 class="analytics-title">數據分析</h1>
+                <div class="analytics-actions">
+                    <button class="btn btn-outline" onclick="exportAnalytics()">
+                        <i class="fas fa-download"></i>
+                        匯出報表
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshAnalytics()">
+                        <i class="fas fa-sync-alt"></i>
+                        重新整理
+                    </button>
+                </div>
+            </div>
+
+            <!-- 統計卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">1,234</div>
+                        <div class="stat-label">總瀏覽次數</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +12.5%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">89</div>
+                        <div class="stat-label">收藏作品</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +8.3%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">23</div>
+                        <div class="stat-label">聯絡學生</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +15.2%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">發布職缺</div>
+                        <div class="stat-change neutral">
+                            <i class="fas fa-minus"></i>
+                            0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 圖表區域 -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>瀏覽趨勢</h3>
+                        <div class="chart-actions">
+                            <select class="chart-period">
+                                <option value="7">最近7天</option>
+                                <option value="30" selected>最近30天</option>
+                                <option value="90">最近90天</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-content">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-line"></i>
+                            <p>瀏覽趨勢圖表</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>熱門技能</h3>
+                        <div class="chart-actions">
+                            <button class="btn btn-sm btn-outline">查看詳情</button>
+                        </div>
+                    </div>
+                    <div class="chart-content">
+                        <div class="skills-chart">
+                            <div class="skill-item">
+                                <span class="skill-name">JavaScript</span>
+                                <div class="skill-bar">
+                                    <div class="skill-progress" style="width: 85%"></div>
+                                </div>
+                                <span class="skill-percentage">85%</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">React</span>
+                                <div class="skill-bar">
+                                    <div class="skill-progress" style="width: 72%"></div>
+                                </div>
+                                <span class="skill-percentage">72%</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Python</span>
+                                <div class="skill-bar">
+                                    <div class="skill-progress" style="width: 68%"></div>
+                                </div>
+                                <span class="skill-percentage">68%</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">UI/UX 設計</span>
+                                <div class="skill-bar">
+                                    <div class="skill-progress" style="width: 55%"></div>
+                                </div>
+                                <span class="skill-percentage">55%</span>
+                            </div>
+                            <div class="skill-item">
+                                <span class="skill-name">Node.js</span>
+                                <div class="skill-bar">
+                                    <div class="skill-progress" style="width: 42%"></div>
+                                </div>
+                                <span class="skill-percentage">42%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 詳細分析 -->
+            <div class="analytics-details">
+                <div class="detail-card">
+                    <h3>熱門作品</h3>
+                    <div class="popular-portfolios">
+                        <div class="portfolio-item">
+                            <div class="portfolio-rank">1</div>
+                            <div class="portfolio-info">
+                                <h4>響應式網站設計</h4>
+                                <p>張小明 • 資訊管理學系</p>
+                            </div>
+                            <div class="portfolio-stats">
+                                <span><i class="fas fa-eye"></i> 156</span>
+                                <span><i class="fas fa-heart"></i> 23</span>
+                            </div>
+                        </div>
+                        <div class="portfolio-item">
+                            <div class="portfolio-rank">2</div>
+                            <div class="portfolio-info">
+                                <h4>React 電商平台</h4>
+                                <p>李小華 • 資訊工程學系</p>
+                            </div>
+                            <div class="portfolio-stats">
+                                <span><i class="fas fa-eye"></i> 134</span>
+                                <span><i class="fas fa-heart"></i> 18</span>
+                            </div>
+                        </div>
+                        <div class="portfolio-item">
+                            <div class="portfolio-rank">3</div>
+                            <div class="portfolio-info">
+                                <h4>Python 數據分析</h4>
+                                <p>王小美 • 統計學系</p>
+                            </div>
+                            <div class="portfolio-stats">
+                                <span><i class="fas fa-eye"></i> 98</span>
+                                <span><i class="fas fa-heart"></i> 15</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <h3>科系分布</h3>
+                    <div class="department-chart">
+                        <div class="department-item">
+                            <span class="department-name">資訊管理學系</span>
+                            <div class="department-bar">
+                                <div class="department-progress" style="width: 35%"></div>
+                            </div>
+                            <span class="department-percentage">35%</span>
+                        </div>
+                        <div class="department-item">
+                            <span class="department-name">資訊工程學系</span>
+                            <div class="department-bar">
+                                <div class="department-progress" style="width: 28%"></div>
+                            </div>
+                            <span class="department-percentage">28%</span>
+                        </div>
+                        <div class="department-item">
+                            <span class="department-name">統計學系</span>
+                            <div class="department-bar">
+                                <div class="department-progress" style="width: 22%"></div>
+                            </div>
+                            <span class="department-percentage">22%</span>
+                        </div>
+                        <div class="department-item">
+                            <span class="department-name">其他</span>
+                            <div class="department-bar">
+                                <div class="department-progress" style="width: 15%"></div>
+                            </div>
+                            <span class="department-percentage">15%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/api-service.js"></script>
+    <script src="../js/enterprise/analytics.js"></script>
+</body>
+</html>

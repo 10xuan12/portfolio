@@ -241,14 +241,16 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
+    <script src="../js/config.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
+    <script src="../js/student/dashboard.js"></script>
     <script>
-        // TODO: 載入學生資料和統計資訊
-        // 這裡應該從後端 API 獲取資料
-        // 例如：fetch('/api/student/dashboard')
-        
-        // 假資料載入模擬
-        console.log('載入學生儀表板資料...');
+        // 檢查配置狀態
+        console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
+        console.log('環境:', getEnvironment());
+        console.log('版本:', getVersion());
         
         // TODO: 實作即時通知功能
         // 例如：WebSocket 連接來接收即時通知

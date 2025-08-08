@@ -3,7 +3,7 @@
  * 包含設定管理、表單處理、切換功能等
  */
 
-// TODO: 從後端 API 載入使用者設定
+// 使用者設定
 let userSettings = {
     account: {
         displayName: '張小明',
@@ -40,30 +40,71 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 載入使用者設定
-function loadUserSettings() {
-    // TODO: 從後端 API 載入設定
-    // const response = await fetch('/api/user/settings');
-    // userSettings = await response.json();
+async function loadUserSettings() {
+    try {
+        // 使用API服務載入設定
+        const response = await apiService.getUserSettings();
+        if (response.success) {
+            userSettings = response.data;
+        }
+        
+        // 填充表單資料
+        fillFormData();
+        updateToggleStates();
+        
+    } catch (error) {
+        console.error('載入設定失敗:', error);
+        Utils.showNotification('載入設定失敗，使用預設設定', 'warning');
+    }
+}
+
+// 填充表單資料
+function fillFormData() {
+    // 帳號設定
+    const displayNameInput = document.getElementById('displayName');
+    const usernameInput = document.getElementById('username');
+    const bioInput = document.getElementById('bio');
+    const languageInput = document.getElementById('language');
+    const timezoneInput = document.getElementById('timezone');
     
-    // 填充表單資料
-    document.getElementById('displayName').value = userSettings.account.displayName;
-    document.getElementById('username').value = userSettings.account.username;
-    document.getElementById('bio').value = userSettings.account.bio;
-    document.getElementById('language').value = userSettings.account.language;
-    document.getElementById('timezone').value = userSettings.account.timezone;
-    document.getElementById('notificationFrequency').value = userSettings.notifications.frequency;
+    if (displayNameInput) displayNameInput.value = userSettings.account.displayName || '';
+    if (usernameInput) usernameInput.value = userSettings.account.username || '';
+    if (bioInput) bioInput.value = userSettings.account.bio || '';
+    if (languageInput) languageInput.value = userSettings.account.language || 'zh-TW';
+    if (timezoneInput) timezoneInput.value = userSettings.account.timezone || 'Asia/Taipei';
     
-    // 更新切換開關狀態
-    updateToggleStates();
+    // 通知設定
+    const notificationFrequencyInput = document.getElementById('notificationFrequency');
+    if (notificationFrequencyInput) {
+        notificationFrequencyInput.value = userSettings.notifications.frequency || 'daily';
+    }
 }
 
 // 初始化事件監聽器
 function initEventListeners() {
     // 帳號表單提交
-    document.getElementById('accountForm').addEventListener('submit', handleAccountSubmit);
+    const accountForm = document.getElementById('accountForm');
+    if (accountForm) {
+        accountForm.addEventListener('submit', handleAccountSubmit);
+    }
     
     // 密碼表單提交
-    document.getElementById('passwordForm').addEventListener('submit', handlePasswordSubmit);
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordSubmit);
+    }
+    
+    // 隱私設定保存
+    const privacyForm = document.getElementById('privacyForm');
+    if (privacyForm) {
+        privacyForm.addEventListener('submit', handlePrivacySubmit);
+    }
+    
+    // 通知設定保存
+    const notificationForm = document.getElementById('notificationForm');
+    if (notificationForm) {
+        notificationForm.addEventListener('submit', handleNotificationSubmit);
+    }
 }
 
 // 顯示設定區段
@@ -79,10 +120,16 @@ function showSection(sectionName) {
     });
     
     // 顯示選中的區段
-    document.getElementById(sectionName + 'Section').classList.add('active');
+    const targetSection = document.getElementById(sectionName + 'Section');
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
     
     // 更新導航連結狀態
-    event.target.classList.add('active');
+    const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
 }
 
 // 切換設定
@@ -120,91 +167,93 @@ function toggleSetting(element, settingKey) {
         case 'marketingMessages':
             userSettings.notifications.marketingMessages = isActive;
             break;
-        case 'twoFactorAuth':
-            userSettings.security.twoFactorAuth = isActive;
-            if (isActive) {
-                setupTwoFactorAuth();
-            }
-            break;
     }
     
-    Utils.showNotification('設定已更新', 'success');
+    // 自動保存設定
+    saveSettings();
 }
 
 // 更新切換開關狀態
 function updateToggleStates() {
-    // 隱私設定
     updateToggleState('showProfile', userSettings.privacy.showProfile);
     updateToggleState('showStats', userSettings.privacy.showStats);
     updateToggleState('allowComments', userSettings.privacy.allowComments);
     updateToggleState('searchIndex', userSettings.privacy.searchIndex);
-    
-    // 通知設定
     updateToggleState('emailNotifications', userSettings.notifications.emailNotifications);
     updateToggleState('portfolioInteractions', userSettings.notifications.portfolioInteractions);
     updateToggleState('enterpriseViews', userSettings.notifications.enterpriseViews);
     updateToggleState('systemUpdates', userSettings.notifications.systemUpdates);
     updateToggleState('marketingMessages', userSettings.notifications.marketingMessages);
-    
-    // 安全設定
-    updateToggleState('twoFactorAuth', userSettings.security.twoFactorAuth);
 }
 
 // 更新單個切換開關狀態
 function updateToggleState(settingKey, isActive) {
-    const toggle = document.querySelector(`[onclick*="${settingKey}"]`);
-    if (toggle) {
+    const element = document.querySelector(`[data-setting="${settingKey}"]`);
+    if (element) {
         if (isActive) {
-            toggle.classList.add('active');
+            element.classList.add('active');
         } else {
-            toggle.classList.remove('active');
+            element.classList.remove('active');
         }
     }
 }
 
-// 選擇隱私設定
+// 選擇隱私等級
 function selectPrivacy(level) {
-    // 移除所有選中狀態
+    userSettings.privacy.profileVisibility = level;
+    
+    // 更新UI
     document.querySelectorAll('.privacy-option').forEach(option => {
         option.classList.remove('selected');
     });
     
-    // 選中當前選項
-    event.target.closest('.privacy-option').classList.add('selected');
+    const selectedOption = document.querySelector(`[data-privacy="${level}"]`);
+    if (selectedOption) {
+        selectedOption.classList.add('selected');
+    }
     
-    // 更新設定
-    userSettings.privacy.profileVisibility = level;
-    
-    Utils.showNotification('隱私設定已更新', 'success');
+    // 自動保存設定
+    saveSettings();
 }
 
 // 處理帳號表單提交
 async function handleAccountSubmit(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
-    const accountData = {
-        displayName: formData.get('displayName'),
-        bio: formData.get('bio'),
-        language: formData.get('language'),
-        timezone: formData.get('timezone')
-    };
-    
     try {
-        // TODO: 發送更新請求到後端 API
-        // const response = await fetch('/api/user/account', {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(accountData)
-        // });
+        const formData = new FormData(e.target);
+        const accountData = {
+            displayName: formData.get('displayName'),
+            username: formData.get('username'),
+            bio: formData.get('bio'),
+            language: formData.get('language'),
+            timezone: formData.get('timezone')
+        };
         
-        // 更新本地設定
-        Object.assign(userSettings.account, accountData);
+        // 驗證資料
+        if (!accountData.displayName.trim()) {
+            Utils.showNotification('請輸入顯示名稱', 'error');
+            return;
+        }
         
-        Utils.showNotification('帳號設定已更新', 'success');
+        if (!accountData.username.trim()) {
+            Utils.showNotification('請輸入使用者名稱', 'error');
+            return;
+        }
+        
+        // 使用API服務更新帳號資料
+        const response = await apiService.updateUserSettings('account', accountData);
+        
+        if (response.success) {
+            Utils.showNotification('帳號資料更新成功！', 'success');
+            userSettings.account = { ...userSettings.account, ...accountData };
+        } else {
+            throw new Error(response.message || '更新失敗');
+        }
+        
     } catch (error) {
+        console.error('更新帳號資料錯誤:', error);
         Utils.showNotification('更新失敗，請稍後再試', 'error');
-        console.error('更新帳號設定錯誤:', error);
     }
 }
 
@@ -212,144 +261,243 @@ async function handleAccountSubmit(e) {
 async function handlePasswordSubmit(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
-    const currentPassword = formData.get('currentPassword');
-    const newPassword = formData.get('newPassword');
-    const confirmPassword = formData.get('confirmPassword');
-    
-    // 驗證密碼
-    if (newPassword !== confirmPassword) {
-        Utils.showNotification('新密碼與確認密碼不符', 'error');
-        return;
-    }
-    
-    if (newPassword.length < 8) {
-        Utils.showNotification('新密碼至少需要 8 個字元', 'error');
-        return;
-    }
-    
     try {
-        // TODO: 發送密碼修改請求到後端 API
-        // const response = await fetch('/api/user/password', {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({
-        //         currentPassword,
-        //         newPassword
-        //     })
-        // });
+        const formData = new FormData(e.target);
+        const currentPassword = formData.get('currentPassword');
+        const newPassword = formData.get('newPassword');
+        const confirmPassword = formData.get('confirmPassword');
         
-        e.target.reset();
-        Utils.showNotification('密碼已成功修改', 'success');
+        // 驗證密碼
+        if (!currentPassword) {
+            Utils.showNotification('請輸入當前密碼', 'error');
+            return;
+        }
+        
+        if (!newPassword) {
+            Utils.showNotification('請輸入新密碼', 'error');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            Utils.showNotification('新密碼至少需要8個字元', 'error');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            Utils.showNotification('新密碼與確認密碼不符', 'error');
+            return;
+        }
+        
+        // 使用API服務更新密碼
+        const response = await apiService.updatePassword({
+            currentPassword,
+            newPassword
+        });
+        
+        if (response.success) {
+            Utils.showNotification('密碼更新成功！', 'success');
+            e.target.reset();
+        } else {
+            throw new Error(response.message || '密碼更新失敗');
+        }
+        
     } catch (error) {
-        Utils.showNotification('密碼修改失敗，請檢查目前密碼是否正確', 'error');
-        console.error('修改密碼錯誤:', error);
+        console.error('更新密碼錯誤:', error);
+        Utils.showNotification('密碼更新失敗，請稍後再試', 'error');
     }
 }
 
-// 儲存隱私設定
+// 處理隱私設定提交
+async function handlePrivacySubmit(e) {
+    e.preventDefault();
+    
+    try {
+        await savePrivacySettings();
+        Utils.showNotification('隱私設定更新成功！', 'success');
+    } catch (error) {
+        console.error('更新隱私設定錯誤:', error);
+        Utils.showNotification('隱私設定更新失敗，請稍後再試', 'error');
+    }
+}
+
+// 處理通知設定提交
+async function handleNotificationSubmit(e) {
+    e.preventDefault();
+    
+    try {
+        await saveNotificationSettings();
+        Utils.showNotification('通知設定更新成功！', 'success');
+    } catch (error) {
+        console.error('更新通知設定錯誤:', error);
+        Utils.showNotification('通知設定更新失敗，請稍後再試', 'error');
+    }
+}
+
+// 保存隱私設定
 async function savePrivacySettings() {
-    try {
-        // TODO: 發送隱私設定更新請求到後端 API
-        // const response = await fetch('/api/user/privacy', {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(userSettings.privacy)
-        // });
-        
-        Utils.showNotification('隱私設定已儲存', 'success');
-    } catch (error) {
-        Utils.showNotification('儲存失敗，請稍後再試', 'error');
-        console.error('儲存隱私設定錯誤:', error);
+    const privacyData = {
+        profileVisibility: userSettings.privacy.profileVisibility,
+        showProfile: userSettings.privacy.showProfile,
+        showStats: userSettings.privacy.showStats,
+        allowComments: userSettings.privacy.allowComments,
+        searchIndex: userSettings.privacy.searchIndex
+    };
+    
+    const response = await apiService.updateUserSettings('privacy', privacyData);
+    
+    if (!response.success) {
+        throw new Error(response.message || '隱私設定更新失敗');
     }
+    
+    return response;
 }
 
-// 儲存通知設定
+// 保存通知設定
 async function saveNotificationSettings() {
-    const frequency = document.getElementById('notificationFrequency').value;
-    userSettings.notifications.frequency = frequency;
+    const notificationData = {
+        emailNotifications: userSettings.notifications.emailNotifications,
+        portfolioInteractions: userSettings.notifications.portfolioInteractions,
+        enterpriseViews: userSettings.notifications.enterpriseViews,
+        systemUpdates: userSettings.notifications.systemUpdates,
+        marketingMessages: userSettings.notifications.marketingMessages,
+        frequency: userSettings.notifications.frequency
+    };
     
+    const response = await apiService.updateUserSettings('notifications', notificationData);
+    
+    if (!response.success) {
+        throw new Error(response.message || '通知設定更新失敗');
+    }
+    
+    return response;
+}
+
+// 保存設定
+async function saveSettings() {
     try {
-        // TODO: 發送通知設定更新請求到後端 API
-        // const response = await fetch('/api/user/notifications', {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(userSettings.notifications)
-        // });
+        const response = await apiService.updateUserSettings('all', userSettings);
         
-        Utils.showNotification('通知設定已儲存', 'success');
+        if (!response.success) {
+            throw new Error(response.message || '設定保存失敗');
+        }
+        
+        return response;
     } catch (error) {
-        Utils.showNotification('儲存失敗，請稍後再試', 'error');
-        console.error('儲存通知設定錯誤:', error);
+        console.error('保存設定錯誤:', error);
+        throw error;
     }
 }
 
 // 設定雙重認證
-function setupTwoFactorAuth() {
-    // TODO: 實作雙重認證設定流程
-    Utils.showNotification('雙重認證設定功能開發中', 'info');
+async function setupTwoFactorAuth() {
+    try {
+        Utils.showNotification('正在設定雙重認證...', 'info');
+        
+        const response = await apiService.setupTwoFactorAuth();
+        
+        if (response.success) {
+            Utils.showNotification('雙重認證設定成功！', 'success');
+            userSettings.security.twoFactorAuth = true;
+            updateToggleState('twoFactorAuth', true);
+        } else {
+            throw new Error(response.message || '雙重認證設定失敗');
+        }
+        
+    } catch (error) {
+        console.error('設定雙重認證錯誤:', error);
+        Utils.showNotification('雙重認證設定失敗，請稍後再試', 'error');
+    }
 }
 
 // 匯出資料
-function exportData() {
-    const exportData = {
-        user: userSettings,
-        exportDate: new Date().toISOString()
-    };
-    
-    const dataStr = JSON.stringify(exportData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(dataBlob);
-    link.download = `user_data_${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    
-    Utils.showNotification('資料已匯出', 'success');
+async function exportData() {
+    try {
+        Utils.showNotification('正在準備資料匯出...', 'info');
+        
+        const response = await apiService.exportUserData();
+        
+        if (response.success) {
+            // 建立下載連結
+            const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `user-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            Utils.showNotification('資料匯出成功！', 'success');
+        } else {
+            throw new Error(response.message || '資料匯出失敗');
+        }
+        
+    } catch (error) {
+        console.error('匯出資料錯誤:', error);
+        Utils.showNotification('資料匯出失敗，請稍後再試', 'error');
+    }
 }
 
 // 停用帳號
-function deactivateAccount() {
-    if (confirm('確定要停用您的帳號嗎？您可以隨時重新啟用。')) {
-        // TODO: 發送停用帳號請求到後端 API
-        // fetch('/api/user/deactivate', { method: 'POST' });
+async function deactivateAccount() {
+    if (!confirm('確定要停用帳號嗎？停用後您將無法登入，但資料會保留。')) {
+        return;
+    }
+    
+    try {
+        const response = await apiService.deactivateAccount();
         
-        Utils.showNotification('帳號已停用', 'success');
+        if (response.success) {
+            Utils.showNotification('帳號已停用', 'success');
+            setTimeout(() => {
+                window.location.href = '../login.html';
+            }, 2000);
+        } else {
+            throw new Error(response.message || '帳號停用失敗');
+        }
         
-        // 跳轉到登出頁面
-        setTimeout(() => {
-            window.location.href = '../login.html';
-        }, 2000);
+    } catch (error) {
+        console.error('停用帳號錯誤:', error);
+        Utils.showNotification('帳號停用失敗，請稍後再試', 'error');
     }
 }
 
 // 刪除帳號
-function deleteAccount() {
-    if (confirm('確定要永久刪除您的帳號嗎？此操作無法復原，所有資料將被永久刪除。')) {
-        const password = prompt('請輸入您的密碼以確認刪除：');
-        if (password) {
-            // TODO: 發送刪除帳號請求到後端 API
-            // fetch('/api/user/delete', {
-            //     method: 'DELETE',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ password })
-            // });
-            
+async function deleteAccount() {
+    if (!confirm('確定要刪除帳號嗎？此操作無法復原，所有資料將被永久刪除。')) {
+        return;
+    }
+    
+    const password = prompt('請輸入您的密碼以確認刪除：');
+    if (!password) {
+        return;
+    }
+    
+    try {
+        const response = await apiService.deleteAccount({ password });
+        
+        if (response.success) {
             Utils.showNotification('帳號已刪除', 'success');
-            
-            // 跳轉到首頁
             setTimeout(() => {
-                window.location.href = '../index.html';
+                window.location.href = '../login.html';
             }, 2000);
+        } else {
+            throw new Error(response.message || '帳號刪除失敗');
         }
+        
+    } catch (error) {
+        console.error('刪除帳號錯誤:', error);
+        Utils.showNotification('帳號刪除失敗，請稍後再試', 'error');
     }
 }
 
 // 重置表單
-function resetForm() {
-    if (confirm('確定要重置所有變更嗎？')) {
-        loadUserSettings();
-        Utils.showNotification('表單已重置', 'info');
+function resetForm(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        form.reset();
+        fillFormData();
     }
 }
 
@@ -357,8 +505,7 @@ function resetForm() {
 window.showSection = showSection;
 window.toggleSetting = toggleSetting;
 window.selectPrivacy = selectPrivacy;
-window.savePrivacySettings = savePrivacySettings;
-window.saveNotificationSettings = saveNotificationSettings;
+window.setupTwoFactorAuth = setupTwoFactorAuth;
 window.exportData = exportData;
 window.deactivateAccount = deactivateAccount;
 window.deleteAccount = deleteAccount;
