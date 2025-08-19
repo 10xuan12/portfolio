@@ -11,25 +11,7 @@
 <body>
     <!-- 導覽列 -->
     <div id="navbar-placeholder"></div>
-    <script>
-    // 動態載入共用 navbar
-    (function() {
-      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
-      var path = '../navbar.html';
-      fetch(path)
-        .then(res => res.text())
-        .then(html => {
-          var temp = document.createElement('div');
-          temp.innerHTML = html;
-          var tplId = 'navbar-visitor';
-          if (role === 'student') tplId = 'navbar-student';
-          else if (role === 'enterprise') tplId = 'navbar-enterprise';
-          else if (role === 'admin') tplId = 'navbar-admin';
-          var tpl = temp.querySelector('#' + tplId);
-          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
-        });
-    })();
-    </script>
+    <!-- 導覽列將由 app.js 動態載入 -->
 
     <!-- 儀表板標題 -->
     <section class="dashboard-header">
@@ -251,6 +233,13 @@
         console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
         console.log('環境:', getEnvironment());
         console.log('版本:', getVersion());
+        
+        // 頁面載入完成後觸發導覽列載入
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof UI !== 'undefined' && UI.loadNavbar) {
+                UI.loadNavbar();
+            }
+        });
         
         // TODO: 實作即時通知功能
         // 例如：WebSocket 連接來接收即時通知

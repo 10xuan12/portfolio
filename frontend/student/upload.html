@@ -100,12 +100,12 @@
                         <div class="upload-area" id="uploadArea">
                             <i class="fas fa-cloud-upload-alt"></i>
                             <h3>拖拽檔案到這裡或點擊上傳</h3>
-                            <p>支援 JPG, PNG, GIF, PDF, ZIP 等格式，單檔最大 10MB</p>
+                            <p>支援多種格式：圖片、影片、音頻、3D模型、文件、程式碼等</p>
                             <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
                                 <i class="fas fa-upload"></i>
                                 選擇檔案
                             </button>
-                            <input type="file" id="fileInput" multiple accept="image/*,.pdf,.zip,.rar" style="display: none;">
+                            <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.obj,.stl,.fbx,.glb,.gltf,.mp4,.avi,.mov,.wmv,.mp3,.wav,.flac,.aac" style="display: none;">
                         </div>
 
                         <div class="file-preview" id="filePreview">
@@ -117,7 +117,22 @@
                             <div class="option-card" data-type="image">
                                 <i class="fas fa-image"></i>
                                 <h4>圖片檔案</h4>
-                                <p>JPG, PNG, GIF</p>
+                                <p>JPG, PNG, GIF, SVG</p>
+                            </div>
+                            <div class="option-card" data-type="video">
+                                <i class="fas fa-video"></i>
+                                <h4>影片檔案</h4>
+                                <p>MP4, AVI, MOV, WMV</p>
+                            </div>
+                            <div class="option-card" data-type="audio">
+                                <i class="fas fa-music"></i>
+                                <h4>音頻檔案</h4>
+                                <p>MP3, WAV, FLAC, AAC</p>
+                            </div>
+                            <div class="option-card" data-type="3d">
+                                <i class="fas fa-cube"></i>
+                                <h4>3D模型</h4>
+                                <p>OBJ, STL, FBX, GLB</p>
                             </div>
                             <div class="option-card" data-type="document">
                                 <i class="fas fa-file-pdf"></i>
@@ -129,10 +144,38 @@
                                 <h4>壓縮檔案</h4>
                                 <p>ZIP, RAR</p>
                             </div>
+                            <div class="option-card" data-type="github">
+                                <i class="fab fa-github"></i>
+                                <h4>GitHub 連結</h4>
+                                <p>程式碼庫、專案連結</p>
+                            </div>
                             <div class="option-card" data-type="link">
                                 <i class="fas fa-link"></i>
                                 <h4>外部連結</h4>
-                                <p>網站、影片連結</p>
+                                <p>網站、線上作品</p>
+                            </div>
+                        </div>
+
+                        <!-- GitHub 整合 -->
+                        <div class="github-integration" id="githubIntegration" style="display: none;">
+                            <h4>GitHub 專案整合</h4>
+                            <div class="github-form">
+                                <div class="form-group">
+                                    <label for="githubUrl">GitHub 專案 URL</label>
+                                    <input type="url" id="githubUrl" name="githubUrl" placeholder="https://github.com/username/repository">
+                                </div>
+                                <div class="form-group">
+                                    <label for="githubBranch">分支 (可選)</label>
+                                    <input type="text" id="githubBranch" name="githubBranch" placeholder="main" value="main">
+                                </div>
+                                <div class="form-group">
+                                    <label for="githubDescription">專案描述</label>
+                                    <textarea id="githubDescription" name="githubDescription" rows="3" placeholder="請描述這個GitHub專案的主要功能和技術特色..."></textarea>
+                                </div>
+                                <button type="button" class="btn btn-outline" onclick="fetchGithubInfo()">
+                                    <i class="fab fa-github"></i>
+                                    獲取專案資訊
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -181,6 +224,220 @@
     <div id="footer-placeholder"></div>
 
     <script src="../js/app.js"></script>
-    <script src="upload.js"></script>
+    <script>
+        // 上傳步驟控制
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function showStep(step) {
+            // 隱藏所有步驟內容
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step${i}Content`).style.display = 'none';
+                document.getElementById(`step${i}`).classList.remove('active');
+            }
+            
+            // 顯示當前步驟
+            document.getElementById(`step${step}Content`).style.display = 'block';
+            document.getElementById(`step${step}`).classList.add('active');
+            currentStep = step;
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                showStep(currentStep + 1);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        // 檔案上傳處理
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const previewList = document.getElementById('previewList');
+            previewList.innerHTML = '';
+            
+            Array.from(files).forEach((file, index) => {
+                const previewItem = createFilePreview(file, index);
+                previewList.appendChild(previewItem);
+            });
+        }
+
+        function createFilePreview(file, index) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            
+            const fileType = getFileType(file);
+            const icon = getFileIcon(fileType);
+            
+            previewItem.innerHTML = `
+                <div class="preview-icon">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="preview-info">
+                    <div class="preview-name">${file.name}</div>
+                    <div class="preview-size">${formatFileSize(file.size)}</div>
+                    <div class="preview-type">${fileType}</div>
+                </div>
+                <div class="preview-actions">
+                    <button type="button" class="btn-remove" onclick="removeFile(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            return previewItem;
+        }
+
+        function getFileType(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            const videoTypes = ['mp4', 'avi', 'mov', 'wmv', 'webm'];
+            const audioTypes = ['mp3', 'wav', 'flac', 'aac', 'ogg'];
+            const model3dTypes = ['obj', 'stl', 'fbx', 'glb', 'gltf'];
+            const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+            
+            if (videoTypes.includes(extension)) return '影片';
+            if (audioTypes.includes(extension)) return '音頻';
+            if (model3dTypes.includes(extension)) return '3D模型';
+            if (imageTypes.includes(extension)) return '圖片';
+            if (extension === 'pdf') return 'PDF文件';
+            if (['zip', 'rar', '7z'].includes(extension)) return '壓縮檔';
+            return '文件';
+        }
+
+        function getFileIcon(fileType) {
+            const iconMap = {
+                '影片': 'fas fa-video',
+                '音頻': 'fas fa-music',
+                '3D模型': 'fas fa-cube',
+                '圖片': 'fas fa-image',
+                'PDF文件': 'fas fa-file-pdf',
+                '壓縮檔': 'fas fa-file-archive',
+                '文件': 'fas fa-file'
+            };
+            return iconMap[fileType] || 'fas fa-file';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function removeFile(index) {
+            const dt = new DataTransfer();
+            const input = document.getElementById('fileInput');
+            const { files } = input;
+            
+            for (let i = 0; i < files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(files[i]);
+                }
+            }
+            
+            input.files = dt.files;
+            handleFileSelect({ target: { files: input.files } });
+        }
+
+        // GitHub 整合功能
+        function showGithubIntegration() {
+            document.getElementById('githubIntegration').style.display = 'block';
+        }
+
+        function hideGithubIntegration() {
+            document.getElementById('githubIntegration').style.display = 'none';
+        }
+
+        async function fetchGithubInfo() {
+            const url = document.getElementById('githubUrl').value;
+            const branch = document.getElementById('githubBranch').value;
+            
+            if (!url) {
+                alert('請輸入GitHub專案URL');
+                return;
+            }
+            
+            try {
+                // 這裡應該調用GitHub API，目前使用模擬資料
+                const repoInfo = await mockGithubAPI(url, branch);
+                displayGithubInfo(repoInfo);
+            } catch (error) {
+                console.error('GitHub API 錯誤:', error);
+                alert('無法獲取GitHub專案資訊，請檢查URL是否正確');
+            }
+        }
+
+        async function mockGithubAPI(url, branch) {
+            // 模擬GitHub API回應
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const repoName = url.split('/').pop();
+            const username = url.split('/')[3];
+            
+            return {
+                name: repoName,
+                full_name: `${username}/${repoName}`,
+                description: '這是一個示例GitHub專案描述',
+                language: 'JavaScript',
+                stars: Math.floor(Math.random() * 1000),
+                forks: Math.floor(Math.random() * 100),
+                branch: branch,
+                last_commit: new Date().toISOString(),
+                readme: '# 專案說明\n\n這是一個示例專案的README檔案。'
+            };
+        }
+
+        function displayGithubInfo(repoInfo) {
+            const description = document.getElementById('githubDescription');
+            description.value = `專案名稱: ${repoInfo.name}\n語言: ${repoInfo.language}\n星數: ${repoInfo.stars}\n分支: ${repoInfo.branch}\n\n${repoInfo.description}`;
+        }
+
+        // 上傳選項卡片點擊事件
+        document.querySelectorAll('.option-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const type = this.dataset.type;
+                
+                if (type === 'github') {
+                    showGithubIntegration();
+                } else {
+                    hideGithubIntegration();
+                }
+                
+                // 高亮選中的卡片
+                document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // 表單提交處理
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 這裡應該處理表單提交邏輯
+            console.log('表單提交:', {
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value,
+                tags: document.getElementById('tags').value,
+                status: document.getElementById('status').value,
+                files: document.getElementById('fileInput').files,
+                githubUrl: document.getElementById('githubUrl').value
+            });
+            
+            alert('作品上傳成功！');
+        });
+
+        // 初始化頁面
+        document.addEventListener('DOMContentLoaded', function() {
+            showStep(1);
+        });
+    </script>
 </body>
 </html> 

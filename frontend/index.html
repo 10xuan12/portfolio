@@ -29,6 +29,7 @@
             <div class="navbar-actions">
                 <a href="login.html" class="btn btn-outline">登入</a>
                 <a href="register.html" class="btn btn-primary">註冊</a>
+                <button id="test-navbar" class="btn btn-outline" style="margin-left: 10px;">測試導覽列</button>
             </div>
         </div>
     </nav>
@@ -367,5 +368,54 @@
     </footer>
 
     <script src="js/app.js"></script>
+    <script>
+        // 測試導覽列功能
+        document.getElementById('test-navbar').addEventListener('click', function() {
+            console.log('=== 測試導覽列功能 ===');
+            
+            // 檢查當前 localStorage 狀態
+            const user = localStorage.getItem('user');
+            const authToken = localStorage.getItem('auth_token');
+            
+            console.log('當前使用者:', user ? JSON.parse(user) : '未登入');
+            console.log('認證令牌:', authToken || '無');
+            
+            // 測試不同身分的導覽列
+            const testRoles = ['student', 'enterprise', 'admin'];
+            
+            testRoles.forEach(role => {
+                console.log(`\n--- 測試 ${role} 身分 ---`);
+                
+                // 設定測試身分
+                const testUser = {
+                    id: 1,
+                    email: `test@${role}.com`,
+                    role: role,
+                    name: role === 'student' ? '測試學生' : 
+                          role === 'enterprise' ? '測試企業' : '測試管理員'
+                };
+                
+                localStorage.setItem('user', JSON.stringify(testUser));
+                localStorage.setItem('auth_token', 'test_token_' + role);
+                
+                console.log(`已設定 ${role} 身分:`, testUser);
+                
+                // 模擬導覽列載入
+                if (typeof UI !== 'undefined' && UI.loadNavbar) {
+                    console.log('正在載入導覽列...');
+                    // 注意：這裡只是測試，實際載入需要 navbar-placeholder 元素
+                } else {
+                    console.log('UI.loadNavbar 函數未找到');
+                }
+            });
+            
+            // 恢復訪客狀態
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            console.log('\n已恢復訪客狀態');
+            
+            alert('測試完成！請查看瀏覽器控制台的詳細資訊。');
+        });
+    </script>
 </body>
 </html> 

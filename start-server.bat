@@ -1,26 +1,26 @@
 @echo off
-echo 正在啟動 Portfolio+ 前端伺服器...
+echo Starting Portfolio+ Frontend Server...
 echo.
-echo 請選擇要使用的伺服器：
-echo 1. Python HTTP 伺服器 (推薦)
-echo 2. Node.js HTTP 伺服器
-echo 3. PHP 內建伺服器
+echo Please select a server to use:
+echo 1. Python HTTP Server (Recommended)
+echo 2. Node.js HTTP Server
+echo 3. PHP Built-in Server
 echo.
-set /p choice="請輸入選擇 (1-3): "
+set /p choice="Enter your choice (1-3): "
 
 cd frontend
 
 if "%choice%"=="1" (
-    echo 啟動 Python HTTP 伺服器...
+    echo Starting Python HTTP Server...
     python -m http.server 8000
 ) else if "%choice%"=="2" (
-    echo 啟動 Node.js HTTP 伺服器...
+    echo Starting Node.js HTTP Server...
     npx http-server -p 8000 --cors
 ) else if "%choice%"=="3" (
-    echo 啟動 PHP 內建伺服器...
+    echo Starting PHP Built-in Server...
     php -S localhost:8000
 ) else (
-    echo 無效選擇，使用預設 Python 伺服器...
+    echo Invalid choice, using default Python server...
     python -m http.server 8000
 )
 

@@ -441,8 +441,20 @@
             //     })
             // })
 
-            // 模擬登入成功
-            alert(`登入成功！歡迎 ${selectedRole} 使用者`);
+            // 模擬登入成功，設定 localStorage
+            const mockUser = {
+                id: 1,
+                email: email,
+                role: selectedRole,
+                name: selectedRole === 'student' ? '張小明' : 
+                      selectedRole === 'enterprise' ? '科技公司A' : '管理員'
+            };
+            
+            // 設定 localStorage
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            localStorage.setItem('auth_token', 'mock_token_' + Date.now());
+            
+            console.log('已設定使用者身分:', mockUser);
             
             // 根據角色導向不同的儀表板
             switch(selectedRole) {

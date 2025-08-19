@@ -78,6 +78,26 @@
                                 <i class="fas fa-download"></i>
                                 <span>12 次下載</span>
                             </div>
+                            <div class="stat-item">
+                                <i class="fas fa-bookmark"></i>
+                                <span id="bookmarkCount">5 次收藏</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 收藏按鈕 -->
+                        <div class="portfolio-actions">
+                            <button class="btn btn-outline" id="bookmarkBtn" onclick="toggleBookmark()">
+                                <i class="fas fa-bookmark" id="bookmarkIcon"></i>
+                                <span id="bookmarkText">收藏作品</span>
+                            </button>
+                            <button class="btn btn-primary" onclick="contactAuthor()">
+                                <i class="fas fa-envelope"></i>
+                                聯絡作者
+                            </button>
+                            <button class="btn btn-secondary" onclick="sharePortfolio()">
+                                <i class="fas fa-share"></i>
+                                分享
+                            </button>
                         </div>
                         
                         <div class="portfolio-description">
@@ -99,9 +119,8 @@
                             <span class="tag">HTML5</span>
                             <span class="tag">CSS3</span>
                             <span class="tag">JavaScript</span>
-                            <span class="tag">響應式</span>
-                            <span class="tag">Bootstrap</span>
-                            <span class="tag">jQuery</span>
+                            <span class="tag">響應式設計</span>
+                            <span class="tag">現代化UI</span>
                         </div>
                         
                         <div class="portfolio-actions">
@@ -169,162 +188,94 @@
                     </div>
                 </div>
                 
+                <!-- 側邊欄 -->
                 <div class="sidebar">
-                    <div class="sidebar-card">
-                        <h3>作者資訊</h3>
+                    <div class="author-card">
+                        <div class="author-avatar">
+                            <img src="https://via.placeholder.com/80x80/667eea/ffffff?text=張" alt="作者頭像">
+                        </div>
                         <div class="author-info">
-                            <div class="author-avatar">
-                                張
-                            </div>
-                            <div class="author-details">
-                                <h4>張小明</h4>
-                                <p>資訊管理學系 • 大學三年級</p>
-                            </div>
-                        </div>
-                        
-                        <ul class="contact-info">
-                            <li>
-                                <i class="fas fa-envelope"></i>
-                                <span>zhang@example.com</span>
-                            </li>
-                            <li>
-                                <i class="fab fa-github"></i>
-                                <span>github.com/zhangxiaoming</span>
-                            </li>
-                            <li>
-                                <i class="fab fa-linkedin"></i>
-                                <span>linkedin.com/in/zhangxiaoming</span>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <div class="sidebar-card">
-                        <h3>相關作品</h3>
-                        <div class="related-works">
-                            <!-- TODO: 載入相關作品 -->
-                            <div class="related-item" style="padding: var(--spacing-md); border-bottom: 1px solid var(--gray-200);">
-                                <h4 style="font-size: var(--text-sm); margin-bottom: var(--spacing-xs);">行動應用程式</h4>
-                                <p style="font-size: var(--text-xs); color: var(--gray-600);">使用 React Native 開發的跨平台應用</p>
-                            </div>
-                            <div class="related-item" style="padding: var(--spacing-md);">
-                                <h4 style="font-size: var(--text-sm); margin-bottom: var(--spacing-xs);">UI/UX 設計作品</h4>
-                                <p style="font-size: var(--text-xs); color: var(--gray-600);">使用 Figma 設計的現代化介面</p>
+                            <h4>張小明</h4>
+                            <p>資訊管理學系 • 大學三年級</p>
+                            <div class="author-stats">
+                                <span><i class="fas fa-folder"></i> 12 作品</span>
+                                <span><i class="fas fa-eye"></i> 1.2k 瀏覽</span>
                             </div>
                         </div>
+                        <button class="btn btn-outline btn-sm" onclick="viewAuthorProfile()">
+                            查看個人資料
+                        </button>
                     </div>
                     
-                    <div class="sidebar-card">
-                        <h3>分享作品</h3>
-                        <div class="share-section">
-                            <div class="share-title">分享給朋友</div>
-                            <div class="share-buttons">
-                                <a href="#" class="share-btn share-facebook" onclick="shareToFacebook()">
-                                    <i class="fab fa-facebook-f"></i>
-                                </a>
-                                <a href="#" class="share-btn share-twitter" onclick="shareToTwitter()">
-                                    <i class="fab fa-twitter"></i>
-                                </a>
-                                <a href="#" class="share-btn share-linkedin" onclick="shareToLinkedIn()">
-                                    <i class="fab fa-linkedin-in"></i>
-                                </a>
-                                <button class="share-btn share-copy" onclick="copyLink()">
-                                    <i class="fas fa-link"></i>
-                                </button>
+                    <div class="related-portfolios">
+                        <h4>相關作品</h4>
+                        <div class="related-list">
+                            <div class="related-item">
+                                <img src="https://via.placeholder.com/60x60/667eea/ffffff?text=作品1" alt="相關作品">
+                                <div class="related-info">
+                                    <h5>行動應用設計</h5>
+                                    <p>UI/UX 設計</p>
+                                </div>
+                            </div>
+                            <div class="related-item">
+                                <img src="https://via.placeholder.com/60x60/764ba2/ffffff?text=作品2" alt="相關作品">
+                                <div class="related-info">
+                                    <h5>數據視覺化</h5>
+                                    <p>數據分析</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- 評論區 -->
+    <section class="comments-section">
+        <div class="container">
+            <div class="comments-header">
+                <h3>評論與回饋</h3>
+                <span class="comments-count">8 則評論</span>
+            </div>
             
-            <!-- 評論區 -->
-            <div class="comments-section">
-                <div class="comments-header">
-                    <h2 class="comments-title">評論 (8)</h2>
-                </div>
-                
+            <!-- 發表評論 -->
+            <div class="comment-form-container">
                 <div class="comment-form">
-                    <textarea class="comment-input" placeholder="寫下您的評論..." id="commentInput"></textarea>
-                    <div class="comment-actions">
-                        <button class="btn btn-primary" onclick="submitComment()">
-                            <i class="fas fa-paper-plane"></i>
-                            發表評論
-                        </button>
+                    <div class="comment-avatar">
+                        <img src="https://via.placeholder.com/50x50/667eea/ffffff?text=我" alt="我的頭像" id="myAvatar">
+                    </div>
+                    <div class="comment-input-group">
+                        <textarea id="commentInput" placeholder="分享您的想法和回饋..." rows="3"></textarea>
+                        <div class="comment-actions">
+                            <div class="comment-options">
+                                <button type="button" class="btn-option" onclick="toggleEmojiPicker()">
+                                    <i class="fas fa-smile"></i>
+                                </button>
+                                <button type="button" class="btn-option" onclick="toggleImageUpload()">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="submitComment()">
+                                <i class="fas fa-paper-plane"></i>
+                                發表評論
+                            </button>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="comments-list" id="commentsList">
-                    <!-- TODO: 從資料庫載入評論 -->
-                    <!-- 假資料開始 -->
-                    <div class="comment-item">
-                        <div class="comment-avatar">
-                            李
-                        </div>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="comment-author">李大明</span>
-                                <span class="comment-time">2 小時前</span>
-                            </div>
-                            <div class="comment-text">
-                                設計很漂亮！響應式做得很好，在不同裝置上都能正常顯示。期待看到更多作品！
-                            </div>
-                            <div class="comment-actions">
-                                <button class="comment-action" onclick="likeComment(1)">
-                                    <i class="fas fa-thumbs-up"></i> 讚 (3)
-                                </button>
-                                <button class="comment-action" onclick="replyComment(1)">
-                                    <i class="fas fa-reply"></i> 回覆
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="comment-item">
-                        <div class="comment-avatar">
-                            王
-                        </div>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="comment-author">王小美</span>
-                                <span class="comment-time">1 天前</span>
-                            </div>
-                            <div class="comment-text">
-                                程式碼結構很清晰，註解也很詳細。對於初學者來說是很好的學習範例。
-                            </div>
-                            <div class="comment-actions">
-                                <button class="comment-action" onclick="likeComment(2)">
-                                    <i class="fas fa-thumbs-up"></i> 讚 (1)
-                                </button>
-                                <button class="comment-action" onclick="replyComment(2)">
-                                    <i class="fas fa-reply"></i> 回覆
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="comment-item">
-                        <div class="comment-avatar">
-                            陳
-                        </div>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="comment-author">陳小華</span>
-                                <span class="comment-time">3 天前</span>
-                            </div>
-                            <div class="comment-text">
-                                整體設計感很棒，配色也很協調。建議可以加入一些動畫效果來提升使用者體驗。
-                            </div>
-                            <div class="comment-actions">
-                                <button class="comment-action" onclick="likeComment(3)">
-                                    <i class="fas fa-thumbs-up"></i> 讚 (5)
-                                </button>
-                                <button class="comment-action" onclick="replyComment(3)">
-                                    <i class="fas fa-reply"></i> 回覆
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- 假資料結束 -->
-                </div>
+            </div>
+            
+            <!-- 評論列表 -->
+            <div class="comments-list" id="commentsList">
+                <!-- 評論項目將由JavaScript動態生成 -->
+            </div>
+            
+            <!-- 載入更多評論 -->
+            <div class="load-more-comments">
+                <button class="btn btn-outline" onclick="loadMoreComments()">
+                    <i class="fas fa-chevron-down"></i>
+                    載入更多評論
+                </button>
             </div>
         </div>
     </section>
@@ -333,6 +284,331 @@
     <div id="footer-placeholder"></div>
 
     <script src="../js/app.js"></script>
-    <script src="../js/student/portfolio-detail.js"></script>
+    <script>
+        // 作品詳情頁面功能
+        let isBookmarked = false;
+        let comments = [];
+        let currentUser = null;
+
+        // 初始化頁面
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentUser();
+            loadComments();
+            checkBookmarkStatus();
+        });
+
+        // 載入當前用戶資訊
+        function loadCurrentUser() {
+            // 從localStorage獲取用戶資訊
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                currentUser = JSON.parse(userStr);
+                updateUserAvatar();
+            }
+        }
+
+        // 更新用戶頭像
+        function updateUserAvatar() {
+            if (currentUser && currentUser.avatar) {
+                document.getElementById('myAvatar').src = currentUser.avatar;
+            }
+        }
+
+        // 收藏功能
+        function toggleBookmark() {
+            isBookmarked = !isBookmarked;
+            updateBookmarkUI();
+            
+            if (isBookmarked) {
+                addBookmark();
+            } else {
+                removeBookmark();
+            }
+        }
+
+        // 更新收藏UI
+        function updateBookmarkUI() {
+            const bookmarkBtn = document.getElementById('bookmarkBtn');
+            const bookmarkIcon = document.getElementById('bookmarkIcon');
+            const bookmarkText = document.getElementById('bookmarkText');
+            
+            if (isBookmarked) {
+                bookmarkBtn.classList.remove('btn-outline');
+                bookmarkBtn.classList.add('btn-primary');
+                bookmarkIcon.classList.remove('far');
+                bookmarkIcon.classList.add('fas');
+                bookmarkText.textContent = '已收藏';
+            } else {
+                bookmarkBtn.classList.remove('btn-primary');
+                bookmarkBtn.classList.add('btn-outline');
+                bookmarkIcon.classList.remove('fas');
+                bookmarkIcon.classList.add('far');
+                bookmarkText.textContent = '收藏作品';
+            }
+        }
+
+        // 添加收藏
+        function addBookmark() {
+            // 這裡應該調用API添加收藏
+            console.log('添加收藏');
+            updateBookmarkCount(1);
+            showNotification('作品已加入收藏', 'success');
+        }
+
+        // 移除收藏
+        function removeBookmark() {
+            // 這裡應該調用API移除收藏
+            console.log('移除收藏');
+            updateBookmarkCount(-1);
+            showNotification('已從收藏中移除', 'info');
+        }
+
+        // 更新收藏數量
+        function updateBookmarkCount(change) {
+            const bookmarkCount = document.getElementById('bookmarkCount');
+            const currentCount = parseInt(bookmarkCount.textContent);
+            const newCount = Math.max(0, currentCount + change);
+            bookmarkCount.textContent = `${newCount} 次收藏`;
+        }
+
+        // 檢查收藏狀態
+        function checkBookmarkStatus() {
+            // 這裡應該調用API檢查收藏狀態
+            // 目前使用模擬資料
+            isBookmarked = Math.random() > 0.5;
+            updateBookmarkUI();
+        }
+
+        // 聯絡作者
+        function contactAuthor() {
+            if (!currentUser) {
+                showNotification('請先登入', 'warning');
+                return;
+            }
+            
+            // 這裡應該跳轉到訊息頁面或開啟對話框
+            showNotification('正在開啟對話...', 'info');
+        }
+
+        // 分享作品
+        function sharePortfolio() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '響應式網站設計',
+                    text: '看看這個優秀的作品集！',
+                    url: window.location.href
+                });
+            } else {
+                // 複製連結到剪貼簿
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    showNotification('連結已複製到剪貼簿', 'success');
+                });
+            }
+        }
+
+        // 查看作者資料
+        function viewAuthorProfile() {
+            // 跳轉到作者個人資料頁面
+            window.location.href = 'profile.html?user=1';
+        }
+
+        // 評論系統
+        function loadComments() {
+            // 模擬載入評論資料
+            comments = [
+                {
+                    id: 1,
+                    author: '李大明',
+                    avatar: 'https://via.placeholder.com/40x40/667eea/ffffff?text=李',
+                    content: '設計很漂亮！響應式做得很好，在不同裝置上都能正常顯示。期待看到更多作品！',
+                    time: '2 小時前',
+                    likes: 3,
+                    isLiked: false
+                },
+                {
+                    id: 2,
+                    author: '王小美',
+                    avatar: 'https://via.placeholder.com/40x40/764ba2/ffffff?text=王',
+                    content: '程式碼結構很清晰，註解也很詳細。對於初學者來說是很好的學習範例。',
+                    time: '1 天前',
+                    likes: 1,
+                    isLiked: false
+                },
+                {
+                    id: 3,
+                    author: '陳小華',
+                    avatar: 'https://via.placeholder.com/40x40/667eea/ffffff?text=陳',
+                    content: '整體設計感很棒，配色也很協調。建議可以加入一些動畫效果來提升使用者體驗。',
+                    time: '3 天前',
+                    likes: 5,
+                    isLiked: false
+                }
+            ];
+            
+            renderComments();
+        }
+
+        // 渲染評論列表
+        function renderComments() {
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = '';
+            
+            comments.forEach(comment => {
+                const commentElement = createCommentElement(comment);
+                commentsList.appendChild(commentElement);
+            });
+        }
+
+        // 創建評論元素
+        function createCommentElement(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment-item';
+            commentDiv.innerHTML = `
+                <div class="comment-avatar">
+                    <img src="${comment.avatar}" alt="${comment.author}">
+                </div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-time">${comment.time}</span>
+                    </div>
+                    <div class="comment-text">${comment.content}</div>
+                    <div class="comment-actions">
+                        <button class="comment-action" onclick="likeComment(${comment.id})">
+                            <i class="fas fa-thumbs-up ${comment.isLiked ? 'liked' : ''}"></i>
+                            <span>讚 (${comment.likes})</span>
+                        </button>
+                        <button class="comment-action" onclick="replyComment(${comment.id})">
+                            <i class="fas fa-reply"></i>
+                            <span>回覆</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return commentDiv;
+        }
+
+        // 點讚評論
+        function likeComment(commentId) {
+            const comment = comments.find(c => c.id === commentId);
+            if (comment) {
+                comment.isLiked = !comment.isLiked;
+                comment.likes += comment.isLiked ? 1 : -1;
+                renderComments();
+            }
+        }
+
+        // 回覆評論
+        function replyComment(commentId) {
+            if (!currentUser) {
+                showNotification('請先登入', 'warning');
+                return;
+            }
+            
+            const commentInput = document.getElementById('commentInput');
+            commentInput.value = `@回覆評論${commentId} `;
+            commentInput.focus();
+        }
+
+        // 提交評論
+        function submitComment() {
+            const commentInput = document.getElementById('commentInput');
+            const content = commentInput.value.trim();
+            
+            if (!content) {
+                showNotification('請輸入評論內容', 'warning');
+                return;
+            }
+            
+            if (!currentUser) {
+                showNotification('請先登入', 'warning');
+                return;
+            }
+            
+            // 創建新評論
+            const newComment = {
+                id: Date.now(),
+                author: currentUser.name || '匿名用戶',
+                avatar: currentUser.avatar || 'https://via.placeholder.com/40x40/667eea/ffffff?text=用',
+                content: content,
+                time: '剛剛',
+                likes: 0,
+                isLiked: false
+            };
+            
+            // 添加到評論列表
+            comments.unshift(newComment);
+            renderComments();
+            
+            // 清空輸入框
+            commentInput.value = '';
+            
+            // 更新評論數量
+            updateCommentCount(1);
+            
+            showNotification('評論發表成功', 'success');
+        }
+
+        // 更新評論數量
+        function updateCommentCount(change) {
+            const commentsCount = document.querySelector('.comments-count');
+            const currentCount = parseInt(commentsCount.textContent);
+            const newCount = Math.max(0, currentCount + change);
+            commentsCount.textContent = `${newCount} 則評論`;
+        }
+
+        // 載入更多評論
+        function loadMoreComments() {
+            // 這裡應該調用API載入更多評論
+            showNotification('正在載入更多評論...', 'info');
+        }
+
+        // 表情選擇器
+        function toggleEmojiPicker() {
+            // 實現表情選擇器功能
+            showNotification('表情選擇器功能開發中', 'info');
+        }
+
+        // 圖片上傳
+        function toggleImageUpload() {
+            // 實現圖片上傳功能
+            showNotification('圖片上傳功能開發中', 'info');
+        }
+
+        // 通知系統
+        function showNotification(message, type = 'info') {
+            // 創建通知元素
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${getNotificationIcon(type)}"></i>
+                <span>${message}</span>
+            `;
+            
+            // 添加到頁面
+            document.body.appendChild(notification);
+            
+            // 顯示動畫
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // 自動隱藏
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // 獲取通知圖標
+        function getNotificationIcon(type) {
+            const iconMap = {
+                'success': 'check-circle',
+                'error': 'exclamation-circle',
+                'warning': 'exclamation-triangle',
+                'info': 'info-circle'
+            };
+            return iconMap[type] || 'info-circle';
+        }
+    </script>
 </body>
 </html> 

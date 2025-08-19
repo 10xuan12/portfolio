@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訊息中心 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/student/messages.css">
+</head>
+<body>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(res => res.text())
+        .then(html => {
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        });
+    })();
+    </script>
+
+    <!-- 訊息中心標題 -->
+    <section class="messages-header">
+        <div class="container">
+            <div class="header-content">
+                <h1>訊息中心</h1>
+                <p>與企業和創作者保持聯繫，建立專業人脈</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主要內容 -->
+    <section class="messages-container">
+        <div class="container">
+            <div class="messages-content">
+                <!-- 側邊欄 - 對話列表 -->
+                <div class="conversations-sidebar">
+                    <div class="sidebar-header">
+                        <h3>對話列表</h3>
+                        <button class="btn btn-primary btn-sm" onclick="startNewConversation()">
+                            <i class="fas fa-plus"></i>
+                            新對話
+                        </button>
+                    </div>
+                    
+                    <div class="search-conversations">
+                        <div class="search-input">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="搜尋對話..." id="searchConversations">
+                        </div>
+                    </div>
+                    
+                    <div class="conversations-list" id="conversationsList">
+                        <!-- 對話項目將由JavaScript動態生成 -->
+                    </div>
+                </div>
+                
+                <!-- 主要區域 - 對話內容 -->
+                <div class="chat-main">
+                    <!-- 對話標題 -->
+                    <div class="chat-header" id="chatHeader">
+                        <div class="chat-info">
+                            <div class="chat-avatar">
+                                <img src="https://via.placeholder.com/50x50/667eea/ffffff?text=企" alt="企業頭像" id="currentChatAvatar">
+                            </div>
+                            <div class="chat-details">
+                                <h4 id="currentChatName">選擇對話開始聊天</h4>
+                                <span id="currentChatStatus">離線</span>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="btn-option" onclick="toggleChatOptions()">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 對話內容 -->
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="welcome-message">
+                            <i class="fas fa-comments"></i>
+                            <h3>歡迎來到訊息中心</h3>
+                            <p>從左側選擇一個對話開始聊天，或開始新的對話</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 訊息輸入 -->
+                    <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+                        <div class="chat-input">
+                            <div class="input-actions">
+                                <button class="btn-option" onclick="toggleEmojiPicker()">
+                                    <i class="fas fa-smile"></i>
+                                </button>
+                                <button class="btn-option" onclick="toggleFileUpload()">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                            </div>
+                            <div class="input-field">
+                                <textarea id="messageInput" placeholder="輸入訊息..." rows="1"></textarea>
+                                <button class="btn btn-primary" onclick="sendMessage()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 新對話模態框 -->
+    <div class="modal" id="newConversationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>開始新對話</h3>
+                <button class="modal-close" onclick="closeModal('newConversationModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="search-users">
+                    <div class="search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜尋用戶或企業..." id="searchUsers">
+                    </div>
+                </div>
+                <div class="users-list" id="usersList">
+                    <!-- 用戶列表將由JavaScript動態生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 聊天選項模態框 -->
+    <div class="modal" id="chatOptionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>聊天選項</h3>
+                <button class="modal-close" onclick="closeModal('chatOptionsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-options-list">
+                    <button class="option-item" onclick="viewProfile()">
+                        <i class="fas fa-user"></i>
+                        查看個人資料
+                    </button>
+                    <button class="option-item" onclick="viewPortfolio()">
+                        <i class="fas fa-briefcase"></i>
+                        查看作品集
+                    </button>
+                    <button class="option-item" onclick="blockUser()">
+                        <i class="fas fa-ban"></i>
+                        封鎖用戶
+                    </button>
+                    <button class="option-item" onclick="reportUser()">
+                        <i class="fas fa-flag"></i>
+                        舉報用戶
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/app.js"></script>
+    <script>
+        // 訊息中心功能
+        let currentConversation = null;
+        let conversations = [];
+        let currentUser = null;
+
+        // 初始化頁面
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentUser();
+            loadConversations();
+            setupEventListeners();
+        });
+
+        // 載入當前用戶
+        function loadCurrentUser() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                currentUser = JSON.parse(userStr);
+            }
+        }
+
+        // 載入對話列表
+        function loadConversations() {
+            // 模擬對話資料
+            conversations = [
+                {
+                    id: 1,
+                    name: '科技公司A',
+                    avatar: 'https://via.placeholder.com/50x50/667eea/ffffff?text=科',
+                    lastMessage: '您好！我們對您的作品很感興趣...',
+                    lastTime: '2 小時前',
+                    unreadCount: 2,
+                    isOnline: true,
+                    type: 'enterprise'
+                },
+                {
+                    id: 2,
+                    name: '設計工作室B',
+                    avatar: 'https://via.placeholder.com/50x50/764ba2/ffffff?text=設',
+                    lastMessage: '請問您有接案嗎？',
+                    lastTime: '1 天前',
+                    unreadCount: 0,
+                    isOnline: false,
+                    type: 'enterprise'
+                },
+                {
+                    id: 3,
+                    name: '李大明',
+                    avatar: 'https://via.placeholder.com/50x50/667eea/ffffff?text=李',
+                    lastMessage: '你的設計很棒！',
+                    lastTime: '3 天前',
+                    unreadCount: 0,
+                    isOnline: true,
+                    type: 'student'
+                }
+            ];
+            
+            renderConversations();
+        }
+
+        // 渲染對話列表
+        function renderConversations() {
+            const conversationsList = document.getElementById('conversationsList');
+            conversationsList.innerHTML = '';
+            
+            conversations.forEach(conversation => {
+                const conversationElement = createConversationElement(conversation);
+                conversationsList.appendChild(conversationElement);
+            });
+        }
+
+        // 創建對話元素
+        function createConversationElement(conversation) {
+            const div = document.createElement('div');
+            div.className = 'conversation-item';
+            div.onclick = () => selectConversation(conversation);
+            div.innerHTML = `
+                <div class="conversation-avatar">
+                    <img src="${conversation.avatar}" alt="${conversation.name}">
+                    <div class="status-indicator ${conversation.isOnline ? 'online' : 'offline'}"></div>
+                </div>
+                <div class="conversation-info">
+                    <div class="conversation-header">
+                        <h5>${conversation.name}</h5>
+                        <span class="conversation-time">${conversation.lastTime}</span>
+                    </div>
+                    <div class="conversation-preview">
+                        <p>${conversation.lastMessage}</p>
+                        ${conversation.unreadCount > 0 ? `<span class="unread-badge">${conversation.unreadCount}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // 選擇對話
+        function selectConversation(conversation) {
+            currentConversation = conversation;
+            updateChatHeader(conversation);
+            loadChatMessages(conversation.id);
+            showChatInput();
+            
+            // 更新對話列表選中狀態
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        // 更新聊天標題
+        function updateChatHeader(conversation) {
+            document.getElementById('currentChatName').textContent = conversation.name;
+            document.getElementById('currentChatAvatar').src = conversation.avatar;
+            document.getElementById('currentChatStatus').textContent = conversation.isOnline ? '線上' : '離線';
+            document.getElementById('currentChatStatus').className = conversation.isOnline ? 'online' : 'offline';
+        }
+
+        // 載入聊天訊息
+        function loadChatMessages(conversationId) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            // 模擬載入訊息
+            const messages = [
+                {
+                    id: 1,
+                    sender: 'them',
+                    content: '您好！我們對您的作品很感興趣，請問您有接案嗎？',
+                    time: '14:30',
+                    type: 'text'
+                },
+                {
+                    id: 2,
+                    sender: 'me',
+                    content: '您好！是的，我有接案。請問您需要什麼類型的設計？',
+                    time: '14:32',
+                    type: 'text'
+                },
+                {
+                    id: 3,
+                    sender: 'them',
+                    content: '我們需要一個企業網站的設計，您有相關經驗嗎？',
+                    time: '14:35',
+                    type: 'text'
+                }
+            ];
+            
+            renderChatMessages(messages);
+        }
+
+        // 渲染聊天訊息
+        function renderChatMessages(messages) {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            
+            messages.forEach(message => {
+                const messageElement = createMessageElement(message);
+                chatMessages.appendChild(messageElement);
+            });
+            
+            // 滾動到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 創建訊息元素
+        function createMessageElement(message) {
+            const div = document.createElement('div');
+            div.className = `message-item ${message.sender}`;
+            div.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text">${message.content}</div>
+                    <div class="message-time">${message.time}</div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // 顯示聊天輸入
+        function showChatInput() {
+            document.getElementById('chatInputContainer').style.display = 'block';
+        }
+
+        // 發送訊息
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value.trim();
+            
+            if (!content) return;
+            
+            if (!currentConversation) {
+                alert('請先選擇一個對話');
+                return;
+            }
+            
+            // 創建新訊息
+            const newMessage = {
+                id: Date.now(),
+                sender: 'me',
+                content: content,
+                time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+                type: 'text'
+            };
+            
+            // 添加到聊天區域
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = createMessageElement(newMessage);
+            chatMessages.appendChild(messageElement);
+            
+            // 清空輸入框
+            messageInput.value = '';
+            
+            // 滾動到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 更新對話列表
+            updateConversationLastMessage(content);
+            
+            // 模擬對方回覆
+            setTimeout(() => {
+                simulateReply();
+            }, 2000);
+        }
+
+        // 更新對話最後訊息
+        function updateConversationLastMessage(content) {
+            if (currentConversation) {
+                currentConversation.lastMessage = content;
+                currentConversation.lastTime = '剛剛';
+                currentConversation.unreadCount = 0;
+                renderConversations();
+            }
+        }
+
+        // 模擬對方回覆
+        function simulateReply() {
+            const replies = [
+                '好的，我了解了',
+                '請問您的預算是多少？',
+                '可以發送一些參考資料嗎？',
+                '謝謝您的回覆！'
+            ];
+            
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            
+            const replyMessage = {
+                id: Date.now(),
+                sender: 'them',
+                content: randomReply,
+                time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+                type: 'text'
+            };
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = createMessageElement(replyMessage);
+            chatMessages.appendChild(messageElement);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 開始新對話
+        function startNewConversation() {
+            document.getElementById('newConversationModal').style.display = 'flex';
+            loadUsersList();
+        }
+
+        // 載入用戶列表
+        function loadUsersList() {
+            const users = [
+                { id: 1, name: '科技公司A', avatar: 'https://via.placeholder.com/40x40/667eea/ffffff?text=科', type: 'enterprise' },
+                { id: 2, name: '設計工作室B', avatar: 'https://via.placeholder.com/40x40/764ba2/ffffff?text=設', type: 'enterprise' },
+                { id: 3, name: '李大明', avatar: 'https://via.placeholder.com/40x40/667eea/ffffff?text=李', type: 'student' }
+            ];
+            
+            renderUsersList(users);
+        }
+
+        // 渲染用戶列表
+        function renderUsersList(users) {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            
+            users.forEach(user => {
+                const userElement = createUserElement(user);
+                usersList.appendChild(userElement);
+            });
+        }
+
+        // 創建用戶元素
+        function createUserElement(user) {
+            const div = document.createElement('div');
+            div.className = 'user-item';
+            div.onclick = () => selectUserToChat(user);
+            div.innerHTML = `
+                <div class="user-avatar">
+                    <img src="${user.avatar}" alt="${user.name}">
+                </div>
+                <div class="user-info">
+                    <h5>${user.name}</h5>
+                    <span class="user-type">${user.type === 'enterprise' ? '企業' : '學生'}</span>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // 選擇用戶開始聊天
+        function selectUserToChat(user) {
+            // 檢查是否已有對話
+            let existingConversation = conversations.find(c => c.id === user.id);
+            
+            if (!existingConversation) {
+                // 創建新對話
+                existingConversation = {
+                    id: user.id,
+                    name: user.name,
+                    avatar: user.avatar,
+                    lastMessage: '開始新對話',
+                    lastTime: '剛剛',
+                    unreadCount: 0,
+                    isOnline: true,
+                    type: user.type
+                };
+                
+                conversations.unshift(existingConversation);
+                renderConversations();
+            }
+            
+            // 選擇對話
+            selectConversation(existingConversation);
+            closeModal('newConversationModal');
+        }
+
+        // 切換聊天選項
+        function toggleChatOptions() {
+            document.getElementById('chatOptionsModal').style.display = 'flex';
+        }
+
+        // 關閉模態框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 聊天選項功能
+        function viewProfile() {
+            if (currentConversation) {
+                alert(`查看 ${currentConversation.name} 的個人資料`);
+                closeModal('chatOptionsModal');
+            }
+        }
+
+        function viewPortfolio() {
+            if (currentConversation) {
+                alert(`查看 ${currentConversation.name} 的作品集`);
+                closeModal('chatOptionsModal');
+            }
+        }
+
+        function blockUser() {
+            if (currentConversation) {
+                if (confirm(`確定要封鎖 ${currentConversation.name} 嗎？`)) {
+                    conversations = conversations.filter(c => c.id !== currentConversation.id);
+                    renderConversations();
+                    currentConversation = null;
+                    document.getElementById('chatMessages').innerHTML = `
+                        <div class="welcome-message">
+                            <i class="fas fa-comments"></i>
+                            <h3>歡迎來到訊息中心</h3>
+                            <p>從左側選擇一個對話開始聊天，或開始新的對話</p>
+                        </div>
+                    `;
+                    document.getElementById('chatInputContainer').style.display = 'none';
+                    closeModal('chatOptionsModal');
+                }
+            }
+        }
+
+        function reportUser() {
+            if (currentConversation) {
+                alert(`舉報 ${currentConversation.name} 功能開發中`);
+                closeModal('chatOptionsModal');
+            }
+        }
+
+        // 表情選擇器
+        function toggleEmojiPicker() {
+            alert('表情選擇器功能開發中');
+        }
+
+        // 檔案上傳
+        function toggleFileUpload() {
+            alert('檔案上傳功能開發中');
+        }
+
+        // 搜尋對話
+        function searchConversations(query) {
+            const filteredConversations = conversations.filter(conversation =>
+                conversation.name.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            const conversationsList = document.getElementById('conversationsList');
+            conversationsList.innerHTML = '';
+            
+            filteredConversations.forEach(conversation => {
+                const conversationElement = createConversationElement(conversation);
+                conversationsList.appendChild(conversationElement);
+            });
+        }
+
+        // 搜尋用戶
+        function searchUsers(query) {
+            // 實現用戶搜尋功能
+            console.log('搜尋用戶:', query);
+        }
+
+        // 設置事件監聽器
+        function setupEventListeners() {
+            // 搜尋對話
+            document.getElementById('searchConversations').addEventListener('input', function(e) {
+                searchConversations(e.target.value);
+            });
+            
+            // 搜尋用戶
+            document.getElementById('searchUsers').addEventListener('input', function(e) {
+                searchUsers(e.target.value);
+            });
+            
+            // 按Enter發送訊息
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // 自動調整輸入框高度
+            document.getElementById('messageInput').addEventListener('input', function(e) {
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+            });
+        }
+    </script>
+</body>
+</html>

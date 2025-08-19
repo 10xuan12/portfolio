@@ -68,8 +68,8 @@ class ApiService {
             case 'users/1':
             case 'users/2':
             case 'users/3':
-                const userId = parseInt(endpoint.split('/')[1]);
-                return MockData.getUserById(userId);
+                const userId1 = parseInt(endpoint.split('/')[1]);
+                return MockData.getUserById(userId1);
             
             case 'users/students':
                 return MockData.getUsersByRole('student');
@@ -86,8 +86,8 @@ class ApiService {
             case 'portfolios/2':
             case 'portfolios/3':
             case 'portfolios/4':
-                const portfolioId = parseInt(endpoint.split('/')[1]);
-                return MockData.getPortfolioById(portfolioId);
+                const portfolioId1 = parseInt(endpoint.split('/')[1]);
+                return MockData.getPortfolioById(portfolioId1);
             
             case 'portfolios/author/1':
             case 'portfolios/author/2':
@@ -114,8 +114,8 @@ class ApiService {
                 return this.getMockNotifications();
             
             case 'notifications/user/1':
-                const userId = parseInt(endpoint.split('/')[2]);
-                return MockData.getNotificationsByUser(userId);
+                const userId2 = parseInt(endpoint.split('/')[2]);
+                return MockData.getNotificationsByUser(userId2);
             
             // 活動相關
             case 'activities':
@@ -123,21 +123,21 @@ class ApiService {
                 return this.getMockActivities();
             
             case 'activities/user/1':
-                const userId = parseInt(endpoint.split('/')[2]);
-                return MockData.getActivitiesByUser(userId);
+                const userId3 = parseInt(endpoint.split('/')[2]);
+                return MockData.getActivitiesByUser(userId3);
             
             // 搜尋相關
             case 'search/portfolios':
-                const searchParams = new URLSearchParams(window.location.search);
-                const keyword = searchParams.get('q') || '';
-                const filters = {};
-                return MockData.searchPortfolios(keyword, filters);
+                const searchParams1 = new URLSearchParams(window.location.search);
+                const keyword1 = searchParams1.get('q') || '';
+                const filters1 = {};
+                return MockData.searchPortfolios(keyword1, filters1);
             
             case 'search/users':
-                const searchParams = new URLSearchParams(window.location.search);
-                const keyword = searchParams.get('q') || '';
-                const filters = {};
-                return MockData.searchUsers(keyword, filters);
+                const searchParams2 = new URLSearchParams(window.location.search);
+                const keyword2 = searchParams2.get('q') || '';
+                const filters2 = {};
+                return MockData.searchUsers(keyword2, filters2);
             
             // 分析相關
             case 'analytics/trends':
@@ -156,13 +156,13 @@ class ApiService {
             
             // 評論相關
             case 'comments/portfolio/1':
-                const portfolioId = parseInt(endpoint.split('/')[2]);
-                return MockData.getCommentsByPortfolio(portfolioId);
+                const portfolioId2 = parseInt(endpoint.split('/')[2]);
+                return MockData.getCommentsByPortfolio(portfolioId2);
             
             // 徽章相關
             case 'badges/user/1':
-                const userId = parseInt(endpoint.split('/')[2]);
-                return MockData.getBadgesByUser(userId);
+                const userId4 = parseInt(endpoint.split('/')[2]);
+                return MockData.getBadgesByUser(userId4);
             
             // 預設回應
             default:
@@ -266,8 +266,8 @@ class ApiService {
      * 取得作品列表
      */
     async getPortfolios(filters = {}) {
-        const queryString = new URLSearchParams(filters).toString();
-        const endpoint = queryString ? `portfolios?${queryString}` : 'portfolios';
+        const portfolioQueryString = new URLSearchParams(filters).toString();
+        const endpoint = portfolioQueryString ? `portfolios?${portfolioQueryString}` : 'portfolios';
         return this.request(endpoint);
     }
 
@@ -343,16 +343,16 @@ class ApiService {
      * 搜尋作品
      */
     async searchPortfolios(keyword, filters = {}) {
-        const params = new URLSearchParams({ q: keyword, ...filters });
-        return this.request(`search/portfolios?${params}`);
+        const portfolioSearchParams = new URLSearchParams({ q: keyword, ...filters });
+        return this.request(`search/portfolios?${portfolioSearchParams}`);
     }
 
     /**
      * 搜尋使用者
      */
     async searchUsers(keyword, filters = {}) {
-        const params = new URLSearchParams({ q: keyword, ...filters });
-        return this.request(`search/users?${params}`);
+        const userSearchParams = new URLSearchParams({ q: keyword, ...filters });
+        return this.request(`search/users?${userSearchParams}`);
     }
 
     /**
@@ -366,8 +366,8 @@ class ApiService {
      * 取得職缺列表
      */
     async getJobs(filters = {}) {
-        const queryString = new URLSearchParams(filters).toString();
-        const endpoint = queryString ? `jobs?${queryString}` : 'jobs';
+        const jobQueryString = new URLSearchParams(filters).toString();
+        const endpoint = jobQueryString ? `jobs?${jobQueryString}` : 'jobs';
         return this.request(endpoint);
     }
 
