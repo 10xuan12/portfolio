@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio+ - 頁面導航</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .page-link {
+            display: block;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .page-link:hover {
+            background: #007bff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        
+        .page-link h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        
+        .page-link p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .back-home {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .back-home:hover {
+            background: #0056b3;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status.complete {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status.partial {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .status.pending {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-home">
+            <i class="fas fa-arrow-left"></i> 返回首頁
+        </a>
+        
+        <div class="header">
+            <h1>Portfolio+ 頁面導航</h1>
+            <p>所有可用的頁面和功能列表</p>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-home"></i> 主要頁面</h2>
+            <div class="page-grid">
+                <a href="index.html" class="page-link">
+                    <h3>首頁 <span class="status complete">完成</span></h3>
+                    <p>Portfolio+ 主頁面，包含平台介紹和入口</p>
+                </a>
+                <a href="login.html" class="page-link">
+                    <h3>登入頁面 <span class="status complete">完成</span></h3>
+                    <p>通用登入頁面，支援學生、企業、管理員登入</p>
+                </a>
+                <a href="register.html" class="page-link">
+                    <h3>註冊頁面 <span class="status pending">待完成</span></h3>
+                    <p>用戶註冊功能</p>
+                </a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-user-graduate"></i> 學生端頁面</h2>
+            <div class="page-grid">
+                <a href="student/dashboard.html" class="page-link">
+                    <h3>學生儀表板 <span class="status complete">完成</span></h3>
+                    <p>學生主要功能頁面</p>
+                </a>
+                <a href="student/portfolio.html" class="page-link">
+                    <h3>作品集管理 <span class="status complete">完成</span></h3>
+                    <p>學生作品集上傳和管理</p>
+                </a>
+                <a href="student/profile.html" class="page-link">
+                    <h3>個人資料 <span class="status complete">完成</span></h3>
+                    <p>學生個人資料管理</p>
+                </a>
+                <a href="student/resume.html" class="page-link">
+                    <h3>履歷管理 <span class="status complete">完成</span></h3>
+                    <p>學生履歷上傳和管理</p>
+                </a>
+                <a href="student/search.html" class="page-link">
+                    <h3>搜尋功能 <span class="status complete">完成</span></h3>
+                    <p>搜尋企業和職缺</p>
+                </a>
+                <a href="student/notifications.html" class="page-link">
+                    <h3>通知中心 <span class="status complete">完成</span></h3>
+                    <p>學生通知管理</p>
+                </a>
+                <a href="student/messages.html" class="page-link">
+                    <h3>訊息中心 <span class="status complete">完成</span></h3>
+                    <p>學生訊息管理</p>
+                </a>
+                <a href="student/settings.html" class="page-link">
+                    <h3>設定 <span class="status complete">完成</span></h3>
+                    <p>學生帳號設定</p>
+                </a>
+                <a href="student/upload.html" class="page-link">
+                    <h3>檔案上傳 <span class="status complete">完成</span></h3>
+                    <p>學生檔案上傳功能</p>
+                </a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-building"></i> 企業端頁面</h2>
+            <div class="page-grid">
+                <a href="enterprise/dashboard.html" class="page-link">
+                    <h3>企業儀表板 <span class="status complete">完成</span></h3>
+                    <p>企業主要功能頁面（已整合真實資料）</p>
+                </a>
+                <a href="enterprise/jobs.html" class="page-link">
+                    <h3>職缺管理 <span class="status complete">完成</span></h3>
+                    <p>企業職缺發布和管理</p>
+                </a>
+                <a href="enterprise/portfolios.html" class="page-link">
+                    <h3>作品集瀏覽 <span class="status complete">完成</span></h3>
+                    <p>瀏覽學生作品集</p>
+                </a>
+                <a href="enterprise/profile.html" class="page-link">
+                    <h3>企業資料 <span class="status complete">完成</span></h3>
+                    <p>企業資料管理</p>
+                </a>
+                <a href="enterprise/search.html" class="page-link">
+                    <h3>人才搜尋 <span class="status complete">完成</span></h3>
+                    <p>搜尋學生人才</p>
+                </a>
+                <a href="enterprise/notifications.html" class="page-link">
+                    <h3>通知中心 <span class="status complete">完成</span></h3>
+                    <p>企業通知管理</p>
+                </a>
+                <a href="enterprise/analytics.html" class="page-link">
+                    <h3>分析報表 <span class="status complete">完成</span></h3>
+                    <p>企業數據分析</p>
+                </a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-user-shield"></i> 管理員端頁面</h2>
+            <div class="page-grid">
+                <a href="admin/dashboard.html" class="page-link">
+                    <h3>管理員儀表板 <span class="status complete">完成</span></h3>
+                    <p>管理員主要功能頁面</p>
+                </a>
+                <a href="admin/users.html" class="page-link">
+                    <h3>用戶管理 <span class="status complete">完成</span></h3>
+                    <p>管理所有用戶帳號</p>
+                </a>
+                <a href="admin/content.html" class="page-link">
+                    <h3>內容管理 <span class="status complete">完成</span></h3>
+                    <p>管理平台內容</p>
+                </a>
+                <a href="admin/analytics.html" class="page-link">
+                    <h3>系統分析 <span class="status complete">完成</span></h3>
+                    <p>系統整體數據分析</p>
+                </a>
+                <a href="admin/reports.html" class="page-link">
+                    <h3>報表管理 <span class="status complete">完成</span></h3>
+                    <p>系統報表功能</p>
+                </a>
+                <a href="admin/settings.html" class="page-link">
+                    <h3>系統設定 <span class="status complete">完成</span></h3>
+                    <p>系統整體設定</p>
+                </a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-tools"></i> 工具頁面</h2>
+            <div class="page-grid">
+                <a href="simple_access.html" class="page-link">
+                    <h3>快速訪問 <span class="status complete">完成</span></h3>
+                    <p>簡化的頁面訪問入口</p>
+                </a>
+                <a href="test-api.html" class="page-link">
+                    <h3>API 測試 <span class="status complete">完成</span></h3>
+                    <p>測試後端 API 功能</p>
+                </a>
+                <a href="swagger/index.html" class="page-link">
+                    <h3>API 文檔 <span class="status complete">完成</span></h3>
+                    <p>Swagger API 文檔</p>
+                </a>
+                <a href="theme-preview.html" class="page-link">
+                    <h3>主題色彩預覽 <span class="status complete">完成</span></h3>
+                    <p>查看不同角色的主題色彩設計</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

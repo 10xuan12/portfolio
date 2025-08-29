@@ -3,6 +3,9 @@
  * 包含企業統計、人才推薦、作品瀏覽等功能
  */
 
+// API 基礎 URL
+const API_BASE_URL = '/portfolio/api/enterprise';
+
 // 頁面載入時初始化
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardData();
@@ -14,30 +17,185 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 async function loadDashboardData() {
     try {
-        // TODO: 從後端 API 載入企業儀表板資料
-        // const response = await fetch('/api/enterprise/dashboard');
-        // dashboardData = await response.json();
+        showLoadingState();
         
-        // 使用統一假資料
-        const enterpriseId = 101; // 假設當前企業ID為101
-        const dashboardData = {
-            stats: MockData.stats.enterprise,
-            recentPortfolios: MockData.portfolios.slice(0, 3),
-            recommendedStudents: MockData.users.students,
-            recentActivities: MockData.activities,
-            jobPostings: MockData.jobs.filter(job => job.company_id === enterpriseId)
-        };
+        // 從後端 API 載入企業儀表板資料
+        const response = await fetch(`${API_BASE_URL}/dashboard.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'get_dashboard_data'
+            })
+        });
         
-        renderStats(dashboardData.stats);
-        renderRecentPortfolios(dashboardData.recentPortfolios);
-        renderRecommendedStudents(dashboardData.recommendedStudents);
-        renderRecentActivities(dashboardData.recentActivities);
-        renderJobPostings(dashboardData.jobPostings);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
-        console.log('企業儀表板資料載入完成');
+        const result = await response.json();
+        
+        if (result.status === 200) {
+            const dashboardData = result.data;
+            renderStats(dashboardData.stats);
+            renderRecentPortfolios(dashboardData.recent_portfolios);
+            renderRecommendedStudents(dashboardData.recommended_students);
+            renderRecentActivities(dashboardData.recent_activities);
+            renderJobPostings(dashboardData.job_postings);
+            
+            // 顯示企業名稱
+            const companyNameElement = document.getElementById('company-name');
+            if (companyNameElement) {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                companyNameElement.textContent = user.company_name || '企業';
+            }
+            
+            hideLoadingState();
+            console.log('企業儀表板資料載入完成');
+        } else {
+            throw new Error(result.message || '載入資料失敗');
+        }
     } catch (error) {
         console.error('載入企業儀表板資料錯誤:', error);
-        Utils.showNotification('載入資料失敗，請稍後再試', 'error');
+        hideLoadingState();
+        showErrorMessage('載入資料失敗，請稍後再試');
+        
+        // 如果 API 失敗，使用備用的 mock 資料
+        loadFallbackData();
+    }
+}
+
+/**
+ * 載入備用資料（當 API 失敗時）
+ */
+function loadFallbackData() {
+    console.log('使用備用資料...');
+    const enterpriseId = 1; // 使用測試企業ID
+    const dashboardData = {
+        stats: {
+            total_views: 1250,
+            total_favorites: 89,
+            total_contacts: 23,
+            total_jobs: 5
+        },
+        recent_portfolios: [
+            {
+                id: 1,
+                title: '電商網站開發',
+                student_name: '王小明',
+                thumbnail_url: '/portfolio/images/portfolio1.jpg',
+                view_count: 156,
+                created_at: '2024-01-15'
+            },
+            {
+                id: 2,
+                title: '手機APP設計',
+                student_name: '李小華',
+                thumbnail_url: '/portfolio/images/portfolio2.jpg',
+                view_count: 89,
+                created_at: '2024-01-10'
+            }
+        ],
+        recommended_students: [
+            {
+                id: 1,
+                name: '王小明',
+                major: '資訊管理',
+                university: '台灣大學',
+                skills: 'JavaScript, React, Node.js',
+                avatar_url: '/portfolio/images/avatar1.jpg'
+            },
+            {
+                id: 2,
+                name: '李小華',
+                major: '資訊工程',
+                university: '清華大學',
+                skills: 'Python, Django, MySQL',
+                avatar_url: '/portfolio/images/avatar2.jpg'
+            }
+        ],
+        recent_activities: [
+            {
+                id: 1,
+                type: 'portfolio_view',
+                message: '瀏覽了王小明的最新作品集',
+                timestamp: '2024-01-20 14:30:00'
+            },
+            {
+                id: 2,
+                type: 'job_application',
+                message: '收到新的職缺申請',
+                timestamp: '2024-01-20 12:15:00'
+            }
+        ],
+        job_postings: [
+            {
+                id: 1,
+                title: '前端工程師',
+                status: 'active',
+                applications: 12,
+                views: 89
+            },
+            {
+                id: 2,
+                title: '後端工程師',
+                status: 'active',
+                applications: 8,
+                views: 67
+            }
+        ]
+    };
+    
+    renderStats(dashboardData.stats);
+    renderRecentPortfolios(dashboardData.recent_portfolios);
+    renderRecommendedStudents(dashboardData.recommended_students);
+    renderRecentActivities(dashboardData.recent_activities);
+    renderJobPostings(dashboardData.job_postings);
+}
+
+/**
+ * 顯示載入狀態
+ */
+function showLoadingState() {
+    const loadingElement = document.getElementById('loading-indicator');
+    if (loadingElement) {
+        loadingElement.style.display = 'block';
+    }
+    
+    // 在統計卡片上顯示載入動畫
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        const numberElement = card.querySelector('.stat-number');
+        if (numberElement) {
+            numberElement.innerHTML = '<div class="loading-spinner"></div>';
+        }
+    });
+}
+
+/**
+ * 隱藏載入狀態
+ */
+function hideLoadingState() {
+    const loadingElement = document.getElementById('loading-indicator');
+    if (loadingElement) {
+        loadingElement.style.display = 'none';
+    }
+}
+
+/**
+ * 顯示錯誤訊息
+ */
+function showErrorMessage(message) {
+    const errorContainer = document.getElementById('error-container');
+    if (errorContainer) {
+        errorContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                ${message}
+            </div>
+        `;
+        errorContainer.style.display = 'block';
     }
 }
 
@@ -62,6 +220,14 @@ function setupEventListeners() {
             // TODO: 實作篩選功能
         });
     });
+    
+    // 重新整理按鈕
+    const refreshBtn = document.querySelector('.refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            loadDashboardData();
+        });
+    }
 }
 
 /**
@@ -70,16 +236,16 @@ function setupEventListeners() {
 function renderStats(stats) {
     // 更新統計數字
     const statElements = {
-        'total-views': stats.total_views,
-        'total-favorites': stats.total_favorites,
-        'total-contacts': stats.total_contacts,
-        'total-jobs': stats.total_jobs
+        'total-views': stats.total_views || 0,
+        'total-favorites': stats.total_favorites || 0,
+        'total-contacts': stats.total_contacts || 0,
+        'total-jobs': stats.total_jobs || 0
     };
     
     Object.keys(statElements).forEach(id => {
         const element = document.getElementById(id);
         if (element) {
-            element.textContent = MockData.formatNumber(statElements[id]);
+            element.textContent = formatNumber(statElements[id]);
         }
     });
 }
@@ -93,58 +259,70 @@ function renderRecentPortfolios(portfolios) {
     
     portfolioGrid.innerHTML = '';
     
+    if (portfolios.length === 0) {
+        portfolioGrid.innerHTML = '<p class="text-muted">暫無最近瀏覽的作品集</p>';
+        return;
+    }
+    
     portfolios.forEach(portfolio => {
         const portfolioItem = document.createElement('div');
         portfolioItem.className = 'portfolio-item';
         portfolioItem.innerHTML = `
             <div class="portfolio-image">
-                <img src="${portfolio.image}" alt="${portfolio.title}">
+                <img src="${portfolio.thumbnail_url || '/portfolio/images/default-portfolio.jpg'}" alt="${portfolio.title}">
             </div>
-            <div class="portfolio-content">
+            <div class="portfolio-info">
                 <h4>${portfolio.title}</h4>
-                <p>${portfolio.author_name} • ${portfolio.department}</p>
+                <p class="student-name">${portfolio.student_name}</p>
                 <div class="portfolio-stats">
-                    <span><i class="fas fa-eye"></i> ${MockData.formatNumber(portfolio.views)}</span>
-                    <span><i class="fas fa-heart"></i> ${MockData.formatNumber(portfolio.likes)}</span>
+                    <span><i class="fas fa-eye"></i> ${formatNumber(portfolio.view_count)}</span>
+                    <span><i class="fas fa-calendar"></i> ${formatDate(portfolio.created_at)}</span>
                 </div>
             </div>
         `;
+        
+        portfolioItem.addEventListener('click', () => {
+            window.location.href = `/portfolio/frontend/enterprise/portfolios.html?id=${portfolio.id}`;
+        });
+        
         portfolioGrid.appendChild(portfolioItem);
     });
 }
 
 /**
- * 渲染推薦人才
+ * 渲染推薦學生
  */
 function renderRecommendedStudents(students) {
-    const candidateGrid = document.querySelector('.candidate-grid');
-    if (!candidateGrid) return;
+    const studentGrid = document.querySelector('.recommended-students');
+    if (!studentGrid) return;
     
-    candidateGrid.innerHTML = '';
+    studentGrid.innerHTML = '';
+    
+    if (students.length === 0) {
+        studentGrid.innerHTML = '<p class="text-muted">暫無推薦學生</p>';
+        return;
+    }
     
     students.forEach(student => {
-        const candidateCard = document.createElement('div');
-        candidateCard.className = 'candidate-card';
-        candidateCard.innerHTML = `
-            <div class="candidate-header">
-                <div class="candidate-avatar">${student.avatar}</div>
-                <div class="candidate-info">
-                    <h3>${student.name}</h3>
-                    <p>${student.department} • ${student.grade}</p>
-                </div>
+        const studentItem = document.createElement('div');
+        studentItem.className = 'student-item';
+        studentItem.innerHTML = `
+            <div class="student-avatar">
+                <img src="${student.avatar_url || '/portfolio/images/default-avatar.jpg'}" alt="${student.name}">
             </div>
-            <div class="candidate-skills">
-                ${student.skills.slice(0, 4).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+            <div class="student-info">
+                <h4>${student.name}</h4>
+                <p class="student-major">${student.major} - ${student.university}</p>
+                <p class="student-skills">${student.skills}</p>
             </div>
-            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
-                ${student.summary}
-            </p>
-            <div class="candidate-stats">
-                <span><i class="fas fa-eye"></i> ${MockData.formatNumber(Math.floor(Math.random() * 200) + 50)} 次瀏覽</span>
-                <span><i class="fas fa-heart"></i> ${MockData.formatNumber(Math.floor(Math.random() * 50) + 5)} 個讚</span>
+            <div class="student-actions">
+                <button class="btn btn-sm btn-outline-primary" onclick="viewStudentProfile(${student.id})">
+                    查看資料
+                </button>
             </div>
         `;
-        candidateGrid.appendChild(candidateCard);
+        
+        studentGrid.appendChild(studentItem);
     });
 }
 
@@ -152,12 +330,17 @@ function renderRecommendedStudents(students) {
  * 渲染最近活動
  */
 function renderRecentActivities(activities) {
-    const activitiesList = document.querySelector('.recent-activities');
-    if (!activitiesList) return;
+    const activityList = document.querySelector('.recent-activities');
+    if (!activityList) return;
     
-    activitiesList.innerHTML = '';
+    activityList.innerHTML = '';
     
-    activities.slice(0, 5).forEach(activity => {
+    if (activities.length === 0) {
+        activityList.innerHTML = '<p class="text-muted">暫無最近活動</p>';
+        return;
+    }
+    
+    activities.forEach(activity => {
         const activityItem = document.createElement('div');
         activityItem.className = 'activity-item';
         activityItem.innerHTML = `
@@ -165,16 +348,17 @@ function renderRecentActivities(activities) {
                 <i class="fas ${getActivityIcon(activity.type)}"></i>
             </div>
             <div class="activity-content">
-                <p>${activity.text}</p>
-                <small>${activity.time}</small>
+                <p>${activity.message}</p>
+                <small class="text-muted">${formatDateTime(activity.timestamp)}</small>
             </div>
         `;
-        activitiesList.appendChild(activityItem);
+        
+        activityList.appendChild(activityItem);
     });
 }
 
 /**
- * 渲染職缺發布
+ * 渲染職缺列表
  */
 function renderJobPostings(jobs) {
     const jobList = document.querySelector('.job-postings');
@@ -182,76 +366,90 @@ function renderJobPostings(jobs) {
     
     jobList.innerHTML = '';
     
+    if (jobs.length === 0) {
+        jobList.innerHTML = '<p class="text-muted">暫無職缺</p>';
+        return;
+    }
+    
     jobs.forEach(job => {
         const jobItem = document.createElement('div');
         jobItem.className = 'job-item';
         jobItem.innerHTML = `
-            <div class="job-header">
+            <div class="job-info">
                 <h4>${job.title}</h4>
-                <span class="job-status ${job.status}">${getJobStatusText(job.status)}</span>
+                <span class="job-status ${job.status}">${getStatusText(job.status)}</span>
             </div>
-            <div class="job-content">
-                <p>${job.description}</p>
-                <div class="job-details">
-                    <span><i class="fas fa-map-marker-alt"></i> ${job.location}</span>
-                    <span><i class="fas fa-money-bill-wave"></i> ${job.salary_range}</span>
-                    <span><i class="fas fa-users"></i> ${job.applications} 人申請</span>
-                </div>
+            <div class="job-stats">
+                <span><i class="fas fa-users"></i> ${job.applications} 申請</span>
+                <span><i class="fas fa-eye"></i> ${job.views} 瀏覽</span>
             </div>
         `;
+        
+        jobItem.addEventListener('click', () => {
+            window.location.href = `/portfolio/frontend/enterprise/jobs.html?id=${job.id}`;
+        });
+        
         jobList.appendChild(jobItem);
     });
+}
+
+/**
+ * 查看學生資料
+ */
+function viewStudentProfile(studentId) {
+    window.location.href = `/portfolio/frontend/enterprise/search.html?student=${studentId}`;
+}
+
+/**
+ * 格式化數字
+ */
+function formatNumber(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+}
+
+/**
+ * 格式化日期
+ */
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-TW');
+}
+
+/**
+ * 格式化日期時間
+ */
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-TW');
 }
 
 /**
  * 取得活動圖示
  */
 function getActivityIcon(type) {
-    const iconMap = {
-        'upload': 'fa-upload',
-        'view': 'fa-eye',
-        'like': 'fa-heart',
-        'comment': 'fa-comment'
+    const icons = {
+        'portfolio_view': 'fa-eye',
+        'job_application': 'fa-file-alt',
+        'contact': 'fa-envelope',
+        'favorite': 'fa-heart'
     };
-    return iconMap[type] || 'fa-info-circle';
+    return icons[type] || 'fa-info-circle';
 }
 
 /**
- * 取得職缺狀態文字
+ * 取得狀態文字
  */
-function getJobStatusText(status) {
-    const statusMap = {
+function getStatusText(status) {
+    const statusTexts = {
         'active': '招募中',
+        'paused': '暫停',
         'closed': '已結束',
         'draft': '草稿'
     };
-    return statusMap[status] || status;
-}
-
-/**
- * 搜尋人才
- */
-function searchCandidates(keyword, filters = {}) {
-    // TODO: 實作搜尋功能
-    console.log('搜尋人才:', keyword, filters);
-    
-    // 使用統一假資料進行搜尋
-    const results = MockData.searchUsers(keyword, filters);
-    renderRecommendedStudents(results);
-}
-
-/**
- * 篩選人才
- */
-function filterCandidates(filters) {
-    // TODO: 實作篩選功能
-    console.log('篩選人才:', filters);
-    
-    const results = MockData.searchUsers('', filters);
-    renderRecommendedStudents(results);
-}
-
-// 全域函數，供 HTML 呼叫
-window.loadDashboardData = loadDashboardData;
-window.searchCandidates = searchCandidates;
-window.filterCandidates = filterCandidates; 
+    return statusTexts[status] || status;
+} 

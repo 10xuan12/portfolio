@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio+ - 主題色彩預覽</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .theme-preview {
+            padding: 40px 20px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .theme-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .theme-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .theme-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .theme-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .theme-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.3rem;
+        }
+        
+        .theme-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .color-swatch {
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .demo-elements {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .demo-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .demo-navbar {
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .demo-card {
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .theme-toggle button {
+            display: block;
+            width: 100%;
+            padding: 8px 16px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle button:hover {
+            transform: scale(1.05);
+        }
+        
+        .back-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="main-theme">
+    <div class="theme-toggle">
+        <button onclick="setTheme('main')" style="background: #273ec3; color: white;">主色調</button>
+        <button onclick="setTheme('student')" style="background: #4A90E2; color: white;">學生端</button>
+        <button onclick="setTheme('enterprise')" style="background: #2C3E50; color: white;">企業端</button>
+        <button onclick="setTheme('admin')" style="background: #1E88E5; color: white;">管理員端</button>
+    </div>
+
+    <div class="theme-preview">
+        <div class="container">
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> 返回首頁
+            </a>
+            
+            <div class="header">
+                <h1>Portfolio+ 主題色彩預覽</h1>
+                <p>查看不同角色的專屬主題色彩設計</p>
+            </div>
+            
+            <div class="theme-grid">
+                <!-- 主色調主題 -->
+                <div class="theme-card">
+                    <div class="theme-header">
+                        <div class="theme-icon" style="background: #273ec3;">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="theme-info">
+                            <h3>主色調主題</h3>
+                            <p>首頁、登入頁等</p>
+                        </div>
+                    </div>
+                    
+                    <div class="color-palette">
+                        <div class="color-swatch" style="background: #273ec3;">主色<br>#273ec3</div>
+                        <div class="color-swatch" style="background: #1e2e8f;">深色<br>#1e2e8f</div>
+                        <div class="color-swatch" style="background: #4a5fd1;">淺色<br>#4a5fd1</div>
+                    </div>
+                    
+                    <div class="demo-elements">
+                        <div class="demo-navbar" style="background: #273ec3;">
+                            Portfolio+ 導航欄
+                        </div>
+                        <button class="demo-button" style="background: #273ec3; color: white;">
+                            主要按鈕
+                        </button>
+                        <div class="demo-card" style="border-color: #E8F2F9; background: #F4F9FD;">
+                            卡片樣式
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 學生端主題 -->
+                <div class="theme-card">
+                    <div class="theme-header">
+                        <div class="theme-icon" style="background: #4A90E2;">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="theme-info">
+                            <h3>學生端主題</h3>
+                            <p>活力、創意的藍</p>
+                        </div>
+                    </div>
+                    
+                    <div class="color-palette">
+                        <div class="color-swatch" style="background: #4A90E2;">主色<br>#4A90E2</div>
+                        <div class="color-swatch" style="background: #357ABD;">深色<br>#357ABD</div>
+                        <div class="color-swatch" style="background: #6BA3E8;">淺色<br>#6BA3E8</div>
+                    </div>
+                    
+                    <div class="demo-elements">
+                        <div class="demo-navbar" style="background: #4A90E2;">
+                            學生儀表板
+                        </div>
+                        <button class="demo-button" style="background: #4A90E2; color: white;">
+                            學生按鈕
+                        </button>
+                        <div class="demo-card" style="border-color: #E3F2FD; background: #E3F2FD;">
+                            學生卡片
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 企業端主題 -->
+                <div class="theme-card">
+                    <div class="theme-header">
+                        <div class="theme-icon" style="background: #2C3E50;">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="theme-info">
+                            <h3>企業端主題</h3>
+                            <p>穩重、專業的藍</p>
+                        </div>
+                    </div>
+                    
+                    <div class="color-palette">
+                        <div class="color-swatch" style="background: #2C3E50;">主色<br>#2C3E50</div>
+                        <div class="color-swatch" style="background: #1B2631;">深色<br>#1B2631</div>
+                        <div class="color-swatch" style="background: #34495E;">淺色<br>#34495E</div>
+                    </div>
+                    
+                    <div class="demo-elements">
+                        <div class="demo-navbar" style="background: #2C3E50;">
+                            企業儀表板
+                        </div>
+                        <button class="demo-button" style="background: #2C3E50; color: white;">
+                            企業按鈕
+                        </button>
+                        <div class="demo-card" style="border-color: #ECF0F1; background: #ECF0F1;">
+                            企業卡片
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 管理員端主題 -->
+                <div class="theme-card">
+                    <div class="theme-header">
+                        <div class="theme-icon" style="background: #1E88E5;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="theme-info">
+                            <h3>管理員端主題</h3>
+                            <p>中性、冷靜的藍</p>
+                        </div>
+                    </div>
+                    
+                    <div class="color-palette">
+                        <div class="color-swatch" style="background: #1E88E5;">主色<br>#1E88E5</div>
+                        <div class="color-swatch" style="background: #1565C0;">深色<br>#1565C0</div>
+                        <div class="color-swatch" style="background: #42A5F5;">淺色<br>#42A5F5</div>
+                    </div>
+                    
+                    <div class="demo-elements">
+                        <div class="demo-navbar" style="background: #1E88E5;">
+                            管理員儀表板
+                        </div>
+                        <button class="demo-button" style="background: #1E88E5; color: white;">
+                            管理員按鈕
+                        </button>
+                        <div class="demo-card" style="border-color: #E8F4FD; background: #E8F4FD;">
+                            管理員卡片
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header">
+                <h2>主題特色說明</h2>
+                <div style="text-align: left; line-height: 1.8;">
+                    <p><strong>主色調 (#273ec3)：</strong>用於首頁、登入頁等公共頁面，展現平台的專業形象。</p>
+                    <p><strong>學生端 (#4A90E2)：</strong>明亮的藍色代表活力與創意，適合年輕學生的使用體驗。</p>
+                    <p><strong>企業端 (#2C3E50)：</strong>深藍灰色展現穩重與專業，符合企業的商務形象。</p>
+                    <p><strong>管理員端 (#1E88E5)：</strong>中性偏科技感的藍色，體現管理功能的冷靜與精準。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            // 移除所有主題類別
+            document.body.classList.remove('main-theme', 'student-theme', 'enterprise-theme', 'admin-theme');
+            
+            // 添加選定的主題類別
+            document.body.classList.add(theme + '-theme');
+            
+            // 更新按鈕樣式
+            const buttons = document.querySelectorAll('.theme-toggle button');
+            buttons.forEach(btn => {
+                btn.style.opacity = '0.7';
+            });
+            
+            // 高亮當前選中的按鈕
+            event.target.style.opacity = '1';
+        }
+        
+        // 初始化主色調主題
+        document.body.classList.add('main-theme');
+    </script>
+</body>
+</html>

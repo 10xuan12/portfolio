@@ -39,33 +39,48 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
 // 處理登入
 function handleLogin($data) {
-    validateRequired($data, ['username', 'password']);
-    
-    $username = sanitizeInput($data['username']);
-    $password = $data['password'];
-    
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT u.id, u.username, u.email, u.password_hash, u.role, u.status,
-               ep.company_name, ep.logo_url
-        FROM users u
-        LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
-        WHERE u.username = ? AND u.role = 'enterprise'
-    ");
-    $stmt->bind_param("s", $username);
+    // 支援用戶名或電子郵件登入
+    if (isset($data['email'])) {
+        validateRequired($data, ['email', 'password']);
+        $email = sanitizeInput($data['email']);
+        $password = $data['password'];
+        
+        $stmt = $GLOBALS['conn']->prepare("
+            SELECT u.id, u.username, u.email, u.password, u.role, u.status,
+                   ep.company_name, ep.logo_url
+            FROM users u
+            LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
+            WHERE u.email = ? AND u.role = 'enterprise'
+        ");
+        $stmt->bind_param("s", $email);
+    } else {
+        validateRequired($data, ['username', 'password']);
+        $username = sanitizeInput($data['username']);
+        $password = $data['password'];
+        
+        $stmt = $GLOBALS['conn']->prepare("
+            SELECT u.id, u.username, u.email, u.password, u.role, u.status,
+                   ep.company_name, ep.logo_url
+            FROM users u
+            LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
+            WHERE u.username = ? AND u.role = 'enterprise'
+        ");
+        $stmt->bind_param("s", $username);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
     
     if (!$user) {
-        sendError('使用者名稱或密碼錯誤', 401);
+        sendError('電子郵件或密碼錯誤', 401);
     }
     
     if ($user['status'] !== 'active') {
         sendError('帳號已被停用', 403);
     }
     
-    if (!password_verify($password, $user['password_hash'])) {
-        sendError('使用者名稱或密碼錯誤', 401);
+    if (!password_verify($password, $user['password'])) {
+        sendError('電子郵件或密碼錯誤', 401);
     }
     
     // 建立 session
@@ -175,7 +190,7 @@ function handleRegister($data) {
         
     } catch (Exception $e) {
         $GLOBALS['conn']->rollback();
-        sendError('註冊：' . $e->getMessage(), 500);
+        sendError('註冊失敗：' . $e->getMessage(), 500);
     }
 }
 

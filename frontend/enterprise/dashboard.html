@@ -7,6 +7,42 @@
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/enterprise/dashboard.css">
+    <script>
+        // 設定企業端主題
+        document.body.classList.add('enterprise-theme');
+    </script>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert i {
+            margin-right: 8px;
+        }
+    </style>
 </head>
 <body>
     <!-- 導覽列 -->
@@ -30,38 +66,52 @@
     })();
     </script>
 
+    <!-- 載入指示器 -->
+    <div id="loading-indicator" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        <div style="text-align: center;">
+            <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+            <p>載入中...</p>
+        </div>
+    </div>
+
+    <!-- 錯誤容器 -->
+    <div id="error-container" style="display: none; margin: 20px;"></div>
+
     <!-- 儀表板標題 -->
     <section class="dashboard-header">
         <div class="container">
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">156</div>
+                        <div class="stat-number" id="total-views">0</div>
                         <div class="label">瀏覽作品數</div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">23</div>
+                        <div class="stat-number" id="total-favorites">0</div>
                         <div class="label">收藏作品</div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">8</div>
+                        <div class="stat-number" id="total-contacts">0</div>
                         <div class="label">聯絡學生</div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">5</div>
+                        <div class="stat-number" id="total-jobs">0</div>
                         <div class="label">發布職缺</div>
                     </div>
                 </div>
             </div>
             
-            <h1>歡迎回來，科技公司 A！</h1>
+            <h1>歡迎回來，<span id="company-name">企業</span>！</h1>
             <p>以下是您的人才搜尋概況</p>
+            <button class="refresh-btn" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                <i class="fas fa-sync-alt"></i> 重新整理
+            </button>
         </div>
     </section>
 
@@ -144,202 +194,31 @@
                     </div>
 
                     <h2>推薦人才</h2>
-                    <div class="candidate-grid">
-                        <!-- TODO: 從資料庫載入推薦的人才列表 -->
-                        <!-- 假資料開始 -->
-                        <div class="candidate-card">
-                            <div class="candidate-header">
-                                <div class="candidate-avatar">張</div>
-                                <div class="candidate-info">
-                                    <h3>張小明</h3>
-                                    <p>資訊管理學系 • 大學三年級</p>
-                                </div>
-                            </div>
-                            <div class="candidate-skills">
-                                <span class="skill-tag">JavaScript</span>
-                                <span class="skill-tag">React</span>
-                                <span class="skill-tag">Node.js</span>
-                                <span class="skill-tag">MongoDB</span>
-                            </div>
-                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
-                                專精於前端開發，有豐富的 React 專案經驗，作品包含響應式網站和行動應用程式。
-                            </p>
-                            <div class="candidate-stats">
-                                <span><i class="fas fa-eye"></i> 156 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 23 個讚</span>
-                                <span><i class="fas fa-star"></i> 4.8 分</span>
-                            </div>
-                        </div>
-
-                        <div class="candidate-card">
-                            <div class="candidate-header">
-                                <div class="candidate-avatar">李</div>
-                                <div class="candidate-info">
-                                    <h3>李小華</h3>
-                                    <p>資訊管理學系 • 大學四年級</p>
-                                </div>
-                            </div>
-                            <div class="candidate-skills">
-                                <span class="skill-tag">Python</span>
-                                <span class="skill-tag">Django</span>
-                                <span class="skill-tag">PostgreSQL</span>
-                                <span class="skill-tag">Docker</span>
-                            </div>
-                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
-                                後端開發專家，熟悉 Python 生態系統，有完整的全端專案開發經驗。
-                            </p>
-                            <div class="candidate-stats">
-                                <span><i class="fas fa-eye"></i> 203 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 45 個讚</span>
-                                <span><i class="fas fa-star"></i> 4.9 分</span>
-                            </div>
-                        </div>
-
-                        <div class="candidate-card">
-                            <div class="candidate-header">
-                                <div class="candidate-avatar">王</div>
-                                <div class="candidate-info">
-                                    <h3>王小美</h3>
-                                    <p>資訊管理學系 • 碩士生</p>
-                                </div>
-                            </div>
-                            <div class="candidate-skills">
-                                <span class="skill-tag">UI/UX</span>
-                                <span class="skill-tag">Figma</span>
-                                <span class="skill-tag">Adobe XD</span>
-                                <span class="skill-tag">Sketch</span>
-                            </div>
-                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
-                                專業的 UI/UX 設計師，擅長使用者體驗設計和視覺設計，作品風格現代簡潔。
-                            </p>
-                            <div class="candidate-stats">
-                                <span><i class="fas fa-eye"></i> 89 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 17 個讚</span>
-                                <span><i class="fas fa-star"></i> 4.7 分</span>
-                            </div>
-                        </div>
-
-                        <div class="candidate-card">
-                            <div class="candidate-header">
-                                <div class="candidate-avatar">陳</div>
-                                <div class="candidate-info">
-                                    <h3>陳小強</h3>
-                                    <p>資訊管理學系 • 大學四年級</p>
-                                </div>
-                            </div>
-                            <div class="candidate-skills">
-                                <span class="skill-tag">Java</span>
-                                <span class="skill-tag">Spring Boot</span>
-                                <span class="skill-tag">MySQL</span>
-                                <span class="skill-tag">Redis</span>
-                            </div>
-                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--spacing-md);">
-                                企業級應用開發專家，熟悉 Java 生態系統，有豐富的微服務架構經驗。
-                            </p>
-                            <div class="candidate-stats">
-                                <span><i class="fas fa-eye"></i> 134 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 31 個讚</span>
-                                <span><i class="fas fa-star"></i> 4.6 分</span>
-                            </div>
-                        </div>
-                        <!-- 假資料結束 -->
+                    <div class="candidate-grid recommended-students">
+                        <!-- 資料將由 JavaScript 動態載入 -->
                     </div>
                 </div>
 
                 <div class="sidebar">
                     <div class="sidebar-card">
                         <h3>最近活動</h3>
-                        <ul class="recent-activity">
-                            <!-- TODO: 從資料庫載入企業的最近活動 -->
-                            <!-- 假資料開始 -->
-                            <li>
-                                <div class="activity-icon activity-view">
-                                    <i class="fas fa-eye"></i>
-                                </div>
-                                <div>
-                                    <div>瀏覽了張小明的作品</div>
-                                    <small>2 小時前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-contact">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                                <div>
-                                    <div>聯絡了李小華</div>
-                                    <small>4 小時前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-save">
-                                    <i class="fas fa-bookmark"></i>
-                                </div>
-                                <div>
-                                    <div>收藏了王小美的作品</div>
-                                    <small>6 小時前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-view">
-                                    <i class="fas fa-eye"></i>
-                                </div>
-                                <div>
-                                    <div>瀏覽了陳小強的作品</div>
-                                    <small>1 天前</small>
-                                </div>
-                            </li>
-                            <!-- 假資料結束 -->
+                        <ul class="recent-activity recent-activities">
+                            <!-- 資料將由 JavaScript 動態載入 -->
                         </ul>
                     </div>
 
                     <div class="sidebar-card">
-                        <h3>收藏作品</h3>
-                        <!-- TODO: 從資料庫載入企業收藏的作品 -->
-                        <!-- 假資料開始 -->
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="font-weight: 600; color: var(--gray-900);">響應式網站設計</div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">張小明</div>
-                            <small style="color: var(--gray-500);">收藏於 2 天前</small>
+                        <h3>最近瀏覽</h3>
+                        <div class="recent-portfolios">
+                            <!-- 資料將由 JavaScript 動態載入 -->
                         </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="font-weight: 600; color: var(--gray-900);">行動應用程式</div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">李小華</div>
-                            <small style="color: var(--gray-500);">收藏於 3 天前</small>
-                        </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="font-weight: 600; color: var(--gray-900);">UI/UX 設計作品</div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">王小美</div>
-                            <small style="color: var(--gray-500);">收藏於 1 週前</small>
-                        </div>
-                        <!-- 假資料結束 -->
                     </div>
 
                     <div class="sidebar-card">
                         <h3>職缺統計</h3>
-                        <!-- TODO: 從資料庫載入企業職缺統計 -->
-                        <!-- 假資料開始 -->
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>前端工程師</span>
-                                <span style="color: var(--success-color); font-weight: 600;">12 人申請</span>
-                            </div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">發布於 1 週前</div>
+                        <div class="job-postings">
+                            <!-- 資料將由 JavaScript 動態載入 -->
                         </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>後端工程師</span>
-                                <span style="color: var(--success-color); font-weight: 600;">8 人申請</span>
-                            </div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">發布於 2 週前</div>
-                        </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>UI/UX 設計師</span>
-                                <span style="color: var(--success-color); font-weight: 600;">5 人申請</span>
-                            </div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">發布於 3 週前</div>
-                        </div>
-                        <!-- 假資料結束 -->
                     </div>
                 </div>
             </div>

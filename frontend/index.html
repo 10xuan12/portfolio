@@ -7,6 +7,10 @@
     <meta name="description" content="Portfolio+ 是專為學生、企業和管理員設計的作品集展示平台。學生可以上傳作品，企業可以搜尋人才，管理員可以管理平台。">
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // 設定主色調主題
+        document.body.classList.add('main-theme');
+    </script>
 </head>
 <body>
     <!-- 導航欄 -->
@@ -39,8 +43,8 @@
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title">
-                    以作品為核心的
-                    <span class="text-gradient">人才媒合平台</span>
+                    <div>以作品為核心的</div>
+                    <div class="text-gradient" style="background: linear-gradient(15deg, #fef3b5, #FFFFFF, #f6ebbb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">人才媒合平台</div>
                 </h1>
                 <p class="hero-subtitle">
                     Portfolio+ 打破傳統履歷制式模板，強調作品本身即履歷，視覺化展示為主，
@@ -176,7 +180,7 @@
                         <li><i class="fas fa-check"></i> 管理職缺</li>
                         <li><i class="fas fa-check"></i> 查看統計</li>
                     </ul>
-                    <a href="enterprise/dashboard.html" class="btn btn-primary">企業入口</a>
+                                         <a href="enterprise/dashboard.html" class="btn btn-primary">企業入口</a>
                 </div>
                 
                 <div class="role-card">
@@ -345,7 +349,7 @@
                     <h4>使用者</h4>
                     <ul>
                         <li><a href="student/dashboard.html">學生入口</a></li>
-                        <li><a href="enterprise/dashboard.html">企業入口</a></li>
+                                                 <li><a href="enterprise/dashboard.html">企業入口</a></li>
                         <li><a href="admin/dashboard.html">管理員入口</a></li>
                     </ul>
                 </div>
@@ -369,6 +373,96 @@
 
     <script src="js/app.js"></script>
     <script>
+        // 企業入口功能
+        async function enterEnterprise() {
+            // 檢查是否已經登入企業帳號
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (user.role === 'enterprise') {
+                // 已經登入企業帳號，直接跳轉
+                window.location.href = 'enterprise/dashboard.html';
+                return;
+            }
+            
+            // 顯示企業登入對話框
+            const email = prompt('請輸入企業電子郵件：\n\n測試帳號：enterprise@test.com');
+            if (!email) return;
+            
+            // 驗證電子郵件格式
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('請輸入有效的電子郵件地址（需要包含 @ 符號）');
+                return;
+            }
+            
+            const password = prompt('請輸入密碼：\n\n測試密碼：password123');
+            if (!password) return;
+            
+            try {
+                // 顯示載入訊息
+                const loadingMsg = document.createElement('div');
+                loadingMsg.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                    text-align: center;
+                `;
+                loadingMsg.innerHTML = `
+                    <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+                    <p>登入中...</p>
+                `;
+                document.body.appendChild(loadingMsg);
+                
+                // 發送登入請求
+                const response = await fetch('/portfolio/api/enterprise/auth.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // 移除載入訊息
+                document.body.removeChild(loadingMsg);
+                
+                if (result.status === 200) {
+                    // 登入成功
+                    localStorage.setItem('user', JSON.stringify({
+                        id: result.data.user_id,
+                        username: result.data.username,
+                        email: result.data.email,
+                        role: result.data.role,
+                        company_name: result.data.company_name
+                    }));
+                    
+                    alert('登入成功！歡迎使用企業平台。');
+                    window.location.href = 'enterprise/dashboard.html';
+                } else {
+                    // 登入失敗
+                    alert('登入失敗：' + (result.message || '用戶名或密碼錯誤'));
+                }
+            } catch (error) {
+                // 移除載入訊息
+                const loadingMsg = document.querySelector('div[style*="position: fixed"]');
+                if (loadingMsg) document.body.removeChild(loadingMsg);
+                
+                console.error('登入錯誤:', error);
+                alert('網路錯誤，請稍後再試。\n\n如果問題持續，請檢查：\n1. XAMPP 是否啟動\n2. MySQL 服務是否運行在端口 3307\n3. 資料庫連接是否正常');
+            }
+        }
+        
         // 測試導覽列功能
         document.getElementById('test-navbar').addEventListener('click', function() {
             console.log('=== 測試導覽列功能 ===');
@@ -417,5 +511,12 @@
             alert('測試完成！請查看瀏覽器控制台的詳細資訊。');
         });
     </script>
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </body>
 </html> 

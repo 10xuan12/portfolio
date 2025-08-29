@@ -1,16 +1,23 @@
 /* Portfolio+ 主要樣式檔案 */
 
+/* 引入主題色彩管理 */
+@import url('./themes.css');
+
+/* 引入主題管理器 */
+@import url('../js/theme-manager.js');
+
 /* CSS 變數定義 */
 :root {
     /* === Portfolio+ 配色方案 === */
     --primary-color: #273ec3;         /* 主色，使用 #273ec3 */
     --primary-dark: #00AEEF;          /* 輔色 Indigo Blue：冷靜專業，側邊欄、分頁列、hover */
-    --background-color: #F4F9FD;      /* 整體背景色，乾淨清新 */
+    --background-color: #bee1fd;      /* 整體背景色，乾淨清新 */
     --card-bg: #FFFFFF;               /* 卡片白底 */
     --text-main: #1E1E1E;             /* 主字體色，標題、主要段落 */
     --text-secondary: #4A4A4A;        /* 次字體色，次標題、提示、標籤 */
     --error-color: #ea4f4f;           /* 強調色（錯誤） */
     --success-color: #5ead73;         /* 強調色（成功） */
+    --secondary-color: #00AEEF;       /* 輔色，用於漸層 */
     --white: #ffffff;
     --yellow: #ffdd00;
     /* 其餘灰階與 spacing、圓角、陰影等保留原設定 */
@@ -74,7 +81,7 @@ body {
 
 /* 導航欄 */
 .navbar {
-    background: var(--primary-color);
+    background: var(--navbar-bg, var(--primary-color));
     box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
@@ -149,12 +156,12 @@ body {
 }
 
 .btn-primary {
-    background: var(--primary-color);
+    background: var(--btn-primary-bg, var(--primary-color));
     color: var(--white);
 }
 
 .btn-primary:hover {
-    background: var(--primary-color);
+    background: var(--btn-primary-hover, var(--primary-dark));
     transform: translateY(-1px);
 }
 
@@ -177,7 +184,7 @@ body {
 /* 英雄區塊 */
 .hero {
     padding: var(--spacing-3xl) 0;
-    background: var(--gray-400);
+    background: var(--background-color);
     color: var(--text-main);
     position: relative;
     overflow: hidden;
@@ -186,8 +193,14 @@ body {
 .hero .container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-2xl);
+    gap: var(--spacing-3xl);
     align-items: center;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 3;
+    min-width: 0;
 }
 
 .hero-title {
@@ -195,10 +208,17 @@ body {
     font-weight: 700;
     margin-bottom: var(--spacing-lg);
     line-height: 1.2;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+.hero-title div {
+    display: block;
+    margin-bottom: var(--spacing-sm);
 }
 
 .text-gradient {
-    background: linear-gradient(45deg, var(--accent-color), var(--white));
+    background: linear-gradient(45deg, #ffefc7, #fbd897, var(--primary-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -226,6 +246,7 @@ body {
     position: relative;
     width: 400px;
     height: 300px;
+    z-index: 1;
 }
 
 .floating-card {
@@ -239,6 +260,7 @@ body {
     align-items: center;
     color: var(--gray-800);
     animation: float 6s ease-in-out infinite;
+    z-index: 2;
 }
 
 .floating-card i {
@@ -782,9 +804,22 @@ body {
         gap: var(--spacing-xl);
     }
     
+    .hero-content {
+        z-index: 3;
+        min-width: 0;
+        padding: 0 var(--spacing-md);
+    }
+    
     .hero-title {
         font-size: var(--text-3xl);
         line-height: 1.2;
+        max-width: 100%;
+        word-wrap: break-word;
+    }
+    
+    .hero-title div {
+        display: block;
+        margin-bottom: var(--spacing-xs);
     }
     
     .hero-subtitle {
@@ -868,10 +903,24 @@ body {
     /* 英雄區塊小螢幕 */
     .hero {
         padding: var(--spacing-2xl) 0;
+        background: var(--primary-dark);
+    }
+    
+    .hero-content {
+        z-index: 3;
+        min-width: 0;
+        padding: 0 var(--spacing-sm);
     }
     
     .hero-title {
         font-size: var(--text-2xl);
+        max-width: 100%;
+        word-wrap: break-word;
+    }
+    
+    .hero-title div {
+        display: block;
+        margin-bottom: var(--spacing-xs);
     }
     
     .hero-subtitle {

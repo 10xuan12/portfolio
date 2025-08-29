@@ -1,0 +1,187 @@
+/* Portfolio+ 主題色彩管理 */
+
+/* === 全域主題變數 === */
+:root {
+    /* 主色調 - 首頁、登入頁等 */
+    --main-primary: #273ec3;
+    --main-primary-dark: #1e2e8f;
+    --main-primary-light: #4a5fd1;
+    
+    /* 學生端 - 活力、創意的藍 */
+    --student-primary: #4A90E2;
+    --student-primary-dark: #357ABD;
+    --student-primary-light: #6BA3E8;
+    --student-secondary: #E3F2FD;
+    --student-accent: #2196F3;
+    
+    /* 企業端 - 穩重、專業的藍 */
+    --enterprise-primary: #2C3E50;
+    --enterprise-primary-dark: #1B2631;
+    --enterprise-primary-light: #34495E;
+    --enterprise-secondary: #ECF0F1;
+    --enterprise-accent: #3498DB;
+    
+    /* 管理員端 - 中性、冷靜的藍 */
+    --admin-primary: #781ee5;
+    --admin-primary-dark: #9515c0;
+    --admin-primary-light: #d442f5;
+    --admin-secondary: #fde8fc;
+    --admin-accent: #aa19d2;
+}
+
+/* === 學生端主題 === */
+body.student-theme {
+    --primary-color: var(--student-primary);
+    --primary-dark: var(--student-primary-dark);
+    --primary-light: var(--student-primary-light);
+    --secondary-color: var(--student-secondary);
+    --accent-color: var(--student-accent);
+    
+    /* 漸層背景 */
+    --gradient-primary: linear-gradient(135deg, var(--student-primary) 0%, var(--student-primary-light) 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--student-secondary) 0%, #ffffff 100%);
+    
+    /* 按鈕樣式 */
+    --btn-primary-bg: var(--student-primary);
+    --btn-primary-hover: var(--student-primary-dark);
+    --btn-secondary-bg: var(--student-secondary);
+    --btn-secondary-hover: #BBDEFB;
+    
+    /* 卡片樣式 */
+    --card-border: 2px solid var(--student-secondary);
+    --card-hover-shadow: 0 8px 25px rgba(74, 144, 226, 0.15);
+    
+    /* 導航欄 */
+    --navbar-bg: var(--student-primary);
+    --navbar-text: #ffffff;
+    --navbar-hover: var(--student-primary-light);
+}
+
+/* === 企業端主題 === */
+body.enterprise-theme {
+    --primary-color: var(--enterprise-primary);
+    --primary-dark: var(--enterprise-primary-dark);
+    --primary-light: var(--enterprise-primary-light);
+    --secondary-color: var(--enterprise-secondary);
+    --accent-color: var(--enterprise-accent);
+    
+    /* 漸層背景 */
+    --gradient-primary: linear-gradient(135deg, var(--enterprise-primary) 0%, var(--enterprise-primary-light) 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--enterprise-secondary) 0%, #ffffff 100%);
+    
+    /* 按鈕樣式 */
+    --btn-primary-bg: var(--enterprise-primary);
+    --btn-primary-hover: var(--enterprise-primary-dark);
+    --btn-secondary-bg: var(--enterprise-secondary);
+    --btn-secondary-hover: #BDC3C7;
+    
+    /* 卡片樣式 */
+    --card-border: 2px solid var(--enterprise-secondary);
+    --card-hover-shadow: 0 8px 25px rgba(44, 62, 80, 0.15);
+    
+    /* 導航欄 */
+    --navbar-bg: var(--enterprise-primary);
+    --navbar-text: #ffffff;
+    --navbar-hover: var(--enterprise-primary-light);
+}
+
+/* === 管理員端主題 === */
+body.admin-theme {
+    --primary-color: var(--admin-primary);
+    --primary-dark: var(--admin-primary-dark);
+    --primary-light: var(--admin-primary-light);
+    --secondary-color: var(--admin-secondary);
+    --accent-color: var(--admin-accent);
+    
+    /* 漸層背景 */
+    --gradient-primary: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-light) 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--admin-secondary) 0%, #ffffff 100%);
+    
+    /* 按鈕樣式 */
+    --btn-primary-bg: var(--admin-primary);
+    --btn-primary-hover: var(--admin-primary-dark);
+    --btn-secondary-bg: var(--admin-secondary);
+    --btn-secondary-hover: #B3E5FC;
+    
+    /* 卡片樣式 */
+    --card-border: 2px solid var(--admin-secondary);
+    --card-hover-shadow: 0 8px 25px rgba(30, 136, 229, 0.15);
+    
+    /* 導航欄 */
+    --navbar-bg: var(--admin-primary);
+    --navbar-text: #ffffff;
+    --navbar-hover: var(--admin-primary-light);
+}
+
+/* === 主色調主題（首頁、登入頁等）=== */
+body.main-theme {
+    --primary-color: var(--main-primary);
+    --primary-dark: var(--main-primary-dark);
+    --primary-light: var(--main-primary-light);
+    --secondary-color: #F4F9FD;
+    --accent-color: #00AEEF;
+    
+    /* 漸層背景 */
+    --gradient-primary: linear-gradient(135deg, var(--main-primary) 0%, var(--main-primary-light) 100%);
+    --gradient-secondary: linear-gradient(135deg, #F4F9FD 0%, #ffffff 100%);
+    
+    /* 按鈕樣式 */
+    --btn-primary-bg: var(--main-primary);
+    --btn-primary-hover: var(--main-primary-dark);
+    --btn-secondary-bg: #F4F9FD;
+    --btn-secondary-hover: #E8F2F9;
+    
+    /* 卡片樣式 */
+    --card-border: 2px solid #E8F2F9;
+    --card-hover-shadow: 0 8px 25px rgba(39, 62, 195, 0.15);
+    
+    /* 導航欄 */
+    --navbar-bg: var(--main-primary);
+    --navbar-text: #ffffff;
+    --navbar-hover: var(--main-primary-light);
+}
+
+/* === 主題切換動畫 === */
+body {
+    transition: all 0.3s ease;
+}
+
+/* === 響應式主題調整 === */
+@media (prefers-color-scheme: dark) {
+    /* 深色模式下的主題調整 */
+    body.student-theme {
+        --secondary-color: #1a237e;
+        --card-border: 2px solid #3949ab;
+    }
+    
+    body.enterprise-theme {
+        --secondary-color: #1a252f;
+        --card-border: 2px solid #34495e;
+    }
+    
+    body.admin-theme {
+        --secondary-color: #0d47a1;
+        --card-border: 2px solid #1976d2;
+    }
+    
+    body.main-theme {
+        --secondary-color: #1a1a2e;
+        --card-border: 2px solid #273ec3;
+    }
+}
+
+/* === 主題工具類別 === */
+.theme-student { background-color: var(--student-primary) !important; }
+.theme-enterprise { background-color: var(--enterprise-primary) !important; }
+.theme-admin { background-color: var(--admin-primary) !important; }
+.theme-main { background-color: var(--main-primary) !important; }
+
+.text-theme-student { color: var(--student-primary) !important; }
+.text-theme-enterprise { color: var(--enterprise-primary) !important; }
+.text-theme-admin { color: var(--admin-primary) !important; }
+.text-theme-main { color: var(--main-primary) !important; }
+
+.border-theme-student { border-color: var(--student-primary) !important; }
+.border-theme-enterprise { border-color: var(--enterprise-primary) !important; }
+.border-theme-admin { border-color: var(--admin-primary) !important; }
+.border-theme-main { border-color: var(--main-primary) !important; }
