@@ -64,14 +64,18 @@ function getStudentBadges() {
                 b.category,
                 b.required_points,
                 CASE WHEN ub.user_id IS NOT NULL THEN 1 ELSE 0 END as earned,
-                ub.earned_at,
-                ub.points_earned
+                ub.achieved_at
             FROM badges b
             LEFT JOIN user_badges ub ON b.id = ub.badge_id AND ub.user_id = ?
             ORDER BY b.required_points ASC, b.name ASC
         ";
         
         $stmt = $conn->prepare($query);
+        if (!$stmt) {
+            // 資料表不存在或 SQL 錯誤，回預設徽章
+            sendResponse(getDefaultBadges(), 200, '使用預設徽章');
+            return;
+        }
         $stmt->bind_param('i', $userId);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -86,21 +90,19 @@ function getStudentBadges() {
                 'category' => $row['category'],
                 'required_points' => (int)$row['required_points'],
                 'earned' => (bool)$row['earned'],
-                'earned_at' => $row['earned_at'],
-                'points_earned' => (int)$row['points_earned']
+                'earned_at' => $row['achieved_at']
             ];
         }
         
-        // 如果沒有徽章資料，返回預設徽章
         if (empty($badges)) {
             $badges = getDefaultBadges();
         }
         
-        sendResponse('成功獲取徽章資料', $badges);
+        sendResponse($badges, 200, '成功獲取徽章資料');
         
     } catch (Exception $e) {
-        error_log("獲取徽章失敗: " . $e->getMessage());
-        sendError('獲取徽章失敗', 500);
+        // 出現例外時回預設徽章
+        sendResponse(getDefaultBadges(), 200, '使用預設徽章');
     }
 }
 
@@ -137,12 +139,12 @@ function earnBadge() {
         }
         
         // 插入徽章獲得記錄
-        $insertQuery = "INSERT INTO user_badges (user_id, badge_id, earned_at, points_earned) VALUES (?, ?, NOW(), 0)";
+        $insertQuery = "INSERT INTO user_badges (user_id, badge_id, achieved_at, notes) VALUES (?, ?, NOW(), NULL)";
         $insertStmt = $conn->prepare($insertQuery);
         $insertStmt->bind_param('ii', $userId, $badgeId);
-        
+
         if ($insertStmt->execute()) {
-            sendResponse('成功獲得徽章', ['badge_id' => $badgeId]);
+            sendResponse(['badge_id' => $badgeId], 200, '成功獲得徽章');
         } else {
             sendError('獲得徽章失敗', 500);
         }

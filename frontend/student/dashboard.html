@@ -124,7 +124,7 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
-    <script src="../js/config.js"></script>
+    <script src="../js/config.js?v=20250829-1"></script>
     <script>
         // 等待配置初始化完成後再載入其他腳本
         document.addEventListener('DOMContentLoaded', function() {
@@ -145,33 +145,62 @@
         
         function loadRemainingScripts() {
             // 動態載入其他腳本
+            const v = '20250829-1';
             const scripts = [
-                '../js/mock-data.js',
-                '../js/api-service.js',
-                '../js/app.js',
-                '../js/student/dashboard.js'
+                `../js/mock-data.js?v=${v}`,
+                `../js/api-service.js?v=${v}`,
+                `../js/app.js?v=${v}`,
+                `../js/student/dashboard.js?v=${v}`
             ];
             
             scripts.forEach((src, index) => {
                 const script = document.createElement('script');
                 script.src = src;
                 script.onload = function() {
-                    if (index === scripts.length - 1) {
-                        // 最後一個腳本載入完成，初始化頁面
-                        if (typeof UI !== 'undefined' && UI.loadNavbar) {
-                            UI.loadNavbar();
+                    console.log('已載入腳本:', src);
+                    // 若是 api-service.js 載入完成，主動初始化一次
+                    if (src.indexOf('api-service.js') !== -1) {
+                        if (typeof window.initializeApiService === 'function') {
+                            console.log('呼叫 initializeApiService()');
+                            window.initializeApiService();
+                        } else {
+                            console.warn('initializeApiService 尚不可用');
                         }
-                        
-                        // 初始化儀表板功能
-                        initializeDashboard();
                     }
+                    if (index === scripts.length - 1) {
+                        // 最後一個腳本載入完成，等待 API 服務初始化
+                        waitForApiService();
+                    }
+                };
+                script.onerror = function(e) {
+                    console.error('腳本載入失敗:', src, e);
                 };
                 document.head.appendChild(script);
             });
         }
         
+        // 等待 API 服務初始化
+        function waitForApiService() {
+            if (typeof apiService !== 'undefined' && apiService) {
+                console.log('API 服務已準備就緒');
+                initializeDashboard();
+            } else {
+                console.log('等待 API 服務初始化...');
+                // 若可用則嘗試初始化
+                if (typeof window.initializeApiService === 'function') {
+                    window.initializeApiService();
+                }
+                setTimeout(waitForApiService, 200);
+            }
+        }
+        
         // 初始化儀表板功能
         function initializeDashboard() {
+            // 載入導航欄
+            if (typeof UI !== 'undefined' && UI.loadNavbar) {
+                UI.loadNavbar();
+            }
+            
             // 更新歡迎標題
             updateWelcomeTitle();
             

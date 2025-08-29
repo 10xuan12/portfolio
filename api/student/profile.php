@@ -1,6 +1,18 @@
 <?php
 require_once '../config.php';
 
+// 設定 CORS 與回應格式
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-ID');
+header('Content-Type: application/json; charset=utf-8');
+
+// 預檢請求
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 // 學生個人資料 API
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
@@ -36,22 +48,23 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
 // 取得學生個人資料
 function getStudentProfile() {
-    $userId = checkPermission('student');
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
     
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT 
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT 
             u.id, u.username, u.email, u.created_at,
             sp.first_name, sp.last_name, sp.display_name, sp.gender, 
             sp.birth_date, sp.phone, sp.address, sp.bio, sp.avatar_url,
             sp.student_id, sp.major, sp.school, sp.grade, 
-            sp.graduation_year, sp.skills, sp.interests,
-            sp.github, sp.linkedin, sp.instagram, sp.facebook,
-            sp.languages, sp.portfolio_count, sp.view_count, sp.like_count, sp.badge_count,
-            sp.website, sp.resume_url, sp.is_public, sp.last_login
+            sp.graduation_year, sp.skills, sp.interests
         FROM users u
         LEFT JOIN student_profiles sp ON u.id = sp.user_id
-        WHERE u.id = ?
-    ");
+        WHERE u.id = ?"
+    );
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -76,19 +89,10 @@ function getStudentProfile() {
         $profile['graduation_year'] = '';
         $profile['skills'] = '';
         $profile['interests'] = '';
-        $profile['github'] = '';
-        $profile['linkedin'] = '';
-        $profile['instagram'] = '';
-        $profile['facebook'] = '';
-        $profile['languages'] = '';
         $profile['portfolio_count'] = 0;
         $profile['view_count'] = 0;
         $profile['like_count'] = 0;
         $profile['badge_count'] = 0;
-        $profile['website'] = '';
-        $profile['resume_url'] = '';
-        $profile['is_public'] = true;
-        $profile['last_login'] = date('Y-m-d H:i:s');
     } else {
         $profile['is_first_login'] = false;
         
@@ -106,7 +110,11 @@ function getStudentProfile() {
 
 // 更新學生個人資料
 function updateStudentProfile($data) {
-    $userId = checkPermission('student');
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
     
     // 驗證必填欄位
     validateRequired($data, ['first_name', 'last_name']);
@@ -153,77 +161,33 @@ function updateStudentProfile($data) {
     
     if ($exists) {
         // 更新現有資料
-        $stmt = $GLOBALS['conn']->prepare("
-            UPDATE student_profiles SET 
+        $stmt = $GLOBALS['conn']->prepare(
+            "UPDATE student_profiles SET 
                 first_name = ?, last_name = ?, display_name = ?, gender = ?,
                 birth_date = ?, phone = ?, address = ?, bio = ?, student_id = ?,
                 major = ?, school = ?, grade = ?, graduation_year = ?, 
                 skills = ?, interests = ?, 
-                github = ?, linkedin = ?, instagram = ?, facebook = ?,
-                languages = ?, portfolio_count = ?, view_count = ?, like_count = ?, badge_count = ?,
-                website = ?, resume_url = ?, is_public = ?, last_login = ?,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = ?
-        ");
-        
-        // 設定新欄位的預設值
-        $github = $data['github'] ?? '';
-        $linkedin = $data['linkedin'] ?? '';
-        $instagram = $data['instagram'] ?? '';
-        $facebook = $data['facebook'] ?? '';
-        $languages = $data['languages'] ?? '';
-        $portfolioCount = (int)($data['portfolio_count'] ?? 0);
-        $viewCount = (int)($data['view_count'] ?? 0);
-        $likeCount = (int)($data['like_count'] ?? 0);
-        $badgeCount = (int)($data['badge_count'] ?? 0);
-        $website = $data['website'] ?? '';
-        $resumeUrl = $data['resume_url'] ?? '';
-        $isPublic = (bool)($data['is_public'] ?? true);
-        $lastLogin = date('Y-m-d H:i:s');
-        
-        $stmt->bind_param("sssssssssssssssssssiiissis", 
+            WHERE user_id = ?"
+        );
+        $stmt->bind_param("ssssssssssssssi", 
             $firstName, $lastName, $displayName, $gender, $birthDate, 
             $phone, $address, $bio, $studentId, $major, $school, 
-            $grade, $graduationYear, $skills, $interests, 
-            $github, $linkedin, $instagram, $facebook,
-            $languages, $portfolioCount, $viewCount, $likeCount, $badgeCount,
-            $website, $resumeUrl, $isPublic, $lastLogin, $userId
+            $grade, $graduationYear, $skills, $interests, $userId
         );
     } else {
         // 建立新資料
-        $stmt = $GLOBALS['conn']->prepare("
-            INSERT INTO student_profiles (
+        $stmt = $GLOBALS['conn']->prepare(
+            "INSERT INTO student_profiles (
                 user_id, first_name, last_name, display_name, gender,
                 birth_date, phone, address, bio, student_id,
-                major, school, grade, graduation_year, skills, interests,
-                github, linkedin, instagram, facebook, languages,
-                portfolio_count, view_count, like_count, badge_count,
-                website, resume_url, is_public, last_login
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        
-        // 設定新欄位的預設值
-        $github = $data['github'] ?? '';
-        $linkedin = $data['linkedin'] ?? '';
-        $instagram = $data['instagram'] ?? '';
-        $facebook = $data['facebook'] ?? '';
-        $languages = $data['languages'] ?? '';
-        $portfolioCount = (int)($data['portfolio_count'] ?? 0);
-        $viewCount = (int)($data['view_count'] ?? 0);
-        $likeCount = (int)($data['like_count'] ?? 0);
-        $badgeCount = (int)($data['badge_count'] ?? 0);
-        $website = $data['website'] ?? '';
-        $resumeUrl = $data['resume_url'] ?? '';
-        $isPublic = (bool)($data['is_public'] ?? true);
-        $lastLogin = date('Y-m-d H:i:s');
-        
-        $stmt->bind_param("issssssssssssssssssssiiissis", 
+                major, school, grade, graduation_year, skills, interests
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("isssssssssssssss", 
             $userId, $firstName, $lastName, $displayName, $gender, $birthDate, 
             $phone, $address, $bio, $studentId, $major, $school, 
-            $grade, $graduationYear, $skills, $interests,
-            $github, $linkedin, $instagram, $facebook, $languages,
-            $portfolioCount, $viewCount, $likeCount, $badgeCount,
-            $website, $resumeUrl, $isPublic, $lastLogin
+            $grade, $graduationYear, $skills, $interests
         );
     }
     
@@ -236,7 +200,11 @@ function updateStudentProfile($data) {
 
 // 上傳頭像
 function uploadAvatar() {
-    $userId = checkPermission('student');
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
     
     if (!isset($_FILES['avatar']) || $_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
         sendError('檔案上傳失敗', 400);
@@ -268,9 +236,9 @@ function uploadAvatar() {
     // 更新資料庫中的頭像路徑
     $avatarUrl = 'uploads/avatars/' . $filename;
     
-    $stmt = $GLOBALS['conn']->prepare("
-        UPDATE student_profiles SET avatar_url = ? WHERE user_id = ?
-    ");
+    $stmt = $GLOBALS['conn']->prepare(
+        "UPDATE student_profiles SET avatar_url = ? WHERE user_id = ?"
+    );
     $stmt->bind_param("si", $avatarUrl, $userId);
     
     if ($stmt->execute()) {
@@ -288,35 +256,35 @@ function uploadAvatar() {
 // 取得學生統計資料
 function getStudentStats($userId) {
     // 作品數量
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT COUNT(*) as count FROM portfolios WHERE user_id = ? AND status = 'published'
-    ");
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT COUNT(*) as count FROM portfolios WHERE user_id = ? AND status = 'published'"
+    );
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $portfolioCount = $stmt->get_result()->fetch_assoc()['count'];
     
     // 總瀏覽次數
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT SUM(view_count) as total FROM portfolios WHERE user_id = ?
-    ");
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT SUM(view_count) as total FROM portfolios WHERE user_id = ?"
+    );
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $totalViews = $stmt->get_result()->fetch_assoc()['total'] ?: 0;
     
     // 總讚數
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT SUM(like_count) as total FROM portfolios WHERE user_id = ?
-    ");
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT SUM(like_count) as total FROM portfolios WHERE user_id = ?"
+    );
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $totalLikes = $stmt->get_result()->fetch_assoc()['total'] ?: 0;
     
     // 評論數量
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT COUNT(*) as count FROM comments c
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT COUNT(*) as count FROM comments c
         JOIN portfolios p ON c.portfolio_id = p.id
-        WHERE p.user_id = ? AND c.is_approved = 1
-    ");
+        WHERE p.user_id = ? AND c.is_approved = 1"
+    );
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $commentCount = $stmt->get_result()->fetch_assoc()['count'];
@@ -327,5 +295,23 @@ function getStudentStats($userId) {
         'total_likes' => (int)$totalLikes,
         'comment_count' => (int)$commentCount
     ];
+}
+
+// 取得使用者 ID（統一邏輯）
+function getUserId() {
+    if (isset($_SESSION['user_id'])) {
+        return (int)$_SESSION['user_id'];
+    }
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+    if (isset($headers['X-User-ID'])) {
+        return (int)$headers['X-User-ID'];
+    }
+    if (isset($_GET['user_id'])) {
+        return (int)$_GET['user_id'];
+    }
+    if (isset($_POST['user_id'])) {
+        return (int)$_POST['user_id'];
+    }
+    return null;
 }
 ?>

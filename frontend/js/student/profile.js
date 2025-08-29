@@ -107,7 +107,7 @@ async function loadStudentData() {
                     skills: profileResult.data.skills || '',
                     languages: profileResult.data.languages || '',
                     interests: profileResult.data.interests || '',
-                    avatar: profileResult.data.avatar_url || `https://via.placeholder.com/120x120/667eea/ffffff?text=${encodeURIComponent(profileResult.data.first_name || '')}`,
+                    avatar: profileResult.data.avatar_url || '/portfolio/uploads/avatars/default-avatar.jpg',
                     stats: {
                         portfolios: profileResult.data.portfolio_count || 0,
                         views: profileResult.data.view_count || 0,
