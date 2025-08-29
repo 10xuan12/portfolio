@@ -130,32 +130,7 @@
             min-height: 100px;
         }
         
-        .terms-checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .terms-checkbox input[type="checkbox"] {
-            width: auto;
-            margin-top: var(--spacing-xs);
-        }
-        
-        .terms-checkbox label {
-            font-size: var(--text-sm);
-            color: var(--gray-600);
-            line-height: 1.5;
-        }
-        
-        .terms-checkbox a {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        .terms-checkbox a:hover {
-            text-decoration: underline;
-        }
+
         
         .register-btn {
             width: 100%;
@@ -264,24 +239,28 @@
                         <h3>基本資料</h3>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="student-name">姓名</label>
-                                <input type="text" id="student-name" name="name" required placeholder="請輸入您的姓名">
+                                <label for="student-lastname">姓氏</label>
+                                <input type="text" id="student-lastname" name="last_name" data-required="true" placeholder="請輸入您的姓氏">
+                            </div>
+                            <div class="form-group">
+                                <label for="student-firstname">名字</label>
+                                <input type="text" id="student-firstname" name="first_name" data-required="true" placeholder="請輸入您的名字">
                             </div>
                             <div class="form-group">
                                 <label for="student-email">電子郵件</label>
-                                <input type="email" id="student-email" name="email" required placeholder="請輸入您的電子郵件">
+                                <input type="email" id="student-email" name="email" data-required="true" placeholder="請輸入您的電子郵件">
                             </div>
                             <div class="form-group">
                                 <label for="student-password">密碼</label>
-                                <input type="password" id="student-password" name="password" required placeholder="請輸入密碼">
+                                <input type="password" id="student-password" name="password" data-required="true" placeholder="請輸入密碼">
                             </div>
                             <div class="form-group">
                                 <label for="student-confirm-password">確認密碼</label>
-                                <input type="password" id="student-confirm-password" name="confirm_password" required placeholder="請再次輸入密碼">
+                                <input type="password" id="student-confirm-password" name="confirm_password" data-required="true" placeholder="請再次輸入密碼">
                             </div>
                             <div class="form-group">
                                 <label for="student-department">科系</label>
-                                <select id="student-department" name="department" required>
+                                <select id="student-department" name="department" data-required="true">
                                     <option value="">請選擇科系</option>
                                     <option value="資訊管理學系">資訊管理學系</option>
                                     <option value="財務金融學系">財務金融學系</option>
@@ -290,7 +269,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="student-grade">年級</label>
-                                <select id="student-grade" name="grade" required>
+                                <select id="student-grade" name="grade" data-required="true">
                                     <option value="">請選擇年級</option>
                                     <option value="大學三年級">大學三年級</option>
                                     <option value="大學四年級">大學四年級</option>
@@ -322,23 +301,23 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="enterprise-name">公司名稱</label>
-                                <input type="text" id="enterprise-name" name="name" required placeholder="請輸入公司名稱">
+                                <input type="text" id="enterprise-name" name="enterprise_name" data-required="true" placeholder="請輸入公司名稱">
                             </div>
                             <div class="form-group">
                                 <label for="enterprise-email">公司電子郵件</label>
-                                <input type="email" id="enterprise-email" name="email" required placeholder="請輸入公司電子郵件">
+                                <input type="email" id="enterprise-email" name="enterprise_email" data-required="true" placeholder="請輸入公司電子郵件">
                             </div>
                             <div class="form-group">
                                 <label for="enterprise-password">密碼</label>
-                                <input type="password" id="enterprise-password" name="password" required placeholder="請輸入密碼">
+                                <input type="password" id="enterprise-password" name="enterprise_password" data-required="true" placeholder="請輸入密碼">
                             </div>
                             <div class="form-group">
                                 <label for="enterprise-confirm-password">確認密碼</label>
-                                <input type="password" id="enterprise-confirm-password" name="confirm_password" required placeholder="請再次輸入密碼">
+                                <input type="password" id="enterprise-confirm-password" name="enterprise_confirm_password" data-required="true" placeholder="請再次輸入密碼">
                             </div>
                             <div class="form-group">
                                 <label for="enterprise-industry">產業類型</label>
-                                <select id="enterprise-industry" name="industry" required>
+                                <select id="enterprise-industry" name="enterprise_industry" data-required="true">
                                     <option value="">請選擇產業類型</option>
                                     <option value="科技業">科技業</option>
                                     <option value="金融業">金融業</option>
@@ -349,7 +328,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="enterprise-size">公司規模</label>
-                                <select id="enterprise-size" name="size" required>
+                                <select id="enterprise-size" name="enterprise_size" data-required="true">
                                     <option value="">請選擇公司規模</option>
                                     <option value="1-10人">1-10人</option>
                                     <option value="11-50人">11-50人</option>
@@ -366,25 +345,25 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="enterprise-phone">聯絡電話</label>
-                                <input type="tel" id="enterprise-phone" name="phone" placeholder="請輸入聯絡電話">
+                                <input type="tel" id="enterprise-phone" name="enterprise_phone" placeholder="請輸入聯絡電話">
                             </div>
                             <div class="form-group">
                                 <label for="enterprise-address">公司地址</label>
-                                <input type="text" id="enterprise-address" name="address" placeholder="請輸入公司地址">
+                                <input type="text" id="enterprise-address" name="enterprise_address" placeholder="請輸入公司地址">
                             </div>
                             <div class="form-group">
                                 <label for="enterprise-website">公司網站</label>
-                                <input type="url" id="enterprise-website" name="website" placeholder="請輸入公司網站">
+                                <input type="url" id="enterprise-website" name="enterprise_website" placeholder="請輸入公司網站">
                             </div>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <h3>公司簡介</h3>
-                        <div class="form-group full-width">
-                            <label for="enterprise-description">公司描述</label>
-                            <textarea id="enterprise-description" name="description" placeholder="請簡介您的公司..."></textarea>
-                        </div>
+                                                    <div class="form-group full-width">
+                                <label for="enterprise-description">公司描述</label>
+                                <textarea id="enterprise-description" name="enterprise_description" placeholder="請簡介您的公司..."></textarea>
+                            </div>
                     </div>
                 </div>
 
@@ -395,23 +374,23 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="admin-name">姓名</label>
-                                <input type="text" id="admin-name" name="name" required placeholder="請輸入您的姓名">
+                                <input type="text" id="admin-name" name="admin_name" data-required="true" placeholder="請輸入您的姓名">
                             </div>
                             <div class="form-group">
                                 <label for="admin-email">電子郵件</label>
-                                <input type="email" id="admin-email" name="email" required placeholder="請輸入您的電子郵件">
+                                <input type="email" id="admin-email" name="admin_email" data-required="true" placeholder="請輸入您的電子郵件">
                             </div>
                             <div class="form-group">
                                 <label for="admin-password">密碼</label>
-                                <input type="password" id="admin-password" name="password" required placeholder="請輸入密碼">
+                                <input type="password" id="admin-password" name="admin_password" data-required="true" placeholder="請輸入密碼">
                             </div>
                             <div class="form-group">
                                 <label for="admin-confirm-password">確認密碼</label>
-                                <input type="password" id="admin-confirm-password" name="confirm_password" required placeholder="請再次輸入密碼">
+                                <input type="password" id="admin-confirm-password" name="admin_confirm_password" data-required="true" placeholder="請再次輸入密碼">
                             </div>
                             <div class="form-group">
                                 <label for="admin-role">管理員角色</label>
-                                <select id="admin-role" name="role" required>
+                                <select id="admin-role" name="admin_role" data-required="true">
                                     <option value="">請選擇角色</option>
                                     <option value="super_admin">超級管理員</option>
                                     <option value="content_moderator">內容審核員</option>
@@ -422,12 +401,7 @@
                     </div>
                 </div>
 
-                <div class="terms-checkbox">
-                    <input type="checkbox" id="terms" name="terms" required>
-                    <label for="terms">
-                        我同意 <a href="#" target="_blank">服務條款</a> 和 <a href="#" target="_blank">隱私政策</a>
-                    </label>
-                </div>
+
 
                 <button type="submit" class="register-btn">
                     <i class="fas fa-user-plus"></i>
@@ -442,7 +416,7 @@
     </div>
 
     <script>
-        // TODO: 實作角色選擇功能
+        // 實作角色選擇功能
         const roleOptions = document.querySelectorAll('.role-option');
         const formToggles = document.querySelectorAll('.form-toggle');
         let selectedRole = 'student';
@@ -455,19 +429,71 @@
                 this.classList.add('active');
                 // 更新選中的角色
                 selectedRole = this.dataset.role;
+                console.log('角色已切換為:', selectedRole);
                 
                 // 切換表單顯示
                 formToggles.forEach(form => {
                     form.classList.remove('show');
                 });
-                document.getElementById(selectedRole + 'Form').classList.add('show');
+                const targetForm = document.getElementById(selectedRole + 'Form');
+                if (targetForm) {
+                    targetForm.classList.add('show');
+                    console.log('表單已切換到:', selectedRole + 'Form');
+                } else {
+                    console.error('找不到表單:', selectedRole + 'Form');
+                }
+                
+                // 重新驗證表單
+                validateCurrentForm();
             });
         });
+        
+        // 驗證當前顯示的表單
+        function validateCurrentForm() {
+            const currentForm = document.getElementById(selectedRole + 'Form');
+            if (!currentForm) return false;
+            
+            // 檢查所有 data-required 欄位
+            const requiredFields = currentForm.querySelectorAll('[data-required="true"]');
+            
+            let isValid = true;
+            requiredFields.forEach(field => {
+                if (field.type === 'checkbox') {
+                    if (!field.checked) {
+                        field.setCustomValidity('此欄位為必填');
+                        isValid = false;
+                    } else {
+                        field.setCustomValidity('');
+                    }
+                } else {
+                    if (field.value === '') {
+                        field.setCustomValidity('此欄位為必填');
+                        isValid = false;
+                    } else {
+                        field.setCustomValidity('');
+                    }
+                }
+            });
+            
 
-        // TODO: 實作密碼確認驗證
+            
+            return isValid;
+        }
+
+        // 實作密碼確認驗證
         function validatePasswords() {
-            const passwordField = document.getElementById(selectedRole + '-password');
-            const confirmPasswordField = document.getElementById(selectedRole + '-confirm-password');
+            let passwordField, confirmPasswordField;
+            
+            if (selectedRole === 'student') {
+                passwordField = document.getElementById('student-password');
+                confirmPasswordField = document.getElementById('student-confirm-password');
+            } else if (selectedRole === 'enterprise') {
+                passwordField = document.getElementById('enterprise-password');
+                confirmPasswordField = document.getElementById('enterprise-confirm-password');
+            } else if (selectedRole === 'admin') {
+                passwordField = document.getElementById('admin-password');
+                confirmPasswordField = document.getElementById('admin-confirm-password');
+            }
             
             if (passwordField && confirmPasswordField) {
                 if (passwordField.value !== confirmPasswordField.value) {
@@ -480,72 +506,152 @@
             }
             return true;
         }
+        
+        // 檢查密碼長度
+        function validatePasswordLength(password) {
+            return password.length >= 8;
+        }
+        
+        // 頁面載入時初始化驗證
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('頁面載入完成，初始角色:', selectedRole);
+            validateCurrentForm();
+        });
 
         // 監聽密碼欄位變化
         document.addEventListener('input', function(e) {
-            if (e.target.name === 'password' || e.target.name === 'confirm_password') {
+            // 檢查是否為密碼欄位
+            if (e.target.name && (e.target.name.includes('password') || e.target.name.includes('confirm_password'))) {
                 validatePasswords();
+            }
+            
+            // 即時驗證當前表單
+            if (e.target.closest('#' + selectedRole + 'Form')) {
+                validateCurrentForm();
+            }
+        });
+        
+        // 監聽表單提交前的驗證
+        document.addEventListener('submit', function(e) {
+            if (!validateCurrentForm()) {
+                e.preventDefault();
+                alert('請填寫所有必填欄位');
+                return false;
             }
         });
 
-        // TODO: 實作註冊表單提交
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        // 實作註冊表單提交
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // 驗證當前表單
+            if (!validateCurrentForm()) {
+                alert('請填寫所有必填欄位');
+                return;
+            }
             
             if (!validatePasswords()) {
                 alert('請確認密碼輸入正確');
                 return;
             }
 
-            // 收集表單資料
-            const formData = new FormData(this);
-            const registerData = {
-                role: selectedRole,
-                name: formData.get('name'),
-                email: formData.get('email'),
-                password: formData.get('password'),
-                confirm_password: formData.get('confirm_password'),
-                terms: formData.get('terms')
+            // 收集當前角色的表單資料
+            console.log('當前選擇的角色:', selectedRole);
+            const currentForm = document.getElementById(selectedRole + 'Form');
+            console.log('找到的表單元素:', currentForm);
+            
+            if (!currentForm) {
+                alert('找不到對應的表單，請重新選擇角色');
+                return;
+            }
+            
+            // 手動收集表單資料
+            let formData = {};
+            const inputs = currentForm.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
+                }
+            });
+            
+            let registerData = {
+                action: 'register',
+                role: selectedRole
             };
 
-            // 根據角色添加額外欄位
+            // 根據角色收集對應的欄位資料
             if (selectedRole === 'student') {
-                registerData.department = formData.get('department');
-                registerData.grade = formData.get('grade');
-                registerData.phone = formData.get('phone');
-                registerData.address = formData.get('address');
+                registerData.username = formData.email;
+                registerData.email = formData.email;
+                registerData.password = formData.password;
+                
+                // 直接使用分開的姓氏和名字欄位
+                registerData.first_name = formData.first_name || '';
+                registerData.last_name = formData.last_name || '';
+                
+                registerData.department = formData.department;
+                registerData.grade = formData.grade;
+                registerData.phone = formData.phone;
+                registerData.address = formData.address;
             } else if (selectedRole === 'enterprise') {
-                registerData.industry = formData.get('industry');
-                registerData.size = formData.get('size');
-                registerData.phone = formData.get('phone');
-                registerData.address = formData.get('address');
-                registerData.website = formData.get('website');
-                registerData.description = formData.get('description');
+                registerData.username = formData.enterprise_email;
+                registerData.email = formData.enterprise_email;
+                registerData.password = formData.enterprise_password;
+                registerData.company_name = formData.enterprise_name;
+                registerData.industry = formData.enterprise_industry;
+                registerData.size = formData.enterprise_size;
+                registerData.phone = formData.enterprise_phone;
+                registerData.address = formData.enterprise_address;
+                registerData.website = formData.enterprise_website;
+                registerData.description = formData.enterprise_description;
             } else if (selectedRole === 'admin') {
-                registerData.role = formData.get('role');
+                registerData.username = formData.admin_email;
+                registerData.email = formData.admin_email;
+                registerData.password = formData.admin_password;
+                registerData.first_name = formData.admin_name ? formData.admin_name.split(' ')[0] || formData.admin_name : '';
+                registerData.last_name = formData.admin_name ? formData.admin_name.split(' ')[1] || '' : '';
+                registerData.admin_role = formData.admin_role;
             }
 
             console.log('註冊資訊:', registerData);
 
-            // TODO: 發送註冊請求到後端 API
-            // 例如：fetch('/api/register', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(registerData)
-            // })
+            try {
+                // 發送註冊請求到後端 API
+                const response = await fetch('/portfolio/api/student/auth-direct.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(registerData)
+                });
 
-            // 模擬註冊成功
-            alert(`註冊成功！歡迎加入 Portfolio+ ${selectedRole} 社群`);
-            
-            // 導向登入頁面
-            window.location.href = 'login.html';
+                const result = await response.json();
+                console.log('註冊回應:', result);
+
+                if (result.status === 200) {
+                    // 註冊成功
+                    alert(`註冊成功！歡迎加入 Portfolio+ ${selectedRole} 社群`);
+                    
+                    // 導向登入頁面
+                    window.location.href = 'login.html';
+                } else {
+                    // 註冊失敗
+                    alert('註冊失敗：' + (result.message || '未知錯誤'));
+                }
+            } catch (error) {
+                console.error('註冊錯誤:', error);
+                alert('註冊失敗，請稍後再試');
+            }
         });
 
-        // TODO: 實作表單驗證
+        // 實作表單驗證
         // 添加即時驗證功能
         document.addEventListener('input', function(e) {
             const field = e.target;
             const value = field.value;
+            
+            // 只驗證當前角色的表單欄位
+            if (!field.closest('#' + selectedRole + 'Form')) {
+                return;
+            }
             
             // 電子郵件驗證
             if (field.type === 'email') {
@@ -558,7 +664,7 @@
             }
             
             // 密碼強度驗證
-            if (field.type === 'password' && field.name === 'password') {
+            if (field.type === 'password' && (field.name === 'password' || field.name === 'enterprise_password' || field.name === 'admin_password')) {
                 if (value && value.length < 8) {
                     field.setCustomValidity('密碼至少需要 8 個字元');
                 } else {

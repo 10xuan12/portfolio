@@ -1,0 +1,475 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Portfolio+ API",
+    "description": "Portfolio+ 系統的後端 API 文檔",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Portfolio+ Team",
+      "email": "support@portfolio-plus.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost/portfolio",
+      "description": "本地開發環境"
+    },
+    {
+      "url": "http://172.20.10.2/portfolio",
+      "description": "團隊開發環境"
+    }
+  ],
+  "paths": {
+    "/api/student/auth/login": {
+      "post": {
+        "tags": ["學生認證"],
+        "summary": "學生登入",
+        "description": "學生使用電子郵件和密碼登入系統",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "學生電子郵件"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "學生密碼"
+                  }
+                },
+                "required": ["email", "password"]
+              },
+              "example": {
+                "email": "student@example.com",
+                "password": "password123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登入成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "登入失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/student/auth/register": {
+      "post": {
+        "tags": ["學生認證"],
+        "summary": "學生註冊",
+        "description": "新學生註冊帳號",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "學生電子郵件"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "學生密碼"
+                  },
+                  "confirm_password": {
+                    "type": "string",
+                    "description": "確認密碼"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "description": "名字"
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "description": "姓氏"
+                  }
+                },
+                "required": ["email", "password", "confirm_password", "first_name", "last_name"]
+              },
+              "example": {
+                "email": "newstudent@example.com",
+                "password": "password123",
+                "confirm_password": "password123",
+                "first_name": "小明",
+                "last_name": "王"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "註冊成功"
+          },
+          "400": {
+            "description": "註冊失敗"
+          }
+        }
+      }
+    },
+    "/api/student/profile": {
+      "get": {
+        "tags": ["學生檔案"],
+        "summary": "獲取學生檔案",
+        "description": "獲取當前登入學生的個人檔案資訊",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功獲取檔案",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "profile": {
+                          "type": "object"
+                        },
+                        "statistics": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["學生檔案"],
+        "summary": "更新學生檔案",
+        "description": "更新學生個人檔案資訊",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["updateStudentProfile", "uploadAvatar"]
+                  },
+                  "data": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功"
+          },
+          "400": {
+            "description": "更新失敗"
+          }
+        }
+      }
+    },
+    "/api/student/portfolio": {
+      "get": {
+        "tags": ["學生作品集"],
+        "summary": "獲取作品集列表",
+        "description": "獲取學生的作品集列表，支援分頁和篩選",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "action",
+            "in": "query",
+            "description": "操作類型",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["getPortfolioList", "getPortfolioDetail", "getCategories"]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "頁碼",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每頁數量",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功獲取作品集"
+          }
+        }
+      },
+      "post": {
+        "tags": ["學生作品集"],
+        "summary": "管理作品集",
+        "description": "創建、更新、刪除作品集或上傳檔案",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["createPortfolio", "updatePortfolio", "deletePortfolio", "uploadPortfolioFiles", "togglePortfolioStatus"]
+                  },
+                  "data": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "操作成功"
+          },
+          "400": {
+            "description": "操作失敗"
+          }
+        }
+      }
+    },
+    "/api/student/resume": {
+      "get": {
+        "tags": ["學生履歷"],
+        "summary": "獲取履歷資訊",
+        "description": "獲取學生的履歷列表、詳情或模板",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "action",
+            "in": "query",
+            "description": "操作類型",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["getResumeList", "getResumeDetail", "getResumeTemplates", "exportResume"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功獲取履歷"
+          }
+        }
+      },
+      "post": {
+        "tags": ["學生履歷"],
+        "summary": "管理履歷",
+        "description": "創建、更新、刪除或複製履歷",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["createResume", "updateResume", "deleteResume", "duplicateResume"]
+                  },
+                  "data": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "操作成功"
+          },
+          "400": {
+            "description": "操作失敗"
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "tags": ["通用功能"],
+        "summary": "搜尋功能",
+        "description": "搜尋作品集、學生或企業",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "搜尋關鍵字",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "搜尋類型",
+            "schema": {
+              "type": "string",
+              "enum": ["portfolio", "student", "enterprise"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "搜尋成功"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "PHPSESSID",
+        "description": "PHP Session ID"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "錯誤訊息"
+          },
+          "error_code": {
+            "type": "string",
+            "example": "VALIDATION_ERROR"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "學生認證",
+      "description": "學生登入、註冊、登出等認證相關操作"
+    },
+    {
+      "name": "學生檔案",
+      "description": "學生個人檔案管理"
+    },
+    {
+      "name": "學生作品集",
+      "description": "學生作品集管理"
+    },
+    {
+      "name": "學生履歷",
+      "description": "學生履歷管理"
+    },
+    {
+      "name": "通用功能",
+      "description": "所有角色都可以使用的功能"
+    }
+  ]
+}

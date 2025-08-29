@@ -109,10 +109,40 @@ function getTemplateName(template) {
 }
 
 // 載入履歷資料
-function loadResumeData() {
-    // TODO: 從後端 API 載入履歷資料
-    // const response = await fetch('/api/student/resume');
-    // resumeData = await response.json();
+async function loadResumeData() {
+    try {
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
+        }
+        
+        // 從後端 API 載入履歷資料
+        const response = await fetch(`/portfolio/api/student/resume.php?action=get&user_id=${user.id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': user.id
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200 && result.data) {
+            resumeData = result.data;
+        } else {
+            throw new Error(result.message || '載入履歷資料失敗');
+        }
+        
+    } catch (error) {
+        console.error('載入履歷資料失敗:', error);
+        Utils.showNotification('載入履歷資料失敗，請稍後再試', 'error');
+        // 如果 API 失敗，使用預設資料
+        resumeData = getDefaultResumeData();
+    }
     
     // 填充表單資料
     document.getElementById('name').value = resumeData.basic.name;
@@ -123,6 +153,26 @@ function loadResumeData() {
     document.getElementById('website').value = resumeData.basic.website;
     document.getElementById('summary').value = resumeData.basic.summary;
     document.getElementById('skills').value = resumeData.skills;
+}
+
+// 取得預設履歷資料
+function getDefaultResumeData() {
+    return {
+        basic: {
+            name: '',
+            title: '',
+            email: '',
+            phone: '',
+            address: '',
+            website: '',
+            summary: ''
+        },
+        skills: '',
+        experience: [],
+        education: [],
+        projects: [],
+        certificates: []
+    };
 }
 
 // 更新履歷資料
@@ -731,14 +781,38 @@ async function saveResume() {
     try {
         updateResumeData();
         
-        // TODO: 發送儲存請求到後端 API
-        // const response = await fetch('/api/student/resume', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(resumeData)
-        // });
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
+        }
         
-        Utils.showNotification('履歷已儲存', 'success');
+        // 發送儲存請求到後端 API
+        const response = await fetch(`/portfolio/api/student/resume.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': user.id
+            },
+            body: JSON.stringify({
+                action: 'save',
+                user_id: user.id,
+                resume_data: resumeData
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200) {
+            Utils.showNotification('履歷已儲存', 'success');
+        } else {
+            throw new Error(result.message || '儲存失敗');
+        }
+        
     } catch (error) {
         Utils.showNotification('儲存失敗，請稍後再試', 'error');
         console.error('儲存履歷錯誤:', error);

@@ -5,8 +5,21 @@
 
 // 頁面載入時初始化
 document.addEventListener('DOMContentLoaded', function() {
-    loadDashboardData();
-    setupEventListeners();
+    // 等待 API 服務初始化完成
+    if (typeof apiService !== 'undefined' && apiService) {
+        loadDashboardData();
+        setupEventListeners();
+    } else {
+        // 如果 API 服務還沒準備好，等待一下
+        setTimeout(() => {
+            if (typeof apiService !== 'undefined' && apiService) {
+                loadDashboardData();
+                setupEventListeners();
+            } else {
+                console.error('API 服務未初始化');
+            }
+        }, 100);
+    }
 });
 
 /**
@@ -16,8 +29,12 @@ async function loadDashboardData() {
     try {
         debugLog('載入學生儀表板資料...');
         
-        // 使用統一API服務
-        const userId = 1; // 假設當前使用者ID為1
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
+        }
+        const userId = user.id;
         
         // 並行載入所有資料
         const [stats, portfolios, activities, badges, notifications] = await Promise.all([
@@ -71,7 +88,7 @@ function renderStats(stats) {
     Object.keys(statElements).forEach(id => {
         const element = document.getElementById(id);
         if (element) {
-            element.textContent = MockData.formatNumber(statElements[id]);
+            element.textContent = Utils.formatNumber(statElements[id]);
         }
     });
 }
@@ -103,9 +120,9 @@ function renderRecentPortfolios(portfolios) {
                 </div>
             </div>
             <div class="portfolio-stats">
-                <span><i class="fas fa-eye"></i> ${MockData.formatNumber(portfolio.views || 0)}</span>
-                <span><i class="fas fa-heart"></i> ${MockData.formatNumber(portfolio.likes || 0)}</span>
-                <span><i class="fas fa-comment"></i> ${MockData.formatNumber(portfolio.comments || 0)}</span>
+                <span><i class="fas fa-eye"></i> ${Utils.formatNumber(portfolio.views || 0)}</span>
+                <span><i class="fas fa-heart"></i> ${Utils.formatNumber(portfolio.likes || 0)}</span>
+                <span><i class="fas fa-comment"></i> ${Utils.formatNumber(portfolio.comments || 0)}</span>
             </div>
         `;
         portfolioGrid.appendChild(portfolioItem);
@@ -190,7 +207,7 @@ function renderNotifications(notifications) {
             <div class="notification-content">
                 <div class="notification-title">${notification.title}</div>
                 <div class="notification-message">${notification.message}</div>
-                <small>${MockData.formatTime(notification.created_at)}</small>
+                <small>${Utils.formatDate(notification.created_at)}</small>
             </div>
         `;
         notificationsList.appendChild(notificationItem);

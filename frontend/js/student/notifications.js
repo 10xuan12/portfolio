@@ -3,68 +3,8 @@
  * 包含通知管理、篩選、批量操作等功能
  */
 
-// TODO: 從後端 API 載入通知資料
-let notifications = [
-    {
-        id: 1,
-        type: 'like',
-        status: 'unread',
-        title: '有人對您的作品按讚',
-        text: '李大明對您的作品「響應式網站設計」按了讚',
-        time: '2 分鐘前',
-        preview: '作品：響應式網站設計',
-        portfolioId: 1
-    },
-    {
-        id: 2,
-        type: 'comment',
-        status: 'unread',
-        title: '新的評論',
-        text: '王小美在您的作品「行動應用程式」發表了評論',
-        time: '15 分鐘前',
-        preview: '評論：程式碼結構很清晰，註解也很詳細。對於初學者來說是很好的學習範例。',
-        portfolioId: 2,
-        commentId: 2
-    },
-    {
-        id: 3,
-        type: 'view',
-        status: 'read',
-        title: '作品被瀏覽',
-        text: '有人瀏覽了您的作品「UI/UX 設計作品」',
-        time: '1 小時前',
-        portfolioId: 3
-    },
-    {
-        id: 4,
-        type: 'enterprise',
-        status: 'unread',
-        title: '企業關注',
-        text: '台灣微軟對您的作品「響應式網站設計」表示興趣',
-        time: '3 小時前',
-        preview: '企業：台灣微軟股份有限公司',
-        enterpriseId: 1,
-        portfolioId: 1
-    },
-    {
-        id: 5,
-        type: 'system',
-        status: 'read',
-        title: '系統通知',
-        text: '您的作品「數據視覺化專案」已通過審核並發布',
-        time: '1 天前',
-        portfolioId: 4
-    },
-    {
-        id: 6,
-        type: 'like',
-        status: 'read',
-        title: '有人對您的作品按讚',
-        text: '陳小華對您的作品「響應式網站設計」按了讚',
-        time: '2 天前',
-        portfolioId: 1
-    }
-];
+// 通知資料陣列
+let notifications = [];
 
 // 當前篩選條件
 let currentFilters = {
@@ -84,12 +24,42 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 載入通知
-function loadNotifications() {
-    // TODO: 從後端 API 載入通知
-    // const response = await fetch('/api/notifications');
-    // notifications = await response.json();
-    
-    renderNotifications();
+async function loadNotifications() {
+    try {
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
+        }
+        
+        // 從後端 API 載入通知
+        const response = await fetch(`/portfolio/api/student/notifications.php?action=get&user_id=${user.id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': user.id
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200 && result.data) {
+            notifications = Array.isArray(result.data) ? result.data : [];
+            renderNotifications();
+        } else {
+            throw new Error(result.message || '載入通知失敗');
+        }
+        
+    } catch (error) {
+        console.error('載入通知失敗:', error);
+        Utils.showNotification('載入通知失敗，請稍後再試', 'error');
+        // 如果 API 失敗，顯示空狀態
+        notifications = [];
+        renderNotifications();
+    }
 }
 
 // 初始化事件監聽器

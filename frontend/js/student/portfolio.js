@@ -3,69 +3,8 @@
  * 包含作品篩選、編輯、刪除等功能
  */
 
-// TODO: 從後端 API 載入作品資料
-let portfolios = [
-    {
-        id: 1,
-        title: '響應式網站設計',
-        description: '使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。',
-        category: 'web',
-        status: 'published',
-        tags: ['HTML5', 'CSS3', 'JavaScript', '響應式'],
-        image: 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design',
-        url: 'https://example.com',
-        github: 'https://github.com/example/web-design',
-        views: 156,
-        likes: 23,
-        comments: 8,
-        created_at: '2024-01-15'
-    },
-    {
-        id: 2,
-        title: '行動應用程式',
-        description: '使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。',
-        category: 'mobile',
-        status: 'published',
-        tags: ['React Native', 'JavaScript', 'Firebase', '跨平台'],
-        image: 'https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App',
-        url: 'https://example.com/app',
-        github: 'https://github.com/example/mobile-app',
-        views: 203,
-        likes: 45,
-        comments: 12,
-        created_at: '2024-01-14'
-    },
-    {
-        id: 3,
-        title: 'UI/UX 設計作品',
-        description: '使用 Figma 設計的現代化使用者介面，注重使用者體驗和視覺美感。',
-        category: 'design',
-        status: 'review',
-        tags: ['Figma', 'UI/UX', '設計系統', '原型設計'],
-        image: 'https://via.placeholder.com/400x200/f093fb/ffffff?text=UI+Design',
-        url: '',
-        github: '',
-        views: 0,
-        likes: 0,
-        comments: 0,
-        created_at: '2024-01-13'
-    },
-    {
-        id: 4,
-        title: '數據視覺化專案',
-        description: '使用 D3.js 製作的互動式數據視覺化專案，展示複雜數據的清晰呈現。',
-        category: 'data',
-        status: 'draft',
-        tags: ['D3.js', 'Python', 'Pandas', '數據分析'],
-        image: 'https://via.placeholder.com/400x200/4ade80/ffffff?text=Data+Viz',
-        url: '',
-        github: '',
-        views: 0,
-        likes: 0,
-        comments: 0,
-        created_at: '2024-01-12'
-    }
-];
+// 作品資料陣列
+let portfolios = [];
 
 // 當前篩選條件
 let currentFilters = {
@@ -76,9 +15,48 @@ let currentFilters = {
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
-    renderPortfolios();
+    loadPortfolios();
     initEventListeners();
 });
+
+// 載入作品資料
+async function loadPortfolios() {
+    try {
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
+        }
+        
+        // 從後端 API 載入作品資料
+        const response = await fetch(`/portfolio/api/student/portfolio.php?action=list&user_id=${user.id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': user.id
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200 && result.data) {
+            portfolios = Array.isArray(result.data) ? result.data : [];
+            renderPortfolios();
+        } else {
+            throw new Error(result.message || '載入作品資料失敗');
+        }
+        
+    } catch (error) {
+        console.error('載入作品資料失敗:', error);
+        Utils.showNotification('載入作品資料失敗，請稍後再試', 'error');
+        // 如果 API 失敗，顯示空狀態
+        portfolios = [];
+        renderPortfolios();
+    }
+}
 
 // 初始化事件監聽器
 function initEventListeners() {

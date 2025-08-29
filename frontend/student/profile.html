@@ -7,6 +7,138 @@
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/student/profile.css">
+    <style>
+        /* 首次登入模態框樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0 0 8px 0;
+            color: #1f2937;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .modal-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .modal-footer {
+            padding: 16px 24px 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: right;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        /* 載入中樣式 */
+        .loading-placeholder {
+            text-align: center;
+            padding: var(--spacing-lg);
+            color: var(--gray-500);
+        }
+        
+        .loading-placeholder i {
+            font-size: var(--text-xl);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        /* 按鈕樣式 */
+        .btn-outline {
+            background-color: transparent;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+        }
+        
+        .btn-outline:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <!-- 導覽列 -->
@@ -43,32 +175,32 @@
                 <input type="file" id="avatarInput" accept="image/*" style="display: none;">
                 
                 <div class="profile-details">
-                    <h1>張小明</h1>
-                    <p>資訊管理學系 • 大學三年級</p>
-                    <p>學生編號: 12345678</p>
+                    <h1 id="profile-name">載入中...</h1>
+                    <p id="profile-department-grade">載入中...</p>
+                    <p id="profile-student-id">學生編號: 載入中...</p>
                     
                     <div class="profile-stats">
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number">12</div>
+                                <div class="number" id="stat-portfolios">載入中...</div>
                                 <div class="label">作品</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number">1,234</div>
+                                <div class="number" id="stat-views">載入中...</div>
                                 <div class="label">瀏覽</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number">89</div>
+                                <div class="number" id="stat-likes">載入中...</div>
                                 <div class="label">讚數</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number">5</div>
+                                <div class="number" id="stat-badges">載入中...</div>
                                 <div class="label">徽章</div>
                             </div>
                         </div>
@@ -89,38 +221,46 @@
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label for="name">姓名</label>
-                                    <input type="text" id="name" name="name" value="張小明" required>
+                                    <input type="text" id="name" name="name" value="" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="gender">性別</label>
                                     <select id="gender" name="gender" required>
-                                        <option value="男" selected>男</option>
+                                        <option value="">請選擇性別</option>
+                                        <option value="男">男</option>
                                         <option value="女">女</option>
                                         <option value="其他">其他</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="birth">生日</label>
-                                    <input type="date" id="birth" name="birth" value="2002-05-15" required>
+                                    <input type="date" id="birth" name="birth" value="" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="student_id">學號</label>
-                                    <input type="text" id="student_id" name="student_id" value="12345678" required>
+                                    <input type="text" id="student_id" name="student_id" value="" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="department">科系</label>
                                     <select id="department" name="department" required>
-                                        <option value="資訊管理學系" selected>資訊管理學系</option>
+                                        <option value="">請選擇科系</option>
+                                        <option value="資訊管理學系">資訊管理學系</option>
                                         <option value="財務金融學系">財務金融學系</option>
                                         <option value="國際企業學系">國際企業學系</option>
+                                        <option value="資訊工程學系">資訊工程學系</option>
+                                        <option value="統計學系">統計學系</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="grade">年級</label>
                                     <select id="grade" name="grade" required>
-                                        <option value="大學三年級" selected>大學三年級</option>
+                                        <option value="">請選擇年級</option>
+                                        <option value="大學一年級">大學一年級</option>
+                                        <option value="大學二年級">大學二年級</option>
+                                        <option value="大學三年級">大學三年級</option>
                                         <option value="大學四年級">大學四年級</option>
                                         <option value="碩士生">碩士生</option>
+                                        <option value="博士生">博士生</option>
                                     </select>
                                 </div>
                             </div>
@@ -131,15 +271,15 @@
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label for="email">電子郵件</label>
-                                    <input type="email" id="email" name="email" value="zhang@example.com" required>
+                                    <input type="email" id="email" name="email" value="" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="phone">聯絡電話</label>
-                                    <input type="tel" id="phone" name="phone" value="0912-345-678">
+                                    <input type="tel" id="phone" name="phone" value="">
                                 </div>
                                 <div class="form-group full-width">
                                     <label for="address">聯絡地址</label>
-                                    <input type="text" id="address" name="address" value="台北市大安區復興南路一段 390 號">
+                                    <input type="text" id="address" name="address" value="">
                                 </div>
                             </div>
                         </div>
@@ -151,25 +291,25 @@
                                     <label for="github">
                                         <i class="fab fa-github"></i> GitHub
                                     </label>
-                                    <input type="url" id="github" name="github" value="https://github.com/zhangxiaoming">
+                                    <input type="url" id="github" name="github" value="">
                                 </div>
                                 <div class="form-group">
                                     <label for="linkedin">
                                         <i class="fab fa-linkedin"></i> LinkedIn
                                     </label>
-                                    <input type="url" id="linkedin" name="linkedin" value="https://linkedin.com/in/zhangxiaoming">
+                                    <input type="url" id="linkedin" name="linkedin" value="">
                                 </div>
                                 <div class="form-group">
                                     <label for="instagram">
                                         <i class="fab fa-instagram"></i> Instagram
                                     </label>
-                                    <input type="text" id="instagram" name="instagram" value="@zhangxiaoming">
+                                    <input type="text" id="instagram" name="instagram" value="">
                                 </div>
                                 <div class="form-group">
                                     <label for="facebook">
                                         <i class="fab fa-facebook"></i> Facebook
                                     </label>
-                                    <input type="text" id="facebook" name="facebook" value="張小明">
+                                    <input type="text" id="facebook" name="facebook" value="">
                                 </div>
                             </div>
                         </div>
@@ -179,19 +319,19 @@
                             <div class="form-grid">
                                 <div class="form-group full-width">
                                     <label for="bio">個人簡介</label>
-                                    <textarea id="bio" name="bio" rows="4">我是一名資訊管理學系的學生，專精於前端開發和 UI/UX 設計。我熱愛學習新技術，並且喜歡將創意轉化為實際的作品。</textarea>
+                                    <textarea id="bio" name="bio" rows="4" placeholder="請描述您的個人簡介..."></textarea>
                                 </div>
                                 <div class="form-group">
                                     <label for="skills">技能專長</label>
-                                    <input type="text" id="skills" name="skills" value="JavaScript, React, Node.js, UI/UX Design">
+                                    <input type="text" id="skills" name="skills" placeholder="例如：JavaScript, React, Node.js, UI/UX Design">
                                 </div>
                                 <div class="form-group">
                                     <label for="languages">語言能力</label>
-                                    <input type="text" id="languages" name="languages" value="中文（母語）, 英文（流利）, 日文（基礎）">
+                                    <input type="text" id="languages" name="languages" placeholder="例如：中文（母語）, 英文（流利）">
                                 </div>
                                 <div class="form-group">
                                     <label for="interests">興趣愛好</label>
-                                    <input type="text" id="interests" name="interests" value="程式設計, 設計, 攝影, 旅行">
+                                    <input type="text" id="interests" name="interests" placeholder="例如：程式設計, 設計, 攝影">
                                 </div>
                             </div>
                         </div>
@@ -230,76 +370,23 @@
                 <div class="sidebar">
                     <div class="sidebar-card">
                         <h3>徽章成就</h3>
-                        <div class="badge-grid">
-                            <div class="badge-item earned">
-                                <i class="fas fa-star"></i>
-                                <div class="badge-name">新手上傳者</div>
-                            </div>
-                            <div class="badge-item earned">
-                                <i class="fas fa-eye"></i>
-                                <div class="badge-name">瀏覽達人</div>
-                            </div>
-                            <div class="badge-item earned">
-                                <i class="fas fa-heart"></i>
-                                <div class="badge-name">受歡迎</div>
-                            </div>
-                            <div class="badge-item earned">
-                                <i class="fas fa-trophy"></i>
-                                <div class="badge-name">作品大師</div>
-                            </div>
-                            <div class="badge-item earned">
-                                <i class="fas fa-comment"></i>
-                                <div class="badge-name">互動王</div>
-                            </div>
-                            <div class="badge-item">
-                                <i class="fas fa-crown"></i>
-                                <div class="badge-name">超級明星</div>
+                        <div class="badge-grid" id="badge-grid">
+                            <!-- 徽章將由 JavaScript 動態載入 -->
+                            <div class="loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <div>載入中...</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="sidebar-card">
                         <h3>最近活動</h3>
-                        <ul class="activity-list">
-                            <!-- TODO: 從資料庫載入學生活動記錄 -->
-                            <!-- 假資料開始 -->
-                            <li class="activity-item">
-                                <div class="activity-icon activity-upload">
-                                    <i class="fas fa-upload"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">上傳了新作品「UI/UX 設計作品」</div>
-                                    <div class="activity-time">2 小時前</div>
-                                </div>
+                        <ul class="activity-list" id="activity-list">
+                            <!-- 活動將由 JavaScript 動態載入 -->
+                            <li class="loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <div>載入中...</div>
                             </li>
-                            <li class="activity-item">
-                                <div class="activity-icon activity-view">
-                                    <i class="fas fa-eye"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">有人瀏覽了您的作品「響應式網站設計」</div>
-                                    <div class="activity-time">4 小時前</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon activity-like">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">有人對您的作品「行動應用程式」按讚</div>
-                                    <div class="activity-time">6 小時前</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon activity-comment">
-                                    <i class="fas fa-comment"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-text">有人評論了您的作品「響應式網站設計」</div>
-                                    <div class="activity-time">1 天前</div>
-                                </div>
-                            </li>
-                            <!-- 假資料結束 -->
                         </ul>
                     </div>
 
@@ -307,23 +394,23 @@
                         <h3>帳號設定</h3>
                         <div style="margin-bottom: var(--spacing-md);">
                             <label style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="email-notification">
                                 <span>接收電子郵件通知</span>
                             </label>
                         </div>
                         <div style="margin-bottom: var(--spacing-md);">
                             <label style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="public-profile">
                                 <span>公開個人資料</span>
                             </label>
                         </div>
                         <div style="margin-bottom: var(--spacing-md);">
                             <label style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                <input type="checkbox">
+                                <input type="checkbox" id="two-factor-auth">
                                 <span>雙重認證</span>
                             </label>
                         </div>
-                        <button class="btn btn-outline" style="width: 100%; margin-top: var(--spacing-md);">
+                        <button class="btn btn-outline" style="width: 100%; margin-top: var(--spacing-md);" onclick="exportProfileData()">
                             <i class="fas fa-download"></i>
                             匯出個人資料
                         </button>
@@ -333,10 +420,281 @@
         </div>
     </section>
 
+    <!-- 首次登入模態框 -->
+    <div id="firstLoginModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>歡迎來到 Portfolio+！</h2>
+                <p>請先完成您的個人資料設定</p>
+            </div>
+            <div class="modal-body">
+                <form id="firstLoginForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal-name">姓名 *</label>
+                            <input type="text" id="modal-name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-gender">性別 *</label>
+                            <select id="modal-gender" name="gender" required>
+                                <option value="">請選擇</option>
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal-birth">生日 *</label>
+                            <input type="date" id="modal-birth" name="birth" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-student-id">學號 *</label>
+                            <input type="text" id="modal-student-id" name="student_id" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal-department">科系 *</label>
+                            <select id="modal-department" name="department" required>
+                                <option value="">請選擇科系</option>
+                                <option value="資訊管理學系">資訊管理學系</option>
+                                <option value="財務金融學系">財務金融學系</option>
+                                <option value="國際企業學系">國際企業學系</option>
+                                <option value="資訊工程學系">資訊工程學系</option>
+                                <option value="統計學系">統計學系</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-grade">年級 *</label>
+                            <select id="modal-grade" name="grade" required>
+                                <option value="">請選擇年級</option>
+                                <option value="大學一年級">大學一年級</option>
+                                <option value="大學二年級">大學二年級</option>
+                                <option value="大學三年級">大學三年級</option>
+                                <option value="大學四年級">大學四年級</option>
+                                <option value="碩士生">碩士生</option>
+                                <option value="博士生">博士生</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-phone">聯絡電話</label>
+                        <input type="tel" id="modal-phone" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-address">聯絡地址</label>
+                        <input type="text" id="modal-address" name="address">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-bio">個人簡介</label>
+                        <textarea id="modal-bio" name="bio" rows="3" placeholder="請簡短描述您自己..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeFirstLoginModal()">稍後再說</button>
+                <button type="button" class="btn btn-primary" onclick="submitFirstLogin()">完成設定</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
-    <script src="../js/app.js"></script>
-    <script src="../js/student/profile.js"></script>
+    <script src="../js/config.js"></script>
+    <script>
+        // 等待配置初始化完成後再載入其他腳本
+        document.addEventListener('DOMContentLoaded', function() {
+            // 檢查配置狀態
+            console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
+            console.log('環境:', getEnvironment());
+            console.log('版本:', getVersion());
+            
+            // 確保配置已初始化
+            if (typeof isUsingMockData === 'function' && isUsingMockData() === false) {
+                // 配置正確，載入其他腳本
+                loadRemainingScripts();
+            } else {
+                // 等待配置初始化
+                setTimeout(loadRemainingScripts, 100);
+            }
+        });
+        
+        function loadRemainingScripts() {
+            // 動態載入其他腳本
+            const scripts = [
+                '../js/mock-data.js',
+                '../js/api-service.js',
+                '../js/app.js',
+                '../js/student/profile.js'
+            ];
+            
+            scripts.forEach((src, index) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = function() {
+                    if (index === scripts.length - 1) {
+                        // 最後一個腳本載入完成，初始化頁面
+                        if (typeof UI !== 'undefined' && UI.loadNavbar) {
+                            UI.loadNavbar();
+                        }
+                        
+                        // 初始化個人資料頁面
+                        initializeProfilePage();
+                    }
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        // 初始化個人資料頁面
+        function initializeProfilePage() {
+            // 載入個人資料
+            loadProfileData();
+            
+            // 載入活動記錄
+            loadActivityData();
+            
+            // 載入帳號設定
+            loadAccountSettings();
+            
+            // 設定事件監聽器
+            setupEventListeners();
+            
+            // 檢查是否為首次登入
+            checkFirstLogin();
+        }
+        
+        // 載入個人資料
+        function loadProfileData() {
+            if (typeof loadStudentData === 'function') {
+                loadStudentData();
+            }
+        }
+        
+        // 載入活動記錄
+        function loadActivityData() {
+            if (typeof loadRecentActivities === 'function') {
+                loadRecentActivities();
+            }
+        }
+        
+        // 載入帳號設定
+        function loadAccountSettings() {
+            if (typeof loadUserSettings === 'function') {
+                loadUserSettings();
+            }
+        }
+        
+        // 設定事件監聽器
+        function setupEventListeners() {
+            // 頭像上傳
+            const avatarInput = document.getElementById('avatarInput');
+            if (avatarInput) {
+                avatarInput.addEventListener('change', function(e) {
+                    if (typeof handleAvatarUpload === 'function') {
+                        handleAvatarUpload(e);
+                    }
+                });
+            }
+            
+            // 表單提交
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (typeof handleProfileSubmit === 'function') {
+                        handleProfileSubmit(e);
+                    }
+                });
+            }
+            
+            // 密碼修改
+            const passwordForm = document.getElementById('passwordForm');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (typeof handlePasswordSubmit === 'function') {
+                        handlePasswordSubmit(e);
+                    }
+                });
+            }
+            
+            // 帳號設定變更
+            const emailNotification = document.getElementById('email-notification');
+            const publicProfile = document.getElementById('public-profile');
+            const twoFactorAuth = document.getElementById('two-factor-auth');
+            
+            if (emailNotification) {
+                emailNotification.addEventListener('change', function() {
+                    if (typeof updateAccountSettings === 'function') {
+                        updateAccountSettings();
+                    }
+                });
+            }
+            
+            if (publicProfile) {
+                publicProfile.addEventListener('change', function() {
+                    if (typeof updateAccountSettings === 'function') {
+                        updateAccountSettings();
+                    }
+                });
+            }
+            
+            if (twoFactorAuth) {
+                twoFactorAuth.addEventListener('change', function() {
+                    if (typeof updateAccountSettings === 'function') {
+                        updateAccountSettings();
+                    }
+                });
+            }
+        }
+        
+        // 檢查是否為首次登入
+        function checkFirstLogin() {
+            if (typeof checkFirstLoginStatus === 'function') {
+                checkFirstLoginStatus();
+            }
+        }
+        
+        // 顯示首次登入模態框
+        function showFirstLoginModal() {
+            const modal = document.getElementById('firstLoginModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+        
+        // 關閉首次登入模態框
+        function closeFirstLoginModal() {
+            const modal = document.getElementById('firstLoginModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // 提交首次登入資料
+        function submitFirstLogin() {
+            if (typeof submitFirstLoginData === 'function') {
+                submitFirstLoginData();
+            }
+        }
+        
+        // 匯出個人資料
+        function exportProfileData() {
+            if (typeof exportProfileData === 'function') {
+                exportProfileData();
+            }
+        }
+        
+        // 重置表單
+        function resetForm() {
+            if (typeof resetProfileForm === 'function') {
+                resetProfileForm();
+            }
+        }
+    </script>
 </body>
 </html> 

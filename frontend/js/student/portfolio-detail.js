@@ -3,76 +3,31 @@
  * 包含讚、分享、評論、下載等功能
  */
 
-// TODO: 從後端 API 載入作品詳情
+// 作品詳情資料結構
 let portfolioDetail = {
-    id: 1,
-    title: '響應式網站設計',
-    description: '使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。',
-    category: 'web',
-    status: 'published',
-    tags: ['HTML5', 'CSS3', 'JavaScript', '響應式', 'Bootstrap', 'jQuery'],
-    image: 'https://via.placeholder.com/1200x400/667eea/ffffff?text=Portfolio+Detail',
-    url: 'https://example.com',
-    github: 'https://github.com/zhangxiaoming/web-design',
-    views: 156,
-    likes: 23,
-    comments: 8,
-    downloads: 12,
-    created_at: '2024-01-15',
+    id: null,
+    title: '',
+    description: '',
+    category: '',
+    status: '',
+    tags: [],
+    image: '',
+    url: '',
+    github: '',
+    views: 0,
+    likes: 0,
+    comments: [],
+    downloads: 0,
+    created_at: '',
     author: {
-        name: '張小明',
-        department: '資訊管理學系',
-        grade: '大學三年級',
-        email: 'zhang@example.com',
-        github: 'github.com/zhangxiaoming',
-        linkedin: 'linkedin.com/in/zhangxiaoming'
+        name: '',
+        department: '',
+        grade: '',
+        email: '',
+        github: '',
+        linkedin: ''
     },
-    files: [
-        {
-            name: '網站截圖.png',
-            size: '2.3 MB',
-            type: 'image',
-            url: 'screenshot.png'
-        },
-        {
-            name: '原始碼.zip',
-            size: '1.8 MB',
-            type: 'archive',
-            url: 'source-code.zip'
-        },
-        {
-            name: '專案說明.pdf',
-            size: '856 KB',
-            type: 'document',
-            url: 'documentation.pdf'
-        }
-    ],
-    comments: [
-        {
-            id: 1,
-            author: '李大明',
-            avatar: '李',
-            text: '設計很漂亮！響應式做得很好，在不同裝置上都能正常顯示。期待看到更多作品！',
-            likes: 3,
-            time: '2 小時前'
-        },
-        {
-            id: 2,
-            author: '王小美',
-            avatar: '王',
-            text: '程式碼結構很清晰，註解也很詳細。對於初學者來說是很好的學習範例。',
-            likes: 1,
-            time: '1 天前'
-        },
-        {
-            id: 3,
-            author: '陳小華',
-            avatar: '陳',
-            text: '整體設計感很棒，配色也很協調。建議可以加入一些動畫效果來提升使用者體驗。',
-            likes: 5,
-            time: '3 天前'
-        }
-    ],
+    files: [],
     isLiked: false
 };
 
@@ -83,13 +38,48 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 載入作品詳情
-function loadPortfolioDetail() {
-    // TODO: 從後端 API 載入作品詳情
-    // const response = await fetch(`/api/portfolios/${portfolioId}`);
-    // portfolioDetail = await response.json();
-    
-    updatePortfolioDisplay();
-    updateCommentsDisplay();
+async function loadPortfolioDetail() {
+    try {
+        // 從 URL 參數獲取作品 ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const portfolioId = urlParams.get('id');
+        
+        if (!portfolioId) {
+            throw new Error('未找到作品 ID');
+        }
+        
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
+        }
+        
+        // 從後端 API 載入作品詳情
+        const response = await fetch(`/portfolio/api/student/portfolio.php?action=get&portfolio_id=${portfolioId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': user.id
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200 && result.data) {
+            portfolioDetail = result.data;
+            updatePortfolioDisplay();
+            updateCommentsDisplay();
+        } else {
+            throw new Error(result.message || '載入作品詳情失敗');
+        }
+        
+    } catch (error) {
+        console.error('載入作品詳情失敗:', error);
+        Utils.showNotification('載入作品詳情失敗，請稍後再試', 'error');
+    }
 }
 
 // 初始化事件監聽器
@@ -158,26 +148,51 @@ function updateCommentsDisplay() {
 // 讚作品
 async function likePortfolio() {
     try {
-        // TODO: 發送讚請求到後端 API
-        // const response = await fetch(`/api/portfolios/${portfolioDetail.id}/like`, {
-        //     method: 'POST'
-        // });
-        
-        // 更新本地狀態
-        portfolioDetail.isLiked = !portfolioDetail.isLiked;
-        if (portfolioDetail.isLiked) {
-            portfolioDetail.likes++;
-        } else {
-            portfolioDetail.likes--;
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
         }
         
-        updateLikeButton();
-        updatePortfolioDisplay();
+        // 發送讚請求到後端 API
+        const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': user.id
+            },
+            body: JSON.stringify({
+                action: 'toggle_like',
+                portfolio_id: portfolioDetail.id,
+                user_id: user.id
+            })
+        });
         
-        Utils.showNotification(
-            portfolioDetail.isLiked ? '已讚作品' : '已取消讚',
-            'success'
-        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200) {
+            // 更新本地狀態
+            portfolioDetail.isLiked = !portfolioDetail.isLiked;
+            if (portfolioDetail.isLiked) {
+                portfolioDetail.likes++;
+            } else {
+                portfolioDetail.likes--;
+            }
+            
+            updateLikeButton();
+            updatePortfolioDisplay();
+            
+            Utils.showNotification(
+                portfolioDetail.isLiked ? '已讚作品' : '已取消讚',
+                'success'
+            );
+        } else {
+            throw new Error(result.message || '操作失敗');
+        }
         
     } catch (error) {
         Utils.showNotification('操作失敗，請稍後再試', 'error');
@@ -224,19 +239,50 @@ function editPortfolio() {
 }
 
 // 刪除作品
-function deletePortfolio() {
+async function deletePortfolio() {
     if (confirm('確定要刪除此作品嗎？此操作無法復原。')) {
-        // TODO: 發送刪除請求到後端 API
-        // fetch(`/api/portfolios/${portfolioDetail.id}`, {
-        //     method: 'DELETE'
-        // });
-        
-        Utils.showNotification('作品已刪除', 'success');
-        
-        // 跳轉回作品集頁面
-        setTimeout(() => {
-            window.location.href = 'portfolio.html';
-        }, 1500);
+        try {
+            // 從 localStorage 獲取使用者資訊
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.id) {
+                throw new Error('無法獲取使用者資訊');
+            }
+            
+            // 發送刪除請求到後端 API
+            const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': user.id
+                },
+                body: JSON.stringify({
+                    action: 'delete',
+                    portfolio_id: portfolioDetail.id,
+                    user_id: user.id
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.status === 200) {
+                Utils.showNotification('作品已刪除', 'success');
+                
+                // 跳轉回作品集頁面
+                setTimeout(() => {
+                    window.location.href = 'portfolio.html';
+                }, 1500);
+            } else {
+                throw new Error(result.message || '刪除失敗');
+            }
+            
+        } catch (error) {
+            console.error('刪除作品錯誤:', error);
+            Utils.showNotification('刪除失敗，請稍後再試', 'error');
+        }
     }
 }
 

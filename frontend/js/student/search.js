@@ -280,17 +280,17 @@ function renderSearchResults(results) {
                     </span>
                     <span class="result-date">
                         <i class="fas fa-calendar"></i>
-                        ${MockData.formatDate(result.created_at)}
+                        ${Utils.formatDate(result.created_at)}
                     </span>
                 </div>
                 <div class="result-stats">
                     <span class="stat">
                         <i class="fas fa-eye"></i>
-                        ${MockData.formatNumber(result.views || 0)}
+                        ${Utils.formatNumber(result.views || 0)}
                     </span>
                     <span class="stat">
                         <i class="fas fa-heart"></i>
-                        ${MockData.formatNumber(result.likes || 0)}
+                        ${Utils.formatNumber(result.likes || 0)}
                     </span>
                 </div>
                 <div class="result-tags">

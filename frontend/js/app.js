@@ -3,12 +3,28 @@
  * 包含通用功能和互動效果
  */
 
-// TODO: 實作全域變數和設定
-const APP_CONFIG = {
-    API_BASE_URL: '/api', // TODO: 設定實際的 API 端點
-    DEBUG_MODE: true,
-    VERSION: '2.0.1'
+// 本地佔位圖片生成器
+function createPlaceholderImage(width, height, bgColor, textColor, text) {
+    const svg = `
+        <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="${bgColor}"/>
+            <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="18" fill="${textColor}" text-anchor="middle" dy=".3em">${text}</text>
+        </svg>
+    `;
+    return 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
+// 預設佔位圖片
+const PLACEHOLDER_IMAGES = {
+    webDesign: createPlaceholderImage(300, 200, '#667eea', '#ffffff', 'Web Design'),
+    mobileApp: createPlaceholderImage(300, 200, '#764ba2', '#ffffff', 'Mobile App'),
+    dataViz: createPlaceholderImage(300, 200, '#f093fb', '#ffffff', 'Data Viz'),
+    uiDesign: createPlaceholderImage(300, 200, '#4facfe', '#ffffff', 'UI Design'),
+    portfolio: createPlaceholderImage(300, 200, '#667eea', '#ffffff', 'Portfolio')
 };
+
+// 注意：APP_CONFIG 現在在 config.js 中定義
+// 如果需要存取配置，請使用 config.js 中的 APP_CONFIG
 
 // TODO: 實作工具函數
 const Utils = {
@@ -120,7 +136,11 @@ const Utils = {
 const API = {
     // 基礎請求函數
     request: async function(endpoint, options = {}) {
-        const url = APP_CONFIG.API_BASE_URL + endpoint;
+        // 檢查 APP_CONFIG 是否存在，如果不存在則使用預設值
+        const apiBaseUrl = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+            ? APP_CONFIG.API_BASE_URL 
+            : '/api';
+        const url = apiBaseUrl + endpoint;
         const defaultOptions = {
             headers: {
                 'Content-Type': 'application/json',
@@ -735,7 +755,7 @@ const DataLoader = {
         container.innerHTML = portfolios.map(portfolio => `
             <div class="portfolio-card">
                 <div class="portfolio-image">
-                    <img src="https://via.placeholder.com/300x200/667eea/ffffff?text=${encodeURIComponent(portfolio.title)}" alt="${portfolio.title}">
+                    <img src="${portfolio.image || PLACEHOLDER_IMAGES.portfolio}" alt="${portfolio.title}">
                 </div>
                 <div class="portfolio-content">
                     <h3>${portfolio.title}</h3>
@@ -1162,7 +1182,11 @@ window.PortfolioApp = {
     Auth,
     UI,
     DataLoader,
-    config: APP_CONFIG
+    config: (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : {
+        API_BASE_URL: '/api',
+        DEBUG_MODE: true,
+        VERSION: '2.0.1'
+    }
 };
 
 // 添加全域樣式

@@ -7,7 +7,7 @@ const APP_CONFIG = {
     // ==================== 核心設定 ====================
     
     // 是否使用假資料 (true: 使用假資料, false: 使用真實API)
-    USE_MOCK_DATA: true,
+    USE_MOCK_DATA: false,
     
     // API 基礎 URL (當 USE_MOCK_DATA 為 false 時使用)
     API_BASE_URL: 'http://localhost:8000/api',
@@ -239,8 +239,10 @@ function initializeConfig() {
     if (savedConfig) {
         try {
             const parsedConfig = JSON.parse(savedConfig);
+            // 強制覆蓋 USE_MOCK_DATA 為 false
+            parsedConfig.USE_MOCK_DATA = false;
             Object.assign(APP_CONFIG, parsedConfig);
-            debugLog('已載入本地儲存的配置');
+            debugLog('已載入本地儲存的配置（強制使用真實API）');
         } catch (error) {
             console.warn('載入本地配置失敗:', error);
         }
@@ -253,11 +255,26 @@ function initializeConfig() {
         APP_CONFIG.MOCK_API_DELAY = 0;
     }
     
+    // 強制確保使用真實API
+    APP_CONFIG.USE_MOCK_DATA = false;
+    
+    // 強制覆蓋 localStorage 中的設定
+    try {
+        localStorage.setItem('app_config', JSON.stringify(APP_CONFIG));
+    } catch (error) {
+        console.warn('無法儲存配置到 localStorage:', error);
+    }
+    
     debugLog('配置初始化完成', {
         useMockData: isUsingMockData(),
         environment: getEnvironment(),
         version: getVersion()
     });
+    
+    // 初始化 API 服務
+    if (typeof initializeApiService === 'function') {
+        initializeApiService();
+    }
 }
 
 /**

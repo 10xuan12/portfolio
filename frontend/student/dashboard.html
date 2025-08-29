@@ -16,7 +16,7 @@
     <!-- 儀表板標題 -->
     <section class="dashboard-header">
         <div class="container">
-            <h1>歡迎回來，張小明！</h1>
+            <h1 id="welcome-title">歡迎回來！</h1>
             <p>以下是您的作品集概況</p>
             
             <div class="dashboard-stats">
@@ -74,146 +74,47 @@
                     </div>
 
                     <h2>我的作品</h2>
-                    <div class="portfolio-grid">
-                        <!-- TODO: 從資料庫載入學生的作品列表 -->
-                        <!-- 假資料開始 -->
-                        <div class="portfolio-item">
-                            <div class="portfolio-header">
-                                <span class="portfolio-title">響應式網站設計</span>
-                                <span class="portfolio-status status-published">已發布</span>
-                            </div>
-                            <p>使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站</p>
-                            <div class="portfolio-stats">
-                                <span><i class="fas fa-eye"></i> 156 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 23 個讚</span>
-                                <span><i class="fas fa-comment"></i> 8 則評論</span>
-                            </div>
+                    <div class="portfolio-grid" id="portfolio-grid">
+                        <!-- 作品將由 JavaScript 動態載入 -->
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>載入中...</p>
                         </div>
-
-                        <div class="portfolio-item">
-                            <div class="portfolio-header">
-                                <span class="portfolio-title">行動應用程式</span>
-                                <span class="portfolio-status status-published">已發布</span>
-                            </div>
-                            <p>使用 React Native 開發的跨平台行動應用程式</p>
-                            <div class="portfolio-stats">
-                                <span><i class="fas fa-eye"></i> 203 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 45 個讚</span>
-                                <span><i class="fas fa-comment"></i> 12 則評論</span>
-                            </div>
-                        </div>
-
-                        <div class="portfolio-item">
-                            <div class="portfolio-header">
-                                <span class="portfolio-title">數據視覺化專案</span>
-                                <span class="portfolio-status status-review">審核中</span>
-                            </div>
-                            <p>使用 D3.js 製作的互動式數據視覺化專案</p>
-                            <div class="portfolio-stats">
-                                <span><i class="fas fa-eye"></i> 0 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 0 個讚</span>
-                                <span><i class="fas fa-comment"></i> 0 則評論</span>
-                            </div>
-                        </div>
-
-                        <div class="portfolio-item">
-                            <div class="portfolio-header">
-                                <span class="portfolio-title">UI/UX 設計作品</span>
-                                <span class="portfolio-status status-draft">草稿</span>
-                            </div>
-                            <p>使用 Figma 設計的現代化使用者介面</p>
-                            <div class="portfolio-stats">
-                                <span><i class="fas fa-eye"></i> 0 次瀏覽</span>
-                                <span><i class="fas fa-heart"></i> 0 個讚</span>
-                                <span><i class="fas fa-comment"></i> 0 則評論</span>
-                            </div>
-                        </div>
-                        <!-- 假資料結束 -->
                     </div>
                 </div>
 
                 <div class="sidebar">
                     <div class="sidebar-card">
                         <h3>最近活動</h3>
-                        <ul class="recent-activity">
-                            <!-- TODO: 從資料庫載入學生的最近活動 -->
-                            <!-- 假資料開始 -->
-                            <li>
-                                <div class="activity-icon activity-upload">
-                                    <i class="fas fa-upload"></i>
-                                </div>
-                                <div>
-                                    <div>上傳了新作品</div>
-                                    <small>2 小時前</small>
-                                </div>
+                        <ul class="recent-activity" id="recent-activity">
+                            <!-- 活動將由 JavaScript 動態載入 -->
+                            <li class="loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <div>載入中...</div>
                             </li>
-                            <li>
-                                <div class="activity-icon activity-view">
-                                    <i class="fas fa-eye"></i>
-                                </div>
-                                <div>
-                                    <div>有人瀏覽了您的作品</div>
-                                    <small>4 小時前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-like">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <div>
-                                    <div>有人對您的作品按讚</div>
-                                    <small>6 小時前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-comment">
-                                    <i class="fas fa-comment"></i>
-                                </div>
-                                <div>
-                                    <div>有人評論了您的作品</div>
-                                    <small>1 天前</small>
-                                </div>
-                            </li>
-                            <!-- 假資料結束 -->
                         </ul>
                     </div>
 
                     <div class="sidebar-card">
                         <h3>徽章成就</h3>
-                        <!-- TODO: 從資料庫載入學生的徽章 -->
-                        <!-- 假資料開始 -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm);">
-                            <div style="text-align: center; padding: var(--spacing-sm); background: var(--gray-100); border-radius: var(--radius-md);">
-                                <i class="fas fa-star" style="color: var(--yellow); font-size: var(--text-xl);"></i>
-                                <div style="font-size: var(--text-xs); margin-top: var(--spacing-xs);">新手上傳者</div>
-                            </div>
-                            <div style="text-align: center; padding: var(--spacing-sm); background: var(--gray-100); border-radius: var(--radius-md);">
-                                <i class="fas fa-eye" style="color: var(--primary-color); font-size: var(--text-xl);"></i>
-                                <div style="font-size: var(--text-xs); margin-top: var(--spacing-xs);">瀏覽達人</div>
-                            </div>
-                            <div style="text-align: center; padding: var(--spacing-sm); background: var(--gray-100); border-radius: var(--radius-md);">
-                                <i class="fas fa-heart" style="color: var(--error-color); font-size: var(--text-xl);"></i>
-                                <div style="font-size: var(--text-xs); margin-top: var(--spacing-xs);">受歡迎</div>
+                        <div id="badges-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm);">
+                            <!-- 徽章將由 JavaScript 動態載入 -->
+                            <div class="loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <div>載入中...</div>
                             </div>
                         </div>
-                        <!-- 假資料結束 -->
                     </div>
 
                     <div class="sidebar-card">
                         <h3>企業互動</h3>
-                        <!-- TODO: 從資料庫載入企業互動記錄 -->
-                        <!-- 假資料開始 -->
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="font-weight: 600; color: var(--gray-900);">科技公司 A</div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">瀏覽了您的作品集</div>
-                            <small style="color: var(--gray-500);">1 天前</small>
+                        <div id="enterprise-interactions">
+                            <!-- 企業互動將由 JavaScript 動態載入 -->
+                            <div class="loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <div>載入中...</div>
+                            </div>
                         </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="font-weight: 600; color: var(--gray-900);">設計工作室 B</div>
-                            <div style="font-size: var(--text-sm); color: var(--gray-600);">對您的作品感興趣</div>
-                            <small style="color: var(--gray-500);">3 天前</small>
-                        </div>
-                        <!-- 假資料結束 -->
                     </div>
                 </div>
             </div>
@@ -224,31 +125,324 @@
     <div id="footer-placeholder"></div>
 
     <script src="../js/config.js"></script>
-    <script src="../js/mock-data.js"></script>
-    <script src="../js/api-service.js"></script>
-    <script src="../js/app.js"></script>
-    <script src="../js/student/dashboard.js"></script>
     <script>
-        // 檢查配置狀態
-        console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
-        console.log('環境:', getEnvironment());
-        console.log('版本:', getVersion());
-        
-        // 頁面載入完成後觸發導覽列載入
+        // 等待配置初始化完成後再載入其他腳本
         document.addEventListener('DOMContentLoaded', function() {
-            if (typeof UI !== 'undefined' && UI.loadNavbar) {
-                UI.loadNavbar();
+            // 檢查配置狀態
+            console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
+            console.log('環境:', getEnvironment());
+            console.log('版本:', getVersion());
+            
+            // 確保配置已初始化
+            if (typeof isUsingMockData === 'function' && isUsingMockData() === false) {
+                // 配置正確，載入其他腳本
+                loadRemainingScripts();
+            } else {
+                // 等待配置初始化
+                setTimeout(loadRemainingScripts, 100);
             }
         });
         
-        // TODO: 實作即時通知功能
-        // 例如：WebSocket 連接來接收即時通知
+        function loadRemainingScripts() {
+            // 動態載入其他腳本
+            const scripts = [
+                '../js/mock-data.js',
+                '../js/api-service.js',
+                '../js/app.js',
+                '../js/student/dashboard.js'
+            ];
+            
+            scripts.forEach((src, index) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = function() {
+                    if (index === scripts.length - 1) {
+                        // 最後一個腳本載入完成，初始化頁面
+                        if (typeof UI !== 'undefined' && UI.loadNavbar) {
+                            UI.loadNavbar();
+                        }
+                        
+                        // 初始化儀表板功能
+                        initializeDashboard();
+                    }
+                };
+                document.head.appendChild(script);
+            });
+        }
         
-        // TODO: 實作作品狀態更新
-        // 當作品狀態改變時，更新頁面顯示
+        // 初始化儀表板功能
+        function initializeDashboard() {
+            // 更新歡迎標題
+            updateWelcomeTitle();
+            
+            // 載入動態資料
+            loadDynamicData();
+            
+            // 設定即時更新
+            setupRealTimeUpdates();
+            
+            // 設定作品狀態更新監聽器
+            setupPortfolioStatusListeners();
+        }
         
-        // TODO: 實作活動記錄載入
-        // 從資料庫載入學生的最近活動記錄
+        // 更新歡迎標題
+        function updateWelcomeTitle() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const welcomeTitle = document.getElementById('welcome-title');
+            if (welcomeTitle && user.name) {
+                welcomeTitle.textContent = `歡迎回來，${user.name}！`;
+            }
+        }
+        
+        // 載入動態資料
+        function loadDynamicData() {
+            // 載入作品列表
+            loadPortfolios();
+            
+            // 載入最近活動
+            loadRecentActivities();
+            
+            // 載入徽章成就
+            loadBadges();
+            
+            // 載入企業互動
+            loadEnterpriseInteractions();
+        }
+        
+        // 載入作品列表
+        function loadPortfolios() {
+            const portfolioGrid = document.getElementById('portfolio-grid');
+            if (!portfolioGrid) return;
+            
+            // 這裡會由 dashboard.js 處理
+            if (typeof loadDashboardData === 'function') {
+                loadDashboardData();
+            }
+        }
+        
+        // 載入最近活動
+        function loadRecentActivities() {
+            const activityList = document.getElementById('recent-activity');
+            if (!activityList) return;
+            
+            // 這裡會由 dashboard.js 處理
+        }
+        
+        // 載入徽章成就
+        function loadBadges() {
+            const badgesContainer = document.getElementById('badges-container');
+            if (!badgesContainer) return;
+            
+            // 這裡會由 dashboard.js 處理
+        }
+        
+        // 載入企業互動
+        function loadEnterpriseInteractions() {
+            const interactionsContainer = document.getElementById('enterprise-interactions');
+            if (!interactionsContainer) return;
+            
+            // 這裡會由 dashboard.js 處理
+        }
+        
+        // 設定即時更新
+        function setupRealTimeUpdates() {
+            // 每 30 秒更新一次資料
+            setInterval(() => {
+                if (typeof apiService !== 'undefined') {
+                    loadDynamicData();
+                }
+            }, 30000);
+            
+            // 設定 WebSocket 連接（如果可用）
+            if (typeof WebSocket !== 'undefined' && typeof APP_CONFIG !== 'undefined' && APP_CONFIG.ENABLE_WEBSOCKET) {
+                setupWebSocketConnection();
+            }
+        }
+        
+        // 設定 WebSocket 連接
+        function setupWebSocketConnection() {
+            try {
+                const ws = new WebSocket('ws://localhost:8000/ws');
+                
+                ws.onopen = function() {
+                    console.log('WebSocket 連接已建立');
+                };
+                
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket 錯誤:', error);
+                };
+                
+                ws.onclose = function() {
+                    console.log('WebSocket 連接已關閉');
+                    // 5 秒後嘗試重新連接
+                    setTimeout(setupWebSocketConnection, 5000);
+                };
+            } catch (error) {
+                console.warn('WebSocket 不可用:', error);
+            }
+        }
+        
+        // 處理 WebSocket 訊息
+        function handleWebSocketMessage(data) {
+            switch (data.type) {
+                case 'notification':
+                    showNotification(data.message, data.level || 'info');
+                    break;
+                case 'portfolio_update':
+                    updatePortfolioStatus(data.portfolio_id, data.status);
+                    break;
+                case 'activity':
+                    addNewActivity(data.activity);
+                    break;
+                case 'badge_earned':
+                    showBadgeEarnedNotification(data.badge);
+                    break;
+                default:
+                    console.log('未知的 WebSocket 訊息類型:', data.type);
+            }
+        }
+        
+        // 設定作品狀態更新監聽器
+        function setupPortfolioStatusListeners() {
+            // 監聽作品狀態變化
+            document.addEventListener('portfolioStatusChanged', function(event) {
+                const { portfolioId, newStatus } = event.detail;
+                updatePortfolioStatus(portfolioId, newStatus);
+            });
+        }
+        
+        // 更新作品狀態
+        function updatePortfolioStatus(portfolioId, newStatus) {
+            const portfolioItem = document.querySelector(`[data-portfolio-id="${portfolioId}"]`);
+            if (portfolioItem) {
+                const statusElement = portfolioItem.querySelector('.portfolio-status');
+                if (statusElement) {
+                    statusElement.textContent = getStatusText(newStatus);
+                    statusElement.className = `portfolio-status status-${newStatus}`;
+                }
+            }
+        }
+        
+        // 取得狀態文字
+        function getStatusText(status) {
+            const statusMap = {
+                'published': '已發布',
+                'review': '審核中',
+                'draft': '草稿',
+                'rejected': '已拒絕'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 新增活動
+        function addNewActivity(activity) {
+            const activityList = document.getElementById('recent-activity');
+            if (!activityList) return;
+            
+            const activityItem = document.createElement('li');
+            activityItem.innerHTML = `
+                <div class="activity-icon activity-${activity.type}">
+                    <i class="fas ${getActivityIcon(activity.type)}"></i>
+                </div>
+                <div>
+                    <div>${activity.text}</div>
+                    <small>${formatTimeAgo(activity.timestamp)}</small>
+                </div>
+            `;
+            
+            // 插入到列表開頭
+            activityList.insertBefore(activityItem, activityList.firstChild);
+            
+            // 移除舊的活動項目（保持最多 5 個）
+            const items = activityList.querySelectorAll('li');
+            if (items.length > 5) {
+                items[items.length - 1].remove();
+            }
+        }
+        
+        // 取得活動圖示
+        function getActivityIcon(type) {
+            const iconMap = {
+                'upload': 'fa-upload',
+                'view': 'fa-eye',
+                'like': 'fa-heart',
+                'comment': 'fa-comment',
+                'badge': 'fa-star'
+            };
+            return iconMap[type] || 'fa-info-circle';
+        }
+        
+        // 顯示徽章獲得通知
+        function showBadgeEarnedNotification(badge) {
+            const notification = document.createElement('div');
+            notification.className = 'badge-notification';
+            notification.innerHTML = `
+                <div class="badge-notification-content">
+                    <i class="fas fa-star"></i>
+                    <span>恭喜獲得徽章：${badge.name}！</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 3 秒後自動移除
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // 顯示通知
+        function showNotification(message, level = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${level}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas ${getNotificationIcon(level)}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 5 秒後自動移除
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+        
+        // 取得通知圖示
+        function getNotificationIcon(level) {
+            const iconMap = {
+                'info': 'fa-info-circle',
+                'success': 'fa-check-circle',
+                'warning': 'fa-exclamation-triangle',
+                'error': 'fa-times-circle'
+            };
+            return iconMap[level] || 'fa-info-circle';
+        }
+        
+        // 格式化時間
+        function formatTimeAgo(timestamp) {
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diff = now - time;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return '剛剛';
+            if (minutes < 60) return `${minutes} 分鐘前`;
+            if (hours < 24) return `${hours} 小時前`;
+            if (days < 7) return `${days} 天前`;
+            
+            return time.toLocaleDateString('zh-TW');
+        }
     </script>
 </body>
 </html> 

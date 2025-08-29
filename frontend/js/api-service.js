@@ -5,9 +5,21 @@
 
 class ApiService {
     constructor() {
-        this.baseUrl = getApiBaseUrl();
-        this.useMockData = isUsingMockData();
         this.mockDelay = getConfig('MOCK_API_DELAY');
+    }
+
+    /**
+     * 動態取得 API 基礎 URL
+     */
+    get baseUrl() {
+        return getApiBaseUrl();
+    }
+
+    /**
+     * 動態取得是否使用假資料
+     */
+    get useMockData() {
+        return isUsingMockData();
     }
 
     /**
@@ -425,11 +437,23 @@ class ApiService {
     }
 }
 
-// 建立全域 API 服務實例
-const apiService = new ApiService();
+// 全域 API 服務實例
+let apiService = null;
+
+/**
+ * 初始化 API 服務
+ */
+function initializeApiService() {
+    if (!apiService) {
+        apiService = new ApiService();
+        window.apiService = apiService;
+        debugLog('API 服務已初始化');
+    }
+    return apiService;
+}
 
 // 將 API 服務暴露到全域
-window.apiService = apiService;
+window.initializeApiService = initializeApiService;
 
 // 匯出 API 服務 (用於模組化)
 if (typeof module !== 'undefined' && module.exports) {

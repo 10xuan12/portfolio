@@ -414,59 +414,72 @@
             });
         });
 
-        // TODO: 實作登入表單提交
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // 實作登入表單提交
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('email').value; // 使用 email 欄位作為 username
             const password = document.getElementById('password').value;
             const remember = document.querySelector('input[name="remember"]').checked;
 
             console.log('登入資訊:', {
                 role: selectedRole,
-                email: email,
+                username: username,
                 password: password,
                 remember: remember
             });
 
-            // TODO: 發送登入請求到後端 API
-            // 例如：fetch('/api/login', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({
-            //         role: selectedRole,
-            //         email: email,
-            //         password: password,
-            //         remember: remember
-            //     })
-            // })
+            try {
+                // 發送登入請求到後端 API
+                const response = await fetch('/portfolio/api/student/auth-direct.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        username: username,
+                        password: password
+                    })
+                });
 
-            // 模擬登入成功，設定 localStorage
-            const mockUser = {
-                id: 1,
-                email: email,
-                role: selectedRole,
-                name: selectedRole === 'student' ? '張小明' : 
-                      selectedRole === 'enterprise' ? '科技公司A' : '管理員'
-            };
-            
-            // 設定 localStorage
-            localStorage.setItem('user', JSON.stringify(mockUser));
-            localStorage.setItem('auth_token', 'mock_token_' + Date.now());
-            
-            console.log('已設定使用者身分:', mockUser);
-            
-            // 根據角色導向不同的儀表板
-            switch(selectedRole) {
-                case 'student':
-                    window.location.href = 'student/dashboard.html';
-                    break;
-                case 'enterprise':
-                    window.location.href = 'enterprise/dashboard.html';
-                    break;
-                case 'admin':
-                    window.location.href = 'admin/dashboard.html';
-                    break;
+                const result = await response.json();
+                console.log('登入回應:', result);
+
+                if (result.status === 200) {
+                    // 登入成功
+                    const user = result.data;
+                    const userData = {
+                        id: user.user_id,
+                        username: user.username,
+                        email: user.email,
+                        role: user.role,
+                        name: user.display_name || user.first_name + ' ' + user.last_name
+                    };
+                    
+                    // 設定 localStorage
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    localStorage.setItem('auth_token', 'token_' + Date.now());
+                    
+                    console.log('登入成功，使用者資訊:', userData);
+                    
+                    // 根據角色導向不同的儀表板
+                    switch(selectedRole) {
+                        case 'student':
+                            window.location.href = 'student/dashboard.html';
+                            break;
+                        case 'enterprise':
+                            window.location.href = 'enterprise/dashboard.html';
+                            break;
+                        case 'admin':
+                            window.location.href = 'admin/dashboard.html';
+                            break;
+                    }
+                } else {
+                    // 登入失敗
+                    alert('登入失敗：' + (result.message || '未知錯誤'));
+                }
+            } catch (error) {
+                console.error('登入錯誤:', error);
+                alert('登入失敗，請稍後再試');
             }
         });
 
