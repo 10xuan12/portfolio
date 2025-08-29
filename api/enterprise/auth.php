@@ -45,7 +45,7 @@ function handleLogin($data) {
     $password = $data['password'];
     
     $stmt = $GLOBALS['conn']->prepare("
-        SELECT u.id, u.username, u.email, u.password, u.role, u.status,
+        SELECT u.id, u.username, u.email, u.password_hash, u.role, u.status,
                ep.company_name, ep.logo_url
         FROM users u
         LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
@@ -64,7 +64,7 @@ function handleLogin($data) {
         sendError('帳號已被停用', 403);
     }
     
-    if (!password_verify($password, $user['password'])) {
+    if (!password_verify($password, $user['password_hash'])) {
         sendError('使用者名稱或密碼錯誤', 401);
     }
     
@@ -175,7 +175,7 @@ function handleRegister($data) {
         
     } catch (Exception $e) {
         $GLOBALS['conn']->rollback();
-        sendError('註冊失敗：' . $e->getMessage(), 500);
+        sendError('註冊：' . $e->getMessage(), 500);
     }
 }
 

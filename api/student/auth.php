@@ -164,7 +164,7 @@ function handleRegister($data) {
         
     } catch (Exception $e) {
         $GLOBALS['conn']->rollback();
-        sendError('註冊失敗: ' . $e->getMessage(), 500);
+        sendError('註冊: ' . $e->getMessage(), 500);
     }
 }
 

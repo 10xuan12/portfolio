@@ -599,11 +599,13 @@
                 registerData.password = formData.enterprise_password;
                 registerData.company_name = formData.enterprise_name;
                 registerData.industry = formData.enterprise_industry;
-                registerData.size = formData.enterprise_size;
+                registerData.company_size = formData.enterprise_size; // 修正欄位名稱
                 registerData.phone = formData.enterprise_phone;
                 registerData.address = formData.enterprise_address;
-                registerData.website = formData.enterprise_website;
                 registerData.description = formData.enterprise_description;
+                // 添加 contact_person 欄位，暫時使用企業名稱
+                registerData.contact_person = formData.enterprise_name || '';
+                // 注意：後端 API 沒有 website 欄位，暫時不發送
             } else if (selectedRole === 'admin') {
                 registerData.username = formData.admin_email;
                 registerData.email = formData.admin_email;
@@ -616,8 +618,18 @@
             console.log('註冊資訊:', registerData);
 
             try {
+                // 根據角色選擇對應的 API 端點
+                let apiEndpoint = '';
+                if (selectedRole === 'student') {
+                    apiEndpoint = '/portfolio/api/student/auth-direct.php';
+                } else if (selectedRole === 'enterprise') {
+                    apiEndpoint = '/portfolio/api/enterprise/auth.php';
+                } else if (selectedRole === 'admin') {
+                    apiEndpoint = '/portfolio/api/student/auth-direct.php'; // 暫時使用學生 API，之後可以建立專門的管理員 API
+                }
+
                 // 發送註冊請求到後端 API
-                const response = await fetch('/portfolio/api/student/auth-direct.php', {
+                const response = await fetch(apiEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(registerData)
@@ -625,8 +637,11 @@
 
                 const result = await response.json();
                 console.log('註冊回應:', result);
+                console.log('HTTP 狀態碼:', response.status);
+                console.log('回應 status 欄位:', result.status);
 
-                if (result.status === 200) {
+                // 檢查 HTTP 狀態碼和回應中的 status 欄位
+                if (response.ok && (result.status === 200 || result.status === 201)) {
                     // 註冊成功
                     alert(`註冊成功！歡迎加入 Portfolio+ ${selectedRole} 社群`);
                     
@@ -634,6 +649,7 @@
                     window.location.href = 'login.html';
                 } else {
                     // 註冊失敗
+                    console.log('註冊失敗，完整回應:', result);
                     alert('註冊失敗：' + (result.message || '未知錯誤'));
                 }
             } catch (error) {
