@@ -10,7 +10,7 @@ const APP_CONFIG = {
     USE_MOCK_DATA: false,
     
     // API 基礎 URL (當 USE_MOCK_DATA 為 false 時使用)
-    API_BASE_URL: 'http://localhost:8000/api',
+    API_BASE_URL: '/portfolio/api',
     
     // 應用程式版本
     VERSION: '2.0.2',
@@ -257,6 +257,8 @@ function initializeConfig() {
     
     // 強制確保使用真實API
     APP_CONFIG.USE_MOCK_DATA = false;
+    // 強制覆蓋 API Base URL 為本機 PHP 端點
+    APP_CONFIG.API_BASE_URL = '/portfolio/api';
     
     // 強制覆蓋 localStorage 中的設定
     try {
@@ -271,10 +273,8 @@ function initializeConfig() {
         version: getVersion()
     });
     
-    // 初始化 API 服務
-    if (typeof initializeApiService === 'function') {
-        initializeApiService();
-    }
+    // 注意：API 服務的初始化由 api-service.js 自己處理
+    // 避免循環依賴問題
 }
 
 /**
@@ -319,9 +319,13 @@ window.initializeConfig = initializeConfig;
 window.saveConfig = saveConfig;
 window.resetConfig = resetConfig;
 
-// 自動初始化配置
+// 現在函數已經暴露到全域，可以安全地初始化配置
+initializeConfig();
+
+// 也監聽 DOMContentLoaded 事件作為備用
 document.addEventListener('DOMContentLoaded', function() {
-    initializeConfig();
+    // 配置已經初始化，這裡只是確保
+    console.log('DOM 載入完成，配置已就緒');
 });
 
 // 匯出配置 (用於模組化)

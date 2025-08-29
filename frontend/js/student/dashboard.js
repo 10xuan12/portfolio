@@ -29,12 +29,30 @@ async function loadDashboardData() {
     try {
         debugLog('載入學生儀表板資料...');
         
+        // 檢查 API 服務是否可用
+        if (typeof apiService === 'undefined' || !apiService) {
+            console.error('API 服務未初始化，嘗試重新初始化...');
+            if (typeof window.initializeApiService === 'function') {
+                window.initializeApiService();
+                // 等待一下再檢查
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (typeof apiService === 'undefined' || !apiService) {
+                    throw new Error('API 服務初始化失敗');
+                }
+            } else {
+                throw new Error('API 服務初始化函數不存在');
+            }
+        }
+        
         // 從 localStorage 獲取使用者資訊
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user || !user.id) {
             throw new Error('無法獲取使用者資訊');
         }
         const userId = user.id;
+        
+        console.log('使用者 ID:', userId);
+        console.log('API 服務狀態:', typeof apiService, apiService);
         
         // 並行載入所有資料
         const [stats, portfolios, activities, badges, notifications] = await Promise.all([

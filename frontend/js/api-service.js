@@ -5,43 +5,86 @@
 
 class ApiService {
     constructor() {
-        this.mockDelay = getConfig('MOCK_API_DELAY');
+        // 延遲初始化，等待 config 函數可用
+        this.initialized = false;
+        this.mockDelay = 500; // 預設值
+        this.initConfig();
+    }
+
+    /**
+     * 初始化配置
+     */
+    initConfig() {
+        try {
+            if (typeof getConfig === 'function' && typeof getApiBaseUrl === 'function') {
+                this.mockDelay = getConfig('MOCK_API_DELAY') || 500;
+                this.initialized = true;
+                if (typeof debugLog === 'function') {
+                    debugLog('API 服務配置已初始化');
+                }
+            } else {
+                // 如果函數還不可用，稍後再試
+                setTimeout(() => this.initConfig(), 100);
+            }
+        } catch (error) {
+            console.warn('API 服務配置初始化失敗，稍後重試:', error);
+            setTimeout(() => this.initConfig(), 100);
+        }
     }
 
     /**
      * 動態取得 API 基礎 URL
      */
     get baseUrl() {
-        return getApiBaseUrl();
+        if (typeof getApiBaseUrl === 'function') {
+            return getApiBaseUrl();
+        }
+        return 'http://localhost:8000/api'; // 預設值
     }
 
     /**
      * 動態取得是否使用假資料
      */
     get useMockData() {
-        return isUsingMockData();
+        if (typeof isUsingMockData === 'function') {
+            return isUsingMockData();
+        }
+        return false; // 預設值
+    }
+
+    /**
+     * 取得完整的 API URL
+     */
+    getApiUrl(endpoint) {
+        if (typeof getApiUrl === 'function') {
+            return getApiUrl(endpoint);
+        }
+        return `${this.baseUrl}/${endpoint}`;
     }
 
     /**
      * 通用請求方法
      */
     async request(endpoint, options = {}) {
-        const url = this.useMockData ? endpoint : getApiUrl(endpoint);
+        const url = this.useMockData ? endpoint : this.getApiUrl(endpoint);
         
-        debugLog(`API 請求: ${endpoint}`, {
-            useMockData: this.useMockData,
-            url: url,
-            method: options.method || 'GET'
-        });
+        if (typeof debugLog === 'function') {
+            debugLog(`API 請求: ${endpoint}`, {
+                useMockData: this.useMockData,
+                url: url,
+                method: options.method || 'GET'
+            });
+        }
 
         try {
             // 如果是假資料模式，模擬延遲
             if (this.useMockData) {
-                await mockApiDelay();
+                if (typeof mockApiDelay === 'function') {
+                    await mockApiDelay();
+                }
                 return this.handleMockResponse(endpoint, options);
             }
 
-            // 真實API請求
             const response = await fetch(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,6 +95,13 @@ class ApiService {
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('非 JSON 回應，內容預覽:', text.slice(0, 200));
+                throw new Error('Response is not JSON');
             }
 
             return await response.json();
@@ -68,7 +118,9 @@ class ApiService {
         const method = options.method || 'GET';
         const body = options.body ? JSON.parse(options.body) : null;
 
-        debugLog(`處理假資料回應: ${method} ${endpoint}`);
+        if (typeof debugLog === 'function') {
+            debugLog(`處理假資料回應: ${method} ${endpoint}`);
+        }
 
         // 根據端點和方法返回對應的假資料
         switch (endpoint) {
@@ -287,7 +339,18 @@ class ApiService {
      * 取得使用者的作品
      */
     async getUserPortfolios(userId) {
-        return this.request(`portfolios/author/${userId}`);
+        // 對應 PHP: api/student/portfolio.php?action=list&page=1&limit=12
+        const params = new URLSearchParams({ action: 'list', page: 1, limit: 12 });
+        if (userId) params.set('user_id', userId);
+        try {
+            const result = await this.request(`student/portfolio.php?${params.toString()}`);
+            const data = result?.data || result;
+            if (Array.isArray(data)) return data;
+            if (Array.isArray(data?.portfolios)) return data.portfolios;
+            return [];
+        } catch (e) {
+            return [];
+        }
     }
 
     /**
@@ -323,6 +386,30 @@ class ApiService {
      * 取得統計資料
      */
     async getStats(type = 'platform') {
+        // 對應到後端尚無 stats.php，先用組合呼叫或回退
+        try {
+            // 學生端常用 'student'，暫以作品/活動數彙整
+            if (type === 'student') {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const userId = user.id;
+                const [portfolios, activities] = await Promise.all([
+                    this.getUserPortfolios(userId),
+                    this.getActivities(userId)
+                ]);
+                const pfArr = Array.isArray(portfolios) ? portfolios : (portfolios.data?.portfolios || portfolios.data || []);
+                const actArr = Array.isArray(activities) ? activities : (activities.data || []);
+                return {
+                    total_portfolios: pfArr.length || 0,
+                    total_views: pfArr.reduce((sum, p) => sum + (p.view_count || p.views || 0), 0),
+                    total_likes: pfArr.reduce((sum, p) => sum + (p.like_count || p.likes || 0), 0),
+                    total_comments: pfArr.reduce((sum, p) => sum + (p.comment_count || p.comments || 0), 0),
+                    recent_activities: actArr.length
+                };
+            }
+        } catch (e) {
+            // 回退為空統計
+            return { total_portfolios: 0, total_views: 0, total_likes: 0, total_comments: 0 };
+        }
         return this.request(`stats/${type}`);
     }
 
@@ -330,15 +417,23 @@ class ApiService {
      * 取得通知
      */
     async getNotifications(userId = null) {
-        const endpoint = userId ? `notifications/user/${userId}` : 'notifications';
-        return this.request(endpoint);
+        // 對應 PHP: api/student/notifications.php?action=get&user_id=ID
+        const params = new URLSearchParams({ action: 'get' });
+        if (userId) params.set('user_id', userId);
+        try {
+            return await this.request(`student/notifications.php?${params.toString()}`);
+        } catch (e) {
+            return { data: [] };
+        }
     }
 
     /**
      * 標記通知為已讀
      */
     async markNotificationAsRead(notificationId) {
-        return this.request(`notifications/${notificationId}/read`, {
+        // 對應 PHP: api/student/notifications.php?action=read&id=ID
+        const params = new URLSearchParams({ action: 'read', id: notificationId });
+        return this.request(`student/notifications.php?${params.toString()}`, {
             method: 'PUT'
         });
     }
@@ -347,8 +442,14 @@ class ApiService {
      * 取得活動記錄
      */
     async getActivities(userId = null) {
-        const endpoint = userId ? `activities/user/${userId}` : 'activities';
-        return this.request(endpoint);
+        // 對應 PHP: api/student/activities.php?action=get&user_id=ID
+        const params = new URLSearchParams({ action: 'get' });
+        if (userId) params.set('user_id', userId);
+        try {
+            return await this.request(`student/activities.php?${params.toString()}`);
+        } catch (e) {
+            return { data: [] };
+        }
     }
 
     /**
@@ -404,7 +505,14 @@ class ApiService {
      * 取得徽章
      */
     async getBadges(userId) {
-        return this.request(`badges/user/${userId}`);
+        // 對應 PHP: api/student/badges.php?action=get&user_id=ID
+        const params = new URLSearchParams({ action: 'get' });
+        if (userId) params.set('user_id', userId);
+        try {
+            return await this.request(`student/badges.php?${params.toString()}`);
+        } catch (e) {
+            return { data: [] };
+        }
     }
 
     /**
@@ -447,13 +555,25 @@ function initializeApiService() {
     if (!apiService) {
         apiService = new ApiService();
         window.apiService = apiService;
-        debugLog('API 服務已初始化');
+        if (typeof debugLog === 'function') {
+            debugLog('API 服務已初始化');
+        }
     }
     return apiService;
 }
 
 // 將 API 服務暴露到全域
 window.initializeApiService = initializeApiService;
+
+// 立即初始化 API 服務（不等待 DOMContentLoaded）
+initializeApiService();
+
+// 也監聽 DOMContentLoaded 事件作為備用
+document.addEventListener('DOMContentLoaded', function() {
+    if (!apiService) {
+        initializeApiService();
+    }
+});
 
 // 匯出 API 服務 (用於模組化)
 if (typeof module !== 'undefined' && module.exports) {

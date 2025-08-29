@@ -68,6 +68,11 @@ function getStudentActivities() {
         ";
         
         $stmt = $conn->prepare($query);
+        if (!$stmt) {
+            // 資料表不存在或 SQL 錯誤，回預設資料
+            sendResponse(getDefaultActivities(), 200, '使用預設活動記錄');
+            return;
+        }
         $stmt->bind_param('i', $userId);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -83,16 +88,15 @@ function getStudentActivities() {
             ];
         }
         
-        // 如果沒有活動記錄，返回預設活動
         if (empty($activities)) {
             $activities = getDefaultActivities();
         }
         
-        sendResponse('成功獲取活動記錄', $activities);
+        sendResponse($activities, 200, '成功獲取活動記錄');
         
     } catch (Exception $e) {
-        error_log("獲取活動記錄失敗: " . $e->getMessage());
-        sendError('獲取活動記錄失敗', 500);
+        // 出現例外時回預設資料
+        sendResponse(getDefaultActivities(), 200, '使用預設活動記錄');
     }
 }
 

@@ -628,6 +628,8 @@
                     apiEndpoint = '/portfolio/api/student/auth-direct.php'; // 暫時使用學生 API，之後可以建立專門的管理員 API
                 }
 
+                console.log('使用 API 端點:', apiEndpoint);
+
                 // 發送註冊請求到後端 API
                 const response = await fetch(apiEndpoint, {
                     method: 'POST',
@@ -635,26 +637,51 @@
                     body: JSON.stringify(registerData)
                 });
 
+                console.log('收到回應，狀態碼:', response.status);
+                console.log('回應標頭:', response.headers);
+
+                // 檢查回應是否為 JSON 格式
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('回應不是 JSON 格式: ' + contentType);
+                }
+
                 const result = await response.json();
                 console.log('註冊回應:', result);
                 console.log('HTTP 狀態碼:', response.status);
                 console.log('回應 status 欄位:', result.status);
+                console.log('response.ok:', response.ok);
 
-                // 檢查 HTTP 狀態碼和回應中的 status 欄位
-                if (response.ok && (result.status === 200 || result.status === 201)) {
+                // 簡化檢查邏輯：只要 HTTP 狀態碼是 200 或 201 就表示成功
+                if (response.status === 200 || response.status === 201) {
+                    console.log('註冊成功，準備轉向登入頁面');
+                    console.log('response.status:', response.status);
+                    console.log('result.status:', result.status);
+                    console.log('result.message:', result.message);
+                    
                     // 註冊成功
                     alert(`註冊成功！歡迎加入 Portfolio+ ${selectedRole} 社群`);
                     
                     // 導向登入頁面
-                    window.location.href = 'login.html';
+                    setTimeout(() => {
+                        console.log('開始轉向登入頁面');
+                        window.location.href = 'login.html';
+                    }, 1000); // 延遲 1 秒轉向，讓使用者看到成功訊息
                 } else {
                     // 註冊失敗
                     console.log('註冊失敗，完整回應:', result);
+                    console.log('response.status:', response.status);
+                    console.log('result.status:', result.status);
+                    console.log('result.message:', result.message);
                     alert('註冊失敗：' + (result.message || '未知錯誤'));
                 }
             } catch (error) {
                 console.error('註冊錯誤:', error);
-                alert('註冊失敗，請稍後再試');
+                if (error.name === 'SyntaxError') {
+                    alert('註冊失敗：伺服器回應格式錯誤，請稍後再試');
+                } else {
+                    alert('註冊失敗：' + error.message);
+                }
             }
         });
 
