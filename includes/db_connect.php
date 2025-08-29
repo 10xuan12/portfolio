@@ -9,21 +9,21 @@ global $conn;
 // 嘗試多種連線方式
 $connection_configs = [
     [
+        'host' => 'localhost:3307',
+        'username' => 'root',
+        'password' => '',
+        'database' => 'eportfolio1'
+    ],
+    [
+        'host' => '127.0.0.1:3307',
+        'username' => 'root',
+        'password' => '',
+        'database' => 'eportfolio1'
+    ],
+    [
         'host' => '172.20.10.2',
         'username' => 'teammate1',
         'password' => 'securepass123',
-        'database' => 'eportfolio1'
-    ],
-    [
-        'host' => 'localhost',
-        'username' => 'root',
-        'password' => '',
-        'database' => 'eportfolio1'
-    ],
-    [
-        'host' => '127.0.0.1',
-        'username' => 'root',
-        'password' => '',
         'database' => 'eportfolio1'
     ]
 ];

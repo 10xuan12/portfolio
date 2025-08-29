@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企業端功能測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            color: #34495e;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 企業端功能測試</h1>
+        
+        <!-- 登入測試 -->
+        <div class="test-section">
+            <h3>🔐 企業端登入</h3>
+            <div class="form-group">
+                <label>用戶名：</label>
+                <input type="text" id="loginUsername" value="enterprise_test">
+            </div>
+            <div class="form-group">
+                <label>密碼：</label>
+                <input type="password" id="loginPassword" value="password123">
+            </div>
+            <button onclick="testLogin()">測試登入</button>
+            <div id="loginResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 儀表板測試 -->
+        <div class="test-section">
+            <h3>📊 企業端儀表板</h3>
+            <button onclick="testDashboard()">獲取儀表板資料</button>
+            <div id="dashboardResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 職缺管理測試 -->
+        <div class="test-section">
+            <h3>💼 職缺管理</h3>
+            <button onclick="testJobs()">獲取職缺列表</button>
+            <div id="jobsResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 作品集瀏覽測試 -->
+        <div class="test-section">
+            <h3>🎨 作品集瀏覽</h3>
+            <button onclick="testPortfolios()">獲取作品集列表</button>
+            <div id="portfoliosResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 通知測試 -->
+        <div class="test-section">
+            <h3>🔔 通知管理</h3>
+            <button onclick="testNotifications()">獲取通知列表</button>
+            <div id="notificationsResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        
+        // 顯示結果
+        function showResult(elementId, data, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result ' + (isSuccess ? 'success' : 'error');
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+        
+        // 顯示載入中
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result loading';
+            element.textContent = '載入中...';
+        }
+        
+        // 測試登入
+        async function testLogin() {
+            showLoading('loginResult');
+            
+            const data = {
+                action: 'login',
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/enterprise/auth.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 200) {
+                    sessionId = response.headers.get('Set-Cookie') || 'session_created';
+                    showResult('loginResult', result, true);
+                } else {
+                    showResult('loginResult', result, false);
+                }
+            } catch (error) {
+                showResult('loginResult', '請求失敗: ' + error.message, false);
+            }
+        }
+        
+        // 測試儀表板
+        async function testDashboard() {
+            if (!sessionId) {
+                showResult('dashboardResult', '請先登入', false);
+                return;
+            }
+            
+            showLoading('dashboardResult');
+            
+            const data = {
+                action: 'get_dashboard_data'
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/enterprise/dashboard.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('dashboardResult', result, result.status === 200);
+            } catch (error) {
+                showResult('dashboardResult', '請求失敗: ' + error.message, false);
+            }
+        }
+        
+        // 測試職缺管理
+        async function testJobs() {
+            if (!sessionId) {
+                showResult('jobsResult', '請先登入', false);
+                return;
+            }
+            
+            showLoading('jobsResult');
+            
+            const data = {
+                action: 'list_jobs'
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/enterprise/jobs.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('jobsResult', result, result.status === 200);
+            } catch (error) {
+                showResult('jobsResult', '請求失敗: ' + error.message, false);
+            }
+        }
+        
+        // 測試作品集瀏覽
+        async function testPortfolios() {
+            if (!sessionId) {
+                showResult('portfoliosResult', '請先登入', false);
+                return;
+            }
+            
+            showLoading('portfoliosResult');
+            
+            const data = {
+                action: 'list_portfolios'
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/enterprise/portfolios.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('portfoliosResult', result, result.status === 200);
+            } catch (error) {
+                showResult('portfoliosResult', '請求失敗: ' + error.message, false);
+            }
+        }
+        
+        // 測試通知管理
+        async function testNotifications() {
+            if (!sessionId) {
+                showResult('notificationsResult', '請先登入', false);
+                return;
+            }
+            
+            showLoading('notificationsResult');
+            
+            const data = {
+                action: 'list_notifications'
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/enterprise/notifications.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResult('notificationsResult', result, result.status === 200);
+            } catch (error) {
+                showResult('notificationsResult', '請求失敗: ' + error.message, false);
+            }
+        }
+    </script>
+</body>
+</html>
