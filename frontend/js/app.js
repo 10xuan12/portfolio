@@ -15,18 +15,20 @@ function createPlaceholderImage(width, height, bgColor, textColor, text) {
 }
 
 // 預設佔位圖片
-const PLACEHOLDER_IMAGES = {
-    webDesign: createPlaceholderImage(300, 200, '#667eea', '#ffffff', 'Web Design'),
-    mobileApp: createPlaceholderImage(300, 200, '#764ba2', '#ffffff', 'Mobile App'),
-    dataViz: createPlaceholderImage(300, 200, '#f093fb', '#ffffff', 'Data Viz'),
-    uiDesign: createPlaceholderImage(300, 200, '#4facfe', '#ffffff', 'UI Design'),
-    portfolio: createPlaceholderImage(300, 200, '#667eea', '#ffffff', 'Portfolio')
-};
+if (typeof window.PLACEHOLDER_IMAGES === 'undefined') {
+    window.PLACEHOLDER_IMAGES = {
+        webDesign: createPlaceholderImage(300, 200, '#667eea', '#ffffff', 'Web Design'),
+        mobileApp: createPlaceholderImage(300, 200, '#764ba2', '#ffffff', 'Mobile App'),
+        dataViz: createPlaceholderImage(300, 200, '#f093fb', '#ffffff', 'Data Viz'),
+        uiDesign: createPlaceholderImage(300, 200, '#4facfe', '#ffffff', 'UI Design'),
+        portfolio: createPlaceholderImage(300, 200, '#667eea', '#ffffff', 'Portfolio')
+    };
+}
 
 // 注意：APP_CONFIG 現在在 config.js 中定義
 // 如果需要存取配置，請使用 config.js 中的 APP_CONFIG
 
-// TODO: 實作工具函數
+// 工具函數
 const Utils = {
     // 顯示通知訊息
     showNotification: function(message, type = 'info') {
@@ -132,7 +134,7 @@ const Utils = {
     }
 };
 
-// TODO: 實作 API 服務
+// API 服務
 const API = {
     // 基礎請求函數
     request: async function(endpoint, options = {}) {
@@ -190,7 +192,7 @@ const API = {
     }
 };
 
-// TODO: 實作認證服務
+// 認證服務
 const Auth = {
     // 檢查是否已登入
     isLoggedIn: function() {
@@ -256,7 +258,7 @@ const Auth = {
     }
 };
 
-// TODO: 實作 UI 互動功能
+// UI 互動功能
 const UI = {
     // 初始化頁面
     init: function() {
@@ -678,7 +680,7 @@ const UI = {
     }
 };
 
-// TODO: 實作資料載入功能
+// 資料載入功能
 const DataLoader = {
     // 載入假資料
     loadMockData: function(type) {
@@ -789,7 +791,7 @@ const DataLoader = {
     }
 };
 
-// TODO: 實作事件監聽器
+// 事件監聽器
 document.addEventListener('DOMContentLoaded', function() {
     try {
         // 初始化 UI
@@ -1175,7 +1177,7 @@ function applyFilters(filterForm) {
     console.log('套用篩選:', filters);
 }
 
-// TODO: 實作全域函數供其他腳本使用
+// 全域函數供其他腳本使用
 window.PortfolioApp = {
     Utils,
     API,

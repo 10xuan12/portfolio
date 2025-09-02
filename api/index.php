@@ -82,6 +82,9 @@ if ($pathParts[0] === 'student') {
             case 'resume':
                 require_once 'student/resume.php';
                 break;
+            case 'notifications':
+                require_once 'student/notifications.php';
+                break;
             default:
                 sendError('無效的學生 API 端點', 404);
         }
@@ -157,45 +160,110 @@ else {
 // 通用搜尋功能
 function handleSearch() {
     $query = isset($_GET['q']) ? $_GET['q'] : '';
-    $type = isset($_GET['type']) ? $_GET['type'] : 'all';
     $category = isset($_GET['category']) ? $_GET['category'] : '';
+    $tags = isset($_GET['tags']) ? $_GET['tags'] : '';
+    $author = isset($_GET['author']) ? $_GET['author'] : '';
+    $time = isset($_GET['time']) ? $_GET['time'] : '';
+    $sort = isset($_GET['sort']) ? $_GET['sort'] : 'relevance';
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-    
-    if (empty($query)) {
-        sendError('搜尋查詢不能為空', 400);
-    }
     
     $offset = ($page - 1) * $limit;
     
     // 建立搜尋查詢
-    $where = "WHERE (p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ?)";
-    $params = ["%$query%", "%$query%", "%$query%"];
-    $types = "sss";
+    $where = "WHERE p.status = 'published'";
+    $params = [];
+    $types = "";
     
-    if ($category) {
-        $where .= " AND c.slug = ?";
+    // 關鍵字搜尋
+    if (!empty($query)) {
+        $where .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ?)";
+        $searchTerm = "%$query%";
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
+        $types .= "sss";
+    }
+    
+    // 分類篩選
+    if (!empty($category)) {
+        $where .= " AND p.category = ?";
         $params[] = $category;
         $types .= "s";
     }
     
-    if ($type === 'published') {
-        $where .= " AND p.status = 'published'";
+    // 標籤篩選
+    if (!empty($tags)) {
+        $where .= " AND p.tags LIKE ?";
+        $params[] = "%$tags%";
+        $types .= "s";
+    }
+    
+    // 作者篩選
+    if (!empty($author)) {
+        $where .= " AND u.name LIKE ?";
+        $params[] = "%$author%";
+        $types .= "s";
+    }
+    
+    // 時間篩選
+    if (!empty($time)) {
+        switch ($time) {
+            case 'week':
+                $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)";
+                break;
+            case 'month':
+                $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+                break;
+            case 'year':
+                $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
+                break;
+        }
+    }
+    
+    // 排序
+    $orderBy = "ORDER BY ";
+    switch ($sort) {
+        case 'date':
+            $orderBy .= "p.created_at DESC";
+            break;
+        case 'views':
+            $orderBy .= "p.view_count DESC";
+            break;
+        case 'likes':
+            $orderBy .= "p.like_count DESC";
+            break;
+        case 'relevance':
+        default:
+            if (!empty($query)) {
+                $orderBy .= "CASE 
+                    WHEN p.title LIKE ? THEN 1
+                    WHEN p.description LIKE ? THEN 2
+                    WHEN p.tags LIKE ? THEN 3
+                    ELSE 4
+                END, p.created_at DESC";
+                $titleMatch = "%$query%";
+                $params[] = $titleMatch;
+                $params[] = $titleMatch;
+                $params[] = $titleMatch;
+                $types .= "sss";
+            } else {
+                $orderBy .= "p.created_at DESC";
+            }
+            break;
     }
     
     // 搜尋作品
     $stmt = $GLOBALS['conn']->prepare("
         SELECT 
-            p.id, p.title, p.description, p.status, p.cover_image,
-            p.view_count, p.like_count, p.comment_count, p.created_at,
-            c.name as category_name, c.slug as category_slug,
-            u.username, sp.display_name
+            p.id, p.title, p.description, p.status, p.category, p.tags,
+            p.cover_image, p.view_count, p.like_count, p.comment_count, 
+            p.created_at, p.published_at,
+            u.name as author_name, u.department, u.grade
         FROM portfolios p
-        LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN users u ON p.user_id = u.id
-        LEFT JOIN student_profiles sp ON u.id = sp.user_id
         $where
-        ORDER BY p.created_at DESC
+        $orderBy
         LIMIT ? OFFSET ?
     ");
     
@@ -203,19 +271,37 @@ function handleSearch() {
     $params[] = $offset;
     $types .= "ii";
     
-    $stmt->bind_param($types, ...$params);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     
     $results = [];
     while ($row = $result->fetch_assoc()) {
-        $results[] = $row;
+        $results[] = [
+            'id' => (int)$row['id'],
+            'title' => $row['title'],
+            'description' => $row['description'],
+            'status' => $row['status'],
+            'category' => $row['category'],
+            'tags' => $row['tags'] ? explode(',', $row['tags']) : [],
+            'cover_image' => $row['cover_image'],
+            'views' => (int)$row['view_count'],
+            'likes' => (int)$row['like_count'],
+            'comments' => (int)$row['comment_count'],
+            'created_at' => $row['created_at'],
+            'published_at' => $row['published_at'],
+            'author_name' => $row['author_name'],
+            'department' => $row['department'],
+            'grade' => $row['grade']
+        ];
     }
     
     // 查詢總數
     $countStmt = $GLOBALS['conn']->prepare("
         SELECT COUNT(*) as total FROM portfolios p
-        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN users u ON p.user_id = u.id
         $where
     ");
     
@@ -228,16 +314,7 @@ function handleSearch() {
     $countStmt->execute();
     $total = $countStmt->get_result()->fetch_assoc()['total'];
     
-    sendResponse([
-        'query' => $query,
-        'results' => $results,
-        'pagination' => [
-            'page' => $page,
-            'limit' => $limit,
-            'total' => $total,
-            'pages' => ceil($total / $limit)
-        ]
-    ], 200);
+    sendResponse($results, 200, '搜尋成功');
 }
 
 // 取得分類列表

@@ -311,13 +311,13 @@
                         <div class="form-section">
                             <h3>登入活動</h3>
                             <div class="login-sessions">
-                                <div class="session-item" style="padding: var(--spacing-md); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); margin-bottom: var(--spacing-sm);">
-                                    <div style="display: flex; justify-content: between; align-items: center;">
+                                <div class="session-item">
+                                    <div class="session-header">
                                         <div>
-                                            <div style="font-weight: 500;">台北, 台灣</div>
-                                            <div style="font-size: var(--text-sm); color: var(--gray-600);">Chrome on Windows • 2024-01-15 14:30</div>
+                                            <div class="session-location">台北, 台灣</div>
+                                            <div class="session-details">Chrome on Windows • 2024-01-15 14:30</div>
                                         </div>
-                                        <button class="btn btn-outline" style="padding: var(--spacing-xs) var(--spacing-sm); font-size: var(--text-sm);">
+                                        <button class="btn btn-outline session-btn">
                                             登出
                                         </button>
                                     </div>
@@ -374,7 +374,30 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
+    <!-- JavaScript 檔案 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
-    <script src="settings.js"></script>
+    <script src="../js/student/settings.js"></script>
+    
+    <script>
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 API 服務
+            if (typeof initializeApiService === 'function') {
+                initializeApiService();
+            }
+            
+            // 載入導覽列
+            if (typeof loadNavbar === 'function') {
+                loadNavbar('student');
+            }
+            
+            // 載入設定
+            if (typeof loadSettings === 'function') {
+                loadSettings();
+            }
+        });
+    </script>
 </body>
 </html> 

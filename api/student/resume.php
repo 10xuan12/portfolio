@@ -9,6 +9,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 case 'list':
                     getResumeList();
                     break;
+                case 'get':
+                    getResumeData();
+                    break;
                 case 'detail':
                     getResumeDetail();
                     break;
@@ -17,6 +20,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                     break;
                 case 'export':
                     exportResume();
+                    break;
+                case 'save':
+                    saveResumeData();
                     break;
                 default:
                     sendError('無效的操作', 400);
@@ -43,6 +49,12 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 case 'duplicate':
                     duplicateResume($input);
                     break;
+                case 'publish':
+                    publishResume($input);
+                    break;
+                case 'archive':
+                    archiveResume($input);
+                    break;
                 default:
                     sendError('無效的操作', 400);
             }
@@ -60,10 +72,10 @@ function getResumeList() {
     $userId = checkPermission('student');
     
     $stmt = $GLOBALS['conn']->prepare("
-        SELECT id, title, template, is_public, download_count, created_at, updated_at
+        SELECT id, title, template, is_public, download_count, view_count, status, version, created_at, updated_at
         FROM resumes 
         WHERE user_id = ?
-        ORDER BY updated_at DESC
+        ORDER BY version DESC, updated_at DESC
     ");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
@@ -75,6 +87,150 @@ function getResumeList() {
     }
     
     sendResponse($resumes, 200);
+}
+
+// 取得使用者履歷資料
+function getResumeData() {
+    try {
+        $userId = checkPermission('student');
+        
+        // 檢查資料庫連接
+        if (!isset($GLOBALS['conn']) || $GLOBALS['conn']->connect_error) {
+            sendError('資料庫連接失敗', 500);
+        }
+        
+        // 取得使用者的個人資料
+        $stmt = $GLOBALS['conn']->prepare("
+            SELECT sp.first_name, sp.last_name, u.email, sp.phone, sp.address, sp.bio
+            FROM student_profiles sp
+            LEFT JOIN users u ON sp.user_id = u.id
+            WHERE sp.user_id = ?
+        ");
+        
+        if (!$stmt) {
+            sendError('SQL 準備失敗: ' . $GLOBALS['conn']->error, 500);
+        }
+        
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $profile = $result->fetch_assoc();
+    
+    // 取得使用者的作品集
+    $stmt = $GLOBALS['conn']->prepare("
+        SELECT id, title, description, category, tags, image_url, created_at
+        FROM portfolios 
+        WHERE user_id = ? AND is_public = 1
+        ORDER BY created_at DESC
+        LIMIT 10
+    ");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $portfolios = [];
+    while ($row = $result->fetch_assoc()) {
+        $portfolios[] = $row;
+    }
+    
+    // 取得使用者的技能標籤（從作品集的 tags 欄位）
+    $stmt = $GLOBALS['conn']->prepare("
+        SELECT tags
+        FROM portfolios 
+        WHERE user_id = ? AND tags IS NOT NULL AND tags != ''
+        ORDER BY created_at DESC
+        LIMIT 10
+    ");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $skills = [];
+    while ($row = $result->fetch_assoc()) {
+        if ($row['tags']) {
+            $tags = explode(',', $row['tags']);
+            foreach ($tags as $tag) {
+                $tag = trim($tag);
+                if ($tag && !in_array($tag, $skills)) {
+                    $skills[] = $tag;
+                }
+            }
+        }
+    }
+    
+    // 組合履歷資料
+    $resumeData = [
+        'basic' => [
+            'name' => ($profile['first_name'] ?? '') . ' ' . ($profile['last_name'] ?? ''),
+            'title' => $profile['bio'] ?? '',
+            'email' => $profile['email'] ?? '',
+            'phone' => $profile['phone'] ?? '',
+            'address' => $profile['address'] ?? '',
+            'website' => '', // 暫時設為空字串
+            'summary' => $profile['bio'] ?? ''
+        ],
+        'skills' => implode(', ', $skills),
+        'experience' => [], // 可以從其他表取得工作經驗
+        'education' => [], // 可以從其他表取得教育背景
+        'projects' => $portfolios,
+        'certificates' => [] // 可以從其他表取得證書
+    ];
+    
+    sendResponse($resumeData, 200);
+    } catch (Exception $e) {
+        sendError('取得履歷資料失敗: ' . $e->getMessage(), 500);
+    }
+}
+
+// 儲存履歷資料
+function saveResumeData() {
+    $userId = checkPermission('student');
+    
+    // 取得 POST 資料
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$input || !isset($input['resume_data'])) {
+        sendError('缺少履歷資料', 400);
+    }
+    
+    $resumeData = $input['resume_data'];
+    
+    // 檢查是否已有履歷記錄
+    $stmt = $GLOBALS['conn']->prepare("SELECT id, version FROM resumes WHERE user_id = ? ORDER BY version DESC LIMIT 1");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        // 更新現有履歷（建立新版本）
+        $existingResume = $result->fetch_assoc();
+        $newVersion = $existingResume['version'] + 1;
+        
+        $stmt = $GLOBALS['conn']->prepare("
+            INSERT INTO resumes (user_id, title, template, content, is_public, status, version, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 0, 'draft', ?, NOW(), NOW())
+        ");
+        $title = $resumeData['basic']['name'] . ' 的履歷';
+        $template = $resumeData['template'] ?? 'modern';
+        $content = json_encode($resumeData, JSON_UNESCAPED_UNICODE);
+        $stmt->bind_param("isssi", $userId, $title, $template, $content, $newVersion);
+    } else {
+        // 建立新履歷
+        $stmt = $GLOBALS['conn']->prepare("
+            INSERT INTO resumes (user_id, title, template, content, is_public, status, version, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 0, 'draft', 1, NOW(), NOW())
+        ");
+        $title = $resumeData['basic']['name'] . ' 的履歷';
+        $template = $resumeData['template'] ?? 'modern';
+        $content = json_encode($resumeData, JSON_UNESCAPED_UNICODE);
+        $stmt->bind_param("isss", $userId, $title, $template, $content);
+    }
+    
+    if ($stmt->execute()) {
+        sendResponse(['message' => '履歷已儲存'], 200, '履歷儲存成功');
+    } else {
+        sendError('儲存失敗：' . $stmt->error, 500);
+    }
 }
 
 // 取得履歷詳情
@@ -284,16 +440,24 @@ function duplicateResume($data) {
         sendError('找不到履歷或無權限複製', 404);
     }
     
+    // 取得最新版本號
+    $stmt = $GLOBALS['conn']->prepare("SELECT MAX(version) as max_version FROM resumes WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $versionResult = $result->fetch_assoc();
+    $newVersion = ($versionResult['max_version'] ?? 0) + 1;
+    
     // 建立新標題
     $newTitle = $originalResume['title'] . ' (複製)';
     
     $stmt = $GLOBALS['conn']->prepare("
-        INSERT INTO resumes (user_id, title, template, content, is_public)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO resumes (user_id, title, template, content, is_public, status, version)
+        VALUES (?, ?, ?, ?, ?, 'draft', ?)
     ");
     
     $isPublic = false; // 複製的履歷預設為私人
-    $stmt->bind_param("isssi", $userId, $newTitle, $originalResume['template'], $originalResume['content'], $isPublic);
+    $stmt->bind_param("isssii", $userId, $newTitle, $originalResume['template'], $originalResume['content'], $isPublic, $newVersion);
     
     if ($stmt->execute()) {
         $newResumeId = $GLOBALS['conn']->insert_id;
@@ -305,6 +469,71 @@ function duplicateResume($data) {
     } else {
         sendError('複製失敗: ' . $stmt->error, 500);
     }
+}
+
+// 發布履歷
+function publishResume($data) {
+    $userId = checkPermission('student');
+    
+    validateRequired($data, ['id']);
+    
+    $resumeId = (int)$data['id'];
+    
+    // 檢查履歷是否存在且屬於該使用者
+    $stmt = $GLOBALS['conn']->prepare("SELECT id FROM resumes WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $resumeId, $userId);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows === 0) {
+        sendError('找不到履歷或無權限發布', 404);
+    }
+    
+    $stmt = $GLOBALS['conn']->prepare("
+        UPDATE resumes SET status = 'published', updated_at = NOW() WHERE id = ? AND user_id = ?
+    ");
+    $stmt->bind_param("ii", $resumeId, $userId);
+    
+    if ($stmt->execute()) {
+        sendResponse(['message' => '履歷發布成功'], 200, '發布成功');
+    } else {
+        sendError('發布失敗: ' . $stmt->error, 500);
+    }
+}
+
+// 封存履歷
+function archiveResume($data) {
+    $userId = checkPermission('student');
+    
+    validateRequired($data, ['id']);
+    
+    $resumeId = (int)$data['id'];
+    
+    // 檢查履歷是否存在且屬於該使用者
+    $stmt = $GLOBALS['conn']->prepare("SELECT id FROM resumes WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $resumeId, $userId);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows === 0) {
+        sendError('找不到履歷或無權限封存', 404);
+    }
+    
+    $stmt = $GLOBALS['conn']->prepare("
+        UPDATE resumes SET status = 'archived', updated_at = NOW() WHERE id = ? AND user_id = ?
+    ");
+    $stmt->bind_param("ii", $resumeId, $userId);
+    
+    if ($stmt->execute()) {
+        sendResponse(['message' => '履歷封存成功'], 200, '封存成功');
+    } else {
+        sendError('封存失敗: ' . $stmt->error, 500);
+    }
+}
+
+// 增加瀏覽次數
+function incrementViewCount($resumeId) {
+    $stmt = $GLOBALS['conn']->prepare("
+        UPDATE resumes SET view_count = view_count + 1 WHERE id = ?
+    ");
+    $stmt->bind_param("i", $resumeId);
+    $stmt->execute();
 }
 
 // 匯出履歷
@@ -328,9 +557,9 @@ function exportResume() {
         sendError('找不到履歷或無權限匯出', 404);
     }
     
-    // 更新下載次數
+    // 更新下載次數和瀏覽次數
     $stmt = $GLOBALS['conn']->prepare("
-        UPDATE resumes SET download_count = download_count + 1 WHERE id = ?
+        UPDATE resumes SET download_count = download_count + 1, view_count = view_count + 1 WHERE id = ?
     ");
     $stmt->bind_param("i", $resumeId);
     $stmt->execute();
@@ -552,4 +781,6 @@ function getCreativeCSS() { return getModernCSS(); }
 function getCreativeHTML($resume, $content) { return getModernHTML($resume, $content); }
 function getMinimalCSS() { return getModernCSS(); }
 function getMinimalHTML($resume, $content) { return getModernHTML($resume, $content); }
+
+// 注意：sendResponse 和 sendError 函數已在 config.php 中定義
 ?>

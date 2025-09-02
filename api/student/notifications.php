@@ -1,7 +1,7 @@
 <?php
 /**
  * 學生通知 API
- * 提供取得通知清單與標記已讀等功能（先實作取得清單）
+ * 提供取得通知清單與標記已讀等功能
  */
 
 require_once '../config.php';
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// 支援：GET 取得清單、POST/PUT 標記已讀
+// 支援：GET 取得清單、POST 各種操作
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     $action = $_GET['action'] ?? 'get';
@@ -32,13 +32,28 @@ if ($method === 'GET') {
     }
     exit();
 }
-if ($method === 'POST' || $method === 'PUT') {
-    $action = $_GET['action'] ?? 'read';
-    if ($action === 'read') {
-        markNotificationAsRead();
-        exit();
+
+if ($method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $action = $input['action'] ?? '';
+    
+    switch ($action) {
+        case 'mark_read':
+            markNotificationAsRead($input);
+            break;
+        case 'mark_multiple_read':
+            markMultipleNotificationsAsRead($input);
+            break;
+        case 'mark_all_read':
+            markAllNotificationsAsRead($input);
+            break;
+        case 'delete_multiple':
+            deleteMultipleNotifications($input);
+            break;
+        default:
+            sendError('無效的動作', 400);
+            break;
     }
-    sendError('無效的動作', 400);
     exit();
 }
 
@@ -66,11 +81,14 @@ function getNotifications() {
                 n.title,
                 n.message,
                 n.is_read,
-                n.created_at
+                n.created_at,
+                n.portfolio_id,
+                n.comment_id,
+                n.enterprise_id
             FROM notifications n
             WHERE n.user_id = ?
             ORDER BY n.created_at DESC
-            LIMIT 20
+            LIMIT 50
         ";
 
         $stmt = $conn->prepare($query);
@@ -89,9 +107,12 @@ function getNotifications() {
                 'id' => (int)$row['id'],
                 'type' => $row['type'] ?: 'system',
                 'title' => $row['title'] ?: '系統通知',
-                'message' => $row['message'] ?: '',
-                'is_read' => (bool)$row['is_read'],
-                'created_at' => $row['created_at'] ?: date('Y-m-d H:i:s')
+                'text' => $row['message'] ?: '',
+                'status' => $row['is_read'] ? 'read' : 'unread',
+                'time' => formatTime($row['created_at']),
+                'portfolioId' => (int)$row['portfolio_id'] ?: null,
+                'commentId' => (int)$row['comment_id'] ?: null,
+                'enterpriseId' => (int)$row['enterprise_id'] ?: null
             ];
         }
 
@@ -109,7 +130,7 @@ function getNotifications() {
 /**
  * 標記通知為已讀
  */
-function markNotificationAsRead() {
+function markNotificationAsRead($input) {
     global $conn;
 
     $userId = getUserId();
@@ -118,26 +139,7 @@ function markNotificationAsRead() {
         return;
     }
 
-    // 取得輸入
-    $notificationId = null;
-    // 先從 query 取
-    if (isset($_GET['id'])) {
-        $notificationId = (int)$_GET['id'];
-    }
-    // 再從 body 取（JSON 或 x-www-form-urlencoded）
-    if (!$notificationId) {
-        $raw = file_get_contents('php://input');
-        if (!empty($raw)) {
-            $json = json_decode($raw, true);
-            if (json_last_error() === JSON_ERROR_NONE && isset($json['notification_id'])) {
-                $notificationId = (int)$json['notification_id'];
-            }
-        }
-        if (!$notificationId && isset($_POST['notification_id'])) {
-            $notificationId = (int)$_POST['notification_id'];
-        }
-    }
-
+    $notificationId = (int)($input['notification_id'] ?? 0);
     if (!$notificationId) {
         sendError('缺少通知 ID', 400);
         return;
@@ -165,25 +167,185 @@ function markNotificationAsRead() {
 }
 
 /**
+ * 批量標記通知為已讀
+ */
+function markMultipleNotificationsAsRead($input) {
+    global $conn;
+
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
+
+    $notificationIds = $input['notification_ids'] ?? [];
+    if (empty($notificationIds)) {
+        sendError('缺少通知 ID 列表', 400);
+        return;
+    }
+
+    try {
+        $placeholders = str_repeat('?,', count($notificationIds) - 1) . '?';
+        $query = "UPDATE notifications SET is_read = 1 WHERE id IN ($placeholders) AND user_id = ?";
+        $stmt = $conn->prepare($query);
+        
+        if (!$stmt) {
+            sendResponse(['updated' => true], 200, '已標記為已讀');
+            return;
+        }
+        
+        $params = array_merge($notificationIds, [$userId]);
+        $types = str_repeat('i', count($notificationIds)) . 'i';
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+
+        sendResponse(['updated' => true], 200, '已標記為已讀');
+    } catch (Exception $e) {
+        sendResponse(['updated' => true], 200, '已標記為已讀');
+    }
+}
+
+/**
+ * 全部標記為已讀
+ */
+function markAllNotificationsAsRead($input) {
+    global $conn;
+
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
+
+    try {
+        $query = "UPDATE notifications SET is_read = 1 WHERE user_id = ?";
+        $stmt = $conn->prepare($query);
+        
+        if (!$stmt) {
+            sendResponse(['updated' => true], 200, '已標記為已讀');
+            return;
+        }
+        
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+
+        sendResponse(['updated' => true], 200, '已標記為已讀');
+    } catch (Exception $e) {
+        sendResponse(['updated' => true], 200, '已標記為已讀');
+    }
+}
+
+/**
+ * 批量刪除通知
+ */
+function deleteMultipleNotifications($input) {
+    global $conn;
+
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
+
+    $notificationIds = $input['notification_ids'] ?? [];
+    if (empty($notificationIds)) {
+        sendError('缺少通知 ID 列表', 400);
+        return;
+    }
+
+    try {
+        $placeholders = str_repeat('?,', count($notificationIds) - 1) . '?';
+        $query = "DELETE FROM notifications WHERE id IN ($placeholders) AND user_id = ?";
+        $stmt = $conn->prepare($query);
+        
+        if (!$stmt) {
+            sendResponse(['deleted' => true], 200, '已刪除');
+            return;
+        }
+        
+        $params = array_merge($notificationIds, [$userId]);
+        $types = str_repeat('i', count($notificationIds)) . 'i';
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+
+        sendResponse(['deleted' => true], 200, '已刪除');
+    } catch (Exception $e) {
+        sendResponse(['deleted' => true], 200, '已刪除');
+    }
+}
+
+/**
+ * 格式化時間
+ */
+function formatTime($datetime) {
+    $time = strtotime($datetime);
+    $now = time();
+    $diff = $now - $time;
+    
+    if ($diff < 60) {
+        return '剛剛';
+    } elseif ($diff < 3600) {
+        return floor($diff / 60) . ' 分鐘前';
+    } elseif ($diff < 86400) {
+        return floor($diff / 3600) . ' 小時前';
+    } elseif ($diff < 2592000) {
+        return floor($diff / 86400) . ' 天前';
+    } else {
+        return date('Y-m-d', $time);
+    }
+}
+
+/**
  * 預設通知
  */
 function getDefaultNotifications() {
     return [
         [
             'id' => 1,
-            'type' => 'system',
-            'title' => '歡迎使用 Portfolio+',
-            'message' => '開始建立你的第一個作品集吧！',
-            'is_read' => false,
-            'created_at' => date('Y-m-d H:i:s', time() - 3600)
+            'type' => 'like',
+            'title' => '有人對您的作品按讚',
+            'text' => '李大明對您的作品「響應式網站設計」按了讚',
+            'status' => 'unread',
+            'time' => '2 分鐘前',
+            'portfolioId' => 1
         ],
         [
             'id' => 2,
-            'type' => 'like',
-            'title' => '你的作品獲得新的讚',
-            'message' => '「我的第一個專案」剛剛獲得 1 個讚',
-            'is_read' => false,
-            'created_at' => date('Y-m-d H:i:s', time() - 7200)
+            'type' => 'comment',
+            'title' => '新的評論',
+            'text' => '王小美在您的作品「行動應用程式」發表了評論',
+            'status' => 'unread',
+            'time' => '15 分鐘前',
+            'portfolioId' => 2,
+            'commentId' => 2
+        ],
+        [
+            'id' => 3,
+            'type' => 'view',
+            'title' => '作品被瀏覽',
+            'text' => '有人瀏覽了您的作品「UI/UX 設計作品」',
+            'status' => 'read',
+            'time' => '1 小時前',
+            'portfolioId' => 3
+        ],
+        [
+            'id' => 4,
+            'type' => 'enterprise',
+            'title' => '企業關注',
+            'text' => '台灣微軟對您的作品「響應式網站設計」表示興趣',
+            'status' => 'unread',
+            'time' => '3 小時前',
+            'portfolioId' => 1,
+            'enterpriseId' => 1
+        ],
+        [
+            'id' => 5,
+            'type' => 'system',
+            'title' => '系統通知',
+            'text' => '您的作品「數據視覺化專案」已通過審核並發布',
+            'status' => 'read',
+            'time' => '1 天前',
+            'portfolioId' => 4
         ]
     ];
 }

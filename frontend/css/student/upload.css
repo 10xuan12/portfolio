@@ -433,3 +433,22 @@
         justify-content: center;
     }
 }
+
+/* 從 upload.html 移入的內聯樣式 */
+#step2Content,
+#step3Content {
+    display: none;
+}
+
+#fileInput {
+    display: none;
+}
+
+#githubIntegration {
+    display: none;
+}
+
+#prevBtn,
+#submitBtn {
+    display: none;
+}

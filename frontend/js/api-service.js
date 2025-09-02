@@ -3,7 +3,9 @@
  * 根據配置自動切換假資料和真實API
  */
 
-class ApiService {
+// 避免重複宣告
+if (typeof window.ApiService === 'undefined') {
+    class ApiService {
     constructor() {
         // 延遲初始化，等待 config 函數可用
         this.initialized = false;
@@ -516,6 +518,50 @@ class ApiService {
     }
 
     /**
+     * 讚作品
+     */
+    async likePortfolio(portfolioId) {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const userId = user.id;
+            
+            if (!userId) {
+                throw new Error('使用者未登入');
+            }
+            
+            const response = await fetch('/portfolio/api/student/portfolio.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': userId
+                },
+                body: JSON.stringify({
+                    action: 'toggle_like',
+                    portfolio_id: portfolioId
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            return {
+                success: result.status === 200,
+                message: result.message || '操作成功',
+                data: result.data || { liked: true }
+            };
+        } catch (error) {
+            console.error('讚作品失敗:', error);
+            return {
+                success: false,
+                message: error.message || '操作失敗',
+                data: null
+            };
+        }
+    }
+
+    /**
      * 登入
      */
     async login(credentials) {
@@ -545,37 +591,39 @@ class ApiService {
     }
 }
 
-// 全域 API 服務實例
-let apiService = null;
+    // 全域 API 服務實例
+    let apiService = null;
 
-/**
- * 初始化 API 服務
- */
-function initializeApiService() {
-    if (!apiService) {
-        apiService = new ApiService();
-        window.apiService = apiService;
-        if (typeof debugLog === 'function') {
-            debugLog('API 服務已初始化');
+    /**
+     * 初始化 API 服務
+     */
+    function initializeApiService() {
+        if (!apiService) {
+            apiService = new ApiService();
+            window.apiService = apiService;
+            if (typeof debugLog === 'function') {
+                debugLog('API 服務已初始化');
+            }
         }
+        return apiService;
     }
-    return apiService;
-}
 
-// 將 API 服務暴露到全域
-window.initializeApiService = initializeApiService;
+    // 將 API 服務暴露到全域
+    window.ApiService = ApiService;
+    window.initializeApiService = initializeApiService;
 
-// 立即初始化 API 服務（不等待 DOMContentLoaded）
-initializeApiService();
+    // 立即初始化 API 服務（不等待 DOMContentLoaded）
+    initializeApiService();
 
-// 也監聽 DOMContentLoaded 事件作為備用
-document.addEventListener('DOMContentLoaded', function() {
-    if (!apiService) {
-        initializeApiService();
+    // 也監聽 DOMContentLoaded 事件作為備用
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!apiService) {
+            initializeApiService();
+        }
+    });
+
+    // 匯出 API 服務 (用於模組化)
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ApiService;
     }
-});
-
-// 匯出 API 服務 (用於模組化)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ApiService;
 }

@@ -129,156 +129,11 @@
 
             <!-- 通知列表 -->
             <div class="notifications-list" id="notificationsList">
-                <!-- TODO: 從資料庫載入通知列表 -->
-                <!-- 假資料開始 -->
-                <div class="notification-item unread" data-type="like" data-status="unread">
-                    <input type="checkbox" class="notification-checkbox" onchange="updateSelection()">
-                    <div class="notification-icon like">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <div class="notification-content">
-                        <div class="notification-header">
-                            <div class="notification-title">有人對您的作品按讚</div>
-                            <div class="notification-time">2 分鐘前</div>
-                        </div>
-                        <div class="notification-text">
-                            李大明對您的作品「響應式網站設計」按了讚
-                        </div>
-                        <div class="notification-preview">
-                            作品：響應式網站設計
-                        </div>
-                        <div class="notification-actions">
-                            <button class="notification-action" onclick="viewPortfolio(1)">
-                                <i class="fas fa-eye"></i> 查看作品
-                            </button>
-                            <button class="notification-action" onclick="markRead(this)">
-                                <i class="fas fa-check"></i> 標記已讀
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="notification-item unread" data-type="comment" data-status="unread">
-                    <input type="checkbox" class="notification-checkbox" onchange="updateSelection()">
-                    <div class="notification-icon comment">
-                        <i class="fas fa-comment"></i>
-                    </div>
-                    <div class="notification-content">
-                        <div class="notification-header">
-                            <div class="notification-title">新的評論</div>
-                            <div class="notification-time">15 分鐘前</div>
-                        </div>
-                        <div class="notification-text">
-                            王小美在您的作品「行動應用程式」發表了評論
-                        </div>
-                        <div class="notification-preview">
-                            評論：程式碼結構很清晰，註解也很詳細。對於初學者來說是很好的學習範例。
-                        </div>
-                        <div class="notification-actions">
-                            <button class="notification-action" onclick="viewComment(2)">
-                                <i class="fas fa-eye"></i> 查看評論
-                            </button>
-                            <button class="notification-action" onclick="markRead(this)">
-                                <i class="fas fa-check"></i> 標記已讀
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="notification-item" data-type="view" data-status="read">
-                    <input type="checkbox" class="notification-checkbox" onchange="updateSelection()">
-                    <div class="notification-icon view">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <div class="notification-content">
-                        <div class="notification-header">
-                            <div class="notification-title">作品被瀏覽</div>
-                            <div class="notification-time">1 小時前</div>
-                        </div>
-                        <div class="notification-text">
-                            有人瀏覽了您的作品「UI/UX 設計作品」
-                        </div>
-                        <div class="notification-actions">
-                            <button class="notification-action" onclick="viewPortfolio(3)">
-                                <i class="fas fa-eye"></i> 查看作品
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="notification-item unread" data-type="enterprise" data-status="unread">
-                    <input type="checkbox" class="notification-checkbox" onchange="updateSelection()">
-                    <div class="notification-icon enterprise">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <div class="notification-content">
-                        <div class="notification-header">
-                            <div class="notification-title">企業關注</div>
-                            <div class="notification-time">3 小時前</div>
-                        </div>
-                        <div class="notification-text">
-                            台灣微軟對您的作品「響應式網站設計」表示興趣
-                        </div>
-                        <div class="notification-preview">
-                            企業：台灣微軟股份有限公司
-                        </div>
-                        <div class="notification-actions">
-                            <button class="notification-action" onclick="viewEnterprise(1)">
-                                <i class="fas fa-building"></i> 查看企業
-                            </button>
-                            <button class="notification-action" onclick="markRead(this)">
-                                <i class="fas fa-check"></i> 標記已讀
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="notification-item" data-type="system" data-status="read">
-                    <input type="checkbox" class="notification-checkbox" onchange="updateSelection()">
-                    <div class="notification-icon system">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="notification-content">
-                        <div class="notification-header">
-                            <div class="notification-title">系統通知</div>
-                            <div class="notification-time">1 天前</div>
-                        </div>
-                        <div class="notification-text">
-                            您的作品「數據視覺化專案」已通過審核並發布
-                        </div>
-                        <div class="notification-actions">
-                            <button class="notification-action" onclick="viewPortfolio(4)">
-                                <i class="fas fa-eye"></i> 查看作品
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="notification-item" data-type="like" data-status="read">
-                    <input type="checkbox" class="notification-checkbox" onchange="updateSelection()">
-                    <div class="notification-icon like">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <div class="notification-content">
-                        <div class="notification-header">
-                            <div class="notification-title">有人對您的作品按讚</div>
-                            <div class="notification-time">2 天前</div>
-                        </div>
-                        <div class="notification-text">
-                            陳小華對您的作品「響應式網站設計」按了讚
-                        </div>
-                        <div class="notification-actions">
-                            <button class="notification-action" onclick="viewPortfolio(1)">
-                                <i class="fas fa-eye"></i> 查看作品
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <!-- 假資料結束 -->
+                <!-- 通知列表將由 JavaScript 動態載入 -->
             </div>
 
             <!-- 空狀態 -->
-            <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state" id="emptyState">
                 <i class="fas fa-bell-slash"></i>
                 <h3>沒有通知</h3>
                 <p>當有新的活動時，您會在這裡看到通知</p>
@@ -289,7 +144,30 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
+    <!-- JavaScript 檔案 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/student/notifications.js"></script>
+    
+    <script>
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 API 服務
+            if (typeof initializeApiService === 'function') {
+                initializeApiService();
+            }
+            
+            // 載入導覽列
+            if (typeof loadNavbar === 'function') {
+                loadNavbar('student');
+            }
+            
+            // 載入通知
+            if (typeof loadNotifications === 'function') {
+                loadNotifications();
+            }
+        });
+    </script>
 </body>
 </html> 

@@ -83,164 +83,11 @@
 
             <!-- 作品列表 -->
             <div class="portfolio-grid" id="portfolioGrid">
-                <!-- TODO: 從資料庫載入學生的作品列表 -->
-                <!-- 假資料開始 -->
-                <div class="portfolio-item" data-status="published" data-category="web">
-                    <div class="portfolio-image">
-                        <img src="https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design" alt="響應式網站設計">
-                        <div class="portfolio-overlay">
-                            <button class="overlay-btn" onclick="editPortfolio(1)">
-                                <i class="fas fa-edit"></i> 編輯
-                            </button>
-                            <button class="overlay-btn" onclick="viewPortfolio(1)">
-                                <i class="fas fa-eye"></i> 預覽
-                            </button>
-                            <button class="overlay-btn" onclick="deletePortfolio(1)">
-                                <i class="fas fa-trash"></i> 刪除
-                            </button>
-                        </div>
-                    </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-header-content">
-                            <div class="portfolio-title-content">
-                                <h3>響應式網站設計</h3>
-                                <small>2024-01-15 建立</small>
-                            </div>
-                            <span class="portfolio-status status-published">已發布</span>
-                        </div>
-                        <p class="portfolio-description">使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。</p>
-                        <div class="portfolio-tags">
-                            <span class="tag">HTML5</span>
-                            <span class="tag">CSS3</span>
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">響應式</span>
-                        </div>
-                        <div class="portfolio-stats">
-                            <span><i class="fas fa-eye"></i> 156 次瀏覽</span>
-                            <span><i class="fas fa-heart"></i> 23 個讚</span>
-                            <span><i class="fas fa-comment"></i> 8 則評論</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="portfolio-item" data-status="published" data-category="mobile">
-                    <div class="portfolio-image">
-                        <img src="https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App" alt="行動應用程式">
-                        <div class="portfolio-overlay">
-                            <button class="overlay-btn" onclick="editPortfolio(2)">
-                                <i class="fas fa-edit"></i> 編輯
-                            </button>
-                            <button class="overlay-btn" onclick="viewPortfolio(2)">
-                                <i class="fas fa-eye"></i> 預覽
-                            </button>
-                            <button class="overlay-btn" onclick="deletePortfolio(2)">
-                                <i class="fas fa-trash"></i> 刪除
-                            </button>
-                        </div>
-                    </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-header-content">
-                            <div class="portfolio-title-content">
-                                <h3>行動應用程式</h3>
-                                <small>2024-01-14 建立</small>
-                            </div>
-                            <span class="portfolio-status status-published">已發布</span>
-                        </div>
-                        <p class="portfolio-description">使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。</p>
-                        <div class="portfolio-tags">
-                            <span class="tag">React Native</span>
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">Firebase</span>
-                            <span class="tag">跨平台</span>
-                        </div>
-                        <div class="portfolio-stats">
-                            <span><i class="fas fa-eye"></i> 203 次瀏覽</span>
-                            <span><i class="fas fa-heart"></i> 45 個讚</span>
-                            <span><i class="fas fa-comment"></i> 12 則評論</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="portfolio-item" data-status="review" data-category="design">
-                    <div class="portfolio-image">
-                        <img src="https://via.placeholder.com/400x200/f093fb/ffffff?text=UI+Design" alt="UI/UX 設計作品">
-                        <div class="portfolio-overlay">
-                            <button class="overlay-btn" onclick="editPortfolio(3)">
-                                <i class="fas fa-edit"></i> 編輯
-                            </button>
-                            <button class="overlay-btn" onclick="viewPortfolio(3)">
-                                <i class="fas fa-eye"></i> 預覽
-                            </button>
-                            <button class="overlay-btn" onclick="deletePortfolio(3)">
-                                <i class="fas fa-trash"></i> 刪除
-                            </button>
-                        </div>
-                    </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-header-content">
-                            <div class="portfolio-title-content">
-                                <h3>UI/UX 設計作品</h3>
-                                <small>2024-01-13 建立</small>
-                            </div>
-                            <span class="portfolio-status status-review">審核中</span>
-                        </div>
-                        <p class="portfolio-description">使用 Figma 設計的現代化使用者介面，注重使用者體驗和視覺美感。</p>
-                        <div class="portfolio-tags">
-                            <span class="tag">Figma</span>
-                            <span class="tag">UI/UX</span>
-                            <span class="tag">設計系統</span>
-                            <span class="tag">原型設計</span>
-                        </div>
-                        <div class="portfolio-stats">
-                            <span><i class="fas fa-eye"></i> 0 次瀏覽</span>
-                            <span><i class="fas fa-heart"></i> 0 個讚</span>
-                            <span><i class="fas fa-comment"></i> 0 則評論</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="portfolio-item" data-status="draft" data-category="data">
-                    <div class="portfolio-image">
-                        <img src="https://via.placeholder.com/400x200/4ade80/ffffff?text=Data+Viz" alt="數據視覺化">
-                        <div class="portfolio-overlay">
-                            <button class="overlay-btn" onclick="editPortfolio(4)">
-                                <i class="fas fa-edit"></i> 編輯
-                            </button>
-                            <button class="overlay-btn" onclick="viewPortfolio(4)">
-                                <i class="fas fa-eye"></i> 預覽
-                            </button>
-                            <button class="overlay-btn" onclick="deletePortfolio(4)">
-                                <i class="fas fa-trash"></i> 刪除
-                            </button>
-                        </div>
-                    </div>
-                    <div class="portfolio-content">
-                        <div class="portfolio-header-content">
-                            <div class="portfolio-title-content">
-                                <h3>數據視覺化專案</h3>
-                                <small>2024-01-12 建立</small>
-                            </div>
-                            <span class="portfolio-status status-draft">草稿</span>
-                        </div>
-                        <p class="portfolio-description">使用 D3.js 製作的互動式數據視覺化專案，展示複雜數據的清晰呈現。</p>
-                        <div class="portfolio-tags">
-                            <span class="tag">D3.js</span>
-                            <span class="tag">Python</span>
-                            <span class="tag">Pandas</span>
-                            <span class="tag">數據分析</span>
-                        </div>
-                        <div class="portfolio-stats">
-                            <span><i class="fas fa-eye"></i> 0 次瀏覽</span>
-                            <span><i class="fas fa-heart"></i> 0 個讚</span>
-                            <span><i class="fas fa-comment"></i> 0 則評論</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- 假資料結束 -->
+                <!-- 作品列表將由 JavaScript 動態載入 -->
             </div>
 
             <!-- 空狀態 -->
-            <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state" id="emptyState">
                 <i class="fas fa-folder-open"></i>
                 <h3>還沒有作品</h3>
                 <p>開始建立您的第一個作品，展示您的才華！</p>
@@ -326,7 +173,30 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
+    <!-- JavaScript 檔案 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/student/portfolio.js"></script>
+    
+    <script>
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 API 服務
+            if (typeof initializeApiService === 'function') {
+                initializeApiService();
+            }
+            
+            // 載入導覽列
+            if (typeof loadNavbar === 'function') {
+                loadNavbar('student');
+            }
+            
+            // 載入作品集
+            if (typeof loadPortfolios === 'function') {
+                loadPortfolios();
+            }
+        });
+    </script>
 </body>
 </html> 

@@ -275,3 +275,8 @@
         justify-content: center;
     }
 }
+
+/* 從 portfolio.html 移入的內聯樣式 */
+#emptyState {
+    display: none;
+}

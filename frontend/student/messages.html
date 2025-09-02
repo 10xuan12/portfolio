@@ -96,7 +96,7 @@
                     </div>
                     
                     <!-- 訊息輸入 -->
-                    <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+                    <div class="chat-input-container" id="chatInputContainer">
                         <div class="chat-input">
                             <div class="input-actions">
                                 <button class="btn-option" onclick="toggleEmojiPicker()">
@@ -616,6 +616,32 @@
                 e.target.style.height = e.target.scrollHeight + 'px';
             });
         }
+    </script>
+    
+    <!-- JavaScript 檔案 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/student/messages.js"></script>
+    
+    <script>
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 API 服務
+            if (typeof initializeApiService === 'function') {
+                initializeApiService();
+            }
+            
+            // 載入導覽列
+            if (typeof loadNavbar === 'function') {
+                loadNavbar('student');
+            }
+            
+            // 載入訊息
+            if (typeof loadMessages === 'function') {
+                loadMessages();
+            }
+        });
     </script>
 </body>
 </html>

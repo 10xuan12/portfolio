@@ -94,7 +94,7 @@
                     </div>
 
                     <!-- 步驟 2: 上傳檔案 -->
-                    <div class="form-section" id="step2Content" style="display: none;">
+                    <div class="form-section" id="step2Content">
                         <h3>上傳作品檔案</h3>
                         
                         <div class="upload-area" id="uploadArea">
@@ -105,7 +105,7 @@
                                 <i class="fas fa-upload"></i>
                                 選擇檔案
                             </button>
-                            <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.obj,.stl,.fbx,.glb,.gltf,.mp4,.avi,.mov,.wmv,.mp3,.wav,.flac,.aac" style="display: none;">
+                            <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.obj,.stl,.fbx,.glb,.gltf,.mp4,.avi,.mov,.wmv,.mp3,.wav,.flac,.aac">
                         </div>
 
                         <div class="file-preview" id="filePreview">
@@ -157,7 +157,7 @@
                         </div>
 
                         <!-- GitHub 整合 -->
-                        <div class="github-integration" id="githubIntegration" style="display: none;">
+                        <div class="github-integration" id="githubIntegration">
                             <h4>GitHub 專案整合</h4>
                             <div class="github-form">
                                 <div class="form-group">
@@ -181,7 +181,7 @@
                     </div>
 
                     <!-- 步驟 3: 預覽確認 -->
-                    <div class="form-section" id="step3Content" style="display: none;">
+                    <div class="form-section" id="step3Content">
                         <h3>預覽確認</h3>
                         
                         <div class="preview-section">
@@ -202,7 +202,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-outline" id="prevBtn" onclick="previousStep()" style="display: none;">
+                        <button type="button" class="btn btn-outline" id="prevBtn" onclick="previousStep()">
                             <i class="fas fa-arrow-left"></i>
                             上一步
                         </button>
@@ -210,7 +210,7 @@
                             下一步
                             <i class="fas fa-arrow-right"></i>
                         </button>
-                        <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
                             <i class="fas fa-check"></i>
                             發布作品
                         </button>
@@ -437,6 +437,32 @@
         // 初始化頁面
         document.addEventListener('DOMContentLoaded', function() {
             showStep(1);
+        });
+    </script>
+    
+    <!-- JavaScript 檔案 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/student/upload.js"></script>
+    
+    <script>
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 API 服務
+            if (typeof initializeApiService === 'function') {
+                initializeApiService();
+            }
+            
+            // 載入導覽列
+            if (typeof loadNavbar === 'function') {
+                loadNavbar('student');
+            }
+            
+            // 初始化上傳功能
+            if (typeof initializeUpload === 'function') {
+                initializeUpload();
+            }
         });
     </script>
 </body>

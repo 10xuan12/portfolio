@@ -114,32 +114,6 @@ function validateRequired($data, $required_fields) {
     }
 }
 
-// 清理輸入資料
-function sanitizeInput($input) {
-    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
-}
-
-// 發送錯誤回應
-function sendError($message, $status_code = 400) {
-    http_response_code($status_code);
-    echo json_encode([
-        'status' => $status_code,
-        'message' => $message,
-        'timestamp' => date('Y-m-d H:i:s')
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-// 發送成功回應
-function sendResponse($data, $status_code = 200, $message = '操作成功') {
-    http_response_code($status_code);
-    echo json_encode([
-        'status' => $status_code,
-        'message' => $message,
-        'data' => $data,
-        'timestamp' => date('Y-m-d H:i:s')
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+// 注意：sanitizeInput、sendResponse 和 sendError 函數已在 config.php 中定義
 ?>
 

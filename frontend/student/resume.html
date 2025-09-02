@@ -79,31 +79,27 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="name">姓名 *</label>
-                                <input type="text" id="name" name="name" value="張小明" required>
+                                <input type="text" id="name" name="name" value="" required>
                             </div>
                             <div class="form-group">
                                 <label for="title">職稱</label>
-                                <input type="text" id="title" name="title" value="前端開發工程師">
+                                <input type="text" id="title" name="title" value="">
                             </div>
                             <div class="form-group">
                                 <label for="email">電子郵件 *</label>
-                                <input type="email" id="email" name="email" value="zhang@example.com" required>
+                                <input type="email" id="email" name="email" value="" required>
                             </div>
                             <div class="form-group">
                                 <label for="phone">電話</label>
-                                <input type="tel" id="phone" name="phone" value="0912-345-678">
+                                <input type="tel" id="phone" name="phone" value="">
                             </div>
-                            <div class="form-group">
-                                <label for="address">地址</label>
-                                <input type="text" id="address" name="address" value="台北市大安區復興南路一段 390 號">
-                            </div>
-                            <div class="form-group">
-                                <label for="website">個人網站</label>
-                                <input type="url" id="website" name="website" value="https://zhangxiaoming.dev">
-                            </div>
+                                                         <div class="form-group">
+                                 <label for="address">地址</label>
+                                 <input type="text" id="address" name="address" value="">
+                             </div>
                             <div class="form-group full-width">
                                 <label for="summary">個人簡介</label>
-                                <textarea id="summary" name="summary" rows="4">我是一名資訊管理學系的學生，專精於前端開發和 UI/UX 設計。我熱愛學習新技術，並且喜歡將創意轉化為實際的作品。我具備良好的團隊合作能力和溝通技巧，能夠快速適應新環境。</textarea>
+                                <textarea id="summary" name="summary" rows="4"></textarea>
                             </div>
                         </div>
                     </div>
@@ -112,41 +108,7 @@
                     <div class="form-section">
                         <h3>工作經驗</h3>
                         <div id="experienceList">
-                            <div class="experience-item">
-                                <div class="item-header">
-                                    <div class="item-title">前端開發實習生</div>
-                                    <div class="item-actions">
-                                        <button class="btn-icon" onclick="editExperience(this)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn-icon danger" onclick="removeExperience(this)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>公司名稱</label>
-                                        <input type="text" value="台灣微軟股份有限公司">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>職位</label>
-                                        <input type="text" value="前端開發實習生">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>開始日期</label>
-                                        <input type="date" value="2024-06-01">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>結束日期</label>
-                                        <input type="date" value="2024-08-31">
-                                    </div>
-                                    <div class="form-group full-width">
-                                        <label>工作描述</label>
-                                        <textarea rows="3">負責公司內部系統的前端開發，使用 React 和 TypeScript 開發響應式網頁應用程式。參與敏捷開發流程，與後端團隊協作完成專案。</textarea>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- 工作經驗項目將由 JavaScript 動態生成 -->
                         </div>
                         <button class="add-item-btn" onclick="addExperience()">
                             <i class="fas fa-plus"></i>
@@ -158,45 +120,7 @@
                     <div class="form-section">
                         <h3>教育背景</h3>
                         <div id="educationList">
-                            <div class="education-item">
-                                <div class="item-header">
-                                    <div class="item-title">資訊管理學系</div>
-                                    <div class="item-actions">
-                                        <button class="btn-icon" onclick="editEducation(this)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn-icon danger" onclick="removeEducation(this)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>學校名稱</label>
-                                        <input type="text" value="國立台灣大學">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>科系</label>
-                                        <input type="text" value="資訊管理學系">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>學位</label>
-                                        <input type="text" value="學士">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>畢業年份</label>
-                                        <input type="number" value="2025" min="2000" max="2030">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>GPA</label>
-                                        <input type="text" value="3.8/4.0">
-                                    </div>
-                                    <div class="form-group full-width">
-                                        <label>相關課程</label>
-                                        <textarea rows="2">程式設計、資料結構、演算法、資料庫系統、網路程式設計、軟體工程</textarea>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- 教育背景項目將由 JavaScript 動態生成 -->
                         </div>
                         <button class="add-item-btn" onclick="addEducation()">
                             <i class="fas fa-plus"></i>
@@ -204,104 +128,40 @@
                         </button>
                     </div>
 
-                    <!-- 技能專長 -->
-                    <div class="form-section">
-                        <h3>技能專長</h3>
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="skills">技能列表（用逗號分隔）</label>
-                                <textarea id="skills" name="skills" rows="3">JavaScript, React, Node.js, TypeScript, HTML5, CSS3, Git, Docker, AWS, UI/UX Design, Figma, Adobe Creative Suite</textarea>
-                            </div>
-                        </div>
-                    </div>
+                                         <!-- 技能專長 -->
+                     <div class="form-section">
+                         <h3>技能專長</h3>
+                         <div class="form-grid">
+                             <div class="form-group full-width">
+                                 <label for="skills">技能列表（用逗號分隔）</label>
+                                 <textarea id="skills" name="skills" rows="3" placeholder="例如：JavaScript, React, Node.js, TypeScript, HTML5, CSS3, Git, Docker, AWS, UI/UX Design"></textarea>
+                             </div>
+                         </div>
+                     </div>
 
-                    <!-- 專案作品 -->
-                    <div class="form-section">
-                        <h3>專案作品</h3>
-                        <div id="projectList">
-                            <div class="experience-item">
-                                <div class="item-header">
-                                    <div class="item-title">響應式網站設計</div>
-                                    <div class="item-actions">
-                                        <button class="btn-icon" onclick="editProject(this)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn-icon danger" onclick="removeProject(this)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>專案名稱</label>
-                                        <input type="text" value="響應式網站設計">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>技術棧</label>
-                                        <input type="text" value="HTML5, CSS3, JavaScript">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>專案連結</label>
-                                        <input type="url" value="https://example.com">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>GitHub</label>
-                                        <input type="url" value="https://github.com/example/web-design">
-                                    </div>
-                                    <div class="form-group full-width">
-                                        <label>專案描述</label>
-                                        <textarea rows="3">使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。包含動畫效果和互動功能。</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="add-item-btn" onclick="addProject()">
-                            <i class="fas fa-plus"></i>
-                            新增專案作品
-                        </button>
-                    </div>
+                                         <!-- 專案作品 -->
+                     <div class="form-section">
+                         <h3>專案作品</h3>
+                         <div id="projectList">
+                             <!-- 專案作品項目將由 JavaScript 動態生成 -->
+                         </div>
+                         <button class="add-item-btn" onclick="addProject()">
+                             <i class="fas fa-plus"></i>
+                             新增專案作品
+                         </button>
+                     </div>
 
-                    <!-- 證照獎項 -->
-                    <div class="form-section">
-                        <h3>證照獎項</h3>
-                        <div id="certificateList">
-                            <div class="experience-item">
-                                <div class="item-header">
-                                    <div class="item-title">AWS 認證</div>
-                                    <div class="item-actions">
-                                        <button class="btn-icon" onclick="editCertificate(this)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn-icon danger" onclick="removeCertificate(this)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>證照名稱</label>
-                                        <input type="text" value="AWS Certified Solutions Architect">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>發證機構</label>
-                                        <input type="text" value="Amazon Web Services">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>取得日期</label>
-                                        <input type="date" value="2024-03-15">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>有效期限</label>
-                                        <input type="date" value="2027-03-15">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="add-item-btn" onclick="addCertificate()">
-                            <i class="fas fa-plus"></i>
-                            新增證照獎項
-                        </button>
-                    </div>
+                                         <!-- 證照獎項 -->
+                     <div class="form-section">
+                         <h3>證照獎項</h3>
+                         <div id="certificateList">
+                             <!-- 證照獎項項目將由 JavaScript 動態生成 -->
+                         </div>
+                         <button class="add-item-btn" onclick="addCertificate()">
+                             <i class="fas fa-plus"></i>
+                             新增證照獎項
+                         </button>
+                     </div>
                 </div>
 
                 <!-- 預覽區域 -->
@@ -329,7 +189,30 @@
         </div>
     </main>
 
+    <!-- JavaScript 檔案 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/student/resume.js"></script>
+    
+    <script>
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 API 服務
+            if (typeof initializeApiService === 'function') {
+                initializeApiService();
+            }
+            
+            // 載入導覽列
+            if (typeof loadNavbar === 'function') {
+                loadNavbar('student');
+            }
+            
+            // 載入履歷資料
+            if (typeof loadResumeData === 'function') {
+                loadResumeData();
+            }
+        });
+    </script>
 </body>
 </html> 

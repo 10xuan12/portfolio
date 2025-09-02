@@ -34,12 +34,8 @@
     <section class="search-header">
         <div class="container">
             <div class="search-form">
-                <h1 style="text-align: center; margin-bottom: var(--spacing-lg); font-size: var(--text-3xl);">
-                    搜尋作品
-                </h1>
-                <p style="text-align: center; margin-bottom: var(--spacing-xl); opacity: 0.9;">
-                    發現優秀的作品，啟發您的創意
-                </p>
+                <h1>搜尋作品</h1>
+                <p>發現優秀的作品，啟發您的創意</p>
                 
                 <div class="search-input-group">
                     <i class="fas fa-search search-icon"></i>
@@ -47,7 +43,7 @@
                     <div class="search-suggestions" id="searchSuggestions"></div>
                 </div>
                 
-                <div style="text-align: center;">
+                <div class="btn-container">
                     <button class="btn btn-primary" onclick="performSearch()">
                         <i class="fas fa-search"></i>
                         搜尋
@@ -124,157 +120,23 @@
 
             <!-- 搜尋結果 -->
             <div class="search-results" id="searchResults">
-                <!-- TODO: 從資料庫載入搜尋結果 -->
-                <!-- 假資料開始 -->
-                <div class="result-item">
-                    <div class="result-image">
-                        <img src="https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design" alt="響應式網站設計">
-                        <div class="result-overlay">
-                            <button class="overlay-btn" onclick="viewPortfolio(1)">
-                                <i class="fas fa-eye"></i> 查看
-                            </button>
-                            <button class="overlay-btn" onclick="likePortfolio(1)">
-                                <i class="fas fa-heart"></i> 讚
-                            </button>
-                        </div>
-                    </div>
-                    <div class="result-content">
-                        <div class="result-header">
-                            <div class="result-title">
-                                <h3>響應式網站設計</h3>
-                                <div class="result-author">by 張小明</div>
-                            </div>
-                            <div class="result-stats">
-                                <span><i class="fas fa-eye"></i> 156</span>
-                                <span><i class="fas fa-heart"></i> 23</span>
-                            </div>
-                        </div>
-                        <p class="result-description">
-                            使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。
-                        </p>
-                        <div class="result-tags">
-                            <span class="tag">HTML5</span>
-                            <span class="tag">CSS3</span>
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">響應式</span>
-                        </div>
-                        <div class="result-actions">
-                            <button class="result-btn" onclick="viewPortfolio(1)">
-                                <i class="fas fa-eye"></i> 查看
-                            </button>
-                            <button class="result-btn" onclick="likePortfolio(1)">
-                                <i class="fas fa-heart"></i> 讚
-                            </button>
-                            <button class="result-btn primary" onclick="contactAuthor(1)">
-                                <i class="fas fa-envelope"></i> 聯絡
-                            </button>
-                        </div>
-                    </div>
+                <!-- 搜尋結果將由 JavaScript 動態載入 -->
+                <div class="initial-state">
+                    <i class="fas fa-search"></i>
+                    <h3>開始搜尋</h3>
+                    <p>輸入關鍵字來搜尋作品</p>
                 </div>
-
-                <div class="result-item">
-                    <div class="result-image">
-                        <img src="https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App" alt="行動應用程式">
-                        <div class="result-overlay">
-                            <button class="overlay-btn" onclick="viewPortfolio(2)">
-                                <i class="fas fa-eye"></i> 查看
-                            </button>
-                            <button class="overlay-btn" onclick="likePortfolio(2)">
-                                <i class="fas fa-heart"></i> 讚
-                            </button>
-                        </div>
-                    </div>
-                    <div class="result-content">
-                        <div class="result-header">
-                            <div class="result-title">
-                                <h3>行動應用程式</h3>
-                                <div class="result-author">by 李大明</div>
-                            </div>
-                            <div class="result-stats">
-                                <span><i class="fas fa-eye"></i> 203</span>
-                                <span><i class="fas fa-heart"></i> 45</span>
-                            </div>
-                        </div>
-                        <p class="result-description">
-                            使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。
-                        </p>
-                        <div class="result-tags">
-                            <span class="tag">React Native</span>
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">Firebase</span>
-                            <span class="tag">跨平台</span>
-                        </div>
-                        <div class="result-actions">
-                            <button class="result-btn" onclick="viewPortfolio(2)">
-                                <i class="fas fa-eye"></i> 查看
-                            </button>
-                            <button class="result-btn" onclick="likePortfolio(2)">
-                                <i class="fas fa-heart"></i> 讚
-                            </button>
-                            <button class="result-btn primary" onclick="contactAuthor(2)">
-                                <i class="fas fa-envelope"></i> 聯絡
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="result-item">
-                    <div class="result-image">
-                        <img src="https://via.placeholder.com/400x200/f093fb/ffffff?text=UI+Design" alt="UI/UX 設計作品">
-                        <div class="result-overlay">
-                            <button class="overlay-btn" onclick="viewPortfolio(3)">
-                                <i class="fas fa-eye"></i> 查看
-                            </button>
-                            <button class="overlay-btn" onclick="likePortfolio(3)">
-                                <i class="fas fa-heart"></i> 讚
-                            </button>
-                        </div>
-                    </div>
-                    <div class="result-content">
-                        <div class="result-header">
-                            <div class="result-title">
-                                <h3>UI/UX 設計作品</h3>
-                                <div class="result-author">by 王小美</div>
-                            </div>
-                            <div class="result-stats">
-                                <span><i class="fas fa-eye"></i> 89</span>
-                                <span><i class="fas fa-heart"></i> 12</span>
-                            </div>
-                        </div>
-                        <p class="result-description">
-                            使用 Figma 設計的現代化使用者介面，注重使用者體驗和視覺美感。
-                        </p>
-                        <div class="result-tags">
-                            <span class="tag">Figma</span>
-                            <span class="tag">UI/UX</span>
-                            <span class="tag">設計系統</span>
-                            <span class="tag">原型設計</span>
-                        </div>
-                        <div class="result-actions">
-                            <button class="result-btn" onclick="viewPortfolio(3)">
-                                <i class="fas fa-eye"></i> 查看
-                            </button>
-                            <button class="result-btn" onclick="likePortfolio(3)">
-                                <i class="fas fa-heart"></i> 讚
-                            </button>
-                            <button class="result-btn primary" onclick="contactAuthor(3)">
-                                <i class="fas fa-envelope"></i> 聯絡
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <!-- 假資料結束 -->
             </div>
 
             <!-- 空狀態 -->
-            <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state" id="emptyState">
                 <i class="fas fa-search"></i>
                 <h3>沒有找到相關作品</h3>
                 <p>嘗試調整搜尋條件或關鍵字</p>
             </div>
 
             <!-- 搜尋歷史 -->
-            <div class="search-history" id="searchHistory" style="display: none;">
+            <div class="search-history" id="searchHistory">
                 <div class="history-title">最近搜尋</div>
                 <div class="history-tags" id="historyTags">
                     <span class="history-tag" onclick="searchFromHistory('JavaScript')">JavaScript</span>
@@ -289,7 +151,30 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
+    <!-- JavaScript 檔案 -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/student/search.js"></script>
+    
+    <script>
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 API 服務
+            if (typeof initializeApiService === 'function') {
+                initializeApiService();
+            }
+            
+            // 載入導覽列
+            if (typeof loadNavbar === 'function') {
+                loadNavbar('student');
+            }
+            
+            // 初始化搜尋功能
+            if (typeof initializeSearch === 'function') {
+                initializeSearch();
+            }
+        });
+    </script>
 </body>
 </html> 

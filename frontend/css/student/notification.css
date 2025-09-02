@@ -266,3 +266,8 @@
         align-items: stretch;
     }
 }
+
+/* 從 notifications.html 移入的內聯樣式 */
+#emptyState {
+    display: none;
+}

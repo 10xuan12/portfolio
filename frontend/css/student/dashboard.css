@@ -333,3 +333,14 @@ body .dashboard-header {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* 從 dashboard.html 移入的內聯樣式 */
+.dashboard-content {
+    margin-top: -40px;
+}
+
+#badges-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+}

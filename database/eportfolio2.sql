@@ -419,15 +419,24 @@ INSERT INTO `portfolio_files` (`id`, `portfolio_id`, `file_name`, `file_path`, `
 --
 
 CREATE TABLE `resumes` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `title` varchar(200) NOT NULL,
-  `template` varchar(50) NOT NULL,
+  `template` varchar(50) NOT NULL DEFAULT 'modern',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`content`)),
   `is_public` tinyint(1) DEFAULT 0,
   `download_count` int(11) DEFAULT 0,
+  `view_count` int(11) DEFAULT 0,
+  `status` enum('draft','published','archived') DEFAULT 'draft',
+  `version` int(11) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_template` (`template`),
+  KEY `idx_status` (`status`),
+  KEY `idx_created_at` (`created_at`),
+  CONSTRAINT `fk_resumes_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -470,6 +479,59 @@ INSERT INTO `student_profiles` (`id`, `user_id`, `first_name`, `last_name`, `dis
 (4, 8, '123', '黃', '123 黃', NULL, NULL, '0965418312', '台中市', NULL, NULL, NULL, '資訊管理學系', NULL, '大學四年級', NULL, NULL, NULL, '2025-08-29 06:53:35', '2025-08-29 06:53:35'),
 (5, 5, '玟瑄', '黃', '黃玟瑄', '女', '2000-01-15', '0912-345-678', '台中市西區精誠路123號', '我是靜宜大學資訊管理學系的學生，對數位行銷和資料分析有濃厚興趣。喜歡學習新技術，希望能在畢業後從事相關工作。', '/portfolio/uploads/avatars/default-avatar.jpg', 'A1050203', '資訊管理學系', '靜宜大學', '碩士生', 2026, 'Python, JavaScript, HTML/CSS, SQL, Excel, PowerBI, 數位行銷, 資料分析', '人工智慧, 大數據分析, 數位行銷, 使用者體驗設計, 專案管理', '2025-08-29 07:06:25', '2025-08-29 07:10:55'),
 (6, 5, '玟瑄', '黃', '黃玟瑄', '女', '2000-01-15', '0912-345-678', '台中市西區精誠路123號', '我是靜宜大學資訊管理學系的學生，對數位行銷和資料分析有濃厚興趣。喜歡學習新技術，希望能在畢業後從事相關工作。', '/portfolio/uploads/avatars/default-avatar.jpg', 'A1050203', '資訊管理學系', '靜宜大學', '碩士生', 2026, 'Python, JavaScript, HTML/CSS, SQL, Excel, PowerBI, 數位行銷, 資料分析', '人工智慧, 大數據分析, 數位行銷, 使用者體驗設計, 專案管理', '2025-08-29 07:07:40', '2025-08-29 07:10:55');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `user_social_media`
+--
+
+CREATE TABLE `user_social_media` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `platform` enum('github','linkedin','instagram','facebook','twitter','youtube','blog') NOT NULL,
+  `url` varchar(255) NOT NULL,
+  `is_public` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `user_social_media`
+--
+
+INSERT INTO `user_social_media` (`id`, `user_id`, `platform`, `url`, `is_public`, `created_at`, `updated_at`) VALUES
+(1, 5, 'github', 'https://github.com/huangwensyuan', 1, '2025-08-29 07:10:55', '2025-08-29 07:10:55'),
+(2, 5, 'linkedin', 'https://linkedin.com/in/huangwensyuan', 1, '2025-08-29 07:10:55', '2025-08-29 07:10:55'),
+(3, 5, 'instagram', 'wensyuan_huang', 1, '2025-08-29 07:10:55', '2025-08-29 07:10:55'),
+(4, 5, 'facebook', 'wensyuan.huang', 0, '2025-08-29 07:10:55', '2025-08-29 07:10:55');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `user_settings`
+--
+
+CREATE TABLE `user_settings` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `setting_type` enum('boolean','string','number','json') NOT NULL DEFAULT 'string',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `user_settings`
+--
+
+INSERT INTO `user_settings` (`id`, `user_id`, `setting_key`, `setting_value`, `setting_type`, `created_at`, `updated_at`) VALUES
+(1, 5, 'email_notification', '1', 'boolean', '2025-08-29 07:10:55', '2025-08-29 07:10:55'),
+(2, 5, 'public_profile', '1', 'boolean', '2025-08-29 07:10:55', '2025-08-29 07:10:55'),
+(3, 5, 'two_factor_auth', '0', 'boolean', '2025-08-29 07:10:55', '2025-08-29 07:10:55'),
+(4, 5, 'profile_visibility', 'public', 'string', '2025-08-29 07:10:55', '2025-08-29 07:10:55'),
+(5, 5, 'notification_frequency', 'daily', 'string', '2025-08-29 07:10:55', '2025-08-29 07:10:55');
 
 -- --------------------------------------------------------
 
@@ -710,6 +772,22 @@ ALTER TABLE `student_profiles`
   ADD KEY `idx_student_id` (`student_id`);
 
 --
+-- 資料表索引 `user_social_media`
+--
+ALTER TABLE `user_social_media`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_platform` (`platform`);
+
+--
+-- 資料表索引 `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_setting_key` (`setting_key`);
+
+--
 -- 資料表索引 `users`
 --
 ALTER TABLE `users`
@@ -849,6 +927,18 @@ ALTER TABLE `student_profiles`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `user_social_media`
+--
+ALTER TABLE `user_social_media`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `user_settings`
+--
+ALTER TABLE `user_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
@@ -977,10 +1067,113 @@ ALTER TABLE `student_profiles`
   ADD CONSTRAINT `student_profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- 資料表的限制式 `user_social_media`
+--
+ALTER TABLE `user_social_media`
+  ADD CONSTRAINT `user_social_media_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD CONSTRAINT `user_settings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- 資料表的限制式 `user_activities`
 --
 ALTER TABLE `user_activities`
   ADD CONSTRAINT `fk_user_activities_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `password_resets`
+--
+
+CREATE TABLE `password_resets` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `used` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `password_resets`
+--
+
+INSERT INTO `password_resets` (`id`, `user_id`, `token`, `expires_at`, `used`, `created_at`) VALUES
+(1, 5, 'token123', '2025-09-01 12:00:00', 0, '2025-08-29 10:37:33'),
+(2, 6, 'token456', '2025-09-02 12:00:00', 0, '2025-08-29 10:37:33');
+
+--
+-- 資料表的限制式 `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD CONSTRAINT `password_resets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `departments`
+--
+
+CREATE TABLE `departments` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `code` varchar(20) DEFAULT NULL,
+  `school` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `departments`
+--
+
+INSERT INTO `departments` (`id`, `name`, `code`, `school`, `description`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, '資訊管理學系', 'IM', '靜宜大學', '培養資訊管理專業人才，結合資訊科技與管理知識', 1, 1, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(2, '財務金融學系', 'FF', '靜宜大學', '培養財務金融專業人才，專精於投資、風險管理與金融創新', 1, 2, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(3, '國際企業學系', 'IB', '靜宜大學', '培養國際企業管理專業人才，專精於國際貿易與跨文化管理', 1, 3, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(4, '資訊工程學系', 'CS', '靜宜大學', '培養資訊工程專業人才，專精於軟體開發與系統設計', 1, 4, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(5, '統計學系', 'STAT', '靜宜大學', '培養統計分析專業人才，專精於數據分析與統計建模', 1, 5, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(6, '企業管理學系', 'BA', '靜宜大學', '培養企業管理專業人才，專精於組織管理與策略規劃', 1, 6, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(7, '會計學系', 'ACC', '靜宜大學', '培養會計專業人才，專精於財務會計與審計', 1, 7, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(8, '經濟學系', 'ECON', '靜宜大學', '培養經濟學專業人才，專精於經濟理論與政策分析', 1, 8, '2025-08-29 10:37:33', '2025-08-29 10:37:33');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `grades`
+--
+
+CREATE TABLE `grades` (
+  `id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `level` enum('undergraduate','graduate','phd') NOT NULL DEFAULT 'undergraduate',
+  `year` int(11) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `grades`
+--
+
+INSERT INTO `grades` (`id`, `name`, `level`, `year`, `description`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, '大學一年級', 'undergraduate', 1, '大學部一年級學生', 1, 1, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(2, '大學二年級', 'undergraduate', 2, '大學部二年級學生', 1, 2, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(3, '大學三年級', 'undergraduate', 3, '大學部三年級學生', 1, 3, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(4, '大學四年級', 'undergraduate', 4, '大學部四年級學生', 1, 4, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(5, '碩士生', 'graduate', 1, '碩士班學生', 1, 5, '2025-08-29 10:37:33', '2025-08-29 10:37:33'),
+(6, '博士生', 'phd', 1, '博士班學生', 1, 6, '2025-08-29 10:37:33', '2025-08-29 10:37:33');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

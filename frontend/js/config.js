@@ -3,7 +3,9 @@
  * 用於控制應用程式的各種設定，包括假資料/真實API切換
  */
 
-const APP_CONFIG = {
+// 避免重複宣告
+if (typeof window.APP_CONFIG === 'undefined') {
+    window.APP_CONFIG = {
     // ==================== 核心設定 ====================
     
     // 是否使用假資料 (true: 使用假資料, false: 使用真實API)
@@ -98,6 +100,7 @@ const APP_CONFIG = {
     // 是否啟用錯誤追蹤
     ENABLE_ERROR_TRACKING: false
 };
+}
 
 // ==================== 工具函數 ====================
 

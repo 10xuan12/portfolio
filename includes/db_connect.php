@@ -12,19 +12,25 @@ $connection_configs = [
         'host' => 'localhost:3307',
         'username' => 'root',
         'password' => '',
-        'database' => 'eportfolio1'
+        'database' => 'eportfolio2'
     ],
     [
         'host' => '127.0.0.1:3307',
         'username' => 'root',
         'password' => '',
-        'database' => 'eportfolio1'
+        'database' => 'eportfolio2'
+    ],
+    [
+        'host' => 'localhost',
+        'username' => 'root',
+        'password' => '',
+        'database' => 'eportfolio2'
     ],
     [
         'host' => '172.20.10.2',
         'username' => 'teammate1',
         'password' => 'securepass123',
-        'database' => 'eportfolio1'
+        'database' => 'eportfolio2'
     ]
 ];
 
@@ -80,7 +86,7 @@ if (!$conn || $conn->connect_error) {
                     <h3>解決方案：</h3>
                     <ol>
                         <li><strong>啟動 XAMPP</strong>：確保 Apache 和 MySQL 服務都已啟動</li>
-                        <li><strong>檢查資料庫</strong>：確認資料庫 'eportfolio1' 已創建</li>
+                        <li><strong>檢查資料庫</strong>：確認資料庫 'eportfolio2' 已創建</li>
                         <li><strong>檢查使用者權限</strong>：確認資料庫使用者有適當權限</li>
                         <li><strong>檢查網路連線</strong>：確認可以連線到資料庫伺服器</li>
                     </ol>

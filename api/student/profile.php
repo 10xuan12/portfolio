@@ -105,7 +105,34 @@ function getStudentProfile() {
         $profile['stats'] = $stats;
     }
     
+    // 取得社群媒體連結
+    $socialMedia = getSocialMedia($userId);
+    $profile['social_media'] = $socialMedia;
+    
     sendResponse($profile, 200);
+}
+
+// 取得社群媒體連結
+function getSocialMedia($userId) {
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT platform, url, is_public 
+         FROM user_social_media 
+         WHERE user_id = ? 
+         ORDER BY platform"
+    );
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $socialMedia = [];
+    while ($row = $result->fetch_assoc()) {
+        $socialMedia[$row['platform']] = [
+            'url' => $row['url'],
+            'is_public' => (bool)$row['is_public']
+        ];
+    }
+    
+    return $socialMedia;
 }
 
 // 更新學生個人資料
@@ -153,48 +180,92 @@ function updateStudentProfile($data) {
         sendError('無效的畢業年份', 400);
     }
     
-    // 檢查是否已有個人資料
-    $stmt = $GLOBALS['conn']->prepare("SELECT id FROM student_profiles WHERE user_id = ?");
+    // 開始交易
+    $GLOBALS['conn']->begin_transaction();
+    
+    try {
+        // 檢查是否已有個人資料
+        $stmt = $GLOBALS['conn']->prepare("SELECT id FROM student_profiles WHERE user_id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $exists = $stmt->get_result()->num_rows > 0;
+        
+        if ($exists) {
+            // 更新現有資料
+            $stmt = $GLOBALS['conn']->prepare(
+                "UPDATE student_profiles SET 
+                    first_name = ?, last_name = ?, display_name = ?, gender = ?,
+                    birth_date = ?, phone = ?, address = ?, bio = ?, student_id = ?,
+                    major = ?, school = ?, grade = ?, graduation_year = ?, 
+                    skills = ?, interests = ?, 
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?"
+            );
+            $stmt->bind_param("ssssssssssssssi", 
+                $firstName, $lastName, $displayName, $gender, $birthDate, 
+                $phone, $address, $bio, $studentId, $major, $school, 
+                $grade, $graduationYear, $skills, $interests, $userId
+            );
+        } else {
+            // 建立新資料
+            $stmt = $GLOBALS['conn']->prepare(
+                "INSERT INTO student_profiles (
+                    user_id, first_name, last_name, display_name, gender,
+                    birth_date, phone, address, bio, student_id,
+                    major, school, grade, graduation_year, skills, interests
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+            $stmt->bind_param("isssssssssssssss", 
+                $userId, $firstName, $lastName, $displayName, $gender, $birthDate, 
+                $phone, $address, $bio, $studentId, $major, $school, 
+                $grade, $graduationYear, $skills, $interests
+            );
+        }
+        
+        if (!$stmt->execute()) {
+            throw new Exception('更新個人資料失敗: ' . $stmt->error);
+        }
+        
+        // 更新社群媒體連結
+        if (isset($data['social_media']) && is_array($data['social_media'])) {
+            updateSocialMedia($userId, $data['social_media']);
+        }
+        
+        $GLOBALS['conn']->commit();
+        sendResponse(['message' => '個人資料更新成功'], 200, '更新成功');
+        
+    } catch (Exception $e) {
+        $GLOBALS['conn']->rollback();
+        sendError('更新失敗: ' . $e->getMessage(), 500);
+    }
+}
+
+// 更新社群媒體連結
+function updateSocialMedia($userId, $socialMedia) {
+    // 先刪除現有的社群媒體連結
+    $stmt = $GLOBALS['conn']->prepare("DELETE FROM user_social_media WHERE user_id = ?");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
-    $exists = $stmt->get_result()->num_rows > 0;
     
-    if ($exists) {
-        // 更新現有資料
-        $stmt = $GLOBALS['conn']->prepare(
-            "UPDATE student_profiles SET 
-                first_name = ?, last_name = ?, display_name = ?, gender = ?,
-                birth_date = ?, phone = ?, address = ?, bio = ?, student_id = ?,
-                major = ?, school = ?, grade = ?, graduation_year = ?, 
-                skills = ?, interests = ?, 
-                updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = ?"
-        );
-        $stmt->bind_param("ssssssssssssssi", 
-            $firstName, $lastName, $displayName, $gender, $birthDate, 
-            $phone, $address, $bio, $studentId, $major, $school, 
-            $grade, $graduationYear, $skills, $interests, $userId
-        );
-    } else {
-        // 建立新資料
-        $stmt = $GLOBALS['conn']->prepare(
-            "INSERT INTO student_profiles (
-                user_id, first_name, last_name, display_name, gender,
-                birth_date, phone, address, bio, student_id,
-                major, school, grade, graduation_year, skills, interests
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        );
-        $stmt->bind_param("isssssssssssssss", 
-            $userId, $firstName, $lastName, $displayName, $gender, $birthDate, 
-            $phone, $address, $bio, $studentId, $major, $school, 
-            $grade, $graduationYear, $skills, $interests
-        );
-    }
+    // 插入新的社群媒體連結
+    $allowedPlatforms = ['github', 'linkedin', 'instagram', 'facebook', 'twitter', 'youtube', 'blog'];
     
-    if ($stmt->execute()) {
-        sendResponse(['message' => '個人資料更新成功'], 200, '更新成功');
-    } else {
-        sendError('更新失敗: ' . $stmt->error, 500);
+    foreach ($socialMedia as $platform => $data) {
+        if (!in_array($platform, $allowedPlatforms)) {
+            continue;
+        }
+        
+        $url = sanitizeInput($data['url'] ?? '');
+        $isPublic = isset($data['is_public']) ? (int)$data['is_public'] : 1;
+        
+        if (!empty($url)) {
+            $stmt = $GLOBALS['conn']->prepare(
+                "INSERT INTO user_social_media (user_id, platform, url, is_public) 
+                 VALUES (?, ?, ?, ?)"
+            );
+            $stmt->bind_param("issi", $userId, $platform, $url, $isPublic);
+            $stmt->execute();
+        }
     }
 }
 

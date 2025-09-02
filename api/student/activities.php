@@ -1,201 +1,139 @@
 <?php
-/**
- * 學生活動 API
- * 處理活動記錄相關的 CRUD 操作
- */
-
 require_once '../config.php';
 
-// 設定 CORS 標頭
+// 設定 CORS 與回應格式
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-ID');
 header('Content-Type: application/json; charset=utf-8');
 
-// 處理 OPTIONS 請求
+// 預檢請求
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// 檢查請求方法
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    sendError('只支援 GET 請求', 405);
-    exit();
-}
-
-// 獲取動作參數
-$action = $_GET['action'] ?? '';
-
-// 根據動作執行相應操作
-switch ($action) {
-    case 'get':
-        getStudentActivities();
+// 活動記錄 API
+switch ($_SERVER['REQUEST_METHOD']) {
+    case 'GET':
+        if (isset($_GET['action']) && $_GET['action'] === 'get') {
+            getUserActivities();
+        } else {
+            sendError('無效的請求', 400);
+        }
         break;
+        
     default:
-        sendError('無效的動作', 400);
-        break;
+        sendError('不支援的 HTTP 方法', 405);
 }
 
-/**
- * 獲取學生活動記錄
- */
-function getStudentActivities() {
-    global $conn;
-    
-    // 檢查權限
+// 取得使用者活動記錄
+function getUserActivities() {
     $userId = getUserId();
     if (!$userId) {
         sendError('無法獲取使用者資訊', 401);
         return;
     }
     
+    // 取得分頁參數
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+    $offset = ($page - 1) * $limit;
+    
     try {
-        // 查詢學生的活動記錄
-        $query = "
-            SELECT 
-                a.id,
-                a.user_id,
-                a.type,
-                a.description,
-                a.metadata,
-                a.created_at,
-                a.updated_at
-            FROM user_activities a
-            WHERE a.user_id = ?
-            ORDER BY a.created_at DESC
-            LIMIT 20
-        ";
-        
-        $stmt = $conn->prepare($query);
-        if (!$stmt) {
-            // 資料表不存在或 SQL 錯誤，回預設資料
-            sendResponse(getDefaultActivities(), 200, '使用預設活動記錄');
-            return;
-        }
-        $stmt->bind_param('i', $userId);
+        // 取得活動記錄
+        $stmt = $GLOBALS['conn']->prepare(
+            "SELECT 
+                ua.id, ua.type, ua.description, ua.metadata, ua.created_at
+            FROM user_activities ua
+            WHERE ua.user_id = ?
+            ORDER BY ua.created_at DESC
+            LIMIT ? OFFSET ?"
+        );
+        $stmt->bind_param("iii", $userId, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         
         $activities = [];
         while ($row = $result->fetch_assoc()) {
+            $metadata = json_decode($row['metadata'], true) ?: [];
+            
             $activities[] = [
                 'id' => $row['id'],
                 'type' => $row['type'],
                 'text' => $row['description'],
+                'metadata' => $metadata,
                 'time' => formatTimeAgo($row['created_at']),
-                'metadata' => json_decode($row['metadata'], true) ?: []
+                'timestamp' => $row['created_at']
             ];
         }
         
-        if (empty($activities)) {
-            $activities = getDefaultActivities();
-        }
+        // 取得總數
+        $countStmt = $GLOBALS['conn']->prepare(
+            "SELECT COUNT(*) as total FROM user_activities WHERE user_id = ?"
+        );
+        $countStmt->bind_param("i", $userId);
+        $countStmt->execute();
+        $total = $countStmt->get_result()->fetch_assoc()['total'];
         
-        sendResponse($activities, 200, '成功獲取活動記錄');
+        // 計算分頁資訊
+        $totalPages = ceil($total / $limit);
+        
+        sendResponse([
+            'activities' => $activities,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'total_items' => $total,
+                'items_per_page' => $limit,
+                'has_next' => $page < $totalPages,
+                'has_prev' => $page > 1
+            ]
+        ], 200);
         
     } catch (Exception $e) {
-        // 出現例外時回預設資料
-        sendResponse(getDefaultActivities(), 200, '使用預設活動記錄');
+        sendError('取得活動記錄失敗: ' . $e->getMessage(), 500);
     }
 }
 
-/**
- * 獲取預設活動記錄
- */
-function getDefaultActivities() {
-    return [
-        [
-            'id' => 1,
-            'type' => 'upload',
-            'text' => '上傳了新作品「我的第一個專案」',
-            'time' => '2 小時前',
-            'metadata' => ['portfolio_id' => 1, 'portfolio_name' => '我的第一個專案']
-        ],
-        [
-            'id' => 2,
-            'type' => 'view',
-            'text' => '作品「我的第一個專案」獲得瀏覽',
-            'time' => '1 天前',
-            'metadata' => ['portfolio_id' => 1, 'portfolio_name' => '我的第一個專案']
-        ],
-        [
-            'id' => 3,
-            'type' => 'like',
-            'text' => '作品「我的第一個專案」獲得讚',
-            'time' => '2 天前',
-            'metadata' => ['portfolio_id' => 1, 'portfolio_name' => '我的第一個專案']
-        ],
-        [
-            'id' => 4,
-            'type' => 'comment',
-            'text' => '在作品「我的第一個專案」下發表評論',
-            'time' => '3 天前',
-            'metadata' => ['portfolio_id' => 1, 'portfolio_name' => '我的第一個專案']
-        ],
-        [
-            'id' => 5,
-            'type' => 'badge',
-            'text' => '獲得徽章「新手上傳者」',
-            'time' => '1 週前',
-            'metadata' => ['badge_id' => 1, 'badge_name' => '新手上傳者']
-        ]
-    ];
-}
-
-/**
- * 格式化時間為相對時間
- */
-function formatTimeAgo($datetime) {
-    $time = strtotime($datetime);
-    $now = time();
-    $diff = $now - $time;
+// 格式化時間為相對時間
+function formatTimeAgo($timestamp) {
+    $now = new DateTime();
+    $time = new DateTime($timestamp);
+    $diff = $now->diff($time);
     
-    if ($diff < 60) {
-        return '剛剛';
-    } elseif ($diff < 3600) {
-        $minutes = floor($diff / 60);
-        return $minutes . ' 分鐘前';
-    } elseif ($diff < 86400) {
-        $hours = floor($diff / 3600);
-        return $hours . ' 小時前';
-    } elseif ($diff < 2592000) {
-        $days = floor($diff / 86400);
-        return $days . ' 天前';
-    } elseif ($diff < 31536000) {
-        $weeks = floor($diff / 604800);
-        return $weeks . ' 週前';
+    if ($diff->y > 0) {
+        return $diff->y . ' 年前';
+    } elseif ($diff->m > 0) {
+        return $diff->m . ' 個月前';
+    } elseif ($diff->d > 0) {
+        return $diff->d . ' 天前';
+    } elseif ($diff->h > 0) {
+        return $diff->h . ' 小時前';
+    } elseif ($diff->i > 0) {
+        return $diff->i . ' 分鐘前';
     } else {
-        $years = floor($diff / 31536000);
-        return $years . ' 年前';
+        return '剛剛';
     }
 }
 
-/**
- * 獲取使用者 ID
- */
+// 取得使用者 ID（統一邏輯）
 function getUserId() {
-    // 從 session 獲取
     if (isset($_SESSION['user_id'])) {
-        return $_SESSION['user_id'];
+        return (int)$_SESSION['user_id'];
     }
-    
-    // 從 header 獲取
-    $headers = getallheaders();
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
     if (isset($headers['X-User-ID'])) {
-        return $headers['X-User-ID'];
+        return (int)$headers['X-User-ID'];
     }
-    
-    // 從 GET 參數獲取
     if (isset($_GET['user_id'])) {
-        return $_GET['user_id'];
+        return (int)$_GET['user_id'];
     }
-    
-    // 從 POST 參數獲取
     if (isset($_POST['user_id'])) {
-        return $_POST['user_id'];
+        return (int)$_POST['user_id'];
     }
-    
     return null;
 }
+
+// 注意：sendResponse 和 sendError 函數已在 config.php 中定義
 ?>

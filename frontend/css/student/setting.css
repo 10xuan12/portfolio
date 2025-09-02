@@ -317,3 +317,31 @@
         flex-direction: column;
     }
 }
+
+/* 從 settings.html 移入的內聯樣式 */
+.session-item {
+    padding: var(--spacing-md);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-sm);
+}
+
+.session-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.session-location {
+    font-weight: 500;
+}
+
+.session-details {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+}
+
+.session-btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--text-sm);
+}

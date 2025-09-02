@@ -33,7 +33,7 @@ const searchSuggestions = [
 document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
     loadSearchHistory();
-    performSearch(); // 載入初始搜尋結果
+    // 不自動執行搜尋，讓用戶主動搜尋
 });
 
 // 初始化事件監聽器
@@ -151,17 +151,43 @@ async function performSearch() {
     try {
         Utils.showNotification('搜尋中...', 'info');
         
-        // 使用API服務搜尋
-        const response = await apiService.searchPortfolios(currentSearch.query, {
-            category: currentSearch.category,
-            tags: currentSearch.tags,
-            author: currentSearch.author,
-            time: currentSearch.time,
-            sort: currentSearch.sort
+        // 構建搜尋參數
+        const searchParams = new URLSearchParams();
+        if (currentSearch.query.trim()) {
+            searchParams.append('q', currentSearch.query.trim());
+        }
+        if (currentSearch.category) {
+            searchParams.append('category', currentSearch.category);
+        }
+        if (currentSearch.tags) {
+            searchParams.append('tags', currentSearch.tags);
+        }
+        if (currentSearch.author) {
+            searchParams.append('author', currentSearch.author);
+        }
+        if (currentSearch.time) {
+            searchParams.append('time', currentSearch.time);
+        }
+        if (currentSearch.sort) {
+            searchParams.append('sort', currentSearch.sort);
+        }
+        
+        // 使用真實的後端 API
+        const response = await fetch(`/portfolio/api/search?${searchParams.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
         
-        if (response.success) {
-            searchResults = response.data || [];
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200) {
+            searchResults = result.data || [];
             renderSearchResults(searchResults);
             updateResultsCount(searchResults.length);
             
@@ -172,7 +198,7 @@ async function performSearch() {
             
             Utils.showNotification(`找到 ${searchResults.length} 個結果`, 'success');
         } else {
-            throw new Error(response.message || '搜尋失敗');
+            throw new Error(result.message || '搜尋失敗');
         }
         
     } catch (error) {
@@ -197,10 +223,8 @@ function sortResults(results) {
     switch (sortType) {
         case 'relevance':
             return results.sort((a, b) => getRelevanceScore(b, currentSearch.query) - getRelevanceScore(a, currentSearch.query));
-        case 'newest':
+        case 'date':
             return results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        case 'oldest':
-            return results.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         case 'views':
             return results.sort((a, b) => (b.views || 0) - (a.views || 0));
         case 'likes':
@@ -263,49 +287,44 @@ function renderSearchResults(results) {
     const sortedResults = sortResults([...results]);
     
     resultsContainer.innerHTML = sortedResults.map(result => `
-        <div class="search-result-item" onclick="viewPortfolio(${result.id})">
+        <div class="result-item">
             <div class="result-image">
-                <img src="${result.image || 'https://via.placeholder.com/200x150/667eea/ffffff?text=Portfolio'}" alt="${result.title}">
+                <img src="${result.cover_image || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio'}" alt="${result.title}">
+                <div class="result-overlay">
+                    <button class="overlay-btn" onclick="viewPortfolio(${result.id})">
+                        <i class="fas fa-eye"></i> 查看
+                    </button>
+                    <button class="overlay-btn" onclick="likePortfolio(${result.id})">
+                        <i class="fas fa-heart"></i> 讚
+                    </button>
+                </div>
             </div>
             <div class="result-content">
                 <div class="result-header">
-                    <h3 class="result-title">${result.title}</h3>
-                    <span class="result-category">${getCategoryName(result.category)}</span>
+                    <div class="result-title">
+                        <h3>${result.title}</h3>
+                        <div class="result-author">by ${result.author_name || result.author || '未知作者'}</div>
+                    </div>
+                    <div class="result-stats">
+                        <span><i class="fas fa-eye"></i> ${result.view_count || result.views || 0}</span>
+                        <span><i class="fas fa-heart"></i> ${result.like_count || result.likes || 0}</span>
+                    </div>
                 </div>
                 <p class="result-description">${result.description}</p>
-                <div class="result-meta">
-                    <span class="result-author">
-                        <i class="fas fa-user"></i>
-                        ${result.author}
-                    </span>
-                    <span class="result-date">
-                        <i class="fas fa-calendar"></i>
-                        ${Utils.formatDate(result.created_at)}
-                    </span>
-                </div>
-                <div class="result-stats">
-                    <span class="stat">
-                        <i class="fas fa-eye"></i>
-                        ${Utils.formatNumber(result.views || 0)}
-                    </span>
-                    <span class="stat">
-                        <i class="fas fa-heart"></i>
-                        ${Utils.formatNumber(result.likes || 0)}
-                    </span>
-                </div>
                 <div class="result-tags">
-                    ${(result.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    ${(result.tags ? (Array.isArray(result.tags) ? result.tags : result.tags.split(',')) : []).map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}
                 </div>
-            </div>
-            <div class="result-actions">
-                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); likePortfolio(${result.id})">
-                    <i class="fas fa-heart"></i>
-                    讚
-                </button>
-                <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); contactAuthor(${result.id})">
-                    <i class="fas fa-envelope"></i>
-                    聯絡
-                </button>
+                <div class="result-actions">
+                    <button class="result-btn" onclick="viewPortfolio(${result.id})">
+                        <i class="fas fa-eye"></i> 查看
+                    </button>
+                    <button class="result-btn" onclick="likePortfolio(${result.id})">
+                        <i class="fas fa-heart"></i> 讚
+                    </button>
+                    <button class="result-btn primary" onclick="contactAuthor(${result.id})">
+                        <i class="fas fa-envelope"></i> 聯絡
+                    </button>
+                </div>
             </div>
         </div>
     `).join('');
@@ -321,6 +340,12 @@ function updateResultsCount(count) {
 
 // 改變排序方式
 function changeSort(sortType) {
+    // 更新按鈕狀態
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-sort="${sortType}"]`).classList.add('active');
+    
     currentSearch.sort = sortType;
     applyFilters();
 }
@@ -402,9 +427,31 @@ function viewPortfolio(portfolioId) {
 // 讚作品
 async function likePortfolio(portfolioId) {
     try {
-        const response = await apiService.likePortfolio(portfolioId);
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.id) {
+            Utils.showNotification('請先登入', 'warning');
+            return;
+        }
         
-        if (response.success) {
+        const response = await fetch('/portfolio/api/student/portfolio.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': user.id
+            },
+            body: JSON.stringify({
+                action: 'toggle_like',
+                portfolio_id: portfolioId
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 200) {
             Utils.showNotification('已讚作品！', 'success');
             // 更新UI
             const likeButton = document.querySelector(`[onclick*="likePortfolio(${portfolioId})"]`);
@@ -413,7 +460,7 @@ async function likePortfolio(portfolioId) {
                 likeButton.innerHTML = '<i class="fas fa-heart"></i> 已讚';
             }
         } else {
-            throw new Error(response.message || '讚失敗');
+            throw new Error(result.message || '讚失敗');
         }
         
     } catch (error) {
@@ -425,14 +472,20 @@ async function likePortfolio(portfolioId) {
 // 聯絡作者
 async function contactAuthor(portfolioId) {
     try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.id) {
+            Utils.showNotification('請先登入', 'warning');
+            return;
+        }
+        
         const portfolio = searchResults.find(r => r.id === portfolioId);
         if (!portfolio) {
             Utils.showNotification('找不到作品資訊', 'error');
             return;
         }
         
-        // 跳轉到聯絡頁面或開啟聯絡對話框
-        const contactUrl = `contact.html?portfolio_id=${portfolioId}&author=${encodeURIComponent(portfolio.author)}`;
+        // 跳轉到聯絡頁面
+        const contactUrl = `contact.html?portfolio_id=${portfolioId}&author=${encodeURIComponent(portfolio.author_name || portfolio.author || '未知作者')}`;
         window.open(contactUrl, '_blank');
         
     } catch (error) {
