@@ -87,9 +87,11 @@ if (typeof window.ApiService === 'undefined') {
                 return this.handleMockResponse(endpoint, options);
             }
 
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
             const response = await fetch(url, {
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(user?.id ? { 'X-User-ID': user.id } : {}),
                     ...options.headers
                 },
                 ...options
@@ -359,10 +361,87 @@ if (typeof window.ApiService === 'undefined') {
      * 建立新作品
      */
     async createPortfolio(data) {
-        return this.request('portfolios', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        // 支援兩種傳入：
+        // 1) FormData（包含 files 與欄位）→ 先 create 再 upload_files
+        // 2) 純物件（無檔案）→ 直接 create
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            // 解析資料
+            let title, description, category, tags, status, files = [];
+            if (data instanceof FormData) {
+                title = data.get('title') || '';
+                description = data.get('description') || '';
+                category = data.get('category') || '';
+                status = data.get('status') || 'draft';
+                try {
+                    const tagsRaw = data.get('tags');
+                    tags = Array.isArray(tagsRaw) ? tagsRaw : JSON.parse(tagsRaw || '[]');
+                } catch (_) {
+                    tags = [];
+                }
+                // 收集檔案（files[0], files[1], ... 或 files）
+                data.forEach((value, key) => {
+                    if (key.startsWith('files') && value instanceof File) {
+                        files.push(value);
+                    }
+                    if (key === 'files' && value instanceof File) {
+                        files.push(value);
+                    }
+                });
+            } else {
+                ({ title = '', description = '', category = '', tags = [], status = 'draft' } = data || {});
+            }
+
+            // 第一步：建立作品（JSON）
+            const createResp = await this.request('student/portfolio.php', {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'create',
+                    title,
+                    description,
+                    category,
+                    tags: Array.isArray(tags) ? tags.join(',') : String(tags || ''),
+                    status,
+                    user_id: user?.id
+                })
+            });
+
+            const createdOk = createResp && (createResp.status === 201 || createResp.status === 200);
+            const portfolioId = createResp?.data?.portfolio_id || createResp?.portfolio_id;
+            if (!createdOk || !portfolioId) {
+                return { success: false, message: createResp?.message || '建立作品失敗' };
+            }
+
+            // 若沒有檔案，直接回傳
+            if (!files || files.length === 0) {
+                return { success: true, data: { portfolio_id: portfolioId } };
+            }
+
+            // 第二步：上傳檔案（multipart）
+            const uploadForm = new FormData();
+            uploadForm.append('action', 'upload_files');
+            uploadForm.append('portfolio_id', portfolioId);
+            files.forEach((f) => uploadForm.append('files[]', f));
+
+            const uploadUrl = this.getApiUrl('student/portfolio.php');
+            const uploadResp = await fetch(uploadUrl, { method: 'POST', body: uploadForm });
+            if (!uploadResp.ok) {
+                return { success: false, message: `檔案上傳失敗: ${uploadResp.status}` };
+            }
+            const uploadJson = await uploadResp.json();
+            const uploadOk = uploadJson && (uploadJson.status === 200);
+            if (!uploadOk) {
+                return { success: false, message: uploadJson?.message || '檔案上傳失敗' };
+            }
+
+            return {
+                success: true,
+                data: { portfolio_id: portfolioId, uploaded_files: uploadJson?.data?.uploaded_files || [] }
+            };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
     }
 
     /**
@@ -388,31 +467,18 @@ if (typeof window.ApiService === 'undefined') {
      * 取得統計資料
      */
     async getStats(type = 'platform') {
-        // 對應到後端尚無 stats.php，先用組合呼叫或回退
         try {
-            // 學生端常用 'student'，暫以作品/活動數彙整
             if (type === 'student') {
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
-                const userId = user.id;
-                const [portfolios, activities] = await Promise.all([
-                    this.getUserPortfolios(userId),
-                    this.getActivities(userId)
-                ]);
-                const pfArr = Array.isArray(portfolios) ? portfolios : (portfolios.data?.portfolios || portfolios.data || []);
-                const actArr = Array.isArray(activities) ? activities : (activities.data || []);
-                return {
-                    total_portfolios: pfArr.length || 0,
-                    total_views: pfArr.reduce((sum, p) => sum + (p.view_count || p.views || 0), 0),
-                    total_likes: pfArr.reduce((sum, p) => sum + (p.like_count || p.likes || 0), 0),
-                    total_comments: pfArr.reduce((sum, p) => sum + (p.comment_count || p.comments || 0), 0),
-                    recent_activities: actArr.length
-                };
+                const params = new URLSearchParams();
+                if (user?.id) params.set('user_id', user.id);
+                const result = await this.request(`student/stats.php?${params.toString()}`);
+                return result?.data || result;
             }
+            return this.request(`stats/${type}`);
         } catch (e) {
-            // 回退為空統計
             return { total_portfolios: 0, total_views: 0, total_likes: 0, total_comments: 0 };
         }
-        return this.request(`stats/${type}`);
     }
 
     /**
@@ -433,11 +499,15 @@ if (typeof window.ApiService === 'undefined') {
      * 標記通知為已讀
      */
     async markNotificationAsRead(notificationId) {
-        // 對應 PHP: api/student/notifications.php?action=read&id=ID
-        const params = new URLSearchParams({ action: 'read', id: notificationId });
-        return this.request(`student/notifications.php?${params.toString()}`, {
-            method: 'PUT'
-        });
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return await this.request('student/notifications.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'mark_read', notification_id: notificationId, user_id: user?.id })
+            });
+        } catch (e) {
+            return { success: false };
+        }
     }
 
     /**
@@ -490,17 +560,53 @@ if (typeof window.ApiService === 'undefined') {
      * 取得評論
      */
     async getComments(portfolioId) {
-        return this.request(`comments/portfolio/${portfolioId}`);
+        // 後端無獨立 comments 端點，改取作品詳情中的 comments
+        try {
+            const detail = await this.request(`student/portfolio.php?action=get&portfolio_id=${portfolioId}`);
+            const data = detail?.data || detail;
+            const comments = Array.isArray(data?.comments) ? data.comments : [];
+            return { success: true, data: comments };
+        } catch (e) {
+            return { success: false, message: e.message, data: [] };
+        }
     }
 
     /**
      * 新增評論
      */
     async addComment(portfolioId, data) {
-        return this.request(`comments/portfolio/${portfolioId}`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const result = await this.request('student/portfolio.php', {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'add_comment',
+                    portfolio_id: portfolioId,
+                    comment_text: data?.content || data?.text || data?.comment || '' ,
+                    user_id: user?.id
+                })
+            });
+            return { success: result.status === 201 || result.status === 200, data: result.data, message: result.message };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 更新學生個人資料（對應 student/profile.php?action=update）
+     */
+    async updateStudentProfile(profileData) {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const payload = { action: 'update', user_id: user?.id, ...profileData };
+            const result = await this.request('student/profile.php', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            return { success: result.status === 200, data: result.data, message: result.message };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
     }
 
     /**
@@ -529,23 +635,10 @@ if (typeof window.ApiService === 'undefined') {
                 throw new Error('使用者未登入');
             }
             
-            const response = await fetch('/portfolio/api/student/portfolio.php', {
+            const result = await this.request('student/portfolio.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': userId
-                },
-                body: JSON.stringify({
-                    action: 'toggle_like',
-                    portfolio_id: portfolioId
-                })
+                body: JSON.stringify({ action: 'toggle_like', portfolio_id: portfolioId, user_id: userId })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             return {
                 success: result.status === 200,
                 message: result.message || '操作成功',
@@ -588,6 +681,211 @@ if (typeof window.ApiService === 'undefined') {
             method: 'POST',
             body: JSON.stringify(userData)
         });
+    }
+
+    /**
+     * 取得使用者設定
+     */
+    async getUserSettings() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const params = new URLSearchParams({ action: 'get' });
+            if (user.id) params.set('user_id', user.id);
+            const result = await this.request(`student/settings.php?${params.toString()}`);
+            const flat = result.data || result || {};
+            const mapped = {
+                account: {
+                    displayName: '',
+                    username: '',
+                    bio: '',
+                    language: flat.language || 'zh-TW',
+                    timezone: flat.timezone || 'Asia/Taipei'
+                },
+                privacy: {
+                    profileVisibility: (flat.public_profile ? 'public' : 'private'),
+                    showProfile: flat.public_profile ?? true,
+                    showStats: true,
+                    allowComments: true,
+                    searchIndex: false
+                },
+                notifications: {
+                    emailNotifications: flat.email_notification ?? true,
+                    portfolioInteractions: true,
+                    enterpriseViews: true,
+                    systemUpdates: false,
+                    marketingMessages: false,
+                    frequency: flat.notification_frequency || 'daily'
+                },
+                security: {
+                    twoFactorAuth: flat.two_factor_auth ?? false,
+                    lastPasswordChange: ''
+                }
+            };
+            return { success: true, data: mapped };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 更新使用者設定
+     * scope: 'account' | 'privacy' | 'notifications' | 'all'
+     */
+    async updateUserSettings(scope, data) {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const payload = this.#buildSettingsPayload(scope, data, user?.id);
+            const result = await this.request('student/settings.php', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            return { success: result.status === 200, data: result.data, message: result.message };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 更新密碼
+     */
+    async updatePassword({ currentPassword, newPassword }) {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const result = await this.request('student/password.php', {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'change_password',
+                    current_password: currentPassword,
+                    new_password: newPassword,
+                    user_id: user?.id
+                })
+            });
+            return { success: result.status === 200, data: result.data, message: result.message };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 設定雙重認證（透過設定更新旗標）
+     */
+    async setupTwoFactorAuth() {
+        try {
+            return await this.updateUserSettings('privacy', { twoFactorAuth: true });
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 匯出使用者相關資料（彙整多端點）
+     */
+    async exportUserData() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const userId = user?.id;
+            const params = new URLSearchParams({ action: 'get' });
+            if (userId) params.set('user_id', userId);
+
+            const [profile, portfolios, activities, badges] = await Promise.all([
+                this.request(`student/profile.php?${params.toString()}`),
+                this.request(`student/portfolio.php?action=list&user_id=${userId || ''}`),
+                this.request(`student/activities.php?${params.toString()}`),
+                this.request(`student/badges.php?${params.toString()}`)
+            ]);
+
+            return {
+                success: true,
+                data: {
+                    profile: profile?.data || profile,
+                    portfolios: portfolios?.data || portfolios,
+                    activities: activities?.data || activities,
+                    badges: badges?.data || badges
+                }
+            };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 停用帳號（尚未有後端端點，先回傳未實作）
+     */
+    async deactivateAccount() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const result = await this.request('student/account.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'deactivate', user_id: user?.id })
+            });
+            return { success: result.status === 200, data: result.data, message: result.message };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 刪除帳號（尚未有後端端點，先回傳未實作）
+     */
+    async deleteAccount() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const password = arguments?.[0]?.password || null;
+            const result = await this.request('student/account.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'delete', password, user_id: user?.id })
+            });
+            return { success: result.status === 200, data: result.data, message: result.message };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 執行全站搜尋作品
+     */
+    async searchAllPortfolios(params) {
+        const qs = typeof params === 'string' ? params : new URLSearchParams(params).toString();
+        return this.request(`student/search.php?${qs}`);
+    }
+
+    // 內部：根據 scope 組成 settings.php 可接受的 payload
+    #buildSettingsPayload(scope, data, userId) {
+        const toBoolInt = (v) => (v ? 1 : 0);
+        let email = null, pub = null, tfa = null;
+        let language = undefined, timezone = undefined, notification_frequency = undefined;
+
+        if (scope === 'all') {
+            // 期望 settings.js 的資料結構
+            email = data?.notifications?.emailNotifications;
+            pub = data?.privacy?.showProfile ?? data?.privacy?.profileVisibility === 'public';
+            tfa = data?.security?.twoFactorAuth;
+            language = data?.account?.language;
+            timezone = data?.account?.timezone;
+            notification_frequency = data?.notifications?.frequency;
+        } else if (scope === 'privacy') {
+            email = undefined;
+            pub = data?.showProfile ?? data?.profileVisibility === 'public';
+            tfa = data?.twoFactorAuth;
+        } else if (scope === 'notifications') {
+            email = data?.emailNotifications;
+            notification_frequency = data?.frequency;
+        } else if (scope === 'account') {
+            // 帳號資料與 settings.php 無強耦合，先僅回存公開狀態
+            pub = data?.showProfile ?? undefined;
+            language = data?.language;
+            timezone = data?.timezone;
+        }
+
+        const payload = { action: 'update_settings' };
+        if (userId) payload.user_id = userId;
+        if (email !== null && email !== undefined) payload.email_notification = toBoolInt(!!email);
+        if (pub !== null && pub !== undefined) payload.public_profile = toBoolInt(!!pub);
+        if (tfa !== null && tfa !== undefined) payload.two_factor_auth = toBoolInt(!!tfa);
+        if (language !== undefined) payload.language = language;
+        if (timezone !== undefined) payload.timezone = timezone;
+        if (notification_frequency !== undefined) payload.notification_frequency = notification_frequency;
+        return payload;
     }
 }
 

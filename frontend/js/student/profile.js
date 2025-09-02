@@ -52,18 +52,14 @@
     // 載入選項資料（科系、年級等）
     async function loadOptions() {
         try {
-            const response = await fetch('/portfolio/api/student/options.php?action=all', {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await (svc ? svc.request('student/options.php?action=all') : Promise.reject(new Error('API 服務未初始化')));
 
-            if (response.ok) {
-                const result = await response.json();
-                if (result.status === 200 && result.data) {
-                    populateDepartmentOptions(result.data.departments);
-                    populateGradeOptions(result.data.grades);
-                }
+            if (result && (result.status === 200 || result.success) && result.data) {
+                populateDepartmentOptions(result.data.departments);
+                populateGradeOptions(result.data.grades);
+            } else {
+                throw new Error(result?.message || '載入選項失敗');
             }
         } catch (error) {
             console.error('載入選項失敗:', error);
@@ -177,33 +173,18 @@
             }
 
             // 並行載入個人資料、徽章和活動
-            const [profileResponse, badgesResponse, activitiesResponse] = await Promise.all([
-                fetch(`/portfolio/api/student/profile.php?action=get&user_id=${user.id}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-ID': user.id
-                    }
-                }),
-                fetch(`/portfolio/api/student/badges.php?action=get&user_id=${user.id}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-ID': user.id
-                    }
-                }),
-                fetch(`/portfolio/api/student/activities.php?action=get&user_id=${user.id}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-ID': user.id
-                    }
-                })
+            const svc = window.apiService || window.initializeApiService?.();
+            const [profileResult, badgesResult, activitiesResult] = await Promise.all([
+                svc.request(`student/profile.php?action=get&user_id=${user.id}`),
+                svc.request(`student/badges.php?action=get&user_id=${user.id}`),
+                svc.request(`student/activities.php?action=get&user_id=${user.id}`)
             ]);
 
             // 處理個人資料回應
-            if (profileResponse.ok) {
-                const profileResult = await profileResponse.json();
+            if (profileResult) {
                 console.log('載入的個人資料:', profileResult);
 
-                if (profileResult.status === 200 && profileResult.data) {
+                if ((profileResult.status === 200 || profileResult.success) && profileResult.data) {
                     // 檢查是否為首次登入
                     if (profileResult.data.is_first_login) {
                         console.log('首次登入，需要完善個人資料');
@@ -245,17 +226,15 @@
             }
 
             // 處理徽章回應
-            if (badgesResponse.ok) {
-                const badgesResult = await badgesResponse.json();
-                if (badgesResult.status === 200 && badgesResult.data) {
+            if (badgesResult && (badgesResult.status === 200 || badgesResult.success)) {
+                if (badgesResult.data) {
                     studentData.badges = badgesResult.data;
                 }
             }
 
             // 處理活動回應
-            if (activitiesResponse.ok) {
-                const activitiesResult = await activitiesResponse.json();
-                if (activitiesResult.status === 200 && activitiesResult.data) {
+            if (activitiesResult && (activitiesResult.status === 200 || activitiesResult.success)) {
+                if (activitiesResult.data) {
                     studentData.activities = activitiesResult.data;
                 }
             }
@@ -391,20 +370,11 @@
             };
 
             // 發送更新請求到後端 API
-            const response = await fetch('/portfolio/api/student/profile.php', {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/profile.php', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify(updateData)
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
             console.log('更新結果:', result);
 
             if (result.status === 200) {
@@ -473,12 +443,9 @@
             }
 
             // 發送密碼修改請求到後端 API
-            const response = await fetch('/portfolio/api/student/password.php', {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/password.php', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'change_password',
                     user_id: user.id,
@@ -486,13 +453,6 @@
                     new_password: newPassword
                 })
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || '密碼修改失敗');
-            }
-
-            const result = await response.json();
             
             if (result.status === 200) {
                 e.target.reset();
@@ -576,20 +536,12 @@
             formData.append('action', 'upload_avatar');
             formData.append('user_id', user.id);
 
-            const response = await fetch('/portfolio/api/student/profile.php', {
+            const uploadUrl = (window.apiService || window.initializeApiService?.()).getApiUrl('student/profile.php');
+            const response = await fetch(uploadUrl, {
                 method: 'POST',
-                headers: { 
-                    'X-User-ID': user.id
-                    // 注意：不要設定 Content-Type，讓瀏覽器自動設定 multipart/form-data
-                },
+                headers: { 'X-User-ID': user.id },
                 body: formData
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || '頭像上傳失敗');
-            }
-
             const result = await response.json();
             
             if (result.status === 200) {
@@ -1000,16 +952,10 @@
             }
 
             // 如果沒有本地設定，從後端 API 載入
-            const response = await fetch(`/portfolio/api/student/settings.php?action=get&user_id=${user.id}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                if (result.status === 200 && result.data) {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request(`student/settings.php?action=get&user_id=${user.id}`);
+            if (result && (result.status === 200 || result.success)) {
+                if (result.data) {
                     const settings = {
                         emailNotification: result.data.email_notification || false,
                         publicProfile: result.data.public_profile || true,
@@ -1098,12 +1044,9 @@
             const twoFactor = document.querySelectorAll('input[type="checkbox"]')[2].checked;
             
             // 發送設定更新請求到後端 API
-            const response = await fetch('/portfolio/api/student/settings.php', {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/settings.php', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'update_settings',
                     user_id: user.id,
@@ -1112,13 +1055,6 @@
                     two_factor_auth: twoFactor
                 })
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || '設定更新失敗');
-            }
-
-            const result = await response.json();
             
             if (result.status === 200) {
                 Utils.showNotification('帳號設定已更新', 'success');
@@ -1199,20 +1135,11 @@
             };
             
             // 發送更新請求到後端 API
-            const response = await fetch('/portfolio/api/student/profile.php', {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/profile.php', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify(updateData)
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             console.log('首次登入資料更新結果:', result);
             
             if (result.status === 200) {

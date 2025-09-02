@@ -241,12 +241,22 @@ async function handleAccountSubmit(e) {
             return;
         }
         
-        // 使用API服務更新帳號資料
-        const response = await apiService.updateUserSettings('account', accountData);
+        // 使用API服務更新個人資料（僅持久化可支援欄位）
+        const profilePayload = {
+            display_name: accountData.displayName,
+            bio: accountData.bio,
+            username: accountData.username
+        };
+        const response = await apiService.updateStudentProfile(profilePayload);
         
         if (response.success) {
             Utils.showNotification('帳號資料更新成功！', 'success');
             userSettings.account = { ...userSettings.account, ...accountData };
+            // 同步更新偏好設定（語言、時區）
+            await apiService.updateUserSettings('account', {
+                language: accountData.language,
+                timezone: accountData.timezone
+            });
         } else {
             throw new Error(response.message || '更新失敗');
         }
@@ -450,8 +460,12 @@ async function deactivateAccount() {
         
         if (response.success) {
             Utils.showNotification('帳號已停用', 'success');
+            try {
+                localStorage.removeItem('user');
+                sessionStorage.clear();
+            } catch (e) {}
             setTimeout(() => {
-                window.location.href = '../login.html';
+                window.location.replace('../login.html');
             }, 2000);
         } else {
             throw new Error(response.message || '帳號停用失敗');
@@ -479,8 +493,12 @@ async function deleteAccount() {
         
         if (response.success) {
             Utils.showNotification('帳號已刪除', 'success');
+            try {
+                localStorage.removeItem('user');
+                sessionStorage.clear();
+            } catch (e) {}
             setTimeout(() => {
-                window.location.href = '../login.html';
+                window.location.replace('../login.html');
             }, 2000);
         } else {
             throw new Error(response.message || '帳號刪除失敗');

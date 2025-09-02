@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadDashboardData() {
     try {
         debugLog('載入學生儀表板資料...');
+        showDashboardLoading(true);
         
         // 檢查 API 服務是否可用
         if (typeof apiService === 'undefined' || !apiService) {
@@ -64,7 +65,7 @@ async function loadDashboardData() {
         ]);
         
         // 渲染資料
-        renderStats(stats);
+        renderStats(stats || {});
         renderRecentPortfolios(portfolios);
         renderRecentActivities(activities);
         renderBadges(badges);
@@ -74,6 +75,10 @@ async function loadDashboardData() {
     } catch (error) {
         console.error('載入學生儀表板資料錯誤:', error);
         Utils.showNotification('載入資料失敗，請稍後再試', 'error');
+        showDashboardError('無法載入儀表板資料，請稍後重試');
+    }
+    finally {
+        showDashboardLoading(false);
     }
 }
 
@@ -109,6 +114,21 @@ function renderStats(stats) {
             element.textContent = Utils.formatNumber(statElements[id]);
         }
     });
+}
+
+// 顯示/隱藏 loading 狀態
+function showDashboardLoading(isLoading) {
+    const overlay = document.getElementById('dashboardLoading');
+    if (!overlay) return;
+    overlay.style.display = isLoading ? 'flex' : 'none';
+}
+
+// 顯示錯誤訊息容器（若頁面有）
+function showDashboardError(message) {
+    const err = document.getElementById('dashboardError');
+    if (!err) return;
+    err.textContent = message;
+    err.style.display = 'block';
 }
 
 /**
@@ -216,16 +236,20 @@ function renderNotifications(notifications) {
     const notificationArray = Array.isArray(notifications) ? notifications : (notifications.data || []);
     
     notificationArray.forEach(notification => {
+        const isRead = (notification.is_read !== undefined) ? notification.is_read : (notification.status === 'read');
+        const title = notification.title || '通知';
+        const message = notification.message || notification.text || '';
+        const time = notification.created_at || notification.time || '';
         const notificationItem = document.createElement('div');
-        notificationItem.className = `notification-item ${notification.is_read ? 'read' : 'unread'}`;
+        notificationItem.className = `notification-item ${isRead ? 'read' : 'unread'}`;
         notificationItem.innerHTML = `
             <div class="notification-icon">
                 <i class="fas ${getNotificationIcon(notification.type)}"></i>
             </div>
             <div class="notification-content">
-                <div class="notification-title">${notification.title}</div>
-                <div class="notification-message">${notification.message}</div>
-                <small>${Utils.formatDate(notification.created_at)}</small>
+                <div class="notification-title">${title}</div>
+                <div class="notification-message">${message}</div>
+                <small>${Utils.formatDate(time)}</small>
             </div>
         `;
         notificationsList.appendChild(notificationItem);

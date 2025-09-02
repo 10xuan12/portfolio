@@ -32,19 +32,9 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 從後端 API 載入作品資料
-            const response = await fetch(`/portfolio/api/student/portfolio.php?action=list&user_id=${user.id}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
+            // 從後端 API 載入作品資料（統一透過 ApiService）
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request(`student/portfolio.php?action=list&user_id=${user.id}`);
             
             if (result.status === 200 && result.data) {
                 portfolios = Array.isArray(result.data) ? result.data : [];
@@ -236,23 +226,15 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            const response = await fetch('/portfolio/api/student/portfolio.php', {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/portfolio.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'delete',
-                    portfolio_id: id
+                    portfolio_id: id,
+                    user_id: user.id
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             
             if (result.status === 200) {
                 // 從本地陣列中移除
@@ -304,23 +286,14 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            const response = await fetch('/portfolio/api/student/portfolio.php', {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/portfolio.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'create',
                     ...data
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             
             if (result.status === 201) {
                 // 重新載入作品列表
@@ -345,23 +318,14 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            const response = await fetch('/portfolio/api/student/portfolio.php', {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/portfolio.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'update',
                     ...data
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             
             if (result.status === 200) {
                 // 重新載入作品列表
@@ -415,18 +379,8 @@
             formData.append('files[]', file);
             formData.append('portfolio_id', document.getElementById('portfolioId').value || '0');
             
-            const response = await fetch('/portfolio/api/student/portfolio.php', {
-                method: 'POST',
-                headers: {
-                    'X-User-ID': user.id
-                },
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
+            const uploadUrl = (window.apiService || window.initializeApiService?.()).getApiUrl('student/portfolio.php');
+            const response = await fetch(uploadUrl, { method: 'POST', headers: { 'X-User-ID': user.id }, body: formData });
             const result = await response.json();
             
             if (result.status === 200) {

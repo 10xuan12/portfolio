@@ -59,6 +59,12 @@
     <!-- 主要內容 -->
     <section class="dashboard-content">
         <div class="container">
+            <style>
+                #dashboardLoading { display:none; align-items:center; justify-content:center; gap:8px; padding:10px; margin-bottom:12px; background:#f5f5f5; border-radius:8px; }
+                #dashboardError { display:none; padding:10px; margin-bottom:12px; background:#ffecec; color:#b00020; border:1px solid #ffbdbd; border-radius:8px; }
+            </style>
+            <div id="dashboardLoading"><i class="fas fa-spinner fa-spin"></i> 載入中...</div>
+            <div id="dashboardError"></div>
             <div class="dashboard-grid">
                 <div class="main-content">
                     <h2>快速操作</h2>

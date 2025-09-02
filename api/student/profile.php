@@ -143,12 +143,14 @@ function updateStudentProfile($data) {
         return;
     }
     
-    // 驗證必填欄位
-    validateRequired($data, ['first_name', 'last_name']);
+    // 驗證必填欄位（若提供部分欄位則允許局部更新）
+    // 若需要嚴格必填可恢復下行
+    // validateRequired($data, ['first_name', 'last_name']);
     
-    $firstName = sanitizeInput($data['first_name']);
-    $lastName = sanitizeInput($data['last_name']);
+    $firstName = sanitizeInput($data['first_name'] ?? '');
+    $lastName = sanitizeInput($data['last_name'] ?? '');
     $displayName = sanitizeInput($data['display_name'] ?? '');
+    $username = sanitizeInput($data['username'] ?? '');
     $gender = sanitizeInput($data['gender'] ?? '');
     $birthDate = sanitizeInput($data['birth_date'] ?? '');
     $phone = sanitizeInput($data['phone'] ?? '');
@@ -224,6 +226,27 @@ function updateStudentProfile($data) {
         
         if (!$stmt->execute()) {
             throw new Exception('更新個人資料失敗: ' . $stmt->error);
+        }
+
+        // 若提供 username，更新 users.username（需檢查重複）
+        if (!empty($username)) {
+            // 檢查是否重複（排除自己）
+            $check = $GLOBALS['conn']->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
+            if ($check) {
+                $check->bind_param("si", $username, $userId);
+                $check->execute();
+                $dup = $check->get_result();
+                if ($dup && $dup->num_rows > 0) {
+                    throw new Exception('使用者名稱已被使用');
+                }
+            }
+            $u = $GLOBALS['conn']->prepare("UPDATE users SET username = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            if ($u) {
+                $u->bind_param("si", $username, $userId);
+                if (!$u->execute()) {
+                    throw new Exception('更新使用者名稱失敗');
+                }
+            }
         }
         
         // 更新社群媒體連結

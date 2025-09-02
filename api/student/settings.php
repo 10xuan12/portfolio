@@ -96,33 +96,45 @@ function updateUserSettings($data) {
         return;
     }
     
-    // 驗證必填欄位
-    if (!isset($data['email_notification']) || !isset($data['public_profile']) || !isset($data['two_factor_auth'])) {
-        sendError('缺少必要的設定欄位', 400);
+    // 支援局部更新（存在則更新）
+    $updates = [];
+    if (isset($data['email_notification'])) {
+        $updates['email_notification'] = ['value' => (int)$data['email_notification'], 'type' => 'boolean'];
     }
-    
-    $emailNotification = (int)$data['email_notification'];
-    $publicProfile = (int)$data['public_profile'];
-    $twoFactorAuth = (int)$data['two_factor_auth'];
-    
+    if (isset($data['public_profile'])) {
+        $updates['public_profile'] = ['value' => (int)$data['public_profile'], 'type' => 'boolean'];
+    }
+    if (isset($data['two_factor_auth'])) {
+        $updates['two_factor_auth'] = ['value' => (int)$data['two_factor_auth'], 'type' => 'boolean'];
+    }
+    if (isset($data['language'])) {
+        $updates['language'] = ['value' => sanitizeInput($data['language']), 'type' => 'string'];
+    }
+    if (isset($data['timezone'])) {
+        $updates['timezone'] = ['value' => sanitizeInput($data['timezone']), 'type' => 'string'];
+    }
+    if (isset($data['notification_frequency'])) {
+        $updates['notification_frequency'] = ['value' => sanitizeInput($data['notification_frequency']), 'type' => 'string'];
+    }
+
+    if (empty($updates)) {
+        sendError('沒有可更新的設定欄位', 400);
+    }
+
     // 開始交易
     $GLOBALS['conn']->begin_transaction();
     
     try {
-        // 更新或插入設定
-        $settings = [
-            'email_notification' => $emailNotification,
-            'public_profile' => $publicProfile,
-            'two_factor_auth' => $twoFactorAuth
-        ];
-        
-        foreach ($settings as $key => $value) {
+        // 更新或插入設定（依型別寫入）
+        foreach ($updates as $key => $info) {
             $stmt = $GLOBALS['conn']->prepare(
                 "INSERT INTO user_settings (user_id, setting_key, setting_value, setting_type) 
-                 VALUES (?, ?, ?, 'boolean') 
-                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)"
+                 VALUES (?, ?, ?, ?) 
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), setting_type = VALUES(setting_type)"
             );
-            $stmt->bind_param("iss", $userId, $key, $value);
+            $value = $info['value'];
+            $type = $info['type'];
+            $stmt->bind_param("isss", $userId, $key, $value, $type);
             $stmt->execute();
         }
         

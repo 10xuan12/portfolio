@@ -102,19 +102,9 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 從後端 API 載入履歷資料
-            const response = await fetch(`/portfolio/api/student/resume.php?action=get&user_id=${user.id}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
+            // 從後端 API 載入履歷資料（統一透過 ApiService）
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request(`student/resume.php?action=get&user_id=${user.id}`);
             
             if (result.status === 200 && result.data) {
                 resumeData = result.data;
@@ -874,23 +864,14 @@
                  throw new Error('無法獲取使用者資訊');
              }
              
-             // 發送儲存請求到後端 API
-             const response = await fetch(`/portfolio/api/student/resume.php?action=save&user_id=${user.id}`, {
+             // 發送儲存請求（統一透過 ApiService）
+             const svc = window.apiService || window.initializeApiService?.();
+             const result = await svc.request(`student/resume.php?action=save&user_id=${user.id}`, {
                  method: 'POST',
-                 headers: {
-                     'Content-Type': 'application/json',
-                     'X-User-ID': user.id
-                 },
                  body: JSON.stringify({
                      resume_data: resumeData
                  })
              });
-             
-             if (!response.ok) {
-                 throw new Error(`HTTP error! status: ${response.status}`);
-             }
-             
-             const result = await response.json();
              
              if (result.status === 200 || result.status === 201) {
                  Utils.showNotification('履歷已儲存', 'success');

@@ -35,19 +35,9 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 從後端 API 載入通知
-            const response = await fetch(`/portfolio/api/student/notifications.php?action=get&user_id=${user.id}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
+            // 從後端 API 載入通知（統一透過 ApiService）
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request(`student/notifications.php?action=get&user_id=${user.id}`);
             
             if (result.status === 200 && result.data) {
                 notifications = Array.isArray(result.data) ? result.data : [];
@@ -263,24 +253,15 @@
             }
             
             // 發送標記已讀請求到後端 API
-            const response = await fetch(`/portfolio/api/student/notifications.php`, {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/notifications.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'mark_read',
                     notification_id: notificationId,
                     user_id: user.id
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             
             if (result.status === 200) {
                 // 更新本地狀態
@@ -319,24 +300,15 @@
             }
             
             // 發送批量標記已讀請求到後端 API
-            const response = await fetch(`/portfolio/api/student/notifications.php`, {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/notifications.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'mark_multiple_read',
                     notification_ids: Array.from(selectedNotifications),
                     user_id: user.id
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             
             if (result.status === 200) {
                 // 更新本地狀態
@@ -387,23 +359,14 @@
             }
             
             // 發送全部標記已讀請求到後端 API
-            const response = await fetch(`/portfolio/api/student/notifications.php`, {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/notifications.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'mark_all_read',
                     user_id: user.id
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             
             if (result.status === 200) {
                 // 更新本地狀態
@@ -451,24 +414,15 @@
             }
             
             // 發送批量刪除請求到後端 API
-            const response = await fetch(`/portfolio/api/student/notifications.php`, {
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/notifications.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'delete_multiple',
                     notification_ids: Array.from(selectedNotifications),
                     user_id: user.id
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
             
             if (result.status === 200) {
                 // 更新本地狀態

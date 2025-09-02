@@ -172,22 +172,12 @@ async function performSearch() {
             searchParams.append('sort', currentSearch.sort);
         }
         
-        // 使用真實的後端 API
-        const response = await fetch(`/portfolio/api/search?${searchParams.toString()}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        // 改用統一 API 服務
+        const result = await apiService.searchAllPortfolios(searchParams);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200) {
-            searchResults = result.data || [];
+        if (result && (result.status === 200 || result.success)) {
+            const data = result.data || result;
+            searchResults = Array.isArray(data) ? data : (data.data || []);
             renderSearchResults(searchResults);
             updateResultsCount(searchResults.length);
             
@@ -198,7 +188,7 @@ async function performSearch() {
             
             Utils.showNotification(`找到 ${searchResults.length} 個結果`, 'success');
         } else {
-            throw new Error(result.message || '搜尋失敗');
+            throw new Error(result?.message || '搜尋失敗');
         }
         
     } catch (error) {
@@ -433,25 +423,17 @@ async function likePortfolio(portfolioId) {
             return;
         }
         
-        const response = await fetch('/portfolio/api/student/portfolio.php', {
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            },
             body: JSON.stringify({
                 action: 'toggle_like',
-                portfolio_id: portfolioId
+                portfolio_id: portfolioId,
+                user_id: user.id
             })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200) {
+        if (result.status === 200 || result.success) {
             Utils.showNotification('已讚作品！', 'success');
             // 更新UI
             const likeButton = document.querySelector(`[onclick*="likePortfolio(${portfolioId})"]`);

@@ -31,6 +31,9 @@ let portfolioDetail = {
     isLiked: false
 };
 
+// 回覆目標的父留言 ID（無則為 null）
+let selectedParentCommentId = null;
+
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
     loadPortfolioDetail();
@@ -55,22 +58,18 @@ async function loadPortfolioDetail() {
             throw new Error('無法獲取使用者資訊');
         }
         
-        // 從後端 API 載入作品詳情
-        const response = await fetch(`/portfolio/api/student/portfolio.php?action=get&portfolio_id=${portfolioId}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            }
-        });
+        // 從後端 API 載入作品詳情（統一透過 ApiService）
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request(`student/portfolio.php?action=get&portfolio_id=${portfolioId}&user_id=${user.id}`);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200 && result.data) {
-            portfolioDetail = result.data;
+        if ((result.status === 200 || result.success) && (result.data || result)) {
+            const data = result.data || result;
+            portfolioDetail = {
+                ...data,
+                views: (data.views ?? data.view_count ?? 0) | 0,
+                likes: (data.likes ?? data.like_count ?? 0) | 0,
+                downloads: (data.downloads ?? data.download_count ?? 0) | 0,
+            };
             updatePortfolioDisplay();
             updateCommentsDisplay();
         } else {
@@ -101,10 +100,14 @@ function updatePortfolioDisplay() {
     document.querySelector('.info-title p').textContent = portfolioDetail.description;
     
     // 更新統計資料
-    document.querySelector('.stat-item:nth-child(1) span').textContent = `${portfolioDetail.views} 次瀏覽`;
-    document.querySelector('.stat-item:nth-child(2) span').textContent = `${portfolioDetail.likes} 個讚`;
-    document.querySelector('.stat-item:nth-child(3) span').textContent = `${portfolioDetail.comments} 則評論`;
-    document.querySelector('.stat-item:nth-child(4) span').textContent = `${portfolioDetail.downloads} 次下載`;
+    const views = (portfolioDetail.views ?? portfolioDetail.view_count ?? 0) | 0;
+    const likes = (portfolioDetail.likes ?? portfolioDetail.like_count ?? 0) | 0;
+    const downloads = (portfolioDetail.downloads ?? portfolioDetail.download_count ?? 0) | 0;
+    document.querySelector('.stat-item:nth-child(1) span').textContent = `${views} 次瀏覽`;
+    document.querySelector('.stat-item:nth-child(2) span').textContent = `${likes} 個讚`;
+    const commentCount = Array.isArray(portfolioDetail.comments) ? portfolioDetail.comments.length : (portfolioDetail.comments || 0);
+    document.querySelector('.stat-item:nth-child(3) span').textContent = `${commentCount} 則評論`;
+    document.querySelector('.stat-item:nth-child(4) span').textContent = `${downloads} 次下載`;
     
     // 更新標籤
     const tagsContainer = document.querySelector('.portfolio-tags');
@@ -119,31 +122,62 @@ function updatePortfolioDisplay() {
 // 更新評論顯示
 function updateCommentsDisplay() {
     const commentsList = document.getElementById('commentsList');
-    
-    commentsList.innerHTML = portfolioDetail.comments.map(comment => `
-        <div class="comment-item">
-            <div class="comment-avatar">
-                ${comment.avatar}
-            </div>
+
+    // 正規化資料（兼容後端不同欄位命名）
+    const normalize = (c) => ({
+        id: c.id,
+        parent_id: c.parent_id ?? null,
+        author: c.author || c.author_name || c.user_name || '使用者',
+        avatar: c.avatar || c.avatar_url || (c.author ? c.author.charAt(0) : '用'),
+        text: c.text || c.content || '',
+        likes: c.likes ?? c.like_count ?? 0,
+        time: c.time || c.created_at || ''
+    });
+
+    const flat = Array.isArray(portfolioDetail.comments) ? portfolioDetail.comments.map(normalize) : [];
+
+    // 建立樹狀結構
+    const idToNode = new Map();
+    const roots = [];
+    flat.forEach(c => {
+        idToNode.set(c.id, { ...c, children: [] });
+    });
+    idToNode.forEach(node => {
+        if (node.parent_id && idToNode.has(node.parent_id)) {
+            idToNode.get(node.parent_id).children.push(node);
+        } else {
+            roots.push(node);
+        }
+    });
+
+    const renderNode = (node, depth) => {
+        const indent = depth * 16; // px
+        const isReplying = selectedParentCommentId === node.id;
+        return `
+        <div class="comment-item" style="margin-left: ${indent}px;">
+            <div class="comment-avatar">${node.avatar || ''}</div>
             <div class="comment-content">
                 <div class="comment-header">
-                    <span class="comment-author">${comment.author}</span>
-                    <span class="comment-time">${comment.time}</span>
+                    <span class="comment-author">${escapeHtml(node.author)}</span>
+                    <span class="comment-time">${escapeHtml(String(node.time || ''))}</span>
                 </div>
-                <div class="comment-text">
-                    ${comment.text}
-                </div>
+                <div class="comment-text">${escapeHtml(node.text)}</div>
                 <div class="comment-actions">
-                    <button class="comment-action" onclick="likeComment(${comment.id})">
-                        <i class="fas fa-thumbs-up"></i> 讚 (${comment.likes})
+                    <button class="comment-action" onclick="likeComment(${node.id})">
+                        <i class="fas fa-thumbs-up"></i> 讚 (${node.likes})
                     </button>
-                    <button class="comment-action" onclick="replyComment(${comment.id})">
+                    <button class="comment-action" onclick="replyComment(${node.id})">
                         <i class="fas fa-reply"></i> 回覆
                     </button>
+                    ${isReplying ? `<button class="comment-action" onclick="cancelReply()"><i class=\"fas fa-times\"></i> 取消回覆</button>` : ''}
                 </div>
             </div>
         </div>
-    `).join('');
+        ${node.children.map(child => renderNode(child, depth + 1)).join('')}
+        `;
+    };
+
+    commentsList.innerHTML = roots.map(n => renderNode(n, 0)).join('');
 }
 
 // 讚作品
@@ -155,13 +189,10 @@ async function likePortfolio() {
             throw new Error('無法獲取使用者資訊');
         }
         
-        // 發送讚請求到後端 API
-        const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+        // 發送讚請求（統一透過 ApiService）
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            },
             body: JSON.stringify({
                 action: 'toggle_like',
                 portfolio_id: portfolioDetail.id,
@@ -169,20 +200,11 @@ async function likePortfolio() {
             })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200) {
+        if (result.status === 200 || result.success) {
             // 更新本地狀態
             portfolioDetail.isLiked = !portfolioDetail.isLiked;
-            if (portfolioDetail.isLiked) {
-                portfolioDetail.likes++;
-            } else {
-                portfolioDetail.likes--;
-            }
+            const currentLikes = (portfolioDetail.likes ?? portfolioDetail.like_count ?? 0) | 0;
+            portfolioDetail.likes = portfolioDetail.isLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1);
             
             updateLikeButton();
             updatePortfolioDisplay();
@@ -249,13 +271,10 @@ async function deletePortfolio() {
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 發送刪除請求到後端 API
-            const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+            // 發送刪除請求（統一透過 ApiService）
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/portfolio.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-User-ID': user.id
-                },
                 body: JSON.stringify({
                     action: 'delete',
                     portfolio_id: portfolioDetail.id,
@@ -263,13 +282,7 @@ async function deletePortfolio() {
                 })
             });
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.status === 200) {
+            if (result.status === 200 || result.success) {
                 Utils.showNotification('作品已刪除', 'success');
                 
                 // 跳轉回作品集頁面
@@ -296,13 +309,10 @@ async function downloadFile(filename) {
             throw new Error('無法獲取使用者資訊');
         }
         
-        // 發送檔案下載請求到後端 API
-        const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+        // 發送檔案下載請求（統一透過 ApiService）
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            },
             body: JSON.stringify({
                 action: 'download_file',
                 portfolio_id: portfolioDetail.id,
@@ -311,13 +321,7 @@ async function downloadFile(filename) {
             })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200 && result.data && result.data.download_url) {
+        if ((result.status === 200 || result.success) && (result.data && result.data.download_url)) {
             // 創建下載連結
             const link = document.createElement('a');
             link.href = result.data.download_url;
@@ -358,31 +362,25 @@ async function submitComment() {
             throw new Error('無法獲取使用者資訊');
         }
         
-        // 發送評論請求到後端 API
-        const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+        // 發送評論請求（統一透過 ApiService）
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            },
             body: JSON.stringify({
                 action: 'add_comment',
                 portfolio_id: portfolioDetail.id,
                 comment_text: commentText,
-                user_id: user.id
+                user_id: user.id,
+                parent_id: selectedParentCommentId || null,
+                rating: null
             })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200 && result.data) {
+        if ((result.status === 200 || result.success) && result.data) {
             // 添加新評論到本地
             const newComment = {
                 id: result.data.comment_id,
+                parent_id: selectedParentCommentId || null,
                 author: user.name || '使用者',
                 avatar: user.name ? user.name.charAt(0) : '用',
                 text: commentText,
@@ -390,11 +388,14 @@ async function submitComment() {
                 time: '剛剛'
             };
             
+            if (!Array.isArray(portfolioDetail.comments)) {
+                portfolioDetail.comments = [];
+            }
             portfolioDetail.comments.unshift(newComment);
-            portfolioDetail.comments++;
             
             // 清空輸入框
             commentInput.value = '';
+            selectedParentCommentId = null;
             
             // 更新顯示
             updateCommentsDisplay();
@@ -420,13 +421,10 @@ async function likeComment(commentId) {
             throw new Error('無法獲取使用者資訊');
         }
         
-        // 發送評論讚請求到後端 API
-        const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+        // 發送評論讚請求（統一透過 ApiService）
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            },
             body: JSON.stringify({
                 action: 'like_comment',
                 portfolio_id: portfolioDetail.id,
@@ -435,13 +433,7 @@ async function likeComment(commentId) {
             })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200) {
+        if (result.status === 200 || result.success) {
             // 更新本地評論讚數
             const comment = portfolioDetail.comments.find(c => c.id === commentId);
             if (comment) {
@@ -463,8 +455,33 @@ async function likeComment(commentId) {
 // 回覆評論
 function replyComment(commentId) {
     const commentInput = document.getElementById('commentInput');
+    selectedParentCommentId = commentId;
     commentInput.focus();
-    commentInput.value = `@回覆 ${commentId} `;
+    // 僅在輸入框尚未含有提示時加入
+    if (!commentInput.value.startsWith(`@回覆 ${commentId}`)) {
+        commentInput.value = `@回覆 ${commentId} ` + commentInput.value;
+    }
+}
+
+// 取消回覆
+function cancelReply() {
+    selectedParentCommentId = null;
+    const commentInput = document.getElementById('commentInput');
+    if (commentInput && commentInput.value.startsWith('@回覆 ')) {
+        // 去掉提示字樣
+        const idx = commentInput.value.indexOf(' ');
+        commentInput.value = commentInput.value.slice(idx + 1);
+    }
+}
+
+// 簡易跳脫 HTML（避免 XSS）
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // 分享到 Facebook
@@ -518,22 +535,12 @@ async function loadRelatedWorks() {
             throw new Error('無法獲取使用者資訊');
         }
         
-        // 從後端 API 載入相關作品
-        const response = await fetch(`/portfolio/api/student/portfolio.php?action=get_related&portfolio_id=${portfolioDetail.id}&user_id=${user.id}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            }
-        });
+        // 從後端 API 載入相關作品（統一透過 ApiService）
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request(`student/portfolio.php?action=get_related&portfolio_id=${portfolioDetail.id}&user_id=${user.id}`);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200 && result.data) {
-            const relatedWorks = result.data;
+        if ((result.status === 200 || result.success) && (result.data || result)) {
+            const relatedWorks = result.data || result;
             
             const relatedContainer = document.querySelector('.related-works');
             if (relatedContainer) {
@@ -585,13 +592,10 @@ async function updateViewCount() {
             throw new Error('無法獲取使用者資訊');
         }
         
-        // 發送瀏覽記錄到後端 API
-        const response = await fetch(`/portfolio/api/student/portfolio.php`, {
+        // 發送瀏覽記錄（統一透過 ApiService）
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': user.id
-            },
             body: JSON.stringify({
                 action: 'record_view',
                 portfolio_id: portfolioDetail.id,
@@ -599,15 +603,10 @@ async function updateViewCount() {
             })
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.status === 200) {
+        if (result.status === 200 || result.success) {
             // 更新本地瀏覽次數
-            portfolioDetail.views++;
+            const currentViews = (portfolioDetail.views ?? portfolioDetail.view_count ?? 0) | 0;
+            portfolioDetail.views = currentViews + 1;
             updatePortfolioDisplay();
         } else {
             console.warn('記錄瀏覽次數失敗:', result.message);
@@ -636,6 +635,7 @@ window.downloadFile = downloadFile;
 window.submitComment = submitComment;
 window.likeComment = likeComment;
 window.replyComment = replyComment;
+window.cancelReply = cancelReply;
 window.shareToFacebook = shareToFacebook;
 window.shareToTwitter = shareToTwitter;
 window.shareToLinkedIn = shareToLinkedIn;

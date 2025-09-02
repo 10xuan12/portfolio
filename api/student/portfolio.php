@@ -265,6 +265,10 @@ function getPortfolioDetail() {
         $portfolio['files'] = $files;
         $portfolio['comments'] = $comments;
         $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
+        // 對齊前端鍵名（詳情頁與列表一致）
+        $portfolio['views'] = isset($portfolio['view_count']) ? (int)$portfolio['view_count'] : 0;
+        $portfolio['likes'] = isset($portfolio['like_count']) ? (int)$portfolio['like_count'] : 0;
+        $portfolio['downloads'] = isset($portfolio['download_count']) ? (int)$portfolio['download_count'] : 0;
         
         sendResponse($portfolio, 200, '成功獲取作品詳情');
         
@@ -825,10 +829,15 @@ function getDefaultPortfolioDetail($portfolioId) {
         'category' => 'web',
         'tags' => ['HTML5', 'CSS3', 'JavaScript', '響應式'],
         'cover_image' => 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design',
+        // 舊鍵名（保留相容）
         'view_count' => 156,
         'like_count' => 23,
         'comment_count' => 8,
         'download_count' => 12,
+        // 新鍵名（與前端一致）
+        'views' => 156,
+        'likes' => 23,
+        'downloads' => 12,
         'created_at' => '2024-01-15 10:30:00',
         'published_at' => '2024-01-15 10:30:00',
         'author_name' => '張小明',

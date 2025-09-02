@@ -1,4 +1,4 @@
-/**
+/*** 
  * 學生作品上傳 JavaScript
  * 包含檔案上傳、表單驗證、預覽功能等
  */
@@ -383,8 +383,8 @@ async function handleFormSubmit(e) {
         formData.append('github', portfolioData.github);
         
         // 添加檔案
-        uploadedFiles.forEach((file, index) => {
-            formData.append(`files[${index}]`, file);
+        uploadedFiles.forEach((file) => {
+            formData.append('files[]', file);
         });
         
         // 使用API服務上傳
