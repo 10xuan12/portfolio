@@ -3,7 +3,7 @@
 }
 
 .search-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background: linear-gradient(135deg, #b2d5f2 0%, #75c9fa 50%, #4A90E2 100%);
     color: var(--white);
     padding: var(--spacing-2xl) 0;
     margin-bottom: var(--spacing-2xl);

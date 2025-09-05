@@ -127,6 +127,17 @@
     color: var(--white);
 }
 
+/* 按鈕內圖示和文字對齊 */
+.btn i {
+    margin-right: var(--spacing-xs);
+    font-size: inherit;
+    line-height: 1;
+}
+
+.btn i:only-child {
+    margin-right: 0;
+}
+
 .portfolio-content {
     padding: var(--spacing-lg);
 }

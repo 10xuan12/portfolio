@@ -1,6 +1,6 @@
 /* 作品詳情頁面樣式 */
 .detail-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #b2d5f2 0%, #75c9fa 50%, #4A90E2 100%);
     color: white;
     padding: 3rem 0;
 }

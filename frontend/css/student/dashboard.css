@@ -1,6 +1,6 @@
 /* 學生儀表板特定樣式 */
 body .dashboard-header {
-    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #4A90E2 100%) !important;
+    background: linear-gradient(135deg, #b2d5f2 0%, #75c9fa 50%, #4A90E2 100%) !important;
     color: var(--white) !important;
     padding: var(--spacing-2xl) 0;
     position: relative;

@@ -11,7 +11,7 @@
     /* === Portfolio+ 配色方案 === */
     --primary-color: #273ec3;         /* 主色，使用 #273ec3 */
     --primary-dark: #00AEEF;          /* 輔色 Indigo Blue：冷靜專業，側邊欄、分頁列、hover */
-    --background-color: #bee1fd;      /* 整體背景色，乾淨清新 */
+    --background-color: #e0f1ff;      /* 整體背景色，乾淨清新 */
     --card-bg: #FFFFFF;               /* 卡片白底 */
     --text-main: #1E1E1E;             /* 主字體色，標題、主要段落 */
     --text-secondary: #4A4A4A;        /* 次字體色，次標題、提示、標籤 */

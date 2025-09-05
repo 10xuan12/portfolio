@@ -2,7 +2,7 @@
 .upload-container {
     padding: 2rem 0;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg,#b2d5f2 0%, #75c9fa 50%, #4A90E2 100%);
 }
 
 .upload-header {
@@ -34,7 +34,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.87);
     transition: all 0.3s ease;
 }
 
@@ -57,8 +57,8 @@
 }
 
 .step.active .step-number {
-    background: #4CAF50;
-    box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+    background: #49d578;
+    box-shadow: 0 0 20px rgba(94, 200, 97, 0.5);
 }
 
 /* 上傳內容 */
@@ -152,7 +152,7 @@
 }
 
 .upload-btn {
-    background: #667eea;
+    background: #273ec3;
     color: white;
     border: none;
     padding: 1rem 2rem;
@@ -287,7 +287,7 @@
 .preview-size,
 .preview-type {
     font-size: 0.9rem;
-    color: #666;
+    color: #d8efff;
 }
 
 .preview-actions {
@@ -312,7 +312,7 @@
 
 /* 預覽確認 */
 .preview-section {
-    background: #f8f9ff;
+    background: #f4fbff;
     border-radius: 15px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
