@@ -24,6 +24,197 @@ error_reporting(E_ALL);
 // 時區設定
 date_default_timezone_set('Asia/Taipei');
 
+// 包含安全驗證器
+require_once __DIR__ . '/security-validator.php';
+
+// 全域安全驗證器實例
+$GLOBALS['securityValidator'] = $securityValidator;
+
+// 包含JWT管理器
+require_once __DIR__ . '/jwt-manager.php';
+
+// 全域JWT管理器實例
+$GLOBALS['jwtManager'] = $jwtManager;
+
+// API版本控制
+define('API_VERSION', 'v1');
+define('SUPPORTED_VERSIONS', ['v1', 'v2']);
+
+// 獲取API版本
+function getApiVersion() {
+    $headers = getallheaders();
+    
+    // 從Accept標頭獲取版本
+    if (isset($headers['Accept'])) {
+        if (preg_match('/application\/vnd\.portfolio\.v(\d+)\+json/', $headers['Accept'], $matches)) {
+            return 'v' . $matches[1];
+        }
+    }
+    
+    // 從URL路徑獲取版本
+    $path = $_SERVER['REQUEST_URI'];
+    if (preg_match('/\/api\/v(\d+)\//', $path, $matches)) {
+        return 'v' . $matches[1];
+    }
+    
+    // 從查詢參數獲取版本
+    if (isset($_GET['version'])) {
+        $version = 'v' . ltrim($_GET['version'], 'v');
+        if (in_array($version, SUPPORTED_VERSIONS)) {
+            return $version;
+        }
+    }
+    
+    // 預設版本
+    return API_VERSION;
+}
+
+// 檢查API版本兼容性
+function checkApiVersionCompatibility($version) {
+    if (!in_array($version, SUPPORTED_VERSIONS)) {
+        sendApiError(
+            "不支援的API版本: {$version}。支援的版本: " . implode(', ', SUPPORTED_VERSIONS),
+            400,
+            'UNSUPPORTED_VERSION'
+        );
+    }
+    
+    return true;
+}
+
+// 版本化回應
+function sendVersionedResponse($data, $status = 200, $message = 'success', $meta = []) {
+    $version = getApiVersion();
+    checkApiVersionCompatibility($version);
+    
+    $response = [
+        'status' => $status,
+        'message' => $message,
+        'version' => $version,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+    
+    if (!empty($meta)) {
+        $response['meta'] = $meta;
+    }
+    
+    // 根據版本調整回應格式
+    switch ($version) {
+        case 'v2':
+            // v2版本可能包含額外的元數據
+            $response['api_info'] = [
+                'version' => $version,
+                'deprecated' => false,
+                'sunset_date' => null
+            ];
+            break;
+        case 'v1':
+        default:
+            // v1版本保持原有格式
+            break;
+    }
+    
+    http_response_code($status);
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
+// 版本化錯誤回應
+function sendVersionedError($message, $status = 400, $code = null, $details = null) {
+    $version = getApiVersion();
+    checkApiVersionCompatibility($version);
+    
+    $response = [
+        'status' => $status,
+        'message' => $message,
+        'version' => $version,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($code) {
+        $response['code'] = $code;
+    }
+    
+    if ($details) {
+        $response['details'] = $details;
+    }
+    
+    // 根據版本調整錯誤格式
+    switch ($version) {
+        case 'v2':
+            $response['error_info'] = [
+                'code' => $code,
+                'type' => 'client_error',
+                'help_url' => 'https://docs.portfolio.com/errors/' . $code
+            ];
+            break;
+    }
+    
+    http_response_code($status);
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
+// 向後兼容性處理
+function handleBackwardCompatibility($data, $fromVersion, $toVersion) {
+    if ($fromVersion === $toVersion) {
+        return $data;
+    }
+    
+    // 處理從v1到v2的轉換
+    if ($fromVersion === 'v1' && $toVersion === 'v2') {
+        return upgradeToV2($data);
+    }
+    
+    // 處理從v2到v1的轉換
+    if ($fromVersion === 'v2' && $toVersion === 'v1') {
+        return downgradeToV1($data);
+    }
+    
+    return $data;
+}
+
+// 升級到v2格式
+function upgradeToV2($data) {
+    if (is_array($data)) {
+        // 添加v2特有的欄位
+        if (isset($data['user_id'])) {
+            $data['id'] = $data['user_id'];
+            unset($data['user_id']);
+        }
+        
+        // 添加時間戳
+        if (!isset($data['created_at'])) {
+            $data['created_at'] = date('Y-m-d H:i:s');
+        }
+        
+        if (!isset($data['updated_at'])) {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+        }
+    }
+    
+    return $data;
+}
+
+// 降級到v1格式
+function downgradeToV1($data) {
+    if (is_array($data)) {
+        // 移除v2特有的欄位
+        if (isset($data['id']) && !isset($data['user_id'])) {
+            $data['user_id'] = $data['id'];
+        }
+        
+        // 移除時間戳
+        unset($data['created_at'], $data['updated_at']);
+    }
+    
+    return $data;
+}
+
 // 包含資料庫連接 - 使用絕對路徑
 $db_path = dirname(__DIR__) . '/includes/db_connect.php';
 if (file_exists($db_path)) {
@@ -79,6 +270,8 @@ function sendError($message, $status = 400) {
 
 // 驗證 JWT Token 函數
 function validateToken() {
+    global $jwtManager;
+    
     $headers = getallheaders();
     $token = null;
     
@@ -86,20 +279,114 @@ function validateToken() {
         $token = str_replace('Bearer ', '', $headers['Authorization']);
     } elseif (isset($_GET['token'])) {
         $token = $_GET['token'];
+    } elseif (isset($_POST['token'])) {
+        $token = $_POST['token'];
     }
     
     if (!$token) {
-        sendError('未提供認證 Token', 401);
+        sendApiError('未提供認證 Token', 401, 'NO_TOKEN');
     }
     
-    // 這裡應該實作 JWT 驗證
-    // 暫時使用簡單的 session 驗證
-    session_start();
-    if (!isset($_SESSION['user_id'])) {
-        sendError('無效的認證', 401);
+    // 驗證JWT Token
+    $validation = $jwtManager->validateToken($token);
+    
+    if (!$validation['valid']) {
+        $errorCode = 'INVALID_TOKEN';
+        if ($validation['error'] === 'Token expired') {
+            $errorCode = 'TOKEN_EXPIRED';
+        }
+        sendApiError('認證失敗: ' . $validation['error'], 401, $errorCode);
     }
     
-    return $_SESSION['user_id'];
+    $payload = $validation['payload'];
+    
+    // 驗證用戶是否存在且活躍
+    $stmt = $GLOBALS['conn']->prepare("SELECT id, role, status FROM users WHERE id = ?");
+    $stmt->bind_param("i", $payload['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    
+    if (!$user) {
+        sendApiError('用戶不存在', 404, 'USER_NOT_FOUND');
+    }
+    
+    if ($user['status'] !== 'active') {
+        sendApiError('帳號已被停用', 403, 'ACCOUNT_DISABLED');
+    }
+    
+    return $payload['user_id'];
+}
+
+// 生成JWT Token
+function generateJWTToken($userId, $additionalData = []) {
+    global $jwtManager;
+    
+    $payload = [
+        'user_id' => $userId,
+        'type' => 'access_token'
+    ];
+    
+    $payload = array_merge($payload, $additionalData);
+    
+    return $jwtManager->generateToken($payload);
+}
+
+// 刷新JWT Token
+function refreshJWTToken($token) {
+    global $jwtManager;
+    
+    $result = $jwtManager->refreshToken($token);
+    
+    if (!$result['success']) {
+        sendApiError('Token刷新失敗: ' . $result['error'], 401, 'REFRESH_FAILED');
+    }
+    
+    return $result['token'];
+}
+
+// 統一的API回應格式
+function sendApiResponse($data = null, $status = 200, $message = 'success', $meta = []) {
+    http_response_code($status);
+    
+    $response = [
+        'status' => $status,
+        'message' => $message,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+    
+    if (!empty($meta)) {
+        $response['meta'] = $meta;
+    }
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
+// 統一的錯誤回應格式
+function sendApiError($message, $status = 400, $code = null, $details = null) {
+    http_response_code($status);
+    
+    $response = [
+        'status' => $status,
+        'message' => $message,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($code) {
+        $response['code'] = $code;
+    }
+    
+    if ($details) {
+        $response['details'] = $details;
+    }
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit();
 }
 
 // 驗證使用者權限

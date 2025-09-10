@@ -56,7 +56,7 @@ async function loadDashboardData() {
         console.log('API 服務狀態:', typeof apiService, apiService);
         
         // 並行載入所有資料
-        const [stats, portfolios, activitiesResp, badgesResp, notifications] = await Promise.all([
+        const [stats, portfolios, activitiesResp, badgesResp, notificationsResp] = await Promise.all([
             apiService.getStats('student'),
             apiService.getUserPortfolios(userId),
             apiService.getActivities(userId),
@@ -64,20 +64,10 @@ async function loadDashboardData() {
             apiService.getNotifications(userId)
         ]);
         
-        // 解包結構（後端 activities/badges 皆包在 data 物件內）
-        // activities 可能為以下結構之一：
-        // 1) { status, data: { activities: [...] } }
-        // 2) { activities: [...] }
-        // 3) { status, data: [...] }
-        let activities = [];
-        if (Array.isArray(activitiesResp?.data)) {
-            activities = activitiesResp.data;
-        } else if (Array.isArray(activitiesResp?.data?.activities)) {
-            activities = activitiesResp.data.activities;
-        } else if (Array.isArray(activitiesResp?.activities)) {
-            activities = activitiesResp.activities;
-        }
-        const badges = (badgesResp && (badgesResp.badges || badgesResp.data?.badges)) || [];
+        // 使用標準化的數據格式
+        const activities = activitiesResp.success ? activitiesResp.data : [];
+        const badges = badgesResp.success ? badgesResp.data : [];
+        const notifications = notificationsResp.success ? notificationsResp.data : [];
 
         // 渲染資料
         renderStats(stats || {});

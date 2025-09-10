@@ -17,11 +17,14 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 case 'logout':
                     handleLogout();
                     break;
+                case 'refresh':
+                    handleRefreshToken($input);
+                    break;
                 default:
-                    sendError('無效的操作', 400);
+                    sendApiError('無效的操作', 400, 'INVALID_ACTION');
             }
         } else {
-            sendError('缺少操作類型', 400);
+            sendApiError('缺少操作類型', 400, 'MISSING_ACTION');
         }
         break;
         
@@ -57,22 +60,29 @@ function handleLogin($data) {
     $user = $result->fetch_assoc();
     
     if (!$user) {
-        sendError('使用者名稱或密碼錯誤', 401);
+        sendApiError('使用者名稱或密碼錯誤', 401, 'INVALID_CREDENTIALS');
     }
     
     if ($user['status'] !== 'active') {
-        sendError('帳號已被停用', 403);
+        sendApiError('帳號已被停用', 403, 'ACCOUNT_DISABLED');
     }
     
     if (!password_verify($password, $user['password_hash'])) {
-        sendError('使用者名稱或密碼錯誤', 401);
+        sendApiError('使用者名稱或密碼錯誤', 401, 'INVALID_CREDENTIALS');
     }
     
-    // 建立 session
+    // 建立 session（向後兼容）
     session_start();
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['role'] = $user['role'];
+    
+    // 生成JWT Token
+    $jwtToken = generateJWTToken($user['id'], [
+        'username' => $user['username'],
+        'role' => $user['role'],
+        'email' => $user['email']
+    ]);
     
     // 準備回應資料
     $response = [
@@ -83,10 +93,13 @@ function handleLogin($data) {
         'first_name' => $user['first_name'],
         'last_name' => $user['last_name'],
         'display_name' => $user['display_name'] ?: $user['username'],
-        'avatar_url' => $user['avatar_url']
+        'avatar_url' => $user['avatar_url'],
+        'token' => $jwtToken,
+        'token_type' => 'Bearer',
+        'expires_in' => 3600
     ];
     
-    sendResponse($response, 200, '登入成功');
+    sendApiResponse($response, 200, '登入成功');
 }
 
 // 處理註冊
@@ -173,6 +186,26 @@ function handleLogout() {
     session_start();
     session_destroy();
     sendResponse(null, 200, '登出成功');
+}
+
+// 處理Token刷新
+function handleRefreshToken($data) {
+    if (!isset($data['token'])) {
+        sendApiError('缺少Token', 400, 'MISSING_TOKEN');
+    }
+    
+    try {
+        $newToken = refreshJWTToken($data['token']);
+        
+        sendApiResponse([
+            'token' => $newToken,
+            'token_type' => 'Bearer',
+            'expires_in' => 3600
+        ], 200, 'Token刷新成功');
+        
+    } catch (Exception $e) {
+        sendApiError('Token刷新失敗: ' . $e->getMessage(), 401, 'REFRESH_FAILED');
+    }
 }
 
 // 檢查認證狀態

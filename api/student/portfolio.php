@@ -368,14 +368,28 @@ function createPortfolio($data) {
     }
     
     try {
+        // 先取得分類 ID
+        $categoryId = 1; // 預設分類
+        if ($category) {
+            $catStmt = $GLOBALS['conn']->prepare("SELECT id FROM categories WHERE slug = ?");
+            if ($catStmt) {
+                $catStmt->bind_param("s", $category);
+                $catStmt->execute();
+                $catResult = $catStmt->get_result();
+                if ($catRow = $catResult->fetch_assoc()) {
+                    $categoryId = $catRow['id'];
+                }
+            }
+        }
+        
         $stmt = $GLOBALS['conn']->prepare("
             INSERT INTO portfolios (
-                user_id, title, description, category, tags, status, published_at
+                user_id, title, description, category_id, tags, status, published_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         
         $publishedAt = $status === 'published' ? date('Y-m-d H:i:s') : null;
-        $stmt->bind_param("issssss", $userId, $title, $description, $category, $tags, $status, $publishedAt);
+        $stmt->bind_param("ississs", $userId, $title, $description, $categoryId, $tags, $status, $publishedAt);
         
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
@@ -411,16 +425,30 @@ function updatePortfolio($data) {
     }
     
     try {
+        // 先取得分類 ID
+        $categoryId = 1; // 預設分類
+        if ($category) {
+            $catStmt = $GLOBALS['conn']->prepare("SELECT id FROM categories WHERE slug = ?");
+            if ($catStmt) {
+                $catStmt->bind_param("s", $category);
+                $catStmt->execute();
+                $catResult = $catStmt->get_result();
+                if ($catRow = $catResult->fetch_assoc()) {
+                    $categoryId = $catRow['id'];
+                }
+            }
+        }
+        
         $stmt = $GLOBALS['conn']->prepare("
             UPDATE portfolios SET 
-                title = ?, description = ?, category = ?, tags = ?, 
+                title = ?, description = ?, category_id = ?, tags = ?, 
                 status = ?, updated_at = CURRENT_TIMESTAMP,
                 published_at = CASE WHEN status = 'published' AND published_at IS NULL 
                                    THEN CURRENT_TIMESTAMP ELSE published_at END
             WHERE id = ? AND user_id = ?
         ");
         
-        $stmt->bind_param("sssssii", $title, $description, $category, $tags, $status, $portfolioId, $userId);
+        $stmt->bind_param("ssisssii", $title, $description, $categoryId, $tags, $status, $portfolioId, $userId);
         
         if ($stmt->execute()) {
             sendResponse(['message' => '作品更新成功'], 200, '更新成功');
@@ -682,7 +710,14 @@ function uploadPortfolioFiles() {
             
             // 生成唯一檔名
             $newFileName = 'portfolio_' . $portfolioId . '_' . time() . '_' . $key . '_' . $fileName;
-            $filePath = '../uploads/portfolios/' . $newFileName;
+            $uploadDir = '../uploads/portfolios/';
+            
+            // 確保上傳目錄存在
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            
+            $filePath = $uploadDir . $newFileName;
             
             // 移動上傳的檔案
             if (move_uploaded_file($tmpName, $filePath)) {

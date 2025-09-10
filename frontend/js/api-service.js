@@ -10,6 +10,10 @@ if (typeof window.ApiService === 'undefined') {
         // 延遲初始化，等待 config 函數可用
         this.initialized = false;
         this.mockDelay = 500; // 預設值
+        this.cache = new Map(); // API緩存
+        this.pendingRequests = new Map(); // 去重機制
+        this.cacheExpiry = 5 * 60 * 1000; // 5分鐘緩存過期
+        this.apiVersion = 'v1'; // API版本
         this.initConfig();
     }
 
@@ -55,19 +59,201 @@ if (typeof window.ApiService === 'undefined') {
     }
 
     /**
-     * 取得完整的 API URL
+     * 取得完整的 API URL（支援版本控制）
      */
     getApiUrl(endpoint) {
         if (typeof getApiUrl === 'function') {
             return getApiUrl(endpoint);
         }
-        return `${this.baseUrl}/${endpoint}`;
+        
+        const baseUrl = this.baseUrl;
+        const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+        
+        // 如果endpoint已經包含版本，直接使用
+        if (cleanEndpoint.includes('/v1/') || cleanEndpoint.includes('/v2/')) {
+            return `${baseUrl}/${cleanEndpoint}`;
+        }
+        
+        // 否則添加版本前綴
+        return `${baseUrl}/${this.apiVersion}/${cleanEndpoint}`;
+    }
+    
+    /**
+     * 設置API版本
+     */
+    setApiVersion(version) {
+        this.apiVersion = version;
+        // 清除緩存，因為不同版本的API可能有不同的回應格式
+        this.clearCache();
+    }
+    
+    /**
+     * 獲取當前API版本
+     */
+    getApiVersion() {
+        return this.apiVersion;
     }
 
     /**
-     * 通用請求方法
+     * 統一錯誤處理
+     */
+    handleApiError(error, context = '') {
+        console.error(`API錯誤 ${context}:`, error);
+        
+        let message = '操作失敗，請稍後重試';
+        let code = 'UNKNOWN_ERROR';
+        
+        if (error.status) {
+            switch (error.status) {
+                case 400:
+                    message = '請求參數錯誤';
+                    code = 'BAD_REQUEST';
+                    break;
+                case 401:
+                    message = '請先登入';
+                    code = 'UNAUTHORIZED';
+                    break;
+                case 403:
+                    message = '權限不足';
+                    code = 'FORBIDDEN';
+                    break;
+                case 404:
+                    message = '找不到請求的資源';
+                    code = 'NOT_FOUND';
+                    break;
+                case 500:
+                    message = '伺服器錯誤，請稍後重試';
+                    code = 'SERVER_ERROR';
+                    break;
+                default:
+                    message = error.message || message;
+                    code = `HTTP_${error.status}`;
+            }
+        } else if (error.code === 'TIMEOUT') {
+            message = '請求逾時，請檢查網路連接';
+            code = 'TIMEOUT';
+        } else if (error.message) {
+            message = error.message;
+            code = 'API_ERROR';
+        }
+        
+        return {
+            success: false,
+            message,
+            code,
+            originalError: error
+        };
+    }
+
+    /**
+     * 生成緩存鍵
+     */
+    generateCacheKey(endpoint, options = {}) {
+        const method = options.method || 'GET';
+        const body = options.body ? JSON.stringify(options.body) : '';
+        return `${method}:${endpoint}:${body}`;
+    }
+    
+    /**
+     * 檢查緩存是否有效
+     */
+    isCacheValid(cacheEntry) {
+        return cacheEntry && (Date.now() - cacheEntry.timestamp) < this.cacheExpiry;
+    }
+    
+    /**
+     * 設置緩存
+     */
+    setCache(key, data) {
+        this.cache.set(key, {
+            data: data,
+            timestamp: Date.now()
+        });
+    }
+    
+    /**
+     * 獲取緩存
+     */
+    getCache(key) {
+        const cacheEntry = this.cache.get(key);
+        if (this.isCacheValid(cacheEntry)) {
+            return cacheEntry.data;
+        }
+        return null;
+    }
+    
+    /**
+     * 清除緩存
+     */
+    clearCache(pattern = null) {
+        if (pattern) {
+            for (const key of this.cache.keys()) {
+                if (key.includes(pattern)) {
+                    this.cache.delete(key);
+                }
+            }
+        } else {
+            this.cache.clear();
+        }
+    }
+    
+    /**
+     * 請求去重機制
+     */
+    async deduplicateRequest(cacheKey, requestFn) {
+        // 如果已經有相同的請求在進行中，等待它完成
+        if (this.pendingRequests.has(cacheKey)) {
+            return await this.pendingRequests.get(cacheKey);
+        }
+        
+        // 創建新的請求Promise
+        const requestPromise = requestFn();
+        this.pendingRequests.set(cacheKey, requestPromise);
+        
+        try {
+            const result = await requestPromise;
+            return result;
+        } finally {
+            // 請求完成後移除
+            this.pendingRequests.delete(cacheKey);
+        }
+    }
+    
+    /**
+     * 通用請求方法（支援緩存和去重）
      */
     async request(endpoint, options = {}) {
+        const method = options.method || 'GET';
+        const cacheKey = this.generateCacheKey(endpoint, options);
+        
+        // GET請求嘗試從緩存獲取
+        if (method === 'GET') {
+            const cachedData = this.getCache(cacheKey);
+            if (cachedData) {
+                if (typeof debugLog === 'function') {
+                    debugLog(`API 緩存命中: ${endpoint}`);
+                }
+                return cachedData;
+            }
+        }
+        
+        // 使用去重機制
+        return await this.deduplicateRequest(cacheKey, async () => {
+            const result = await this.performRequest(endpoint, options);
+            
+            // GET請求成功後緩存結果
+            if (method === 'GET' && result && result.status === 200) {
+                this.setCache(cacheKey, result);
+            }
+            
+            return result;
+        });
+    }
+    
+    /**
+     * 執行實際的HTTP請求
+     */
+    async performRequest(endpoint, options = {}) {
         const url = this.useMockData ? endpoint : this.getApiUrl(endpoint);
 
         if (typeof debugLog === 'function') {
@@ -93,12 +279,18 @@ if (typeof window.ApiService === 'undefined') {
             const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
             const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const token = localStorage.getItem('auth_token');
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': `application/vnd.portfolio.${this.apiVersion}+json`,
+                ...(user?.id ? { 'X-User-ID': user.id } : {}),
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                ...options.headers
+            };
+
             const response = await fetch(url, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(user?.id ? { 'X-User-ID': user.id } : {}),
-                    ...options.headers
-                },
+                headers,
                 signal: controller.signal,
                 ...options
             });
@@ -143,10 +335,10 @@ if (typeof window.ApiService === 'undefined') {
                 abortErr.endpoint = endpoint;
                 throw abortErr;
             }
-            if (typeof debugLog === 'function') {
-                debugLog('API 請求失敗細節', { endpoint, message: error.message, status: error.status });
-            }
-            throw error;
+            
+            // 使用統一的錯誤處理
+            const handledError = this.handleApiError(error, `請求 ${endpoint}`);
+            throw handledError;
         }
     }
 
@@ -520,13 +712,23 @@ if (typeof window.ApiService === 'undefined') {
      * 取得通知
      */
     async getNotifications(userId = null) {
-        // 對應 PHP: api/student/notifications.php?action=get&user_id=ID
-        const params = new URLSearchParams({ action: 'get' });
-        if (userId) params.set('user_id', userId);
         try {
-            return await this.request(`student/notifications.php?${params.toString()}`);
-        } catch (e) {
-            return { data: [] };
+            const params = new URLSearchParams({ action: 'get' });
+            if (userId) params.set('user_id', userId);
+            const result = await this.request(`student/notifications.php?${params.toString()}`);
+            
+            // 標準化數據格式
+            if (result && result.status === 200) {
+                return {
+                    success: true,
+                    data: Array.isArray(result.data) ? result.data : [],
+                    message: result.message || 'success'
+                };
+            }
+            return { success: false, data: [], message: result?.message || '載入通知失敗' };
+        } catch (error) {
+            console.error('載入通知失敗:', error);
+            return { success: false, data: [], message: error.message || '載入通知失敗' };
         }
     }
 
@@ -549,13 +751,31 @@ if (typeof window.ApiService === 'undefined') {
      * 取得活動記錄
      */
     async getActivities(userId = null) {
-        // 對應 PHP: api/student/activities.php?action=get&user_id=ID
-        const params = new URLSearchParams({ action: 'get' });
-        if (userId) params.set('user_id', userId);
         try {
-            return await this.request(`student/activities.php?${params.toString()}`);
-        } catch (e) {
-            return { data: [] };
+            const params = new URLSearchParams({ action: 'get' });
+            if (userId) params.set('user_id', userId);
+            const result = await this.request(`student/activities.php?${params.toString()}`);
+            
+            // 標準化數據格式 - 處理多種可能的返回結構
+            let activities = [];
+            if (result && result.status === 200) {
+                if (Array.isArray(result.data)) {
+                    activities = result.data;
+                } else if (Array.isArray(result.data?.activities)) {
+                    activities = result.data.activities;
+                } else if (Array.isArray(result.activities)) {
+                    activities = result.activities;
+                }
+            }
+            
+            return {
+                success: true,
+                data: activities,
+                message: result?.message || 'success'
+            };
+        } catch (error) {
+            console.error('載入活動記錄失敗:', error);
+            return { success: false, data: [], message: error.message || '載入活動記錄失敗' };
         }
     }
 
@@ -648,13 +868,31 @@ if (typeof window.ApiService === 'undefined') {
      * 取得徽章
      */
     async getBadges(userId) {
-        // 對應 PHP: api/student/badges.php?action=get&user_id=ID
-        const params = new URLSearchParams({ action: 'get' });
-        if (userId) params.set('user_id', userId);
         try {
-            return await this.request(`student/badges.php?${params.toString()}`);
-        } catch (e) {
-            return { data: [] };
+            const params = new URLSearchParams({ action: 'get' });
+            if (userId) params.set('user_id', userId);
+            const result = await this.request(`student/badges.php?${params.toString()}`);
+            
+            // 標準化數據格式
+            let badges = [];
+            if (result && result.status === 200) {
+                if (Array.isArray(result.data)) {
+                    badges = result.data;
+                } else if (Array.isArray(result.data?.badges)) {
+                    badges = result.data.badges;
+                } else if (Array.isArray(result.badges)) {
+                    badges = result.badges;
+                }
+            }
+            
+            return {
+                success: true,
+                data: badges,
+                message: result?.message || 'success'
+            };
+        } catch (error) {
+            console.error('載入徽章失敗:', error);
+            return { success: false, data: [], message: error.message || '載入徽章失敗' };
         }
     }
 
@@ -693,20 +931,202 @@ if (typeof window.ApiService === 'undefined') {
      * 登入
      */
     async login(credentials) {
-        return this.request('student/auth.php', {
-            method: 'POST',
-            body: JSON.stringify({ action: 'login', ...credentials })
-        });
+        try {
+            const result = await this.request('student/auth.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'login', ...credentials })
+            });
+            
+            if (result && result.status === 200 && result.data) {
+                // 儲存用戶信息到 localStorage
+                const userData = {
+                    id: result.data.user_id,
+                    username: result.data.username,
+                    email: result.data.email,
+                    role: result.data.role,
+                    displayName: result.data.display_name,
+                    avatar: result.data.avatar_url,
+                    loginTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('user', JSON.stringify(userData));
+                
+                // 儲存JWT Token
+                if (result.data.token) {
+                    localStorage.setItem('auth_token', result.data.token);
+                } else {
+                    localStorage.setItem('auth_token', 'session_based');
+                }
+                
+                // 清除相關緩存
+                this.clearCache();
+                
+                return {
+                    success: true,
+                    data: userData,
+                    message: result.message || '登入成功'
+                };
+            }
+            
+            return {
+                success: false,
+                message: result?.message || '登入失敗'
+            };
+        } catch (error) {
+            console.error('登入失敗:', error);
+            return {
+                success: false,
+                message: error.message || '登入失敗，請檢查網路連接'
+            };
+        }
     }
 
     /**
      * 登出
      */
     async logout() {
-        return this.request('student/auth.php', {
-            method: 'POST',
-            body: JSON.stringify({ action: 'logout' })
-        });
+        try {
+            // 清除本地儲存的認證信息
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            
+            // 嘗試通知後端登出
+            try {
+                await this.request('student/auth.php', {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'logout' })
+                });
+            } catch (error) {
+                // 即使後端登出失敗，也要清除本地信息
+                console.warn('後端登出失敗，但已清除本地認證信息:', error);
+            }
+            
+            return {
+                success: true,
+                message: '登出成功'
+            };
+        } catch (error) {
+            console.error('登出失敗:', error);
+            return {
+                success: false,
+                message: error.message || '登出失敗'
+            };
+        }
+    }
+
+    /**
+     * 檢查認證狀態
+     */
+    async checkAuthStatus() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const token = localStorage.getItem('auth_token');
+            
+            if (!user.id || !token) {
+                return {
+                    success: false,
+                    authenticated: false,
+                    message: '未登入'
+                };
+            }
+            
+            // 檢查 token 是否過期（如果有 JWT）
+            if (token !== 'session_based') {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const now = Math.floor(Date.now() / 1000);
+                    if (payload.exp && payload.exp < now) {
+                        // Token 過期，清除本地信息
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('auth_token');
+                        return {
+                            success: false,
+                            authenticated: false,
+                            message: '登入已過期，請重新登入'
+                        };
+                    }
+                } catch (error) {
+                    console.warn('解析 token 失敗:', error);
+                }
+            }
+            
+            // 嘗試向後端驗證
+            try {
+                const result = await this.request('student/auth.php?action=check');
+                if (result && result.status === 200) {
+                    return {
+                        success: true,
+                        authenticated: true,
+                        data: user,
+                        message: '認證有效'
+                    };
+                }
+            } catch (error) {
+                console.warn('後端認證檢查失敗:', error);
+            }
+            
+            return {
+                success: true,
+                authenticated: true,
+                data: user,
+                message: '本地認證有效'
+            };
+        } catch (error) {
+            console.error('檢查認證狀態失敗:', error);
+            return {
+                success: false,
+                authenticated: false,
+                message: '認證檢查失敗'
+            };
+        }
+    }
+
+    /**
+     * 刷新JWT Token
+     */
+    async refreshToken() {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token || token === 'session_based') {
+                return { success: false, message: '無Token可刷新' };
+            }
+            
+            const result = await this.request('student/auth.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'refresh', token })
+            });
+            
+            if (result && result.status === 200 && result.data) {
+                // 更新Token
+                localStorage.setItem('auth_token', result.data.token);
+                
+                return {
+                    success: true,
+                    data: result.data,
+                    message: result.message || 'Token刷新成功'
+                };
+            }
+            
+            return {
+                success: false,
+                message: result?.message || 'Token刷新失敗'
+            };
+        } catch (error) {
+            console.error('Token刷新失敗:', error);
+            return {
+                success: false,
+                message: error.message || 'Token刷新失敗'
+            };
+        }
+    }
+    getCurrentUser() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return user.id ? user : null;
+        } catch (error) {
+            console.error('取得用戶信息失敗:', error);
+            return null;
+        }
     }
 
     /**

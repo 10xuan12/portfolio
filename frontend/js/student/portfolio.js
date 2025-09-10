@@ -52,20 +52,23 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 從後端 API 載入作品資料（統一透過 ApiService）
-            const svc = window.apiService || window.initializeApiService?.();
-            const result = await svc.request(`student/portfolio.php?action=list&user_id=${user.id}`);
+            // 使用標準化的API服務方法
+            const result = await apiService.getUserPortfolios(user.id);
             
-            if (result.status === 200 && result.data) {
-                portfolios = Array.isArray(result.data) ? result.data : [];
-                renderPortfolios();
+            if (Array.isArray(result)) {
+                portfolios = result;
+            } else if (result && Array.isArray(result.data)) {
+                portfolios = result.data;
             } else {
-                throw new Error(result.message || '載入作品資料失敗');
+                portfolios = [];
             }
+            
+            renderPortfolios();
+            updateStats();
             
         } catch (error) {
             console.error('載入作品資料失敗:', error);
-            Utils.showNotification('載入作品資料失敗，請稍後再試', 'error');
+            Utils.handleApiError(error, '載入作品資料');
             // 如果 API 失敗，顯示空狀態
             portfolios = [];
             renderPortfolios();

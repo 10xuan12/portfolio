@@ -35,12 +35,11 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 從後端 API 載入通知（統一透過 ApiService）
-            const svc = window.apiService || window.initializeApiService?.();
-            const result = await svc.request(`student/notifications.php?action=get&user_id=${user.id}`);
+            // 使用標準化的API服務方法
+            const result = await apiService.getNotifications(user.id);
             
-            if (result.status === 200 && result.data) {
-                notifications = Array.isArray(result.data) ? result.data : [];
+            if (result.success) {
+                notifications = result.data;
                 renderNotifications();
             } else {
                 throw new Error(result.message || '載入通知失敗');
@@ -48,7 +47,7 @@
             
         } catch (error) {
             console.error('載入通知失敗:', error);
-            Utils.showNotification('載入通知失敗，請稍後再試', 'error');
+            Utils.showNotification(error.message || '載入通知失敗，請稍後再試', 'error');
             // 如果 API 失敗，顯示空狀態
             notifications = [];
             renderNotifications();

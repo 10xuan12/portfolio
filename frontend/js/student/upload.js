@@ -18,9 +18,15 @@ let portfolioData = {
 };
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+function initializeUpload() {
     initEventListeners();
     updateStepDisplay();
+    showStep(1);
+}
+
+// 頁面載入時初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initializeUpload();
 });
 
 // 初始化事件監聽器
@@ -76,16 +82,16 @@ function previousStep() {
 // 更新步驟顯示
 function updateStepDisplay() {
     // 更新步驟指示器
-    document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+    document.querySelectorAll('.step').forEach((step, index) => {
         if (index + 1 <= currentStep) {
-            indicator.classList.add('active');
+            step.classList.add('active');
         } else {
-            indicator.classList.remove('active');
+            step.classList.remove('active');
         }
     });
     
     // 更新步驟內容
-    document.querySelectorAll('.step-content').forEach((content, index) => {
+    document.querySelectorAll('.form-section').forEach((content, index) => {
         if (index + 1 === currentStep) {
             content.style.display = 'block';
         } else {
@@ -94,22 +100,29 @@ function updateStepDisplay() {
     });
     
     // 更新按鈕狀態
-    const prevBtn = document.querySelector('.btn-outline');
-    const nextBtn = document.querySelector('.btn-primary');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
     
     if (prevBtn) {
-        prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-block';
+        prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-flex';
     }
     
     if (nextBtn) {
         if (currentStep === 3) {
-            nextBtn.textContent = '上傳作品';
-            nextBtn.onclick = handleFormSubmit;
+            nextBtn.style.display = 'none';
+            if (submitBtn) submitBtn.style.display = 'inline-flex';
         } else {
-            nextBtn.textContent = '下一步';
-            nextBtn.onclick = nextStep;
+            nextBtn.style.display = 'inline-flex';
+            if (submitBtn) submitBtn.style.display = 'none';
         }
     }
+}
+
+// 顯示指定步驟
+function showStep(step) {
+    currentStep = step;
+    updateStepDisplay();
 }
 
 // 驗證當前步驟
@@ -157,10 +170,16 @@ function validateStep1() {
 
 // 驗證步驟2 - 檔案上傳
 function validateStep2() {
-    if (uploadedFiles.length === 0) {
+    const fileInput = document.getElementById('fileInput');
+    const files = fileInput ? Array.from(fileInput.files) : [];
+    
+    if (files.length === 0) {
         Utils.showNotification('請至少上傳一個檔案', 'error');
         return false;
     }
+    
+    // 更新上傳檔案列表
+    uploadedFiles = files;
     
     return true;
 }
@@ -168,14 +187,16 @@ function validateStep2() {
 // 驗證步驟3 - 詳細資訊
 function validateStep3() {
     // 步驟3的驗證是可選的，主要是標籤和連結
-    const tags = document.querySelectorAll('.tag-item');
-    portfolioData.tags = Array.from(tags).map(tag => tag.textContent.replace('×', '').trim());
+    const tagsInput = document.getElementById('tags');
+    if (tagsInput) {
+        const tagsText = tagsInput.value.trim();
+        portfolioData.tags = tagsText ? tagsText.split(',').map(tag => tag.trim()) : [];
+    }
     
-    const url = document.getElementById('url').value.trim();
-    const github = document.getElementById('github').value.trim();
-    
-    portfolioData.url = url;
-    portfolioData.github = github;
+    const githubUrl = document.getElementById('githubUrl');
+    if (githubUrl) {
+        portfolioData.github = githubUrl.value.trim();
+    }
     
     return true;
 }
@@ -243,55 +264,88 @@ function validateFile(file) {
 
 // 更新檔案預覽
 function updateFilePreview() {
-    const previewContainer = document.getElementById('filePreview');
-    if (!previewContainer) return;
+    const previewList = document.getElementById('previewList');
+    if (!previewList) return;
     
-    previewContainer.innerHTML = '';
+    previewList.innerHTML = '';
     
     uploadedFiles.forEach((file, index) => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-            <div class="file-icon">
-                <i class="fas ${getFileIcon(file.type)}"></i>
-            </div>
-            <div class="file-info">
-                <div class="file-name">${file.name}</div>
-                <div class="file-size">${formatFileSize(file.size)}</div>
-            </div>
-            <button type="button" class="remove-file" onclick="removeFile(${index})">
+        const previewItem = createFilePreview(file, index);
+        previewList.appendChild(previewItem);
+    });
+}
+
+// 建立檔案預覽項目
+function createFilePreview(file, index) {
+    const previewItem = document.createElement('div');
+    previewItem.className = 'preview-item';
+    
+    const fileType = getFileType(file);
+    const icon = getFileIcon(fileType);
+    
+    previewItem.innerHTML = `
+        <div class="preview-icon">
+            <i class="${icon}"></i>
+        </div>
+        <div class="preview-info">
+            <div class="preview-name">${file.name}</div>
+            <div class="preview-size">${formatFileSize(file.size)}</div>
+            <div class="preview-type">${fileType}</div>
+        </div>
+        <div class="preview-actions">
+            <button type="button" class="btn-remove" onclick="removeFile(${index})">
                 <i class="fas fa-times"></i>
             </button>
-        `;
-        previewContainer.appendChild(fileItem);
-    });
+        </div>
+    `;
+    
+    return previewItem;
+}
+
+// 取得檔案類型
+function getFileType(file) {
+    const extension = file.name.split('.').pop().toLowerCase();
+    const videoTypes = ['mp4', 'avi', 'mov', 'wmv', 'webm'];
+    const audioTypes = ['mp3', 'wav', 'flac', 'aac', 'ogg'];
+    const model3dTypes = ['obj', 'stl', 'fbx', 'glb', 'gltf'];
+    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+    
+    if (videoTypes.includes(extension)) return '影片';
+    if (audioTypes.includes(extension)) return '音頻';
+    if (model3dTypes.includes(extension)) return '3D模型';
+    if (imageTypes.includes(extension)) return '圖片';
+    if (extension === 'pdf') return 'PDF文件';
+    if (['zip', 'rar', '7z'].includes(extension)) return '壓縮檔';
+    return '文件';
+}
+
+// 取得檔案圖示
+function getFileIcon(fileType) {
+    const iconMap = {
+        '影片': 'fas fa-video',
+        '音頻': 'fas fa-music',
+        '3D模型': 'fas fa-cube',
+        '圖片': 'fas fa-image',
+        'PDF文件': 'fas fa-file-pdf',
+        '壓縮檔': 'fas fa-file-archive',
+        '文件': 'fas fa-file'
+    };
+    return iconMap[fileType] || 'fas fa-file';
 }
 
 // 移除檔案
 function removeFile(index) {
     uploadedFiles.splice(index, 1);
-    updateFilePreview();
-}
-
-// 取得檔案圖示
-function getFileIcon(type) {
-    const iconMap = {
-        'image/jpeg': 'fa-image',
-        'image/png': 'fa-image',
-        'image/gif': 'fa-image',
-        'image/webp': 'fa-image',
-        'application/pdf': 'fa-file-pdf',
-        'application/zip': 'fa-file-archive',
-        'application/x-rar-compressed': 'fa-file-archive',
-        'text/plain': 'fa-file-alt',
-        'text/html': 'fa-file-code',
-        'text/css': 'fa-file-code',
-        'text/javascript': 'fa-file-code',
-        'application/json': 'fa-file-code',
-        'application/xml': 'fa-file-code'
-    };
     
-    return iconMap[type] || 'fa-file';
+    // 更新檔案輸入框
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        const dt = new DataTransfer();
+        uploadedFiles.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+    }
+    
+    updateFilePreview();
 }
 
 // 格式化檔案大小
@@ -308,7 +362,7 @@ function formatFileSize(bytes) {
 // 選擇上傳選項
 function selectUploadOption(card) {
     // 移除所有選中的狀態
-    document.querySelectorAll('.upload-option').forEach(option => {
+    document.querySelectorAll('.option-card').forEach(option => {
         option.classList.remove('selected');
     });
     
@@ -316,46 +370,104 @@ function selectUploadOption(card) {
     card.classList.add('selected');
     
     // 根據選擇顯示對應的輸入區域
-    const option = card.dataset.option;
-    if (option === 'link') {
-        showLinkInput();
+    const type = card.dataset.type;
+    if (type === 'github') {
+        showGithubIntegration();
+    } else {
+        hideGithubIntegration();
     }
 }
 
-// 顯示連結輸入
-function showLinkInput() {
-    const linkInput = document.getElementById('linkInput');
-    if (linkInput) {
-        linkInput.style.display = 'block';
+// GitHub 整合功能
+function showGithubIntegration() {
+    const githubIntegration = document.getElementById('githubIntegration');
+    if (githubIntegration) {
+        githubIntegration.style.display = 'block';
+    }
+}
+
+function hideGithubIntegration() {
+    const githubIntegration = document.getElementById('githubIntegration');
+    if (githubIntegration) {
+        githubIntegration.style.display = 'none';
+    }
+}
+
+async function fetchGithubInfo() {
+    const url = document.getElementById('githubUrl').value;
+    const branch = document.getElementById('githubBranch').value;
+    
+    if (!url) {
+        Utils.showNotification('請輸入GitHub專案URL', 'error');
+        return;
+    }
+    
+    try {
+        // 這裡應該調用GitHub API，目前使用模擬資料
+        const repoInfo = await mockGithubAPI(url, branch);
+        displayGithubInfo(repoInfo);
+    } catch (error) {
+        console.error('GitHub API 錯誤:', error);
+        Utils.showNotification('無法獲取GitHub專案資訊，請檢查URL是否正確', 'error');
+    }
+}
+
+async function mockGithubAPI(url, branch) {
+    // 模擬GitHub API回應
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const repoName = url.split('/').pop();
+    const username = url.split('/')[3];
+    
+    return {
+        name: repoName,
+        full_name: `${username}/${repoName}`,
+        description: '這是一個示例GitHub專案描述',
+        language: 'JavaScript',
+        stars: Math.floor(Math.random() * 1000),
+        forks: Math.floor(Math.random() * 100),
+        branch: branch,
+        last_commit: new Date().toISOString(),
+        readme: '# 專案說明\n\n這是一個示例專案的README檔案。'
+    };
+}
+
+function displayGithubInfo(repoInfo) {
+    const description = document.getElementById('githubDescription');
+    if (description) {
+        description.value = `專案名稱: ${repoInfo.name}\n語言: ${repoInfo.language}\n星數: ${repoInfo.stars}\n分支: ${repoInfo.branch}\n\n${repoInfo.description}`;
     }
 }
 
 // 更新預覽
 function updatePreview() {
-    const previewContainer = document.getElementById('previewContainer');
-    if (!previewContainer) return;
+    const previewTitle = document.getElementById('previewTitle');
+    const previewDescription = document.getElementById('previewDescription');
+    const previewTags = document.getElementById('previewTags');
+    const previewFiles = document.getElementById('previewFiles');
     
-    const title = document.getElementById('title').value || '作品標題';
-    const description = document.getElementById('description').value || '作品描述';
-    const category = document.getElementById('category').value || 'web';
+    if (previewTitle) {
+        previewTitle.textContent = portfolioData.title || '作品標題';
+    }
     
-    previewContainer.innerHTML = `
-        <div class="preview-card">
-            <div class="preview-header">
-                <h3>${title}</h3>
-                <span class="category-badge">${category}</span>
-            </div>
-            <div class="preview-content">
-                <p>${description}</p>
-                <div class="preview-files">
-                    <h4>上傳的檔案 (${uploadedFiles.length})</h4>
-                    <ul>
-                        ${uploadedFiles.map(file => `<li><i class="fas ${getFileIcon(file.type)}"></i> ${file.name}</li>`).join('')}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    `;
+    if (previewDescription) {
+        previewDescription.textContent = portfolioData.description || '作品描述';
+    }
+    
+    if (previewTags) {
+        previewTags.innerHTML = portfolioData.tags.map(tag => 
+            `<span class="tag">${tag}</span>`
+        ).join('');
+    }
+    
+    if (previewFiles) {
+        previewFiles.innerHTML = uploadedFiles.map(file => 
+            `<div class="file-item">
+                <i class="fas ${getFileIcon(getFileType(file))}"></i>
+                <span>${file.name}</span>
+            </div>`
+        ).join('');
+    }
 }
 
 // 處理表單提交
@@ -370,10 +482,12 @@ async function handleFormSubmit(e) {
     
     try {
         // 顯示上傳中狀態
+        showUploadProgress(true);
         Utils.showNotification('正在上傳作品...', 'info');
         
         // 準備上傳資料
         const formData = new FormData();
+        formData.append('action', 'create');
         formData.append('title', portfolioData.title);
         formData.append('category', portfolioData.category);
         formData.append('description', portfolioData.description);
@@ -388,25 +502,73 @@ async function handleFormSubmit(e) {
         });
         
         // 使用API服務上傳
-        const response = await apiService.createPortfolio(formData);
+        const response = await window.apiService.createPortfolio(formData);
         
         if (response.success) {
+            showUploadProgress(false);
             Utils.showNotification('作品上傳成功！', 'success');
             
+            // 添加成功動畫
+            document.querySelector('.upload-content').classList.add('success-animation');
+            
             // 重置表單
-            resetForm();
+            setTimeout(() => {
+                resetForm();
+                document.querySelector('.upload-content').classList.remove('success-animation');
+            }, 2000);
             
             // 跳轉到作品集頁面
             setTimeout(() => {
                 window.location.href = 'portfolio.html';
-            }, 1500);
+            }, 3000);
         } else {
             throw new Error(response.message || '上傳失敗');
         }
         
     } catch (error) {
+        showUploadProgress(false);
         Utils.showNotification('上傳失敗，請稍後再試', 'error');
         console.error('上傳作品錯誤:', error);
+        
+        // 添加錯誤動畫
+        document.querySelector('.upload-content').classList.add('error-shake');
+        setTimeout(() => {
+            document.querySelector('.upload-content').classList.remove('error-shake');
+        }, 500);
+    }
+}
+
+// 顯示/隱藏上傳進度
+function showUploadProgress(show) {
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    
+    if (show) {
+        progressBar.style.display = 'block';
+        progressFill.style.width = '0%';
+        
+        // 模擬進度
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressFill.style.width = progress + '%';
+            
+            if (progress >= 90) {
+                clearInterval(interval);
+            }
+        }, 200);
+        
+        // 儲存 interval ID 以便後續清除
+        window.uploadProgressInterval = interval;
+    } else {
+        if (window.uploadProgressInterval) {
+            clearInterval(window.uploadProgressInterval);
+        }
+        progressFill.style.width = '100%';
+        setTimeout(() => {
+            progressBar.style.display = 'none';
+        }, 1000);
     }
 }
 
@@ -414,14 +576,18 @@ async function handleFormSubmit(e) {
 function resetForm() {
     // 重置步驟
     currentStep = 1;
-    updateStepDisplay();
+    showStep(1);
     
     // 清空檔案
     uploadedFiles = [];
     updateFilePreview();
     
     // 重置表單資料
-    document.getElementById('uploadForm').reset();
+    const form = document.getElementById('uploadForm');
+    if (form) {
+        form.reset();
+    }
+    
     portfolioData = {
         title: '',
         category: '',
@@ -433,23 +599,8 @@ function resetForm() {
         github: ''
     };
     
-    // 重置上傳區域
-    const uploadArea = document.getElementById('uploadArea');
-    if (uploadArea) {
-        uploadArea.innerHTML = `
-            <i class="fas fa-cloud-upload-alt"></i>
-            <h3>拖拽檔案到這裡或點擊上傳</h3>
-            <p>支援 JPG, PNG, GIF, PDF, ZIP 等格式，單檔最大 10MB</p>
-            <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                <i class="fas fa-upload"></i>
-                選擇檔案
-            </button>
-            <input type="file" id="fileInput" multiple accept="image/*,.pdf,.zip,.rar,.txt,.html,.css,.js,.json,.xml" style="display: none;">
-        `;
-        
-        // 重新綁定事件
-        initEventListeners();
-    }
+    // 隱藏 GitHub 整合
+    hideGithubIntegration();
 }
 
 // 上傳進度處理
@@ -496,5 +647,8 @@ window.nextStep = nextStep;
 window.previousStep = previousStep;
 window.removeFile = removeFile;
 window.selectUploadOption = selectUploadOption;
-window.addTag = addTag;
-window.removeTag = removeTag; 
+window.showGithubIntegration = showGithubIntegration;
+window.hideGithubIntegration = hideGithubIntegration;
+window.fetchGithubInfo = fetchGithubInfo;
+window.initializeUpload = initializeUpload;
+window.showUploadProgress = showUploadProgress; 
