@@ -166,14 +166,35 @@
     async function loadStudentData() {
         try {
             // 從 localStorage 獲取使用者資訊
-            const user = JSON.parse(localStorage.getItem('user'));
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
             if (!user || !user.id) {
-                console.error('無法獲取使用者資訊');
+                console.error('無法獲取使用者資訊，請重新登入');
+                if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                    Utils.showNotification('請重新登入', 'error');
+                }
                 return;
             }
 
+            // 檢查 API 服務是否可用
+            let svc = window.apiService;
+            if (!svc && typeof window.initializeApiService === 'function') {
+                svc = window.initializeApiService();
+                // 等待一下再檢查
+                await new Promise(resolve => setTimeout(resolve, 200));
+                if (!svc) {
+                    throw new Error('API 服務初始化失敗，請檢查後端服務是否正常運行');
+                }
+            }
+            
+            if (!svc) {
+                throw new Error('API 服務未初始化');
+            }
+
+            console.log('載入個人資料，使用者 ID:', user.id);
+            console.log('API 服務狀態:', typeof svc, svc);
+            console.log('API Base URL:', svc.baseUrl);
+
             // 並行載入個人資料、徽章和活動
-            const svc = window.apiService || window.initializeApiService?.();
             const [profileResult, badgesResult, activitiesResult] = await Promise.all([
                 svc.request(`student/profile.php?action=get&user_id=${user.id}`),
                 svc.request(`student/badges.php?action=get&user_id=${user.id}`),
@@ -248,7 +269,22 @@
             
         } catch (error) {
             console.error('載入個人資料失敗:', error);
-            Utils.showNotification('載入資料失敗，請稍後再試', 'error');
+            
+            // 顯示更詳細的錯誤訊息
+            let errorMessage = '載入資料失敗，請稍後再試';
+            if (error.message.includes('API 服務初始化失敗')) {
+                errorMessage = '後端服務未啟動，請檢查伺服器狀態';
+            } else if (error.message.includes('無法獲取使用者資訊')) {
+                errorMessage = '請重新登入';
+            } else if (error.message.includes('Network Error') || error.message.includes('fetch')) {
+                errorMessage = '網路連線錯誤，請檢查網路狀態';
+            }
+            
+            if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                Utils.showNotification(errorMessage, 'error');
+            } else {
+                alert(errorMessage);
+            }
         }
         
         // 填充表單資料
@@ -576,15 +612,33 @@
 
     // 更新統計資料
     function updateStats() {
-        const stats = studentData.stats;
+        const stats = studentData.stats || {};
+        
+        // 格式化數字
+        const formatNumber = (num) => {
+            if (typeof Utils !== 'undefined' && Utils.formatNumber) {
+                return Utils.formatNumber(num || 0);
+            }
+            return new Intl.NumberFormat('zh-TW').format(num || 0);
+        };
         
         // 更新頁面中的統計數字
-        const statElements = document.querySelectorAll('.stat-number');
-        if (statElements.length >= 4) {
-            statElements[0].textContent = stats.portfolios;
-            statElements[1].textContent = Utils.formatNumber(stats.views);
-            statElements[2].textContent = stats.likes;
-            statElements[3].textContent = stats.badges;
+        const statPortfolios = document.getElementById('stat-portfolios');
+        const statViews = document.getElementById('stat-views');
+        const statLikes = document.getElementById('stat-likes');
+        const statBadges = document.getElementById('stat-badges');
+        
+        if (statPortfolios) {
+            statPortfolios.textContent = stats.portfolios || 0;
+        }
+        if (statViews) {
+            statViews.textContent = formatNumber(stats.views);
+        }
+        if (statLikes) {
+            statLikes.textContent = stats.likes || 0;
+        }
+        if (statBadges) {
+            statBadges.textContent = stats.badges || 0;
         }
     }
 
@@ -592,40 +646,28 @@
     function updatePageDisplay() {
         // 更新個人資料標題區域
         const profileName = document.getElementById('profile-name');
-        if (profileName && studentData.name) {
-            profileName.textContent = studentData.name;
+        if (profileName) {
+            profileName.textContent = studentData.name || '未設定';
         }
         
         const profileDeptGrade = document.getElementById('profile-department-grade');
-        if (profileDeptGrade && studentData.department && studentData.grade) {
-            profileDeptGrade.textContent = `${studentData.department} · ${studentData.grade}`;
+        if (profileDeptGrade) {
+            if (studentData.department && studentData.grade) {
+                profileDeptGrade.textContent = `${studentData.department} · ${studentData.grade}`;
+            } else if (studentData.department) {
+                profileDeptGrade.textContent = studentData.department;
+            } else {
+                profileDeptGrade.textContent = '未設定';
+            }
         }
         
         const profileStudentId = document.getElementById('profile-student-id');
-        if (profileStudentId && studentData.student_id) {
-            profileStudentId.textContent = `學生編號: ${studentData.student_id}`;
+        if (profileStudentId) {
+            profileStudentId.textContent = `學生編號: ${studentData.student_id || '未設定'}`;
         }
         
         // 更新統計資料
-        const statPortfolios = document.getElementById('stat-portfolios');
-        if (statPortfolios && studentData.stats) {
-            statPortfolios.textContent = studentData.stats.portfolios || 0;
-        }
-        
-        const statViews = document.getElementById('stat-views');
-        if (statViews && studentData.stats) {
-            statViews.textContent = studentData.stats.views || 0;
-        }
-        
-        const statLikes = document.getElementById('stat-likes');
-        if (statLikes && studentData.stats) {
-            statLikes.textContent = studentData.stats.likes || 0;
-        }
-        
-        const statBadges = document.getElementById('stat-badges');
-        if (statBadges && studentData.stats) {
-            statBadges.textContent = studentData.stats.badges || 0;
-        }
+        updateStats();
         
         // 更新頭像
         if (studentData.avatar && document.getElementById('avatarImage')) {
@@ -638,15 +680,24 @@
         const badgeGrid = document.getElementById('badge-grid');
         if (!badgeGrid) return;
         
-        if (studentData.badges && studentData.badges.length > 0) {
-            badgeGrid.innerHTML = studentData.badges.map(badge => `
-                <div class="badge-item ${badge.earned ? 'earned' : ''}">
-                    <i class="${badge.icon}"></i>
-                    <div class="badge-name">${badge.name}</div>
+        const badges = studentData.badges || [];
+        
+        if (badges.length > 0) {
+            badgeGrid.innerHTML = badges.map(badge => `
+                <div class="badge-item ${badge.earned ? 'earned' : 'not-earned'}">
+                    <i class="${badge.icon || 'fas fa-star'}"></i>
+                    <div class="badge-name">${badge.name || '未知徽章'}</div>
+                    ${badge.description ? `<div class="badge-description">${badge.description}</div>` : ''}
                 </div>
             `).join('');
         } else {
-            badgeGrid.innerHTML = '<div class="no-badges">目前還沒有徽章</div>';
+            badgeGrid.innerHTML = `
+                <div class="no-badges">
+                    <i class="fas fa-star"></i>
+                    <p>目前還沒有徽章</p>
+                    <small>完成更多作品來獲得徽章</small>
+                </div>
+            `;
         }
     }
 
@@ -655,20 +706,32 @@
         const activityList = document.getElementById('activity-list');
         if (!activityList) return;
         
-        if (studentData.activities && studentData.activities.length > 0) {
-            activityList.innerHTML = studentData.activities.map(activity => `
+        const activities = studentData.activities || [];
+        
+        if (activities.length > 0) {
+            activityList.innerHTML = activities.map(activity => `
                 <li class="activity-item">
-                    <div class="activity-icon activity-${activity.type}">
+                    <div class="activity-icon activity-${activity.type || 'default'}">
                         <i class="fas fa-${getActivityIcon(activity.type)}"></i>
                     </div>
                     <div class="activity-content">
-                        <div class="activity-text">${activity.text}</div>
-                        <div class="activity-time">${activity.time}</div>
+                        <div class="activity-text">${activity.text || activity.message || '未知活動'}</div>
+                        <div class="activity-time">${activity.time || activity.created_at || '未知時間'}</div>
                     </div>
                 </li>
             `).join('');
         } else {
-            activityList.innerHTML = '<li class="no-activities">目前還沒有活動記錄</li>';
+            activityList.innerHTML = `
+                <li class="no-activities">
+                    <div class="activity-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">目前還沒有活動記錄</div>
+                        <div class="activity-time">開始使用系統來記錄活動</div>
+                    </div>
+                </li>
+            `;
         }
     }
 
@@ -858,20 +921,27 @@
 
     // 匯出為 PDF 格式
     function exportAsPDF() {
-        // 檢查是否有 jsPDF 函式庫
-        if (typeof jsPDF === 'undefined') {
-            Utils.showNotification('PDF 匯出功能需要 jsPDF 函式庫，請先載入', 'warning');
-            // 嘗試載入 jsPDF
-            loadJSPDF().then(() => {
-                exportAsPDF();
-            }).catch(() => {
-                Utils.showNotification('無法載入 PDF 函式庫，請使用其他格式匯出', 'error');
-            });
+        // 檢查是否有 jsPDF 函式庫（處理 UMD 匯出）
+        const JsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+        if (!JsPDFClass) {
+            // 若已在載入中，避免重複提示
+            if (!window.__isLoadingJsPDF) {
+                window.__isLoadingJsPDF = true;
+                Utils.showNotification('PDF 匯出功能需要 jsPDF 函式庫，正在載入...', 'warning');
+                // 嘗試載入 jsPDF
+                loadJSPDF().then(() => {
+                    window.__isLoadingJsPDF = false;
+                    exportAsPDF();
+                }).catch(() => {
+                    window.__isLoadingJsPDF = false;
+                    Utils.showNotification('無法載入 PDF 函式庫，請使用其他格式匯出', 'error');
+                });
+            }
             return;
         }
         
         try {
-            const doc = new jsPDF();
+            const doc = new JsPDFClass();
             
             // 設定中文字體（如果支援）
             doc.setFont('helvetica');
@@ -920,13 +990,20 @@
     // 載入 jsPDF 函式庫
     async function loadJSPDF() {
         return new Promise((resolve, reject) => {
-            if (typeof jsPDF !== 'undefined') {
+            const alreadyHas = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+            if (alreadyHas) {
                 resolve();
                 return;
             }
-            
+            const existing = document.querySelector('script[data-lib="jspdf"]');
+            if (existing) {
+                existing.addEventListener('load', () => resolve());
+                existing.addEventListener('error', () => reject(new Error('無法載入 jsPDF')));
+                return;
+            }
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script.setAttribute('data-lib', 'jspdf');
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('無法載入 jsPDF'));
             document.head.appendChild(script);

@@ -377,15 +377,7 @@ const UI = {
             }
         }, 100));
         
-        // 行動裝置選單切換
-        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-        const navbarMenu = document.querySelector('.navbar-menu');
-        
-        if (mobileMenuToggle && navbarMenu) {
-            mobileMenuToggle.addEventListener('click', () => {
-                navbarMenu.classList.toggle('active');
-            });
-        }
+        // 行動裝置選單切換功能已移除
     },
     
     // 初始化滾動效果

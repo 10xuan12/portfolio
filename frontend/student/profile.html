@@ -43,32 +43,32 @@
                 <input type="file" id="avatarInput" accept="image/*">
                 
                 <div class="profile-details">
-                    <h1 id="profile-name">載入中...</h1>
-                    <p id="profile-department-grade">載入中...</p>
-                    <p id="profile-student-id">學生編號: 載入中...</p>
+                    <h1 id="profile-name">-</h1>
+                    <p id="profile-department-grade">-</p>
+                    <p id="profile-student-id">學生編號: -</p>
                     
                     <div class="profile-stats">
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number" id="stat-portfolios">載入中...</div>
+                                <div class="number" id="stat-portfolios">-</div>
                                 <div class="label">作品</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number" id="stat-views">載入中...</div>
+                                <div class="number" id="stat-views">-</div>
                                 <div class="label">瀏覽</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number" id="stat-likes">載入中...</div>
+                                <div class="number" id="stat-likes">-</div>
                                 <div class="label">讚數</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-content-box">
-                                <div class="number" id="stat-badges">載入中...</div>
+                                <div class="number" id="stat-badges">-</div>
                                 <div class="label">徽章</div>
                             </div>
                         </div>
@@ -549,12 +549,7 @@
             }
         }
         
-        // 匯出個人資料
-        function exportProfileData() {
-            if (typeof exportProfileData === 'function') {
-                exportProfileData();
-            }
-        }
+        // 移除會覆寫全域的包裝函式，避免重複觸發
         
         // 重置表單
         function resetForm() {

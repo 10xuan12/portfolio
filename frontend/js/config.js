@@ -9,7 +9,7 @@ if (typeof window.APP_CONFIG === 'undefined') {
     // ==================== 核心設定 ====================
     
     // 是否使用假資料 (true: 使用假資料, false: 使用真實API)
-    USE_MOCK_DATA: false,
+    USE_MOCK_DATA: true,
     
     // API 基礎 URL (當 USE_MOCK_DATA 為 false 時使用)
     API_BASE_URL: '/portfolio/api',

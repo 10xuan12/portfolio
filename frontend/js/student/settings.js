@@ -421,6 +421,19 @@ async function setupTwoFactorAuth() {
 
 // 匯出資料
 async function exportData() {
+    // 防重：避免重複觸發與重複提示
+    if (window.__isExportingUserData) {
+        return;
+    }
+    window.__isExportingUserData = true;
+    
+    // 暫時停用匯出按鈕（若存在）
+    const exportBtn = document.querySelector('button[onclick="exportData()"]');
+    if (exportBtn) {
+        exportBtn.disabled = true;
+        exportBtn.classList.add('is-loading');
+    }
+
     try {
         Utils.showNotification('正在準備資料匯出...', 'info');
         
@@ -446,6 +459,13 @@ async function exportData() {
     } catch (error) {
         console.error('匯出資料錯誤:', error);
         Utils.showNotification('資料匯出失敗，請稍後再試', 'error');
+    } finally {
+        // 還原狀態與按鈕
+        window.__isExportingUserData = false;
+        if (exportBtn) {
+            exportBtn.disabled = false;
+            exportBtn.classList.remove('is-loading');
+        }
     }
 }
 

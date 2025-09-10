@@ -36,9 +36,9 @@ async function loadDashboardData() {
             if (typeof window.initializeApiService === 'function') {
                 window.initializeApiService();
                 // 等待一下再檢查
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 200));
                 if (typeof apiService === 'undefined' || !apiService) {
-                    throw new Error('API 服務初始化失敗');
+                    throw new Error('API 服務初始化失敗，請檢查後端服務是否正常運行');
                 }
             } else {
                 throw new Error('API 服務初始化函數不存在');
@@ -46,14 +46,15 @@ async function loadDashboardData() {
         }
         
         // 從 localStorage 獲取使用者資訊
-        const user = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!user || !user.id) {
-            throw new Error('無法獲取使用者資訊');
+            throw new Error('無法獲取使用者資訊，請重新登入');
         }
         const userId = user.id;
         
         console.log('使用者 ID:', userId);
         console.log('API 服務狀態:', typeof apiService, apiService);
+        console.log('API Base URL:', apiService.baseUrl);
         
         // 並行載入所有資料
         const [stats, portfolios, activitiesResp, badgesResp, notificationsResp] = await Promise.all([
@@ -64,10 +65,10 @@ async function loadDashboardData() {
             apiService.getNotifications(userId)
         ]);
         
-        // 使用標準化的數據格式
-        const activities = activitiesResp.success ? activitiesResp.data : [];
-        const badges = badgesResp.success ? badgesResp.data : [];
-        const notifications = notificationsResp.success ? notificationsResp.data : [];
+        // 處理API回應格式
+        const activities = activitiesResp && activitiesResp.success ? activitiesResp.data : (activitiesResp || []);
+        const badges = badgesResp && badgesResp.success ? badgesResp.data : (badgesResp || []);
+        const notifications = notificationsResp && notificationsResp.success ? notificationsResp.data : (notificationsResp || []);
 
         // 渲染資料
         renderStats(stats || {});
@@ -79,8 +80,23 @@ async function loadDashboardData() {
         debugLog('學生儀表板資料載入完成');
     } catch (error) {
         console.error('載入學生儀表板資料錯誤:', error);
-        Utils.showNotification('載入資料失敗，請稍後再試', 'error');
-        showDashboardError('無法載入儀表板資料，請稍後重試');
+        
+        // 顯示更詳細的錯誤訊息
+        let errorMessage = '載入資料失敗，請稍後再試';
+        if (error.message.includes('API 服務初始化失敗')) {
+            errorMessage = '後端服務未啟動，請檢查伺服器狀態';
+        } else if (error.message.includes('無法獲取使用者資訊')) {
+            errorMessage = '請重新登入';
+        } else if (error.message.includes('Network Error') || error.message.includes('fetch')) {
+            errorMessage = '網路連線錯誤，請檢查網路狀態';
+        }
+        
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification(errorMessage, 'error');
+        } else {
+            alert(errorMessage);
+        }
+        showDashboardError(errorMessage);
     }
     finally {
         showDashboardLoading(false);
@@ -116,7 +132,12 @@ function renderStats(stats) {
     Object.keys(statElements).forEach(id => {
         const element = document.getElementById(id);
         if (element) {
-            element.textContent = Utils.formatNumber(statElements[id]);
+            const value = statElements[id];
+            if (typeof Utils !== 'undefined' && Utils.formatNumber) {
+                element.textContent = Utils.formatNumber(value);
+            } else {
+                element.textContent = new Intl.NumberFormat('zh-TW').format(value);
+            }
         }
     });
 }
@@ -146,26 +167,48 @@ function renderRecentPortfolios(portfolios) {
     portfolioGrid.innerHTML = '';
     
     // 確保portfolios是陣列
-    const portfolioArray = Array.isArray(portfolios) ? portfolios : (portfolios.data || []);
+    const portfolioArray = Array.isArray(portfolios) ? portfolios : (portfolios && portfolios.data ? portfolios.data : []);
+    
+    if (portfolioArray.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.className = 'empty-message';
+        emptyMessage.innerHTML = `
+            <i class="fas fa-folder-open"></i>
+            <p>暫無作品</p>
+            <a href="upload.html" class="btn btn-primary">上傳第一個作品</a>
+        `;
+        portfolioGrid.appendChild(emptyMessage);
+        return;
+    }
     
     portfolioArray.forEach(portfolio => {
         const portfolioItem = document.createElement('div');
         portfolioItem.className = 'portfolio-item';
+        portfolioItem.setAttribute('data-portfolio-id', portfolio.id);
+        
+        // 格式化數字
+        const formatNumber = (num) => {
+            if (typeof Utils !== 'undefined' && Utils.formatNumber) {
+                return Utils.formatNumber(num || 0);
+            }
+            return new Intl.NumberFormat('zh-TW').format(num || 0);
+        };
+        
         portfolioItem.innerHTML = `
             <div class="portfolio-header">
-                <span class="portfolio-title">${portfolio.title}</span>
-                <span class="portfolio-status ${portfolio.status}">${getStatusText(portfolio.status)}</span>
+                <span class="portfolio-title">${portfolio.title || '未命名作品'}</span>
+                <span class="portfolio-status status-${portfolio.status || 'draft'}">${getStatusText(portfolio.status)}</span>
             </div>
             <div class="portfolio-content">
-                <p>${portfolio.description}</p>
+                <p>${portfolio.description || '暫無描述'}</p>
                 <div class="portfolio-tags">
                     ${(portfolio.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
                 </div>
             </div>
             <div class="portfolio-stats">
-                <span><i class="fas fa-eye"></i> ${Utils.formatNumber(portfolio.views || 0)}</span>
-                <span><i class="fas fa-heart"></i> ${Utils.formatNumber(portfolio.likes || 0)}</span>
-                <span><i class="fas fa-comment"></i> ${Utils.formatNumber(portfolio.comments || 0)}</span>
+                <span><i class="fas fa-eye"></i> ${formatNumber(portfolio.views)}</span>
+                <span><i class="fas fa-heart"></i> ${formatNumber(portfolio.likes)}</span>
+                <span><i class="fas fa-comment"></i> ${formatNumber(portfolio.comments)}</span>
             </div>
         `;
         portfolioGrid.appendChild(portfolioItem);
@@ -183,25 +226,35 @@ function renderRecentActivities(activities) {
     
     const activityArray = Array.isArray(activities) ? activities : [];
     
+    if (activityArray.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'no-activity';
+        li.innerHTML = `
+            <div class="activity-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+                <div>暫無活動</div>
+                <small>開始上傳作品來記錄活動</small>
+            </div>
+        `;
+        activitiesList.appendChild(li);
+        return;
+    }
+    
     activityArray.forEach(activity => {
         const li = document.createElement('li');
         li.innerHTML = `
-            <div class="activity-icon activity-${activity.type}">
+            <div class="activity-icon activity-${activity.type || 'default'}">
                 <i class="fas ${getActivityIcon(activity.type)}"></i>
             </div>
             <div>
-                <div>${activity.text || ''}</div>
-                <small>${activity.time || ''}</small>
+                <div>${activity.text || activity.message || '未知活動'}</div>
+                <small>${activity.time || activity.created_at || '未知時間'}</small>
             </div>
         `;
         activitiesList.appendChild(li);
     });
-
-    if (activityArray.length === 0) {
-        const li = document.createElement('li');
-        li.textContent = '暫無活動';
-        activitiesList.appendChild(li);
-    }
 }
 
 /**
@@ -215,26 +268,33 @@ function renderBadges(badges) {
     
     const badgeArray = Array.isArray(badges) ? badges : [];
     
+    if (badgeArray.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'no-badges';
+        empty.innerHTML = `
+            <i class="fas fa-star"></i>
+            <p>暫無徽章</p>
+            <small>完成更多作品來獲得徽章</small>
+        `;
+        badgesContainer.appendChild(empty);
+        return;
+    }
+    
     badgeArray.forEach(badge => {
         const badgeItem = document.createElement('div');
-        badgeItem.className = `badge-item ${badge.earned ? 'earned' : ''}`;
+        badgeItem.className = `badge-item ${badge.earned ? 'earned' : 'not-earned'}`;
         badgeItem.innerHTML = `
             <div class="badge-icon">
                 <i class="${badge.icon || 'fas fa-star'}"></i>
             </div>
             <div class="badge-info">
-                <div class="badge-name">${badge.name}</div>
-                <div class="badge-description">${badge.description}</div>
+                <div class="badge-name">${badge.name || '未知徽章'}</div>
+                <div class="badge-description">${badge.description || '暫無描述'}</div>
+                ${badge.earned_date ? `<div class="badge-date">獲得於 ${badge.earned_date}</div>` : ''}
             </div>
         `;
         badgesContainer.appendChild(badgeItem);
     });
-
-    if (badgeArray.length === 0) {
-        const empty = document.createElement('div');
-        empty.textContent = '暫無徽章';
-        badgesContainer.appendChild(empty);
-    }
 }
 
 /**
@@ -247,13 +307,37 @@ function renderNotifications(notifications) {
     notificationsList.innerHTML = '';
     
     // 確保notifications是陣列
-    const notificationArray = Array.isArray(notifications) ? notifications : (notifications.data || []);
+    const notificationArray = Array.isArray(notifications) ? notifications : (notifications && notifications.data ? notifications.data : []);
+    
+    if (notificationArray.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'no-notifications';
+        empty.innerHTML = `
+            <i class="fas fa-bell-slash"></i>
+            <p>暫無通知</p>
+            <small>當有新的互動時會顯示在這裡</small>
+        `;
+        notificationsList.appendChild(empty);
+        return;
+    }
     
     notificationArray.forEach(notification => {
         const isRead = (notification.is_read !== undefined) ? notification.is_read : (notification.status === 'read');
         const title = notification.title || '通知';
         const message = notification.message || notification.text || '';
         const time = notification.created_at || notification.time || '';
+        
+        // 格式化日期
+        const formatDate = (dateString) => {
+            if (typeof Utils !== 'undefined' && Utils.formatDate) {
+                return Utils.formatDate(dateString);
+            }
+            if (dateString) {
+                return new Date(dateString).toLocaleDateString('zh-TW');
+            }
+            return '未知時間';
+        };
+        
         const notificationItem = document.createElement('div');
         notificationItem.className = `notification-item ${isRead ? 'read' : 'unread'}`;
         notificationItem.innerHTML = `
@@ -263,7 +347,7 @@ function renderNotifications(notifications) {
             <div class="notification-content">
                 <div class="notification-title">${title}</div>
                 <div class="notification-message">${message}</div>
-                <small>${Utils.formatDate(time)}</small>
+                <small>${formatDate(time)}</small>
             </div>
         `;
         notificationsList.appendChild(notificationItem);

@@ -781,21 +781,7 @@ body {
         border-bottom: none;
     }
     
-    /* 行動裝置選單按鈕 */
-    .mobile-menu-toggle {
-        display: block;
-        background: none;
-        border: none;
-        color: var(--white);
-        font-size: var(--text-xl);
-        cursor: pointer;
-        padding: var(--spacing-sm);
-    }
-    
-    .mobile-menu-toggle:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: var(--radius-md);
-    }
+    /* 行動裝置選單按鈕樣式已移除 */
     
     /* 英雄區塊響應式 */
     .hero .container {
