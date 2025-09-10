@@ -10,6 +10,7 @@
 :root {
     /* === Portfolio+ 配色方案 === */
     --primary-color: #273ec3;         /* 主色，使用 #273ec3 */
+    --navbar-bg: var(--primary-color); /* 導覽列背景顏色（全站統一） */
     --primary-dark: #00AEEF;          /* 輔色 Indigo Blue：冷靜專業，側邊欄、分頁列、hover */
     --background-color: #e0f1ff;      /* 整體背景色，乾淨清新 */
     --card-bg: #FFFFFF;               /* 卡片白底 */
@@ -1107,6 +1108,11 @@ h1, h2, h3, h4, h5, h6, .section-header h2, .hero-title {
 .navbar-actions .btn-outline:hover i {
     color: var(--white) !important;
 } 
+
+/* 全站強制導覽列使用主色（避免其他樣式覆蓋） */
+.navbar {
+    background: var(--primary-color) !important;
+}
 
 /* 徽章成就區塊 icon 樣式 */
 .badge-item {
