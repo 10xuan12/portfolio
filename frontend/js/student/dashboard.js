@@ -56,7 +56,7 @@ async function loadDashboardData() {
         console.log('API 服務狀態:', typeof apiService, apiService);
         
         // 並行載入所有資料
-        const [stats, portfolios, activities, badges, notifications] = await Promise.all([
+        const [stats, portfolios, activitiesResp, badgesResp, notifications] = await Promise.all([
             apiService.getStats('student'),
             apiService.getUserPortfolios(userId),
             apiService.getActivities(userId),
@@ -64,6 +64,21 @@ async function loadDashboardData() {
             apiService.getNotifications(userId)
         ]);
         
+        // 解包結構（後端 activities/badges 皆包在 data 物件內）
+        // activities 可能為以下結構之一：
+        // 1) { status, data: { activities: [...] } }
+        // 2) { activities: [...] }
+        // 3) { status, data: [...] }
+        let activities = [];
+        if (Array.isArray(activitiesResp?.data)) {
+            activities = activitiesResp.data;
+        } else if (Array.isArray(activitiesResp?.data?.activities)) {
+            activities = activitiesResp.data.activities;
+        } else if (Array.isArray(activitiesResp?.activities)) {
+            activities = activitiesResp.activities;
+        }
+        const badges = (badgesResp && (badgesResp.badges || badgesResp.data?.badges)) || [];
+
         // 渲染資料
         renderStats(stats || {});
         renderRecentPortfolios(portfolios);
@@ -171,48 +186,51 @@ function renderRecentPortfolios(portfolios) {
  * 渲染最近活動
  */
 function renderRecentActivities(activities) {
-    const activitiesList = document.querySelector('.recent-activities');
+    const activitiesList = document.getElementById('recent-activity');
     if (!activitiesList) return;
     
     activitiesList.innerHTML = '';
     
-    // 確保activities是陣列
-    const activityArray = Array.isArray(activities) ? activities : (activities.data || []);
+    const activityArray = Array.isArray(activities) ? activities : [];
     
     activityArray.forEach(activity => {
-        const activityItem = document.createElement('div');
-        activityItem.className = 'activity-item';
-        activityItem.innerHTML = `
-            <div class="activity-icon">
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <div class="activity-icon activity-${activity.type}">
                 <i class="fas ${getActivityIcon(activity.type)}"></i>
             </div>
-            <div class="activity-content">
-                <p>${activity.text}</p>
-                <small>${activity.time}</small>
+            <div>
+                <div>${activity.text || ''}</div>
+                <small>${activity.time || ''}</small>
             </div>
         `;
-        activitiesList.appendChild(activityItem);
+        activitiesList.appendChild(li);
     });
+
+    if (activityArray.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = '暫無活動';
+        activitiesList.appendChild(li);
+    }
 }
 
 /**
  * 渲染徽章
  */
 function renderBadges(badges) {
-    const badgesContainer = document.querySelector('.badges-container');
+    const badgesContainer = document.getElementById('badges-container');
     if (!badgesContainer) return;
     
     badgesContainer.innerHTML = '';
     
-    // 確保badges是陣列
-    const badgeArray = Array.isArray(badges) ? badges : (badges.data || []);
+    const badgeArray = Array.isArray(badges) ? badges : [];
     
     badgeArray.forEach(badge => {
         const badgeItem = document.createElement('div');
         badgeItem.className = `badge-item ${badge.earned ? 'earned' : ''}`;
         badgeItem.innerHTML = `
             <div class="badge-icon">
-                <i class="${badge.icon}"></i>
+                <i class="${badge.icon || 'fas fa-star'}"></i>
             </div>
             <div class="badge-info">
                 <div class="badge-name">${badge.name}</div>
@@ -221,6 +239,12 @@ function renderBadges(badges) {
         `;
         badgesContainer.appendChild(badgeItem);
     });
+
+    if (badgeArray.length === 0) {
+        const empty = document.createElement('div');
+        empty.textContent = '暫無徽章';
+        badgesContainer.appendChild(empty);
+    }
 }
 
 /**

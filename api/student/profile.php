@@ -24,10 +24,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
         
     case 'POST':
-        $input = json_decode(file_get_contents('php://input'), true);
+        // 同時支援 JSON 與 multipart/form-data 的 action 解析
+        $contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
+        $isMultipart = stripos($contentType, 'multipart/form-data') !== false;
+        $input = $isMultipart ? [] : json_decode(file_get_contents('php://input'), true);
+        if (!is_array($input)) { $input = []; }
         
-        if (isset($input['action'])) {
-            switch ($input['action']) {
+        $action = $input['action'] ?? ($_POST['action'] ?? '');
+        if (!empty($action)) {
+            switch ($action) {
                 case 'update':
                     updateStudentProfile($input);
                     break;

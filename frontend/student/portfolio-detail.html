@@ -34,14 +34,10 @@
     <section class="detail-header">
         <div class="container">
             <div class="portfolio-hero">
-                <img src="https://via.placeholder.com/1200x400/667eea/ffffff?text=Portfolio+Detail" alt="作品封面">
+                <img id="heroCover" src="" alt="作品封面">
                 <div class="hero-overlay">
-                    <div class="hero-title">響應式網站設計</div>
-                    <div class="hero-meta">
-                        <span><i class="fas fa-user"></i> 張小明</span>
-                        <span><i class="fas fa-calendar"></i> 2024-01-15</span>
-                        <span><i class="fas fa-eye"></i> 156 次瀏覽</span>
-                    </div>
+                    <div class="hero-title"></div>
+                    <div class="hero-meta" id="heroMeta"></div>
                 </div>
             </div>
         </div>
@@ -55,73 +51,46 @@
                     <div class="portfolio-info">
                         <div class="info-header">
                             <div class="info-title">
-                                <h1>響應式網站設計</h1>
-                                <p>使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。</p>
+                                <h1></h1>
+                                <p></p>
                             </div>
-                            <span class="info-status status-published">已發布</span>
+                            <span class="info-status" id="detailStatus"></span>
                         </div>
                         
                         <div class="info-stats">
                             <div class="stat-item">
                                 <i class="fas fa-eye"></i>
-                                <span>156 次瀏覽</span>
+                                <span id="statViews"></span>
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-heart"></i>
-                                <span>23 個讚</span>
+                                <span id="statLikes"></span>
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-comment"></i>
-                                <span>8 則評論</span>
+                                <span id="statComments"></span>
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-download"></i>
-                                <span>12 次下載</span>
+                                <span id="statDownloads"></span>
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-bookmark"></i>
-                                <span id="bookmarkCount">5 次收藏</span>
+                                <span id="bookmarkCount"></span>
                             </div>
                         </div>
                         
-                        <!-- 收藏按鈕 -->
+                        <!-- 操作按鈕（僅保留分享） -->
                         <div class="portfolio-actions">
-                            <button class="btn btn-outline" id="bookmarkBtn" onclick="toggleBookmark()">
-                                <i class="fas fa-bookmark" id="bookmarkIcon"></i>
-                                <span id="bookmarkText">收藏作品</span>
-                            </button>
-                            <button class="btn btn-primary" onclick="contactAuthor()">
-                                <i class="fas fa-envelope"></i>
-                                聯絡作者
-                            </button>
                             <button class="btn btn-secondary" onclick="sharePortfolio()">
                                 <i class="fas fa-share"></i>
                                 分享
                             </button>
                         </div>
                         
-                        <div class="portfolio-description">
-                            <p>這是一個使用現代化技術開發的響應式網站專案。專案採用 HTML5 語義化標籤，CSS3 的 Flexbox 和 Grid 佈局，以及 JavaScript ES6+ 語法。</p>
-                            
-                            <p>主要特色包括：</p>
-                            <ul>
-                                <li>完全響應式設計，支援桌面、平板和手機</li>
-                                <li>現代化的使用者介面設計</li>
-                                <li>優化的載入速度和效能</li>
-                                <li>無障礙設計，符合 WCAG 2.1 標準</li>
-                                <li>跨瀏覽器相容性</li>
-                            </ul>
-                            
-                            <p>技術棧：HTML5, CSS3, JavaScript, Bootstrap 5, jQuery</p>
-                        </div>
+                        <div class="portfolio-description"><div id="detailContent"></div></div>
                         
-                        <div class="portfolio-tags">
-                            <span class="tag">HTML5</span>
-                            <span class="tag">CSS3</span>
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">響應式設計</span>
-                            <span class="tag">現代化UI</span>
-                        </div>
+                        <div class="portfolio-tags"></div>
                         
                         <div class="portfolio-actions">
                             <button class="action-btn primary" onclick="likePortfolio()">
@@ -132,10 +101,6 @@
                                 <i class="fas fa-share"></i>
                                 分享
                             </button>
-                            <button class="action-btn outline" onclick="editPortfolio()">
-                                <i class="fas fa-edit"></i>
-                                編輯
-                            </button>
                             <button class="action-btn outline" onclick="deletePortfolio()">
                                 <i class="fas fa-trash"></i>
                                 刪除
@@ -144,62 +109,23 @@
                         
                         <div class="portfolio-files">
                             <h3 class="files-title">相關檔案</h3>
-                            <div class="file-list">
-                                <div class="file-item">
-                                    <div class="file-icon">
-                                        <i class="fas fa-image"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <div class="file-name">網站截圖.png</div>
-                                        <div class="file-size">2.3 MB</div>
-                                    </div>
-                                    <button class="file-download" onclick="downloadFile('screenshot.png')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                                
-                                <div class="file-item">
-                                    <div class="file-icon">
-                                        <i class="fas fa-file-archive"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <div class="file-name">原始碼.zip</div>
-                                        <div class="file-size">1.8 MB</div>
-                                    </div>
-                                    <button class="file-download" onclick="downloadFile('source-code.zip')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                                
-                                <div class="file-item">
-                                    <div class="file-icon">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <div class="file-name">專案說明.pdf</div>
-                                        <div class="file-size">856 KB</div>
-                                    </div>
-                                    <button class="file-download" onclick="downloadFile('documentation.pdf')">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                            </div>
+                            <div class="file-list" id="fileList"></div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- 側邊欄 -->
                 <div class="sidebar">
-                    <div class="author-card">
+                    <div class="author-card" id="authorCard">
                         <div class="author-avatar">
-                            <img src="https://via.placeholder.com/80x80/667eea/ffffff?text=張" alt="作者頭像">
+                            <img id="authorAvatar" src="" alt="作者頭像">
                         </div>
                         <div class="author-info">
-                            <h4>張小明</h4>
-                            <p>資訊管理學系 • 大學三年級</p>
+                            <h4 id="authorName"></h4>
+                            <p id="authorMeta"></p>
                             <div class="author-stats">
-                                <span><i class="fas fa-folder"></i> 12 作品</span>
-                                <span><i class="fas fa-eye"></i> 1.2k 瀏覽</span>
+                                <span id="authorPortfolios"></span>
+                                <span id="authorViews"></span>
                             </div>
                         </div>
                         <button class="btn btn-outline btn-sm" onclick="viewAuthorProfile()">
@@ -209,22 +135,7 @@
                     
                     <div class="related-portfolios">
                         <h4>相關作品</h4>
-                        <div class="related-list">
-                            <div class="related-item">
-                                <img src="https://via.placeholder.com/60x60/667eea/ffffff?text=作品1" alt="相關作品">
-                                <div class="related-info">
-                                    <h5>行動應用設計</h5>
-                                    <p>UI/UX 設計</p>
-                                </div>
-                            </div>
-                            <div class="related-item">
-                                <img src="https://via.placeholder.com/60x60/764ba2/ffffff?text=作品2" alt="相關作品">
-                                <div class="related-info">
-                                    <h5>數據視覺化</h5>
-                                    <p>數據分析</p>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="related-list related-works"></div>
                     </div>
                 </div>
             </div>
@@ -236,14 +147,14 @@
         <div class="container">
             <div class="comments-header">
                 <h3>評論與回饋</h3>
-                <span class="comments-count">8 則評論</span>
+                <span class="comments-count"></span>
             </div>
             
             <!-- 發表評論 -->
             <div class="comment-form-container">
                 <div class="comment-form">
                     <div class="comment-avatar">
-                        <img src="https://via.placeholder.com/50x50/667eea/ffffff?text=我" alt="我的頭像" id="myAvatar">
+                        <img src="../../images/author.jpg" alt="我的頭像" id="myAvatar">
                     </div>
                     <div class="comment-input-group">
                         <textarea id="commentInput" placeholder="分享您的想法和回饋..." rows="3"></textarea>
@@ -283,333 +194,7 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
-    <script src="../js/app.js"></script>
-    <script>
-        // 作品詳情頁面功能
-        let isBookmarked = false;
-        let comments = [];
-        let currentUser = null;
-
-        // 初始化頁面
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCurrentUser();
-            loadComments();
-            checkBookmarkStatus();
-        });
-
-        // 載入當前用戶資訊
-        function loadCurrentUser() {
-            // 從localStorage獲取用戶資訊
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                currentUser = JSON.parse(userStr);
-                updateUserAvatar();
-            }
-        }
-
-        // 更新用戶頭像
-        function updateUserAvatar() {
-            if (currentUser && currentUser.avatar) {
-                document.getElementById('myAvatar').src = currentUser.avatar;
-            }
-        }
-
-        // 收藏功能
-        function toggleBookmark() {
-            isBookmarked = !isBookmarked;
-            updateBookmarkUI();
-            
-            if (isBookmarked) {
-                addBookmark();
-            } else {
-                removeBookmark();
-            }
-        }
-
-        // 更新收藏UI
-        function updateBookmarkUI() {
-            const bookmarkBtn = document.getElementById('bookmarkBtn');
-            const bookmarkIcon = document.getElementById('bookmarkIcon');
-            const bookmarkText = document.getElementById('bookmarkText');
-            
-            if (isBookmarked) {
-                bookmarkBtn.classList.remove('btn-outline');
-                bookmarkBtn.classList.add('btn-primary');
-                bookmarkIcon.classList.remove('far');
-                bookmarkIcon.classList.add('fas');
-                bookmarkText.textContent = '已收藏';
-            } else {
-                bookmarkBtn.classList.remove('btn-primary');
-                bookmarkBtn.classList.add('btn-outline');
-                bookmarkIcon.classList.remove('fas');
-                bookmarkIcon.classList.add('far');
-                bookmarkText.textContent = '收藏作品';
-            }
-        }
-
-        // 添加收藏
-        function addBookmark() {
-            // 這裡應該調用API添加收藏
-            console.log('添加收藏');
-            updateBookmarkCount(1);
-            showNotification('作品已加入收藏', 'success');
-        }
-
-        // 移除收藏
-        function removeBookmark() {
-            // 這裡應該調用API移除收藏
-            console.log('移除收藏');
-            updateBookmarkCount(-1);
-            showNotification('已從收藏中移除', 'info');
-        }
-
-        // 更新收藏數量
-        function updateBookmarkCount(change) {
-            const bookmarkCount = document.getElementById('bookmarkCount');
-            const currentCount = parseInt(bookmarkCount.textContent);
-            const newCount = Math.max(0, currentCount + change);
-            bookmarkCount.textContent = `${newCount} 次收藏`;
-        }
-
-        // 檢查收藏狀態
-        function checkBookmarkStatus() {
-            // 這裡應該調用API檢查收藏狀態
-            // 目前使用模擬資料
-            isBookmarked = Math.random() > 0.5;
-            updateBookmarkUI();
-        }
-
-        // 聯絡作者
-        function contactAuthor() {
-            if (!currentUser) {
-                showNotification('請先登入', 'warning');
-                return;
-            }
-            
-            // 這裡應該跳轉到訊息頁面或開啟對話框
-            showNotification('正在開啟對話...', 'info');
-        }
-
-        // 分享作品
-        function sharePortfolio() {
-            if (navigator.share) {
-                navigator.share({
-                    title: '響應式網站設計',
-                    text: '看看這個優秀的作品集！',
-                    url: window.location.href
-                });
-            } else {
-                // 複製連結到剪貼簿
-                navigator.clipboard.writeText(window.location.href).then(() => {
-                    showNotification('連結已複製到剪貼簿', 'success');
-                });
-            }
-        }
-
-        // 查看作者資料
-        function viewAuthorProfile() {
-            // 跳轉到作者個人資料頁面
-            window.location.href = 'profile.html?user=1';
-        }
-
-        // 評論系統
-        function loadComments() {
-            // 模擬載入評論資料
-            comments = [
-                {
-                    id: 1,
-                    author: '李大明',
-                    avatar: 'https://via.placeholder.com/40x40/667eea/ffffff?text=李',
-                    content: '設計很漂亮！響應式做得很好，在不同裝置上都能正常顯示。期待看到更多作品！',
-                    time: '2 小時前',
-                    likes: 3,
-                    isLiked: false
-                },
-                {
-                    id: 2,
-                    author: '王小美',
-                    avatar: 'https://via.placeholder.com/40x40/764ba2/ffffff?text=王',
-                    content: '程式碼結構很清晰，註解也很詳細。對於初學者來說是很好的學習範例。',
-                    time: '1 天前',
-                    likes: 1,
-                    isLiked: false
-                },
-                {
-                    id: 3,
-                    author: '陳小華',
-                    avatar: 'https://via.placeholder.com/40x40/667eea/ffffff?text=陳',
-                    content: '整體設計感很棒，配色也很協調。建議可以加入一些動畫效果來提升使用者體驗。',
-                    time: '3 天前',
-                    likes: 5,
-                    isLiked: false
-                }
-            ];
-            
-            renderComments();
-        }
-
-        // 渲染評論列表
-        function renderComments() {
-            const commentsList = document.getElementById('commentsList');
-            commentsList.innerHTML = '';
-            
-            comments.forEach(comment => {
-                const commentElement = createCommentElement(comment);
-                commentsList.appendChild(commentElement);
-            });
-        }
-
-        // 創建評論元素
-        function createCommentElement(comment) {
-            const commentDiv = document.createElement('div');
-            commentDiv.className = 'comment-item';
-            commentDiv.innerHTML = `
-                <div class="comment-avatar">
-                    <img src="${comment.avatar}" alt="${comment.author}">
-                </div>
-                <div class="comment-content">
-                    <div class="comment-header">
-                        <span class="comment-author">${comment.author}</span>
-                        <span class="comment-time">${comment.time}</span>
-                    </div>
-                    <div class="comment-text">${comment.content}</div>
-                    <div class="comment-actions">
-                        <button class="comment-action" onclick="likeComment(${comment.id})">
-                            <i class="fas fa-thumbs-up ${comment.isLiked ? 'liked' : ''}"></i>
-                            <span>讚 (${comment.likes})</span>
-                        </button>
-                        <button class="comment-action" onclick="replyComment(${comment.id})">
-                            <i class="fas fa-reply"></i>
-                            <span>回覆</span>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            return commentDiv;
-        }
-
-        // 點讚評論
-        function likeComment(commentId) {
-            const comment = comments.find(c => c.id === commentId);
-            if (comment) {
-                comment.isLiked = !comment.isLiked;
-                comment.likes += comment.isLiked ? 1 : -1;
-                renderComments();
-            }
-        }
-
-        // 回覆評論
-        function replyComment(commentId) {
-            if (!currentUser) {
-                showNotification('請先登入', 'warning');
-                return;
-            }
-            
-            const commentInput = document.getElementById('commentInput');
-            commentInput.value = `@回覆評論${commentId} `;
-            commentInput.focus();
-        }
-
-        // 提交評論
-        function submitComment() {
-            const commentInput = document.getElementById('commentInput');
-            const content = commentInput.value.trim();
-            
-            if (!content) {
-                showNotification('請輸入評論內容', 'warning');
-                return;
-            }
-            
-            if (!currentUser) {
-                showNotification('請先登入', 'warning');
-                return;
-            }
-            
-            // 創建新評論
-            const newComment = {
-                id: Date.now(),
-                author: currentUser.name || '匿名用戶',
-                avatar: currentUser.avatar || 'https://via.placeholder.com/40x40/667eea/ffffff?text=用',
-                content: content,
-                time: '剛剛',
-                likes: 0,
-                isLiked: false
-            };
-            
-            // 添加到評論列表
-            comments.unshift(newComment);
-            renderComments();
-            
-            // 清空輸入框
-            commentInput.value = '';
-            
-            // 更新評論數量
-            updateCommentCount(1);
-            
-            showNotification('評論發表成功', 'success');
-        }
-
-        // 更新評論數量
-        function updateCommentCount(change) {
-            const commentsCount = document.querySelector('.comments-count');
-            const currentCount = parseInt(commentsCount.textContent);
-            const newCount = Math.max(0, currentCount + change);
-            commentsCount.textContent = `${newCount} 則評論`;
-        }
-
-        // 載入更多評論
-        function loadMoreComments() {
-            // 這裡應該調用API載入更多評論
-            showNotification('正在載入更多評論...', 'info');
-        }
-
-        // 表情選擇器
-        function toggleEmojiPicker() {
-            // 實現表情選擇器功能
-            showNotification('表情選擇器功能開發中', 'info');
-        }
-
-        // 圖片上傳
-        function toggleImageUpload() {
-            // 實現圖片上傳功能
-            showNotification('圖片上傳功能開發中', 'info');
-        }
-
-        // 通知系統
-        function showNotification(message, type = 'info') {
-            // 創建通知元素
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.innerHTML = `
-                <i class="fas fa-${getNotificationIcon(type)}"></i>
-                <span>${message}</span>
-            `;
-            
-            // 添加到頁面
-            document.body.appendChild(notification);
-            
-            // 顯示動畫
-            setTimeout(() => notification.classList.add('show'), 100);
-            
-            // 自動隱藏
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        // 獲取通知圖標
-        function getNotificationIcon(type) {
-            const iconMap = {
-                'success': 'check-circle',
-                'error': 'exclamation-circle',
-                'warning': 'exclamation-triangle',
-                'info': 'info-circle'
-            };
-            return iconMap[type] || 'info-circle';
-        }
-    </script>
+    
     
     <!-- JavaScript 檔案 -->
     <script src="../js/config.js"></script>

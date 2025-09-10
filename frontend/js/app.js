@@ -28,8 +28,8 @@ if (typeof window.PLACEHOLDER_IMAGES === 'undefined') {
 // 注意：APP_CONFIG 現在在 config.js 中定義
 // 如果需要存取配置，請使用 config.js 中的 APP_CONFIG
 
-// 工具函數
-const Utils = {
+// 工具函數（避免重複宣告）
+window.Utils = window.Utils || {
     // 顯示通知訊息
     showNotification: function(message, type = 'info') {
         const notification = document.createElement('div');

@@ -69,7 +69,7 @@ if (typeof window.ApiService === 'undefined') {
      */
     async request(endpoint, options = {}) {
         const url = this.useMockData ? endpoint : this.getApiUrl(endpoint);
-        
+
         if (typeof debugLog === 'function') {
             debugLog(`API 請求: ${endpoint}`, {
                 useMockData: this.useMockData,
@@ -79,13 +79,18 @@ if (typeof window.ApiService === 'undefined') {
         }
 
         try {
-            // 如果是假資料模式，模擬延遲
+            // 假資料模式
             if (this.useMockData) {
                 if (typeof mockApiDelay === 'function') {
                     await mockApiDelay();
                 }
                 return this.handleMockResponse(endpoint, options);
             }
+
+            // 逾時控制（預設 15 秒，可由 options.timeout 覆蓋）
+            const controller = new AbortController();
+            const timeoutMs = typeof options.timeout === 'number' ? options.timeout : 15000;
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const response = await fetch(url, {
@@ -94,23 +99,53 @@ if (typeof window.ApiService === 'undefined') {
                     ...(user?.id ? { 'X-User-ID': user.id } : {}),
                     ...options.headers
                 },
+                signal: controller.signal,
                 ...options
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            clearTimeout(timeoutId);
 
             const contentType = response.headers.get('content-type') || '';
+
+            if (!response.ok) {
+                let serverMessage = '';
+                try {
+                    if (contentType.includes('application/json')) {
+                        const errJson = await response.json();
+                        serverMessage = errJson?.message || errJson?.error || '';
+                    } else {
+                        const text = await response.text();
+                        serverMessage = (text || '').slice(0, 200);
+                    }
+                } catch (_) {
+                    // 忽略解析錯誤
+                }
+                const err = new Error(serverMessage || `HTTP ${response.status}`);
+                err.status = response.status;
+                err.endpoint = endpoint;
+                throw err;
+            }
+
             if (!contentType.includes('application/json')) {
                 const text = await response.text();
                 console.error('非 JSON 回應，內容預覽:', text.slice(0, 200));
-                throw new Error('Response is not JSON');
+                const err = new Error('Response is not JSON');
+                err.status = response.status;
+                err.endpoint = endpoint;
+                throw err;
             }
 
             return await response.json();
         } catch (error) {
-            console.error(`API 請求失敗: ${endpoint}`, error);
+            // 統一補充錯誤上下文
+            if (error.name === 'AbortError') {
+                const abortErr = new Error('請求逾時，請稍後重試');
+                abortErr.code = 'TIMEOUT';
+                abortErr.endpoint = endpoint;
+                throw abortErr;
+            }
+            if (typeof debugLog === 'function') {
+                debugLog('API 請求失敗細節', { endpoint, message: error.message, status: error.status });
+            }
             throw error;
         }
     }
@@ -658,9 +693,9 @@ if (typeof window.ApiService === 'undefined') {
      * 登入
      */
     async login(credentials) {
-        return this.request('auth/login', {
+        return this.request('student/auth.php', {
             method: 'POST',
-            body: JSON.stringify(credentials)
+            body: JSON.stringify({ action: 'login', ...credentials })
         });
     }
 
@@ -668,8 +703,9 @@ if (typeof window.ApiService === 'undefined') {
      * 登出
      */
     async logout() {
-        return this.request('auth/logout', {
-            method: 'POST'
+        return this.request('student/auth.php', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'logout' })
         });
     }
 
@@ -677,9 +713,9 @@ if (typeof window.ApiService === 'undefined') {
      * 註冊
      */
     async register(userData) {
-        return this.request('auth/register', {
+        return this.request('student/auth.php', {
             method: 'POST',
-            body: JSON.stringify(userData)
+            body: JSON.stringify({ action: 'register', ...userData })
         });
     }
 

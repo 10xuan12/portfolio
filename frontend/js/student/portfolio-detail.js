@@ -36,21 +36,34 @@ let selectedParentCommentId = null;
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
+    // 避免重複初始化
+    if (window.__portfolioDetailInitialized) return;
+    window.__portfolioDetailInitialized = true;
     loadPortfolioDetail();
     initEventListeners();
-    loadRelatedWorks();
 });
+
+function getCurrentPortfolioId() {
+    let pid = null;
+    try { pid = new URLSearchParams(window.location.search).get('id'); } catch (_) {}
+    if (!pid || pid === 'null' || pid === 'undefined') {
+        try { pid = sessionStorage.getItem('currentPortfolioId'); } catch (_) {}
+    }
+    const n = Number(pid);
+    return Number.isFinite(n) && n > 0 ? n : null;
+}
 
 // 載入作品詳情
 async function loadPortfolioDetail() {
     try {
         // 從 URL 參數獲取作品 ID
-        const urlParams = new URLSearchParams(window.location.search);
-        const portfolioId = urlParams.get('id');
+        const portfolioId = getCurrentPortfolioId();
         
         if (!portfolioId) {
             throw new Error('未找到作品 ID');
         }
+        // 記住目前查看的作品 ID 作為後備
+        try { sessionStorage.setItem('currentPortfolioId', String(portfolioId)); } catch (_) {}
         
         // 從 localStorage 獲取使用者資訊
         const user = JSON.parse(localStorage.getItem('user'));
@@ -70,8 +83,16 @@ async function loadPortfolioDetail() {
                 likes: (data.likes ?? data.like_count ?? 0) | 0,
                 downloads: (data.downloads ?? data.download_count ?? 0) | 0,
             };
+            // 強制確保 id 與 URL 參數一致
+            portfolioDetail.id = Number(portfolioId);
+            // 同步全域供其他函數使用
+            try { sessionStorage.setItem('currentPortfolioId', String(portfolioDetail.id)); } catch (_) {}
+            // 暴露全域以利除錯與其他腳本取用
+            window.portfolioDetail = portfolioDetail;
             updatePortfolioDisplay();
             updateCommentsDisplay();
+            // 詳情成功後再載入相關作品，避免 portfolio_id=null
+            loadRelatedWorks();
         } else {
             throw new Error(result.message || '載入作品詳情失敗');
         }
@@ -94,28 +115,62 @@ function initEventListeners() {
 
 // 更新作品顯示
 function updatePortfolioDisplay() {
-    // 更新標題和描述
-    document.querySelector('.hero-title').textContent = portfolioDetail.title;
-    document.querySelector('.info-title h1').textContent = portfolioDetail.title;
-    document.querySelector('.info-title p').textContent = portfolioDetail.description;
-    
-    // 更新統計資料
+    // 標題/描述
+    document.querySelector('.hero-title').textContent = portfolioDetail.title || '';
+    document.querySelector('.info-title h1').textContent = portfolioDetail.title || '';
+    document.querySelector('.info-title p').textContent = portfolioDetail.description || '';
+    const coverEl = document.getElementById('heroCover');
+    if (coverEl) coverEl.src = portfolioDetail.cover_image || '';
+    const heroMeta = document.getElementById('heroMeta');
+    if (heroMeta) {
+        heroMeta.innerHTML = `
+            <span><i class="fas fa-user"></i> ${portfolioDetail.author_name || ''}</span>
+            <span><i class="fas fa-calendar"></i> ${(portfolioDetail.published_at || portfolioDetail.created_at || '').toString().slice(0,10)}</span>
+            <span><i class="fas fa-eye"></i> ${(portfolioDetail.views ?? portfolioDetail.view_count ?? 0) | 0} 次瀏覽</span>
+        `;
+    }
+    const statusEl = document.getElementById('detailStatus');
+    if (statusEl) {
+        statusEl.className = `info-status status-${portfolioDetail.status}`;
+        statusEl.textContent = portfolioDetail.status === 'published' ? '已發布' : (portfolioDetail.status === 'review' ? '審核中' : '草稿');
+    }
+
+    // 統計
     const views = (portfolioDetail.views ?? portfolioDetail.view_count ?? 0) | 0;
     const likes = (portfolioDetail.likes ?? portfolioDetail.like_count ?? 0) | 0;
     const downloads = (portfolioDetail.downloads ?? portfolioDetail.download_count ?? 0) | 0;
-    document.querySelector('.stat-item:nth-child(1) span').textContent = `${views} 次瀏覽`;
-    document.querySelector('.stat-item:nth-child(2) span').textContent = `${likes} 個讚`;
+    const sv = document.getElementById('statViews'); if (sv) sv.textContent = `${views} 次瀏覽`;
+    const sl = document.getElementById('statLikes'); if (sl) sl.textContent = `${likes} 個讚`;
     const commentCount = Array.isArray(portfolioDetail.comments) ? portfolioDetail.comments.length : (portfolioDetail.comments || 0);
-    document.querySelector('.stat-item:nth-child(3) span').textContent = `${commentCount} 則評論`;
-    document.querySelector('.stat-item:nth-child(4) span').textContent = `${downloads} 次下載`;
-    
-    // 更新標籤
+    const sc = document.getElementById('statComments'); if (sc) sc.textContent = `${commentCount} 則評論`;
+    const sd = document.getElementById('statDownloads'); if (sd) sd.textContent = `${downloads} 次下載`;
+
+    // 內容
+    const contentEl = document.getElementById('detailContent');
+    if (contentEl) contentEl.innerHTML = portfolioDetail.content || '';
+
+    // 標籤
     const tagsContainer = document.querySelector('.portfolio-tags');
-    tagsContainer.innerHTML = portfolioDetail.tags.map(tag => 
-        `<span class="tag">${tag}</span>`
-    ).join('');
-    
-    // 更新讚按鈕狀態
+    tagsContainer.innerHTML = (portfolioDetail.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('');
+
+    // 檔案
+    const fileList = document.getElementById('fileList');
+    if (fileList && Array.isArray(portfolioDetail.files)) {
+        fileList.innerHTML = portfolioDetail.files.map(f => `
+            <div class="file-item">
+                <div class="file-icon"><i class="fas fa-file"></i></div>
+                <div class="file-info">
+                    <div class="file-name">${f.file_name || ''}</div>
+                    <div class="file-size">${(f.file_size || 0)} B</div>
+                </div>
+                <button class="file-download" onclick="downloadFile('${(f.file_name || '').replace(/'/g,"\'")}')">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // 讚按鈕狀態
     updateLikeButton();
 }
 
@@ -537,7 +592,9 @@ async function loadRelatedWorks() {
         
         // 從後端 API 載入相關作品（統一透過 ApiService）
         const svc = window.apiService || window.initializeApiService?.();
-        const result = await svc.request(`student/portfolio.php?action=get_related&portfolio_id=${portfolioDetail.id}&user_id=${user.id}`);
+        const pid = getCurrentPortfolioId();
+        if (!pid) return; // 若沒有作品 ID 則略過請求
+        const result = await svc.request(`student/portfolio.php?action=get_related&portfolio_id=${pid}&user_id=${user.id}`);
         
         if ((result.status === 200 || result.success) && (result.data || result)) {
             const relatedWorks = result.data || result;
@@ -594,14 +651,22 @@ async function updateViewCount() {
         
         // 發送瀏覽記錄（統一透過 ApiService）
         const svc = window.apiService || window.initializeApiService?.();
+        const pid = getCurrentPortfolioId();
+        if (!pid) return; // 若仍無法取得作品 ID，略過
+        if (typeof debugLog === 'function') {
+            debugLog('準備送出記錄瀏覽次數', { pid: Number(pid), user_id: user.id });
+        }
         const result = await svc.request('student/portfolio.php', {
             method: 'POST',
             body: JSON.stringify({
                 action: 'record_view',
-                portfolio_id: portfolioDetail.id,
+                portfolio_id: Number(pid),
                 user_id: user.id
             })
         });
+        if (typeof debugLog === 'function') {
+            debugLog('已送出記錄瀏覽次數', { pid: Number(pid), user_id: user.id });
+        }
         
         if (result.status === 200 || result.success) {
             // 更新本地瀏覽次數

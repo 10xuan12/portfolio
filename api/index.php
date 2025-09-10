@@ -85,6 +85,30 @@ if ($pathParts[0] === 'student') {
             case 'notifications':
                 require_once 'student/notifications.php';
                 break;
+            case 'activities':
+                require_once 'student/activities.php';
+                break;
+            case 'badges':
+                require_once 'student/badges.php';
+                break;
+            case 'settings':
+                require_once 'student/settings.php';
+                break;
+            case 'password':
+                require_once 'student/password.php';
+                break;
+            case 'stats':
+                require_once 'student/stats.php';
+                break;
+            case 'search':
+                require_once 'student/search.php';
+                break;
+            case 'options':
+                require_once 'student/options.php';
+                break;
+            case 'account':
+                require_once 'student/account.php';
+                break;
             default:
                 sendError('無效的學生 API 端點', 404);
         }

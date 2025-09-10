@@ -17,11 +17,31 @@
     };
 
     // 初始化頁面
-    document.addEventListener('DOMContentLoaded', function() {
-        loadPortfolios();
-        initEventListeners();
-        initTagAutocomplete();
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            await ensureApiReady();
+            await loadCategories();
+            await loadPortfolios();
+            initEventListeners();
+            initTagAutocomplete();
+        } catch (e) {
+            console.error('初始化作品頁錯誤:', e);
+        }
     });
+
+    // 等待 apiService 可用
+    async function ensureApiReady(maxWaitMs = 3000) {
+        const start = Date.now();
+        while (true) {
+            if (typeof window.apiService !== 'undefined' && window.apiService) return;
+            if (typeof window.initializeApiService === 'function') {
+                window.initializeApiService();
+                if (typeof window.apiService !== 'undefined' && window.apiService) return;
+            }
+            if (Date.now() - start > maxWaitMs) return; // 超時就返回，後續函式會自行處理
+            await new Promise(r => setTimeout(r, 100));
+        }
+    }
 
     // 載入作品資料
     async function loadPortfolios() {
@@ -49,6 +69,50 @@
             // 如果 API 失敗，顯示空狀態
             portfolios = [];
             renderPortfolios();
+        }
+    }
+
+    // 動態載入分類選項（使用後端 categories）
+    async function loadCategories() {
+        try {
+            const svc = window.apiService || window.initializeApiService?.();
+            if (!svc || !svc.request) {
+                await ensureApiReady();
+            }
+            const service = window.apiService || window.initializeApiService?.();
+            const result = await (service?.request ? service.request('student/portfolio.php?action=categories') : fetch((window.getApiUrl ? getApiUrl('student/portfolio.php?action=categories') : '/api/student/portfolio.php?action=categories')).then(r => r.json()));
+            console.log('categories raw:', result);
+            const categories = Array.isArray(result) ? result : (result.data || []);
+            console.log('categories parsed length:', categories.length);
+
+            const filterSelect = document.getElementById('categoryFilter');
+            const formSelect = document.getElementById('portfolioCategory');
+            if (!filterSelect && !formSelect) return;
+
+            const buildOptionsHtml = (cats) => cats.map(c => `<option value="${c.slug}">${c.name}</option>`).join('');
+
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="">全部分類</option>' + buildOptionsHtml(categories);
+            }
+            if (formSelect) {
+                formSelect.innerHTML = '<option value="">請選擇分類</option>' + buildOptionsHtml(categories) + '<option value="other">其他</option>';
+            }
+            console.log('categoryFilter innerHTML:', filterSelect?.innerHTML);
+            console.log('portfolioCategory innerHTML:', formSelect?.innerHTML);
+        } catch (e) {
+            console.warn('載入分類失敗，使用靜態選單', e);
+            // 最後備援：注入常見分類
+            const fallback = [
+                { name: '網頁設計', slug: 'web' },
+                { name: '行動應用', slug: 'mobile' },
+                { name: 'UI/UX 設計', slug: 'design' },
+                { name: '數據分析', slug: 'data' }
+            ];
+            const filterSelect = document.getElementById('categoryFilter');
+            const formSelect = document.getElementById('portfolioCategory');
+            const buildOptionsHtml = (cats) => cats.map(c => `<option value="${c.slug}">${c.name}</option>`).join('');
+            if (filterSelect) filterSelect.innerHTML = '<option value="">全部分類</option>' + buildOptionsHtml(fallback);
+            if (formSelect) formSelect.innerHTML = '<option value="">請選擇分類</option>' + buildOptionsHtml(fallback) + '<option value="other">其他</option>';
         }
     }
 
@@ -95,11 +159,8 @@
                 <div class="portfolio-image">
                     <img src="${portfolio.cover_image || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio'}" alt="${portfolio.title}">
                     <div class="portfolio-overlay">
-                        <button class="overlay-btn" onclick="editPortfolio(${portfolio.id})">
-                            <i class="fas fa-edit"></i> 編輯
-                        </button>
                         <button class="overlay-btn" onclick="viewPortfolio(${portfolio.id})">
-                            <i class="fas fa-eye"></i> 預覽
+                            <i class="fas fa-eye"></i> 查看
                         </button>
                         <button class="overlay-btn" onclick="deletePortfolio(${portfolio.id})">
                             <i class="fas fa-trash"></i> 刪除
@@ -178,40 +239,16 @@
         document.getElementById('portfolioModal').classList.remove('show');
     }
 
-    // 編輯作品
+    // 編輯功能改為導向詳情（避免舊連結觸發錯誤）
     function editPortfolio(id) {
-        const portfolio = portfolios.find(p => p.id === id);
-        if (!portfolio) {
-            Utils.showNotification('找不到作品', 'error');
-            return;
-        }
-        
-        document.getElementById('modalTitle').textContent = '編輯作品';
-        document.getElementById('portfolioId').value = portfolio.id;
-        document.getElementById('portfolioTitle').value = portfolio.title;
-        document.getElementById('portfolioCategory').value = portfolio.category;
-        document.getElementById('portfolioDescription').value = portfolio.description;
-        document.getElementById('portfolioTags').value = portfolio.tags.join(', ');
-        document.getElementById('portfolioStatus').value = portfolio.status;
-        document.getElementById('portfolioUrl').value = portfolio.url || '';
-        document.getElementById('portfolioGithub').value = portfolio.github || '';
-        
-        document.getElementById('portfolioModal').classList.add('show');
+        window.location.href = `portfolio-detail.html?id=${id}`;
     }
 
     // 預覽作品
     function viewPortfolio(id) {
-        const portfolio = portfolios.find(p => p.id === id);
-        if (!portfolio) {
-            Utils.showNotification('找不到作品', 'error');
-            return;
-        }
-        
-        if (portfolio.url) {
-            window.open(portfolio.url, '_blank');
-        } else {
-            Utils.showNotification('此作品尚未設定連結', 'warning');
-        }
+        // 導向到作品詳情頁
+        try { sessionStorage.setItem('currentPortfolioId', String(id)); } catch (_) {}
+        window.location.href = `portfolio-detail.html?id=${id}`;
     }
 
     // 刪除作品
