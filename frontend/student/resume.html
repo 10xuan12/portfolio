@@ -34,6 +34,12 @@
     <main class="resume-container">
         <div class="container">
             <div class="resume-header">
+                <div class="header-top">
+                    <button class="btn-back" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i>
+                        返回
+                    </button>
+                </div>
                 <h1 class="resume-title">履歷生成</h1>
                 <div class="resume-actions">
                     <button class="btn btn-outline" onclick="saveResume()">
@@ -213,6 +219,15 @@
                 loadResumeData();
             }
         });
+
+        // 回到上一頁
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
     </script>
 </body>
 </html> 

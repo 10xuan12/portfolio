@@ -35,6 +35,12 @@
     <section class="portfolio-container">
         <div class="container">
             <div class="portfolio-header">
+                <div class="header-top">
+                    <button class="btn-back" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i>
+                        返回
+                    </button>
+                </div>
                 <h1 class="portfolio-title">我的作品集</h1>
                 <div class="portfolio-actions">
                     <button class="btn btn-primary" onclick="openUploadModal()">
@@ -122,6 +128,15 @@
                 loadPortfolios();
             }
         });
+
+        // 回到上一頁
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
     </script>
 </body>
 </html> 

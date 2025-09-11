@@ -7,6 +7,42 @@
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/student/messages.css">
+    <style>
+        /* 將本頁所有按鈕統一為主題藍色變數 */
+        button,
+        .btn,
+        .btn-primary,
+        .btn-outline,
+        .btn-back,
+        .btn-option,
+        .modal-close,
+        .option-item {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        button:hover,
+        .btn:hover,
+        .btn-primary:hover,
+        .btn-outline:hover,
+        .btn-back:hover,
+        .btn-option:hover,
+        .modal-close:hover,
+        .option-item:hover {
+            background-color: var(--primary-color-hover, var(--primary-color));
+            border-color: var(--primary-color-hover, var(--primary-color));
+            color: #ffffff;
+        }
+
+        /* 確保 outline 與 option 類型也為實心藍色 */
+        .btn-outline,
+        .btn-option {
+            background-color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            color: #ffffff;
+        }
+    </style>
 </head>
 <body>
     <!-- 導覽列 -->
@@ -34,6 +70,12 @@
     <section class="messages-header">
         <div class="container">
             <div class="header-content">
+                <div class="header-top">
+                    <button class="btn-back" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i>
+                        返回
+                    </button>
+                </div>
                 <h1>訊息中心</h1>
                 <p>與企業和創作者保持聯繫，建立專業人脈</p>
             </div>
@@ -625,6 +667,15 @@
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
             });
+        }
+
+        // 回到上一頁
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
         }
     </script>
     

@@ -2,11 +2,46 @@
     padding: var(--spacing-2xl) 0;
 }
 
+/* 新增：獨立統計區塊間距 */
+/* header 內統計列與上方資訊分隔 */
+.profile-header .profile-stats {
+    margin-top: var(--spacing-lg);
+}
+
 .profile-header {
     background: linear-gradient(135deg,#b2d5f2 0%, #75c9fa 50%, #4A90E2 100%);
     color: var(--white);
     padding: var(--spacing-2xl) 0;
     margin-bottom: var(--spacing-2xl);
+}
+
+.header-top {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin: 0 0 1rem 0;
+    padding: 0;
+}
+
+.btn-back {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-600);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: var(--primary-600);
+    border-color: var(--primary-700);
+    transform: translateY(-2px);
 }
 
 .profile-info {
@@ -69,25 +104,22 @@
 }
 
 .profile-stats {
-    display: flex;
-    gap: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-md);
     margin-top: var(--spacing-md);
-    justify-content: space-between;
-    align-items: stretch;
-    height: 100%;
+    width: 100%;
 }
 
 .stat-card {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-lg);
     padding: var(--spacing-md);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
+    min-height: 80px;
 }
 
 .stat-card:hover {
@@ -113,6 +145,20 @@
     opacity: 0.9;
     color: var(--white);
     font-weight: 500;
+}
+
+/* 提升統計卡片在漸層標題上的可讀性 */
+.profile-header .stat-card {
+    backdrop-filter: none;
+}
+
+.profile-header .stat-content-box .number {
+    color: var(--primary-600);
+}
+
+.profile-header .stat-content-box .label {
+    color: var(--gray-700);
+    opacity: 1;
 }
 
 .stat-item {
@@ -207,9 +253,78 @@
     border-color: var(--primary-color);
 }
 
+/* 日期輸入框樣式 */
+.form-group input[type="date"] {
+    color-scheme: light;
+    font-family: inherit;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 2px;
+    opacity: 0.6;
+    filter: invert(0.5);
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
 .form-group textarea {
     resize: vertical;
     min-height: 100px;
+}
+
+.form-hint {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+/* 自定義日期輸入框樣式（改名以避免與全域 .date-input-wrapper 衝突） */
+.date-input-custom {
+    position: relative;
+}
+
+.date-input-custom input[type="date"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.date-custom-display {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base);
+    background: var(--white);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+}
+
+.date-custom-display:hover {
+    border-color: var(--primary-color);
+}
+
+.date-input-custom input[type="date"]:focus + .date-custom-display {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.date-custom-display.has-value {
+    color: var(--gray-900);
+    font-weight: 500;
 }
 
 .form-actions {
@@ -296,17 +411,6 @@
     color: var(--gray-500);
 }
 
-.password-form {
-    background: var(--gray-50);
-    padding: var(--spacing-lg);
-    border-radius: var(--radius-lg);
-    margin-top: var(--spacing-lg);
-}
-
-.password-form h4 {
-    margin-bottom: var(--spacing-md);
-    color: var(--gray-900);
-}
 
 @media (max-width: 768px) {
     .profile-content {
@@ -323,13 +427,11 @@
     }
     
     .profile-stats {
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: var(--spacing-md);
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
     }
     
     .stat-card {
-        flex: 1 1 calc(50% - var(--spacing-md));
         min-width: 120px;
     }
 }

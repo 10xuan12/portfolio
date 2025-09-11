@@ -825,6 +825,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 載入頁腳
     loadFooter();
+    
+    // 啟用統一日期顯示占位
+    initUnifiedDatePlaceholder('YYYY/MM/DD');
 });
 
 // 新增：初始化頁面特定功能
@@ -847,6 +850,92 @@ function initPageSpecificFeatures() {
     } catch (error) {
         console.error('頁面特定功能初始化失敗:', error);
     }
+}
+
+// 統一日期輸入語系（避免各瀏覽器/語系顯示不一致）
+// 預設採用英文加拿大 en-CA，以呈現 yyyy-mm-dd
+function applyUnifiedDateLang(langCode = 'en-CA') {
+    const apply = (root = document) => {
+        const dateInputs = root.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(el => {
+            // 僅在未設定或不同時才設置，避免覆蓋特例
+            if (el.getAttribute('lang') !== langCode) {
+                el.setAttribute('lang', langCode);
+            }
+        });
+    };
+
+    // 先對現有節點套用
+    apply();
+
+    // 監聽後續動態加入的節點（例如履歷頁面動態新增的日期欄位）
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType === 1) { // ELEMENT_NODE
+                    if (node.matches && node.matches('input[type="date"]')) {
+                        node.setAttribute('lang', langCode);
+                    }
+                    if (node.querySelectorAll) {
+                        apply(node);
+                    }
+                }
+            });
+        });
+    });
+
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    window.__unifiedDateLangObserver = observer;
+}
+
+// 在 DOM 準備好後套用統一日期語系
+document.addEventListener('DOMContentLoaded', function() {
+    applyUnifiedDateLang('en-CA');
+});
+
+// 全域：為所有日期欄位加上包裹與占位顯示，統一顯示文案
+function initUnifiedDatePlaceholder(placeholderText = 'YYYY/MM/DD') {
+    const wrap = (input) => {
+        if (input.__wrappedForDatePlaceholder) return;
+        const wrapper = document.createElement('span');
+        wrapper.className = 'date-input-wrapper';
+        wrapper.setAttribute('data-placeholder', placeholderText);
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const sync = () => {
+            if (input.value) {
+                wrapper.classList.add('has-value');
+                wrapper.classList.remove('empty');
+            } else {
+                wrapper.classList.remove('has-value');
+                wrapper.classList.add('empty');
+            }
+        };
+        input.addEventListener('input', sync);
+        input.addEventListener('change', sync);
+        input.addEventListener('blur', sync);
+        input.addEventListener('focus', sync);
+        sync();
+
+        input.__wrappedForDatePlaceholder = true;
+    };
+
+    // 現有節點
+    document.querySelectorAll('input[type="date"]').forEach(wrap);
+
+    // 動態節點
+    const obs = new MutationObserver(mutations => {
+        for (const m of mutations) {
+            m.addedNodes.forEach(node => {
+                if (node.nodeType !== 1) return;
+                if (node.matches && node.matches('input[type="date"]')) wrap(node);
+                if (node.querySelectorAll) node.querySelectorAll('input[type="date"]').forEach(wrap);
+            });
+        }
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+    window.__unifiedDatePlaceholderObserver = obs;
 }
 
 // 新增：儀表板功能初始化
@@ -1253,25 +1342,4 @@ const styleSheet = document.createElement('style');
 styleSheet.textContent = globalStyles;
 document.head.appendChild(styleSheet);
 
-// 全域日期輸入驗證函數
-function validateDateInput(input) {
-    const datePattern = /^\d{4}\/\d{2}\/\d{2}$/;
-    if (input.value && !datePattern.test(input.value)) {
-        input.setCustomValidity('請輸入正確的日期格式 (yyyy/mm/dd)');
-    } else {
-        input.setCustomValidity('');
-    }
-}
-
-// 初始化日期輸入驗證
-document.addEventListener('DOMContentLoaded', function() {
-    const dateInputs = document.querySelectorAll('input[placeholder*="yyyy/mm/dd"]');
-    dateInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            validateDateInput(this);
-        });
-        input.addEventListener('blur', function() {
-            validateDateInput(this);
-        });
-    });
-});
+// 已移除：針對 yyyy/mm/dd 的文字日期格式驗證，改用瀏覽器原生 date 選擇器

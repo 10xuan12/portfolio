@@ -145,7 +145,8 @@ function validateCurrentStep() {
 // 驗證步驟1 - 基本資訊
 function validateStep1() {
     const title = document.getElementById('title').value.trim();
-    const category = document.getElementById('category').value;
+    const categorySelect = document.getElementById('categoryFilter') || document.getElementById('category');
+    const category = categorySelect ? categorySelect.value : '';
     const description = document.getElementById('description').value.trim();
     
     if (!title) {
@@ -154,7 +155,7 @@ function validateStep1() {
     }
     
     if (!category) {
-        Utils.showNotification('請選擇作品分類', 'error');
+        Utils.showNotification('請選擇作品學群分類', 'error');
         return false;
     }
     

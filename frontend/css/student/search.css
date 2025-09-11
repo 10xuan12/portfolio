@@ -12,15 +12,52 @@
 .search-form {
     max-width: 600px;
     margin: 0 auto;
+    position: relative;
+}
+
+.header-top {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin: 0 0 1rem 0;
+    padding: 0;
+}
+
+.btn-back {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-600);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: var(--primary-600);
+    border-color: var(--primary-700);
+    transform: translateY(-2px);
+}
+
+.btn-back i {
+    font-size: 0.8rem;
 }
 
 .search-input-group {
     position: relative;
     margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 
 .search-input {
-    width: 100%;
+    flex: 1;
     padding: var(--spacing-lg) var(--spacing-xl);
     padding-left: 3rem;
     border: none;
@@ -42,9 +79,22 @@
     transform: translateY(-50%);
     color: var(--gray-500);
     font-size: var(--text-lg);
+    z-index: 1;
+}
+
+.search-btn {
+    white-space: nowrap;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    font-size: var(--text-lg);
+    min-width: 100px;
 }
 
 .search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     background: var(--white);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
@@ -52,6 +102,7 @@
     max-height: 300px;
     overflow-y: auto;
     display: none;
+    z-index: 10;
 }
 
 .suggestion-item {
@@ -276,10 +327,11 @@
 
 .search-stats {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-lg);
     color: var(--gray-600);
+    gap: var(--spacing-xl);
 }
 
 .results-count {
@@ -355,6 +407,16 @@
 }
 
 @media (max-width: 768px) {
+    .search-input-group {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .search-btn {
+        width: 100%;
+        min-width: auto;
+    }
+    
     .filter-row {
         flex-direction: column;
         align-items: stretch;

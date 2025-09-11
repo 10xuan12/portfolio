@@ -605,11 +605,11 @@
                 </div>
                 <div class="form-group">
                     <label>開始日期</label>
-                    <input type="text" value="${data.startDate || ''}" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}">
+                    <input type="date" value="${data.startDate || ''}" lang="ja-JP">
                 </div>
                 <div class="form-group">
                     <label>結束日期</label>
-                    <input type="text" value="${data.endDate || ''}" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}">
+                    <input type="date" value="${data.endDate || ''}" lang="ja-JP">
                 </div>
                 <div class="form-group full-width">
                     <label>工作描述</label>
@@ -820,11 +820,11 @@
                 </div>
                 <div class="form-group">
                     <label>取得日期</label>
-                    <input type="text" value="${data.date || ''}" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}">
+                    <input type="date" value="${data.date || ''}" lang="ja-JP">
                 </div>
                 <div class="form-group">
                     <label>有效期限</label>
-                    <input type="text" value="${data.expiry || ''}" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}">
+                    <input type="date" value="${data.expiry || ''}" lang="ja-JP">
                 </div>
             </div>
         `;

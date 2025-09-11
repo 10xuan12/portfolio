@@ -27,16 +27,6 @@
       var tpl = temp.querySelector('#' + tplId);
       if (tpl) {
         document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
-        // 確保導覽欄樣式正確應用
-        var navbar = document.querySelector('.navbar');
-        if (navbar) {
-          navbar.style.background = 'var(--navbar-bg, var(--primary-color))';
-          navbar.style.position = 'sticky';
-          navbar.style.top = '0';
-          navbar.style.zIndex = '1000';
-          navbar.style.padding = 'var(--spacing-md) 0';
-          navbar.style.boxShadow = 'var(--shadow-sm)';
-        }
       }
     })
     .catch(err => {
@@ -71,6 +61,12 @@
     <!-- 主要內容 -->
     <section class="upload-container">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="upload-header">
                 <h1>上傳作品</h1>
                 <p>展示您的才華，讓企業發現您的潛力</p>
@@ -102,14 +98,29 @@
                                 <label for="title">作品標題</label>
                                 <input type="text" id="title" name="title" required placeholder="請輸入作品標題">
                             </div>
-                            <div class="form-group tooltip" data-tooltip="選擇最符合您作品的分類">
-                                <label for="category">作品分類 </label>
-                                <select id="category" name="category" required>
-                                    <option value="">請選擇分類</option>
-                                    <option value="web">網頁設計</option>
-                                    <option value="mobile">行動應用</option>
-                                    <option value="design">UI/UX 設計</option>
-                                    <option value="data">數據分析</option>
+                            <div class="form-group tooltip" data-tooltip="選擇最符合您作品的學群分類">
+                                <label for="categoryFilter">作品學群分類</label>
+                                <select id="categoryFilter" name="category" required>
+                                    <option value="">全部分類</option>
+                                    <option value="web">資訊學群</option>
+                                    <option value="mobile">工程學群</option>
+                                    <option value="design">數理化學群</option>
+                                    <option value="data">醫藥衛生學群</option>
+                                    <option value="web">生命科學學群</option>
+                                    <option value="mobile">生物資源學群</option>
+                                    <option value="design">地球環境學群</option>
+                                    <option value="data">建築設計學群</option>
+                                    <option value="other">藝術學群</option>
+                                    <option value="other">社會心理學群</option>
+                                    <option value="other">大眾傳播學群</option>
+                                    <option value="other">外語學群</option>
+                                    <option value="other">文史哲學群</option>
+                                    <option value="other">教育學群</option>
+                                    <option value="other">法政學群</option>
+                                    <option value="other">管理學群</option>
+                                    <option value="other">財經學群</option>
+                                    <option value="other">農業學群</option>
+                                    <option value="other">遊憩運動學群</option>
                                     <option value="other">其他</option>
                                 </select>
                             </div>
@@ -266,7 +277,7 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
-    <script src="../js/app.js"></script>
+    
     <script>
         // 簡化的初始化腳本，主要功能由 upload.js 處理
         document.addEventListener('DOMContentLoaded', function() {
@@ -282,5 +293,14 @@
     <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/student/upload.js"></script>
+    <script>
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+    </script>
 </body>
 </html> 

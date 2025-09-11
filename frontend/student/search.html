@@ -33,6 +33,12 @@
     <!-- 搜尋標題 -->
     <section class="search-header">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="search-form">
                 <h1>搜尋作品</h1>
                 <p>發現優秀的作品，啟發您的創意</p>
@@ -40,14 +46,11 @@
                 <div class="search-input-group">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="search-input" id="searchInput" placeholder="搜尋作品、作者、技術標籤..." autocomplete="off">
-                    <div class="search-suggestions" id="searchSuggestions"></div>
-                </div>
-                
-                <div class="btn-container">
-                    <button class="btn btn-primary" onclick="performSearch()">
+                    <button class="btn btn-primary search-btn" onclick="performSearch()">
                         <i class="fas fa-search"></i>
                         搜尋
                     </button>
+                    <div class="search-suggestions" id="searchSuggestions"></div>
                 </div>
             </div>
         </div>
@@ -60,13 +63,28 @@
             <div class="search-filters">
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label>分類</label>
+                        <label>學群分類</label>
                         <select id="categoryFilter">
                             <option value="">全部分類</option>
-                            <option value="web">網頁設計</option>
-                            <option value="mobile">行動應用</option>
-                            <option value="design">UI/UX 設計</option>
-                            <option value="data">數據分析</option>
+                            <option value="web">資訊學群</option>
+                            <option value="mobile">工程學群</option>
+                            <option value="design">數理化學群</option>
+                            <option value="data">醫藥衛生學群</option>
+                            <option value="web">生命科學學群</option>
+                            <option value="mobile">生物資源學群</option>
+                            <option value="design">地球環境學群</option>
+                            <option value="data">建築設計學群</option>
+                            <option value="other">藝術學群</option>
+                            <option value="other">社會心理學群</option>
+                            <option value="other">大眾傳播學群</option>
+                            <option value="other">外語學群</option>
+                            <option value="other">文史哲學群</option>
+                            <option value="other">教育學群</option>
+                            <option value="other">法政學群</option>
+                            <option value="other">管理學群</option>
+                            <option value="other">財經學群</option>
+                            <option value="other">農業學群</option>
+                            <option value="other">遊憩運動學群</option>
                             <option value="other">其他</option>
                         </select>
                     </div>
@@ -172,6 +190,15 @@
                 initializeSearch();
             }
         });
+
+        // 回到上一頁
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
     </script>
 </body>
 </html> 

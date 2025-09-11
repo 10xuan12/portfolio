@@ -9,6 +9,40 @@
     margin-bottom: var(--spacing-xl);
     flex-wrap: wrap;
     gap: var(--spacing-md);
+    position: relative;
+}
+
+.header-top {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin: 0 0 1rem 0;
+    padding: 0;
+}
+
+.btn-back {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-600);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: var(--primary-600);
+    border-color: var(--primary-700);
+    transform: translateY(-2px);
+}
+
+.btn-back i {
+    font-size: 0.8rem;
 }
 
 .resume-title {
@@ -20,6 +54,14 @@
 .resume-actions {
     display: flex;
     gap: var(--spacing-md);
+}
+
+/* 讓按鈕內的圖示與文字有間距（僅本頁） */
+.resume-actions .btn,
+.export-options .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
 }
 
 .resume-grid {
@@ -74,6 +116,11 @@
     border-color: var(--primary-color);
     background: var(--primary-light);
     color: var(--primary-color);
+}
+
+.template-option.selected .template-preview {
+    background: var(--primary-color);
+    color: var(--white);
 }
 
 .template-preview {

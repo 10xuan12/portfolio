@@ -156,6 +156,12 @@ body {
     font-size: var(--text-sm);
 }
 
+/* 讓含有前置圖示的按鈕，圖示與文字有間距（全站通用） */
+.btn > i:first-child,
+.btn > svg:first-child {
+    margin-right: var(--spacing-xs);
+}
+
 .btn-primary {
     background: var(--btn-primary-bg, var(--primary-color));
     color: var(--white);
@@ -1061,24 +1067,14 @@ h1, h2, h3, h4, h5, h6, .section-header h2, .hero-title {
     color: var(--text-secondary);
 }
 
-/* 全域日期輸入樣式 - 統一日期格式為 yyyy/mm/dd */
-input[placeholder*="yyyy/mm/dd"] {
+/* 全域日期輸入樣式 - 改為使用原生日期選擇器 */
+input[type="date"] {
     position: relative;
 }
 
-/* 日期輸入欄位的樣式 */
-input[placeholder*="yyyy/mm/dd"]:focus {
+input[type="date"]:focus {
     border-color: var(--primary-color);
     outline: none;
-}
-
-/* 日期格式驗證樣式 */
-input[placeholder*="yyyy/mm/dd"]:invalid {
-    border-color: var(--error-color);
-}
-
-input[placeholder*="yyyy/mm/dd"]:valid {
-    border-color: var(--success-color);
 }
 
 /* 錯誤/成功訊息 */
@@ -1128,6 +1124,49 @@ input[placeholder*="yyyy/mm/dd"]:valid {
 .navbar-actions .btn-outline:hover i {
     color: var(--white) !important;
 } 
+
+/* 全域：日期欄位統一顯示文字占位（不影響實際值與格式） */
+.date-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.date-input-wrapper input[type="date"] {
+    position: relative;
+    z-index: 1;
+    background-color: var(--card-bg);
+}
+
+.date-input-wrapper::after {
+    content: attr(data-placeholder);
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.date-input-wrapper.has-value::after,
+.date-input-wrapper:has(input[type="date"]:focus)::after {
+    content: '';
+}
+
+/* 空值時隱藏原生日期顯示，避免與覆蓋文字重疊（主要針對 WebKit） */
+.date-input-wrapper.empty input[type="date"] {
+    color: transparent;
+    caret-color: transparent;
+}
+.date-input-wrapper.empty input[type="date"]::-webkit-datetime-edit,
+.date-input-wrapper.empty input[type="date"]::-webkit-datetime-edit-year-field,
+.date-input-wrapper.empty input[type="date"]::-webkit-datetime-edit-month-field,
+.date-input-wrapper.empty input[type="date"]::-webkit-datetime-edit-day-field,
+.date-input-wrapper.empty input[type="date"]::-webkit-datetime-edit-text {
+    color: transparent;
+}
 
 /* 全站強制導覽列使用主色（避免其他樣式覆蓋） */
 .navbar {

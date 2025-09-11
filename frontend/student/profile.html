@@ -7,6 +7,46 @@
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/student/profile.css">
+    <style>
+        /* 將本頁所有按鈕統一為主題藍色變數 */
+        button,
+        .btn,
+        .btn-primary,
+        .btn-outline,
+        .btn-back,
+        .avatar-upload,
+        .export-btn,
+        .modal-overlay .btn,
+        .modal-overlay .btn-primary,
+        .modal-overlay .btn-outline {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        button:hover,
+        .btn:hover,
+        .btn-primary:hover,
+        .btn-outline:hover,
+        .btn-back:hover,
+        .avatar-upload:hover,
+        .export-btn:hover,
+        .modal-overlay .btn:hover,
+        .modal-overlay .btn-primary:hover,
+        .modal-overlay .btn-outline:hover {
+            background-color: var(--primary-color-hover, var(--primary-color));
+            border-color: var(--primary-color-hover, var(--primary-color));
+            color: #ffffff;
+        }
+
+        /* 確保 outline 類型也為實心藍色 */
+        .btn-outline,
+        .modal-overlay .btn-outline {
+            background-color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            color: #ffffff;
+        }
+    </style>
 </head>
 <body>
     <!-- 導覽列 -->
@@ -33,6 +73,12 @@
     <!-- 個人資料標題 -->
     <section class="profile-header">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="profile-info">
                 <div class="profile-avatar" id="profileAvatar">
                     <img src="/portfolio/uploads/avatars/default-avatar.jpg" alt="個人頭像" id="avatarImage">
@@ -46,32 +92,33 @@
                     <h1 id="profile-name">-</h1>
                     <p id="profile-department-grade">-</p>
                     <p id="profile-student-id">學生編號: -</p>
-                    
-                    <div class="profile-stats">
-                        <div class="stat-card">
-                            <div class="stat-content-box">
-                                <div class="number" id="stat-portfolios">-</div>
-                                <div class="label">作品</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-content-box">
-                                <div class="number" id="stat-views">-</div>
-                                <div class="label">瀏覽</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-content-box">
-                                <div class="number" id="stat-likes">-</div>
-                                <div class="label">讚數</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-content-box">
-                                <div class="number" id="stat-badges">-</div>
-                                <div class="label">徽章</div>
-                            </div>
-                        </div>
+                </div>
+            </div>
+
+            <!-- 統計區塊（在 header 內，獨立一行） -->
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <div class="stat-content-box">
+                        <div class="number" id="stat-portfolios">-</div>
+                        <div class="label">作品</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content-box">
+                        <div class="number" id="stat-views">-</div>
+                        <div class="label">瀏覽</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content-box">
+                        <div class="number" id="stat-likes">-</div>
+                        <div class="label">讚數</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content-box">
+                        <div class="number" id="stat-badges">-</div>
+                        <div class="label">徽章</div>
                     </div>
                 </div>
             </div>
@@ -102,7 +149,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="birth">生日</label>
-                                    <input type="text" id="birth" name="birth" value="" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}" required>
+                                    <input type="date" id="birth" name="birth" value="" required lang="ja-JP">
                                 </div>
                                 <div class="form-group">
                                     <label for="student_id">學號</label>
@@ -110,14 +157,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="department">科系</label>
-                                    <select id="department" name="department" required>
-                                        <option value="">請選擇科系</option>
-                                        <option value="資訊管理學系">資訊管理學系</option>
-                                        <option value="財務金融學系">財務金融學系</option>
-                                        <option value="國際企業學系">國際企業學系</option>
-                                        <option value="資訊工程學系">資訊工程學系</option>
-                                        <option value="統計學系">統計學系</option>
-                                    </select>
+                                    <input type="text" id="department" name="department" value="" placeholder="請輸入您的科系" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="grade">年級</label>
@@ -210,29 +250,6 @@
                         </div>
                     </form>
 
-                    <!-- 密碼修改 -->
-                    <div class="password-form">
-                        <h4>修改密碼</h4>
-                        <form id="passwordForm">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="currentPassword">目前密碼</label>
-                                    <input type="password" id="currentPassword" name="currentPassword" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="newPassword">新密碼</label>
-                                    <input type="password" id="newPassword" name="newPassword" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="confirmPassword">確認新密碼</label>
-                                    <input type="password" id="confirmPassword" name="confirmPassword" required>
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">修改密碼</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
 
                 <div class="sidebar">
@@ -256,6 +273,27 @@
                                 <div>載入中...</div>
                             </li>
                         </ul>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3>修改密碼</h3>
+                        <form id="passwordForm">
+                            <div class="form-group">
+                                <label for="currentPassword">目前密碼</label>
+                                <input type="password" id="currentPassword" name="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">新密碼</label>
+                                <input type="password" id="newPassword" name="newPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">確認新密碼</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">修改密碼</button>
+                            </div>
+                        </form>
                     </div>
 
                     <div class="sidebar-card">
@@ -315,7 +353,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="modal-birth">生日</label>
-                            <input type="text" id="modal-birth" name="birth" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}" required>
+                            <input type="date" id="modal-birth" name="birth" required lang="ja-JP">
                         </div>
                         <div class="form-group">
                             <label for="modal-student-id">學號</label>
@@ -325,14 +363,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="modal-department">科系</label>
-                            <select id="modal-department" name="department" required>
-                                <option value="">請選擇科系</option>
-                                <option value="資訊管理學系">資訊管理學系</option>
-                                <option value="財務金融學系">財務金融學系</option>
-                                <option value="國際企業學系">國際企業學系</option>
-                                <option value="資訊工程學系">資訊工程學系</option>
-                                <option value="統計學系">統計學系</option>
-                            </select>
+                            <input type="text" id="modal-department" name="department" placeholder="請輸入您的科系" required>
                         </div>
                         <div class="form-group">
                             <label for="modal-grade">年級</label>
@@ -371,218 +402,20 @@
     <!-- 頁腳 -->
     <div id="footer-placeholder"></div>
 
-    <script src="../js/config.js"></script>
     <script>
-        // 等待配置初始化完成後再載入其他腳本
-        document.addEventListener('DOMContentLoaded', function() {
-            // 檢查配置狀態
-            console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
-            console.log('環境:', getEnvironment());
-            console.log('版本:', getVersion());
-            
-            // 確保配置已初始化
-            if (typeof isUsingMockData === 'function' && isUsingMockData() === false) {
-                // 配置正確，載入其他腳本
-                loadRemainingScripts();
+        // 回到上一頁
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
             } else {
-                // 等待配置初始化
-                setTimeout(loadRemainingScripts, 100);
-            }
-        });
-        
-        function loadRemainingScripts() {
-            // 動態載入其他腳本
-            const scripts = [
-                '../js/api-service.js',
-                '../js/app.js',
-                '../js/student/profile.js'
-            ];
-            
-            scripts.forEach((src, index) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = function() {
-                    if (index === scripts.length - 1) {
-                        // 最後一個腳本載入完成，初始化頁面
-                        if (typeof UI !== 'undefined' && UI.loadNavbar) {
-                            UI.loadNavbar();
-                        }
-                        
-                        // 初始化個人資料頁面
-                        initializeProfilePage();
-                    }
-                };
-                document.head.appendChild(script);
-            });
-        }
-        
-        // 初始化個人資料頁面
-        function initializeProfilePage() {
-            // 載入個人資料
-            loadProfileData();
-            
-            // 載入活動記錄
-            loadActivityData();
-            
-            // 載入帳號設定
-            loadAccountSettings();
-            
-            // 設定事件監聽器
-            setupEventListeners();
-            
-            // 檢查是否為首次登入
-            checkFirstLogin();
-        }
-        
-        // 載入個人資料
-        function loadProfileData() {
-            if (typeof loadStudentData === 'function') {
-                loadStudentData();
-            }
-        }
-        
-        // 載入活動記錄
-        function loadActivityData() {
-            if (typeof loadRecentActivities === 'function') {
-                loadRecentActivities();
-            }
-        }
-        
-        // 載入帳號設定
-        function loadAccountSettings() {
-            if (typeof loadUserSettings === 'function') {
-                loadUserSettings();
-            }
-        }
-        
-        // 設定事件監聽器
-        function setupEventListeners() {
-            // 頭像上傳
-            const avatarInput = document.getElementById('avatarInput');
-            if (avatarInput) {
-                avatarInput.addEventListener('change', function(e) {
-                    if (typeof handleAvatarUpload === 'function') {
-                        handleAvatarUpload(e);
-                    }
-                });
-            }
-            
-            // 表單提交
-            const profileForm = document.getElementById('profileForm');
-            if (profileForm) {
-                profileForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    if (typeof handleProfileSubmit === 'function') {
-                        handleProfileSubmit(e);
-                    }
-                });
-            }
-            
-            // 密碼修改
-            const passwordForm = document.getElementById('passwordForm');
-            if (passwordForm) {
-                passwordForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    if (typeof handlePasswordSubmit === 'function') {
-                        handlePasswordSubmit(e);
-                    }
-                });
-            }
-            
-            // 帳號設定變更
-            const emailNotification = document.getElementById('email-notification');
-            const publicProfile = document.getElementById('public-profile');
-            const twoFactorAuth = document.getElementById('two-factor-auth');
-            
-            if (emailNotification) {
-                emailNotification.addEventListener('change', function() {
-                    if (typeof updateAccountSettings === 'function') {
-                        updateAccountSettings();
-                    }
-                });
-            }
-            
-            if (publicProfile) {
-                publicProfile.addEventListener('change', function() {
-                    if (typeof updateAccountSettings === 'function') {
-                        updateAccountSettings();
-                    }
-                });
-            }
-            
-            if (twoFactorAuth) {
-                twoFactorAuth.addEventListener('change', function() {
-                    if (typeof updateAccountSettings === 'function') {
-                        updateAccountSettings();
-                    }
-                });
-            }
-        }
-        
-        // 檢查是否為首次登入
-        function checkFirstLogin() {
-            if (typeof checkFirstLoginStatus === 'function') {
-                checkFirstLoginStatus();
-            }
-        }
-        
-        // 顯示首次登入模態框
-        function showFirstLoginModal() {
-            const modal = document.getElementById('firstLoginModal');
-            if (modal) {
-                modal.style.display = 'flex';
-            }
-        }
-        
-        // 關閉首次登入模態框
-        function closeFirstLoginModal() {
-            const modal = document.getElementById('firstLoginModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-        
-        // 提交首次登入資料
-        function submitFirstLogin() {
-            if (typeof submitFirstLoginData === 'function') {
-                submitFirstLoginData();
-            }
-        }
-        
-        // 移除會覆寫全域的包裝函式，避免重複觸發
-        
-        // 重置表單
-        function resetForm() {
-            if (typeof resetProfileForm === 'function') {
-                resetProfileForm();
+                window.location.href = 'dashboard.html';
             }
         }
     </script>
-    
     <!-- JavaScript 檔案 -->
     <script src="../js/config.js"></script>
     <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/student/profile.js"></script>
-    
-    <script>
-        // 初始化應用程式
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化 API 服務
-            if (typeof initializeApiService === 'function') {
-                initializeApiService();
-            }
-            
-            // 載入導覽列
-            if (typeof loadNavbar === 'function') {
-                loadNavbar('student');
-            }
-            
-            // 載入個人資料
-            if (typeof loadProfileData === 'function') {
-                loadProfileData();
-            }
-        });
-    </script>
 </body>
 </html> 
