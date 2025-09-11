@@ -903,7 +903,13 @@
             ['技能專長', studentData.skills || ''],
             ['語言能力', studentData.languages || ''],
             ['興趣愛好', studentData.interests || ''],
-            ['匯出日期', new Date().toLocaleDateString('zh-TW')]
+            ['匯出日期', (() => {
+                const d = new Date();
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}/${month}/${day}`;
+            })()]
         ];
         
         const csvContent = csvData.map(row => 
@@ -975,7 +981,14 @@
             doc.text(`興趣愛好：${studentData.interests || ''}`, 20, 220);
             
             // 匯出日期
-            doc.text(`匯出日期：${new Date().toLocaleDateString('zh-TW')}`, 20, 240);
+            const exportDate = (() => {
+                const d = new Date();
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}/${month}/${day}`;
+            })();
+            doc.text(`匯出日期：${exportDate}`, 20, 240);
             
             // 儲存檔案
             doc.save(`profile_${new Date().toISOString().split('T')[0]}.pdf`);

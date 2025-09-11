@@ -496,7 +496,10 @@
             if (hours < 24) return `${hours} 小時前`;
             if (days < 7) return `${days} 天前`;
             
-            return time.toLocaleDateString('zh-TW');
+            const year = time.getFullYear();
+            const month = String(time.getMonth() + 1).padStart(2, '0');
+            const day = String(time.getDate()).padStart(2, '0');
+            return `${year}/${month}/${day}`;
         }
     </script>
     

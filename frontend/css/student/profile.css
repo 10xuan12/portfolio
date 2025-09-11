@@ -72,6 +72,47 @@
     display: flex;
     gap: var(--spacing-lg);
     margin-top: var(--spacing-md);
+    justify-content: space-between;
+    align-items: stretch;
+    height: 100%;
+}
+
+.stat-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.stat-content-box {
+    text-align: center;
+    width: 100%;
+}
+
+.stat-content-box .number {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: var(--spacing-xs);
+    display: block;
+}
+
+.stat-content-box .label {
+    font-size: var(--text-sm);
+    opacity: 0.9;
+    color: var(--white);
+    font-weight: 500;
 }
 
 .stat-item {
@@ -283,6 +324,13 @@
     
     .profile-stats {
         justify-content: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+    }
+    
+    .stat-card {
+        flex: 1 1 calc(50% - var(--spacing-md));
+        min-width: 120px;
     }
 }
 

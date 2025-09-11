@@ -92,13 +92,13 @@ window.Utils = window.Utils || {
     
     // 格式化日期
     formatDate: function(date) {
-        return new Intl.DateTimeFormat('zh-TW', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(new Date(date));
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${year}/${month}/${day} ${hours}:${minutes}`;
     },
     
     // 格式化數字
@@ -1252,3 +1252,26 @@ const globalStyles = `
 const styleSheet = document.createElement('style');
 styleSheet.textContent = globalStyles;
 document.head.appendChild(styleSheet);
+
+// 全域日期輸入驗證函數
+function validateDateInput(input) {
+    const datePattern = /^\d{4}\/\d{2}\/\d{2}$/;
+    if (input.value && !datePattern.test(input.value)) {
+        input.setCustomValidity('請輸入正確的日期格式 (yyyy/mm/dd)');
+    } else {
+        input.setCustomValidity('');
+    }
+}
+
+// 初始化日期輸入驗證
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInputs = document.querySelectorAll('input[placeholder*="yyyy/mm/dd"]');
+    dateInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateDateInput(this);
+        });
+        input.addEventListener('blur', function() {
+            validateDateInput(this);
+        });
+    });
+});

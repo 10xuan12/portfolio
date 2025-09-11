@@ -64,6 +64,24 @@
     border-color: var(--primary-color);
 }
 
+/* 日期輸入欄位樣式 */
+.filter-group input[placeholder*="yyyy/mm/dd"] {
+    position: relative;
+}
+
+.filter-group input[placeholder*="yyyy/mm/dd"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.filter-group input[placeholder*="yyyy/mm/dd"]:invalid {
+    border-color: var(--error-color);
+}
+
+.filter-group input[placeholder*="yyyy/mm/dd"]:valid {
+    border-color: var(--success-color);
+}
+
 .stats-overview {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

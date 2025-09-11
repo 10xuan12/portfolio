@@ -276,7 +276,7 @@
 
 .search-stats {
     display: flex;
-    justify-content: between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: var(--spacing-lg);
     color: var(--gray-600);

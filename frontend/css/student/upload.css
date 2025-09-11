@@ -678,7 +678,7 @@
 /* 按鈕組 */
 .form-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-top: 3rem;
     padding-top: 2rem;
     border-top: 2px solid rgba(102, 126, 234, 0.1);

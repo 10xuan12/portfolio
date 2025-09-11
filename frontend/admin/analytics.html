@@ -62,11 +62,11 @@
                     </div>
                     <div class="filter-group">
                         <label for="startDate">開始日期</label>
-                        <input type="date" id="startDate" onchange="updateCharts()">
+                        <input type="text" id="startDate" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}" onchange="updateCharts()">
                     </div>
                     <div class="filter-group">
                         <label for="endDate">結束日期</label>
-                        <input type="date" id="endDate" onchange="updateCharts()">
+                        <input type="text" id="endDate" placeholder="yyyy/mm/dd" pattern="\d{4}/\d{2}/\d{2}" onchange="updateCharts()">
                     </div>
                     <div class="filter-group">
                         <label for="chartType">圖表類型</label>

@@ -1061,6 +1061,26 @@ h1, h2, h3, h4, h5, h6, .section-header h2, .hero-title {
     color: var(--text-secondary);
 }
 
+/* 全域日期輸入樣式 - 統一日期格式為 yyyy/mm/dd */
+input[placeholder*="yyyy/mm/dd"] {
+    position: relative;
+}
+
+/* 日期輸入欄位的樣式 */
+input[placeholder*="yyyy/mm/dd"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* 日期格式驗證樣式 */
+input[placeholder*="yyyy/mm/dd"]:invalid {
+    border-color: var(--error-color);
+}
+
+input[placeholder*="yyyy/mm/dd"]:valid {
+    border-color: var(--success-color);
+}
+
 /* 錯誤/成功訊息 */
 .form-error, .error-message {
     color: var(--error-color);

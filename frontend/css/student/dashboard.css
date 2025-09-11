@@ -26,12 +26,10 @@ body .dashboard-header {
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.2);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     text-align: center;
     backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
