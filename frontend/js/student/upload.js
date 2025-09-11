@@ -61,6 +61,9 @@ function initEventListeners() {
             }
         });
     }
+    
+    // 初始化工具提示控制
+    initTooltipControl();
 }
 
 // 下一步
@@ -642,6 +645,76 @@ function renderTags() {
     `).join('');
 }
 
+// 工具提示控制函數
+function initTooltipControl() {
+    // 為所有具有tooltip類別的表單元素添加事件監聽器
+    const tooltipElements = document.querySelectorAll('.form-group.tooltip input, .form-group.tooltip select, .form-group.tooltip textarea');
+    
+    tooltipElements.forEach(element => {
+        // 當元素獲得焦點時顯示工具提示
+        element.addEventListener('focus', function() {
+            const tooltipParent = this.closest('.form-group.tooltip');
+            if (tooltipParent) {
+                // 先隱藏其他工具提示
+                hideAllTooltips();
+                // 顯示當前工具提示
+                tooltipParent.classList.add('show-tooltip');
+            }
+        });
+        
+        // 當元素失去焦點時隱藏工具提示
+        element.addEventListener('blur', function() {
+            const tooltipParent = this.closest('.form-group.tooltip');
+            if (tooltipParent) {
+                // 延遲隱藏，讓用戶有時間看到提示
+                setTimeout(() => {
+                    tooltipParent.classList.remove('show-tooltip');
+                }, 2000); // 2秒後隱藏
+            }
+        });
+        
+        // 當用戶開始輸入時保持工具提示顯示
+        element.addEventListener('input', function() {
+            const tooltipParent = this.closest('.form-group.tooltip');
+            if (tooltipParent) {
+                tooltipParent.classList.add('show-tooltip');
+            }
+        });
+    });
+    
+    // 點擊頁面其他地方時隱藏所有工具提示
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.form-group.tooltip')) {
+            hideAllTooltips();
+        }
+    });
+}
+
+// 隱藏所有工具提示
+function hideAllTooltips() {
+    const tooltipElements = document.querySelectorAll('.form-group.tooltip.show-tooltip');
+    tooltipElements.forEach(element => {
+        element.classList.remove('show-tooltip');
+    });
+}
+
+// 顯示指定工具提示
+function showTooltip(element) {
+    const tooltipParent = element.closest('.form-group.tooltip');
+    if (tooltipParent) {
+        hideAllTooltips();
+        tooltipParent.classList.add('show-tooltip');
+    }
+}
+
+// 隱藏指定工具提示
+function hideTooltip(element) {
+    const tooltipParent = element.closest('.form-group.tooltip');
+    if (tooltipParent) {
+        tooltipParent.classList.remove('show-tooltip');
+    }
+}
+
 // 全域函數供 HTML 使用
 window.nextStep = nextStep;
 window.previousStep = previousStep;
@@ -651,4 +724,7 @@ window.showGithubIntegration = showGithubIntegration;
 window.hideGithubIntegration = hideGithubIntegration;
 window.fetchGithubInfo = fetchGithubInfo;
 window.initializeUpload = initializeUpload;
-window.showUploadProgress = showUploadProgress; 
+window.showUploadProgress = showUploadProgress;
+window.showTooltip = showTooltip;
+window.hideTooltip = hideTooltip;
+window.hideAllTooltips = hideAllTooltips; 

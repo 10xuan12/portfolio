@@ -1111,7 +1111,7 @@ h1, h2, h3, h4, h5, h6, .section-header h2, .hero-title {
 
 /* 全站強制導覽列使用主色（避免其他樣式覆蓋） */
 .navbar {
-    background: var(--primary-color) !important;
+    background: var(--navbar-bg, var(--primary-color)) !important;
 }
 
 /* 徽章成就區塊 icon 樣式 */

@@ -63,7 +63,7 @@ body .dashboard-header {
     font-size: var(--text-3xl);
     font-weight: 700;
     margin-bottom: var(--spacing-xs);
-    color : primary-color
+    color: var(--primary-color);
 }
 
 .stat-card .label {

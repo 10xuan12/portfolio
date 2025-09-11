@@ -1,4 +1,24 @@
 /* 上傳頁面樣式 */
+
+/* 確保導覽欄樣式與主頁一致 */
+.navbar {
+    background: var(--navbar-bg, var(--primary-color)) !important;
+    box-shadow: var(--shadow-sm) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    padding: var(--spacing-md) 0 !important;
+}
+
+.navbar .container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 0 var(--spacing-md) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
 .upload-container {
     padding: 2rem 0;
     min-height: 100vh;
@@ -143,7 +163,7 @@
     box-shadow: 
         0 25px 50px rgba(0, 0, 0, 0.15),
         0 0 0 1px rgba(255, 255, 255, 0.2);
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     z-index: 1;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -163,6 +183,7 @@
 .form-section {
     padding: 3rem;
     position: relative;
+    overflow: visible;
 }
 
 .form-section h3 {
@@ -189,6 +210,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
+    position: relative;
+    overflow: visible;
 }
 
 .form-group.full-width {
@@ -732,9 +755,23 @@
 }
 
 /* 響應式設計 */
+@media (max-width: 1024px) {
+    .navbar .container {
+        padding: 0 var(--spacing-lg) !important;
+    }
+}
+
 @media (max-width: 768px) {
     .upload-container {
         padding: 1rem 0;
+    }
+    
+    .navbar .container {
+        padding: 0 var(--spacing-md) !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        position: relative !important;
     }
     
     .upload-header h1 {
@@ -824,6 +861,10 @@
 }
 
 @media (max-width: 480px) {
+    .navbar .container {
+        padding: 0 var(--spacing-sm) !important;
+    }
+    
     .upload-header h1 {
         font-size: 1.8rem;
     }
@@ -858,6 +899,13 @@
     
     .option-card p {
         font-size: 0.8rem;
+    }
+}
+
+/* 高解析度螢幕 */
+@media (min-width: 1440px) {
+    .navbar .container {
+        max-width: 1400px !important;
     }
 }
 
@@ -1004,7 +1052,7 @@
 .form-group.tooltip::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
@@ -1015,8 +1063,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    z-index: 1000;
-    margin-bottom: 8px;
+    z-index: 9999;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     max-width: 250px;
     white-space: normal;
@@ -1028,7 +1075,7 @@
 .form-group.tooltip::before {
     content: '';
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 2px);
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
@@ -1036,12 +1083,18 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    z-index: 1000;
-    margin-bottom: 2px;
+    z-index: 9999;
 }
 
-.form-group.tooltip:hover::after,
+/* 移除hover自動顯示，改用JavaScript控制 */
+/* .form-group.tooltip:hover::after,
 .form-group.tooltip:hover::before {
+    opacity: 1;
+} */
+
+/* 新增show-tooltip類別來控制顯示 */
+.form-group.tooltip.show-tooltip::after,
+.form-group.tooltip.show-tooltip::before {
     opacity: 1;
 }
 

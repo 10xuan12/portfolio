@@ -31,9 +31,9 @@
 
 /* === 學生端主題 === */
 body.student-theme {
-    --primary-color: var(--student-primary);
-    --primary-dark: var(--student-primary-dark);
-    --primary-light: var(--student-primary-light);
+    --primary-color: var(--main-primary);
+    --primary-dark: var(--main-primary-dark);
+    --primary-light: var(--main-primary-light);
     --secondary-color: var(--student-secondary);
     --accent-color: var(--student-accent);
     
@@ -52,9 +52,9 @@ body.student-theme {
     --card-hover-shadow: 0 8px 25px rgba(74, 144, 226, 0.15);
     
     /* 導航欄 */
-    --navbar-bg: var(--student-primary);
+    --navbar-bg: var(--main-primary);
     --navbar-text: #ffffff;
-    --navbar-hover: var(--student-primary-light);
+    --navbar-hover: var(--main-primary-light);
 }
 
 /* === 企業端主題 === */
