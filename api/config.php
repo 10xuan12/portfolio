@@ -1,4 +1,10 @@
 <?php
+    ini_set('opcache.enable', 1);
+    ini_set('opcache.validate_timestamps', 1);
+    ini_set('opcache.revalidate_freq', 0);
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    
 // API 配置檔案
 header('Content-Type: application/json; charset=utf-8');
 
@@ -17,9 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 // 錯誤報告設定
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// 開發模式仍記錄錯誤，但避免輸出為 HTML 破壞 JSON
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+ini_set('html_errors', 0);
 error_reporting(E_ALL);
+
+// 啟用輸出緩衝，防止零碎輸出破壞 JSON
+if (ob_get_level() === 0) { ob_start(); }
 
 // 時區設定
 date_default_timezone_set('Asia/Taipei');
@@ -254,6 +265,7 @@ if (file_exists($db_path)) {
 
 // 回應函數
 function sendResponse($data, $status = 200, $message = 'success') {
+    if (ob_get_length()) { @ob_clean(); }
     http_response_code($status);
     echo json_encode([
         'status' => $status,
@@ -347,6 +359,7 @@ function refreshJWTToken($token) {
 
 // 統一的API回應格式
 function sendApiResponse($data = null, $status = 200, $message = 'success', $meta = []) {
+    if (ob_get_length()) { @ob_clean(); }
     http_response_code($status);
     
     $response = [
@@ -369,6 +382,7 @@ function sendApiResponse($data = null, $status = 200, $message = 'success', $met
 
 // 統一的錯誤回應格式
 function sendApiError($message, $status = 400, $code = null, $details = null) {
+    if (ob_get_length()) { @ob_clean(); }
     http_response_code($status);
     
     $response = [
@@ -388,6 +402,40 @@ function sendApiError($message, $status = 400, $code = null, $details = null) {
     echo json_encode($response, JSON_UNESCAPED_UNICODE);
     exit();
 }
+
+// 將 PHP 錯誤/例外轉為 JSON 回應，避免輸出 HTML 片段
+set_error_handler(function($severity, $message, $file, $line) {
+    error_log("PHP[$severity] $message in $file:$line");
+    // 某些非致命警告可繼續執行，這裡將之視為伺服器錯誤回應
+    if (headers_sent() === false) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    if (ob_get_length()) { @ob_clean(); }
+    echo json_encode([
+        'status' => 500,
+        'message' => '伺服器錯誤',
+        'details' => $message,
+        'timestamp' => date('Y-m-d H:i:s')
+    ], JSON_UNESCAPED_UNICODE);
+    http_response_code(500);
+    exit();
+});
+
+set_exception_handler(function($ex) {
+    error_log('Uncaught Exception: ' . $ex->getMessage() . ' at ' . $ex->getFile() . ':' . $ex->getLine());
+    if (headers_sent() === false) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    if (ob_get_length()) { @ob_clean(); }
+    echo json_encode([
+        'status' => 500,
+        'message' => '伺服器錯誤',
+        'details' => $ex->getMessage(),
+        'timestamp' => date('Y-m-d H:i:s')
+    ], JSON_UNESCAPED_UNICODE);
+    http_response_code(500);
+    exit();
+});
 
 // 驗證使用者權限
 function checkPermission($requiredRole = null) {

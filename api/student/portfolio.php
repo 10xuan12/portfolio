@@ -1,6 +1,9 @@
 <?php
 require_once '../config.php';
 
+header('X-Source-File: ' . __FILE__);
+header('X-Source-MTime: ' . @date('c', @filemtime(__FILE__)));
+
 // 設定 CORS 與回應格式
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -188,181 +191,117 @@ function getPortfolioList() {
 
 // 取得作品詳情
 function getPortfolioDetail() {
-    $userId = getUserId();
     $portfolioId = isset($_GET['portfolio_id']) ? (int)$_GET['portfolio_id'] : 0;
-    
-    if (!$portfolioId) {
-        sendError('缺少作品 ID', 400);
-        return;
-    }
-    // 調試：記錄目前連線的資料庫主機/版本資訊
-    $___db_host_info = (isset($GLOBALS['conn']) && function_exists('mysqli_get_host_info')) ? @mysqli_get_host_info($GLOBALS['conn']) : 'unknown';
-    $___db_server_info = (isset($GLOBALS['conn']) && function_exists('mysqli_get_server_info')) ? @mysqli_get_server_info($GLOBALS['conn']) : 'unknown';
-    $___db_debug_meta = 'db_host_info=' . $___db_host_info . '; db_server_info=' . $___db_server_info;
+    if (!$portfolioId) { sendError('缺少作品 ID', 400); return; }
 
-    try {
-        $stmt = $GLOBALS['conn']->prepare("
-            SELECT 
-                p.*, u.name as author_name, u.department, u.grade
+    $safeId = (int)$portfolioId;
+
+    // 單筆詳情（不用 get_result，避免 mysqlnd 依賴）
+    $sql = "SELECT 
+                p.id, p.title, p.description, p.status, p.tags, p.cover_image,
+                p.view_count, p.download_count, p.created_at, p.published_at,
+                u.username AS author_name,
+                sp.major, sp.grade,
+                c.slug AS category
             FROM portfolios p
             LEFT JOIN users u ON p.user_id = u.id
-            WHERE p.id = ?
-        ");
-        
-        if (!$stmt) {
-            sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情（資料庫錯誤） | ' . $___db_debug_meta);
-            return;
-        }
-        
-        $stmt->bind_param("i", $portfolioId);
-        $stmt->execute();
-        $result = null;
-        $portfolio = null;
-        if (method_exists($stmt, 'get_result')) {
-            $result = $stmt->get_result();
-            if ($result) {
-                $portfolio = $result->fetch_assoc();
-            }
-        }
-        // Fallback：某些環境無 mysqlnd，改用直接查詢
-        if (!$portfolio) {
-            $safeId = (int)$portfolioId;
-            $fallbackSql = "SELECT p.*, u.name AS author_name, u.department, u.grade FROM portfolios p LEFT JOIN users u ON p.user_id = u.id WHERE p.id = ${safeId} LIMIT 1";
-            $fallbackRes = @$GLOBALS['conn']->query($fallbackSql);
-            if ($fallbackRes && $fallbackRes->num_rows > 0) {
-                $portfolio = $fallbackRes->fetch_assoc();
-            }
-        }
-        
-        if (!$portfolio) {
-            sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情（未找到或查詢失敗） | ' . $___db_debug_meta);
-            return;
-        }
-        
-        // 取得作品檔案
-        $stmt = $GLOBALS['conn']->prepare("
-            SELECT * FROM portfolio_files 
-            WHERE portfolio_id = ? 
-            ORDER BY sort_order, created_at
-        ");
-        
-        $files = [];
-        if ($stmt) {
-            $stmt->bind_param("i", $portfolioId);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            while ($row = $result->fetch_assoc()) {
-                $files[] = $row;
-            }
-        }
-        
-        // 取得評論（對應 comments 表，動態計數 likes/comments）
-        $stmt = $GLOBALS['conn']->prepare(
-            "SELECT 
-                c.*, u.username AS author_name
-             FROM comments c
-             LEFT JOIN users u ON c.user_id = u.id
-             WHERE c.portfolio_id = ?
-             ORDER BY c.created_at DESC
-             LIMIT 20"
-        );
-        
-        $comments = [];
-        if ($stmt) {
-            $stmt->bind_param("i", $portfolioId);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            while ($row = $result->fetch_assoc()) {
-                $comments[] = [
-                    'id' => (int)$row['id'],
-                    'author' => $row['author_name'] ?: '使用者',
-                    'avatar' => substr($row['author_name'] ?: '用', 0, 1),
-                    'text' => $row['content'] ?: '',
-                    'likes' => 0,
-                    'time' => formatTime($row['created_at'])
-                ];
-            }
-        }
-        
-        // 動態計算作品讚數與留言數
-        $likeCount = 0; $commentCount = 0;
-        $stmtCnt = $GLOBALS['conn']->prepare("SELECT COUNT(*) AS cnt FROM likes WHERE portfolio_id = ?");
-        if ($stmtCnt) {
-            $stmtCnt->bind_param("i", $portfolioId);
-            $stmtCnt->execute();
-            $likeCount = (int)($stmtCnt->get_result()->fetch_assoc()['cnt'] ?? 0);
-        }
-        $stmtCnt2 = $GLOBALS['conn']->prepare("SELECT COUNT(*) AS cnt FROM comments WHERE portfolio_id = ?");
-        if ($stmtCnt2) {
-            $stmtCnt2->bind_param("i", $portfolioId);
-            $stmtCnt2->execute();
-            $commentCount = (int)($stmtCnt2->get_result()->fetch_assoc()['cnt'] ?? 0);
-        }
-        
-        $portfolio['files'] = $files;
-        $portfolio['comments'] = $comments;
-        $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
-        // 對齊前端鍵名（詳情頁與列表一致）
-        $portfolio['views'] = isset($portfolio['view_count']) ? (int)$portfolio['view_count'] : 0;
-        $portfolio['likes'] = $likeCount;
-        $portfolio['downloads'] = isset($portfolio['download_count']) ? (int)$portfolio['download_count'] : 0;
-        $portfolio['comment_count'] = $commentCount;
-        
-        sendResponse($portfolio, 200, '成功獲取作品詳情');
-        
-    } catch (Exception $e) {
-        sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情');
+            LEFT JOIN student_profiles sp ON sp.user_id = p.user_id
+            LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.id = {$safeId}
+            LIMIT 1";
+    $res = @$GLOBALS['conn']->query($sql);
+    if (!$res || $res->num_rows === 0) {
+        sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情（未找到或查詢失敗）');
+        return;
     }
+    $row = $res->fetch_assoc();
+
+    // 檔案
+    $files = [];
+    $resFiles = @$GLOBALS['conn']->query("SELECT * FROM portfolio_files WHERE portfolio_id = {$safeId} ORDER BY sort_order, created_at");
+    if ($resFiles) { while ($f = $resFiles->fetch_assoc()) { $files[] = $f; } }
+
+    // 評論（簡化）
+    $comments = [];
+    $resComments = @$GLOBALS['conn']->query("SELECT c.*, u.username AS author_name
+                                             FROM portfolio_comments c
+                                             LEFT JOIN users u ON c.user_id = u.id
+                                             WHERE c.portfolio_id = {$safeId}
+                                             ORDER BY c.created_at DESC
+                                             LIMIT 20");
+    if ($resComments) {
+        while ($c = $resComments->fetch_assoc()) {
+            $comments[] = [
+                'id' => (int)$c['id'],
+                'author' => $c['author_name'] ?: '使用者',
+                'avatar' => substr($c['author_name'] ?: '用', 0, 1),
+                'text' => $c['content'] ?: '',
+                'likes' => 0,
+                'time' => formatTime($c['created_at'])
+            ];
+        }
+    }
+
+    // 計數
+    $likeCount = 0; $commentCount = 0;
+    $resLike = @$GLOBALS['conn']->query("SELECT COUNT(*) AS cnt FROM likes WHERE portfolio_id = {$safeId}");
+    if ($resLike) { $likeCount = (int)($resLike->fetch_assoc()['cnt'] ?? 0); }
+    $resComm = @$GLOBALS['conn']->query("SELECT COUNT(*) AS cnt FROM portfolio_comments WHERE portfolio_id = {$safeId}");
+    if ($resComm) { $commentCount = (int)($resComm->fetch_assoc()['cnt'] ?? 0); }
+
+    $portfolio = [
+        'id' => (int)$row['id'],
+        'title' => $row['title'] ?? '',
+        'description' => $row['description'] ?? '',
+        'status' => $row['status'] ?? 'draft',
+        'category' => $row['category'] ?? null,
+        'tags' => !empty($row['tags']) ? explode(',', $row['tags']) : [],
+        'cover_image' => $row['cover_image'] ?? null,
+        'views' => (int)($row['view_count'] ?? 0),
+        'likes' => $likeCount,
+        'comment_count' => $commentCount,
+        'downloads' => (int)($row['download_count'] ?? 0),
+        'created_at' => $row['created_at'] ?? null,
+        'published_at' => $row['published_at'] ?? null,
+        'author_name' => $row['author_name'] ?? '',
+        'major' => $row['major'] ?? '',
+        'grade' => $row['grade'] ?? '',
+        'files' => $files,
+        'comments' => $comments
+    ];
+
+    sendResponse($portfolio, 200, '成功獲取作品詳情');
 }
 
 // 取得相關作品
 function getRelatedPortfolios() {
-    $userId = getUserId();
-    if (!$userId) {
-        sendError('無法獲取使用者資訊', 401);
+    $portfolioId = isset($_GET['portfolio_id']) ? (int)$_GET['portfolio_id'] : 0;
+
+    $stmt = $GLOBALS['conn']->prepare("
+        SELECT p.id, p.title, p.description
+        FROM portfolios p
+        WHERE p.id != ? AND p.status = 'published'
+        ORDER BY RAND()
+        LIMIT 3
+    ");
+    if (!$stmt) {
+        sendResponse(getDefaultRelatedPortfolios(), 200, '使用預設相關作品（資料庫錯誤）');
         return;
     }
-    
-    $portfolioId = isset($_GET['portfolio_id']) ? (int)$_GET['portfolio_id'] : 0;
-    
-    try {
-        $stmt = $GLOBALS['conn']->prepare("
-            SELECT id, title, description, category
-            FROM portfolios 
-            WHERE user_id = ? AND id != ? AND status = 'published'
-            ORDER BY RAND()
-            LIMIT 3
-        ");
-        
-        if (!$stmt) {
-            sendResponse(getDefaultRelatedPortfolios(), 200, '使用預設相關作品');
-            return;
-        }
-        
-        $stmt->bind_param("ii", $userId, $portfolioId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $related = [];
-        while ($row = $result->fetch_assoc()) {
-            $related[] = [
-                'id' => (int)$row['id'],
-                'title' => $row['title'],
-                'description' => $row['description']
-            ];
-        }
-        
-        if (empty($related)) {
-            $related = getDefaultRelatedPortfolios();
-        }
-        
-        sendResponse($related, 200, '成功獲取相關作品');
-        
-    } catch (Exception $e) {
-        sendResponse(getDefaultRelatedPortfolios(), 200, '使用預設相關作品');
+    $stmt->bind_param("i", $portfolioId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    $related = [];
+    while ($row = $res->fetch_assoc()) {
+        $related[] = [
+            'id' => (int)$row['id'],
+            'title' => $row['title'],
+            'description' => $row['description']
+        ];
     }
+    if (empty($related)) $related = getDefaultRelatedPortfolios();
+    sendResponse($related, 200, '成功獲取相關作品');
 }
 
 // 建立作品
@@ -559,7 +498,7 @@ function togglePortfolioLike($data) {
     }
 }
 
-// 新增評論（comments 表）
+// 新增評論（使用 portfolio_comments 表）
 function addPortfolioComment($data) {
     $userId = getUserId();
     if (!$userId) {
@@ -576,7 +515,7 @@ function addPortfolioComment($data) {
     
     try {
         $stmt = $GLOBALS['conn']->prepare(
-            "INSERT INTO comments (portfolio_id, user_id, content) VALUES (?, ?, ?)"
+            "INSERT INTO portfolio_comments (portfolio_id, user_id, content, like_count, is_approved, created_at, updated_at) VALUES (?, ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
         );
         $stmt->bind_param("iis", $portfolioId, $userId, $commentText);
         
@@ -591,9 +530,32 @@ function addPortfolioComment($data) {
     }
 }
 
-// 讚評論：目前無 comment_likes 表，先回成功
+// 讚評論：更新 portfolio_comments.like_count
 function likePortfolioComment($data) {
-    sendResponse(['message' => '已讚評論'], 200, '讚成功');
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
+    $portfolioId = (int)($data['portfolio_id'] ?? 0);
+    $commentId = (int)($data['comment_id'] ?? 0);
+    if (!$portfolioId || !$commentId) { sendError('缺少必要參數', 400); }
+    try {
+        $stmt = $GLOBALS['conn']->prepare("UPDATE portfolio_comments SET like_count = like_count + 1 WHERE id = ? AND portfolio_id = ?");
+        $stmt->bind_param("ii", $commentId, $portfolioId);
+        if ($stmt->execute()) {
+            $cntStmt = $GLOBALS['conn']->prepare("SELECT like_count FROM portfolio_comments WHERE id = ?");
+            $cntStmt->bind_param("i", $commentId);
+            $cntStmt->execute();
+            $res = $cntStmt->get_result();
+            $likeCountNow = (int)($res->fetch_assoc()['like_count'] ?? 0);
+            sendResponse(['message' => '已讚評論', 'like_count' => $likeCountNow], 200, '讚成功');
+        } else {
+            sendError('操作失敗: ' . $stmt->error, 500);
+        }
+    } catch (Exception $e) {
+        sendError('操作失敗: ' . $e->getMessage(), 500);
+    }
 }
 
 // 檔案下載

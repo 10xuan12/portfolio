@@ -174,6 +174,10 @@ function updatePortfolioDisplay() {
 }
 
 // 更新評論顯示
+// 顯示用的評論分頁狀態（僅限根評論，子回覆照常一併呈現）
+let displayedRootCommentsCount = 5;
+const rootCommentsStepSize = 5;
+
 function updateCommentsDisplay() {
     const commentsList = document.getElementById('commentsList');
 
@@ -231,7 +235,25 @@ function updateCommentsDisplay() {
         `;
     };
 
-    commentsList.innerHTML = roots.map(n => renderNode(n, 0)).join('');
+    // 根評論使用分頁顯示
+    const visibleRoots = roots.slice(0, displayedRootCommentsCount);
+    commentsList.innerHTML = visibleRoots.map(n => renderNode(n, 0)).join('');
+
+    // 控制「載入更多」按鈕顯示狀態
+    const loadMoreBtn = document.querySelector('.load-more-comments button');
+    if (loadMoreBtn) {
+        if (roots.length > displayedRootCommentsCount) {
+            loadMoreBtn.style.display = '';
+        } else {
+            loadMoreBtn.style.display = 'none';
+        }
+    }
+}
+
+// 供 HTML onclick 使用
+function loadMoreComments() {
+    displayedRootCommentsCount += rootCommentsStepSize;
+    updateCommentsDisplay();
 }
 
 // 讚作品
@@ -280,7 +302,13 @@ async function likePortfolio() {
 // 更新讚按鈕狀態
 function updateLikeButton() {
     const likeBtn = document.querySelector('.action-btn.primary');
+    if (!likeBtn) {
+        return; // 頁面可能沒有這個按鈕，直接略過
+    }
     const icon = likeBtn.querySelector('i');
+    if (!icon) {
+        return;
+    }
     
     if (portfolioDetail.isLiked) {
         icon.style.color = '#e53e3e';
@@ -418,7 +446,9 @@ async function submitComment() {
         
         // 發送評論請求（統一透過 ApiService）
         const svc = window.apiService || window.initializeApiService?.();
-        const result = await svc.request('student/portfolio.php', {
+        // 同時以 Header 與 QueryString 傳遞 user_id，確保後端 getUserId() 能取得
+        const endpoint = `student/portfolio.php?user_id=${encodeURIComponent(user.id)}`;
+        const result = await svc.request(endpoint, {
             method: 'POST',
             body: JSON.stringify({
                 action: 'add_comment',
@@ -429,11 +459,12 @@ async function submitComment() {
                 rating: null
             })
         });
-        
-        if ((result.status === 200 || result.success) && result.data) {
+        // 成功條件放寬：接受所有 2xx 狀態或 success=true
+        const is2xx = result && typeof result.status === 'number' && result.status >= 200 && result.status < 300;
+        if (is2xx || result?.success) {
             // 添加新評論到本地
             const newComment = {
-                id: result.data.comment_id,
+                id: (result.data && result.data.comment_id) || Date.now(),
                 parent_id: selectedParentCommentId || null,
                 author: user.name || '使用者',
                 avatar: user.name ? user.name.charAt(0) : '用',
@@ -456,12 +487,27 @@ async function submitComment() {
             updatePortfolioDisplay();
             
             Utils.showNotification('評論已發表', 'success');
+
+            // 成功後立即向後端重新抓取評論，確認是否已寫入資料庫
+            try {
+                const refreshed = await (window.apiService || window.initializeApiService?.()).getComments(portfolioDetail.id);
+                const serverComments = Array.isArray(refreshed?.data) ? refreshed.data : (Array.isArray(refreshed) ? refreshed : []);
+                if (serverComments.length > 0) {
+                    portfolioDetail.comments = serverComments;
+                    updateCommentsDisplay();
+                }
+            } catch (_) { /* 忽略刷新失敗，不阻斷使用者流程 */ }
         } else {
             throw new Error(result.message || '發表評論失敗');
         }
         
     } catch (error) {
-        Utils.showNotification('發表評論失敗，請稍後再試', 'error');
+        // 某些情況後端回 201 但前端早期程式碼誤判，若訊息含「成功」則視為成功
+        if (error && typeof error.message === 'string' && error.message.includes('成功')) {
+            Utils.showNotification('評論已發表', 'success');
+        } else {
+            Utils.showNotification('發表評論失敗，請稍後再試', 'error');
+        }
         console.error('發表評論錯誤:', error);
     }
 }
@@ -704,3 +750,4 @@ window.shareToFacebook = shareToFacebook;
 window.shareToTwitter = shareToTwitter;
 window.shareToLinkedIn = shareToLinkedIn;
 window.copyLink = copyLink; 
+window.loadMoreComments = loadMoreComments;
