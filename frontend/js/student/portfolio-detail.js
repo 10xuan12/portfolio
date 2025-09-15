@@ -67,13 +67,12 @@ async function loadPortfolioDetail() {
         
         // 從 localStorage 獲取使用者資訊
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || !user.id) {
-            throw new Error('無法獲取使用者資訊');
-        }
+        const userId = user ? user.id : null;
         
         // 從後端 API 載入作品詳情（統一透過 ApiService）
         const svc = window.apiService || window.initializeApiService?.();
-        const result = await svc.request(`student/portfolio.php?action=get&portfolio_id=${portfolioId}&user_id=${user.id}`);
+        const url = `student/portfolio.php?action=get&portfolio_id=${portfolioId}${userId ? `&user_id=${userId}` : ''}`;
+        const result = await svc.request(url);
         
         if ((result.status === 200 || result.success) && (result.data || result)) {
             const data = result.data || result;

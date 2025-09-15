@@ -19,9 +19,55 @@ let portfolioData = {
 
 // 初始化頁面
 function initializeUpload() {
+    console.log('開始初始化上傳頁面...');
+    
+    // 檢查DOM元素
+    const step1Content = document.getElementById('step1Content');
+    const titleInput = document.getElementById('title');
+    const categorySelect = document.getElementById('categoryFilter');
+    const descriptionTextarea = document.getElementById('description');
+    
+    console.log('DOM元素檢查:');
+    console.log('- step1Content:', step1Content);
+    console.log('- titleInput:', titleInput);
+    console.log('- categorySelect:', categorySelect);
+    console.log('- descriptionTextarea:', descriptionTextarea);
+    
+    if (step1Content) {
+        console.log('step1Content 樣式:', {
+            display: step1Content.style.display,
+            visibility: step1Content.style.visibility,
+            opacity: step1Content.style.opacity,
+            computedDisplay: window.getComputedStyle(step1Content).display
+        });
+        
+        // 強制設定第一步驟為顯示
+        step1Content.style.display = 'block';
+        step1Content.style.visibility = 'visible';
+        step1Content.style.opacity = '1';
+        
+        console.log('設定後 step1Content 樣式:', {
+            display: step1Content.style.display,
+            visibility: step1Content.style.visibility,
+            opacity: step1Content.style.opacity
+        });
+    }
+    
     initEventListeners();
-    updateStepDisplay();
-    showStep(1);
+    
+    // 設定當前步驟為1，但不調用updateStepDisplay避免重複設定
+    currentStep = 1;
+    
+    // 只更新步驟指示器，不更新內容顯示
+    document.querySelectorAll('.step').forEach((step, index) => {
+        if (index + 1 <= currentStep) {
+            step.classList.add('active');
+        } else {
+            step.classList.remove('active');
+        }
+    });
+    
+    console.log('初始化完成');
 }
 
 // 頁面載入時初始化
@@ -62,8 +108,8 @@ function initEventListeners() {
         });
     }
     
-    // 初始化工具提示控制
-    initTooltipControl();
+    // 初始化工具提示控制（暫時禁用以測試）
+    // initTooltipControl();
 }
 
 // 下一步
@@ -84,6 +130,8 @@ function previousStep() {
 
 // 更新步驟顯示
 function updateStepDisplay() {
+    console.log('updateStepDisplay 被調用，當前步驟:', currentStep);
+    
     // 更新步驟指示器
     document.querySelectorAll('.step').forEach((step, index) => {
         if (index + 1 <= currentStep) {
@@ -94,11 +142,21 @@ function updateStepDisplay() {
     });
     
     // 更新步驟內容
-    document.querySelectorAll('.form-section').forEach((content, index) => {
-        if (index + 1 === currentStep) {
-            content.style.display = 'block';
-        } else {
-            content.style.display = 'none';
+    const stepContents = [
+        document.getElementById('step1Content'),
+        document.getElementById('step2Content'),
+        document.getElementById('step3Content')
+    ];
+    
+    stepContents.forEach((content, index) => {
+        if (content) {
+            if (index + 1 === currentStep) {
+                console.log(`顯示步驟 ${index + 1} 內容`);
+                content.style.display = 'block';
+            } else {
+                console.log(`隱藏步驟 ${index + 1} 內容`);
+                content.style.display = 'none';
+            }
         }
     });
     
@@ -144,10 +202,14 @@ function validateCurrentStep() {
 
 // 驗證步驟1 - 基本資訊
 function validateStep1() {
-    const title = document.getElementById('title').value.trim();
+    const titleElement = document.getElementById('title');
+    const title = titleElement ? titleElement.value.trim() : '';
+    
     const categorySelect = document.getElementById('categoryFilter') || document.getElementById('category');
     const category = categorySelect ? categorySelect.value : '';
-    const description = document.getElementById('description').value.trim();
+    
+    const descriptionElement = document.getElementById('description');
+    const description = descriptionElement ? descriptionElement.value.trim() : '';
     
     if (!title) {
         Utils.showNotification('請輸入作品標題', 'error');
@@ -646,76 +708,6 @@ function renderTags() {
     `).join('');
 }
 
-// 工具提示控制函數
-function initTooltipControl() {
-    // 為所有具有tooltip類別的表單元素添加事件監聽器
-    const tooltipElements = document.querySelectorAll('.form-group.tooltip input, .form-group.tooltip select, .form-group.tooltip textarea');
-    
-    tooltipElements.forEach(element => {
-        // 當元素獲得焦點時顯示工具提示
-        element.addEventListener('focus', function() {
-            const tooltipParent = this.closest('.form-group.tooltip');
-            if (tooltipParent) {
-                // 先隱藏其他工具提示
-                hideAllTooltips();
-                // 顯示當前工具提示
-                tooltipParent.classList.add('show-tooltip');
-            }
-        });
-        
-        // 當元素失去焦點時隱藏工具提示
-        element.addEventListener('blur', function() {
-            const tooltipParent = this.closest('.form-group.tooltip');
-            if (tooltipParent) {
-                // 延遲隱藏，讓用戶有時間看到提示
-                setTimeout(() => {
-                    tooltipParent.classList.remove('show-tooltip');
-                }, 2000); // 2秒後隱藏
-            }
-        });
-        
-        // 當用戶開始輸入時保持工具提示顯示
-        element.addEventListener('input', function() {
-            const tooltipParent = this.closest('.form-group.tooltip');
-            if (tooltipParent) {
-                tooltipParent.classList.add('show-tooltip');
-            }
-        });
-    });
-    
-    // 點擊頁面其他地方時隱藏所有工具提示
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.form-group.tooltip')) {
-            hideAllTooltips();
-        }
-    });
-}
-
-// 隱藏所有工具提示
-function hideAllTooltips() {
-    const tooltipElements = document.querySelectorAll('.form-group.tooltip.show-tooltip');
-    tooltipElements.forEach(element => {
-        element.classList.remove('show-tooltip');
-    });
-}
-
-// 顯示指定工具提示
-function showTooltip(element) {
-    const tooltipParent = element.closest('.form-group.tooltip');
-    if (tooltipParent) {
-        hideAllTooltips();
-        tooltipParent.classList.add('show-tooltip');
-    }
-}
-
-// 隱藏指定工具提示
-function hideTooltip(element) {
-    const tooltipParent = element.closest('.form-group.tooltip');
-    if (tooltipParent) {
-        tooltipParent.classList.remove('show-tooltip');
-    }
-}
-
 // 全域函數供 HTML 使用
 window.nextStep = nextStep;
 window.previousStep = previousStep;
@@ -725,7 +717,4 @@ window.showGithubIntegration = showGithubIntegration;
 window.hideGithubIntegration = hideGithubIntegration;
 window.fetchGithubInfo = fetchGithubInfo;
 window.initializeUpload = initializeUpload;
-window.showUploadProgress = showUploadProgress;
-window.showTooltip = showTooltip;
-window.hideTooltip = hideTooltip;
-window.hideAllTooltips = hideAllTooltips; 
+window.showUploadProgress = showUploadProgress; 

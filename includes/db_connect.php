@@ -8,18 +8,7 @@ global $conn;
 
 // 嘗試多種連線方式
 $connection_configs = [
-    [
-        'host' => 'localhost:3307',
-        'username' => 'root',
-        'password' => '',
-        'database' => 'eportfolio2'
-    ],
-    [
-        'host' => '127.0.0.1:3307',
-        'username' => 'root',
-        'password' => '',
-        'database' => 'eportfolio2'
-    ],
+    // 優先嘗試本機預設埠（多數 XAMPP/MariaDB 安裝使用 3306）
     [
         'host' => 'localhost',
         'username' => 'root',
@@ -27,11 +16,18 @@ $connection_configs = [
         'database' => 'eportfolio2'
     ],
     [
-        'host' => '172.20.10.2',
-        'username' => 'teammate1',
-        'password' => 'securepass123',
+        'host' => '127.0.0.1',
+        'username' => 'root',
+        'password' => '',
         'database' => 'eportfolio2'
-    ]
+    ],
+    // 明確嘗試 3306（某些環境需要顯式指定）
+    [
+        'host' => 'localhost:3306',
+        'username' => 'root',
+        'password' => '',
+        'database' => 'eportfolio2'
+    ],
 ];
 
 $conn = null;
@@ -101,4 +97,3 @@ if (!$conn || $conn->connect_error) {
     <?php
     exit();
 }
-?>

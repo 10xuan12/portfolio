@@ -32,15 +32,15 @@
     // 等待 apiService 可用
     async function ensureApiReady(maxWaitMs = 3000) {
         const start = Date.now();
-        while (true) {
+        while (Date.now() - start < maxWaitMs) {
             if (typeof window.apiService !== 'undefined' && window.apiService) return;
             if (typeof window.initializeApiService === 'function') {
                 window.initializeApiService();
                 if (typeof window.apiService !== 'undefined' && window.apiService) return;
             }
-            if (Date.now() - start > maxWaitMs) return; // 超時就返回，後續函式會自行處理
             await new Promise(r => setTimeout(r, 100));
         }
+        console.warn('API服務初始化超時，將使用備用方案');
     }
 
     // 載入作品資料
@@ -64,11 +64,12 @@
             }
             
             renderPortfolios();
-            updateStats();
             
         } catch (error) {
             console.error('載入作品資料失敗:', error);
-            Utils.handleApiError(error, '載入作品資料');
+            if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                Utils.showNotification('載入作品資料失敗，請稍後再試', 'error');
+            }
             // 如果 API 失敗，顯示空狀態
             portfolios = [];
             renderPortfolios();
@@ -229,17 +230,15 @@
         renderPortfolios(filteredPortfolios);
     }
 
-    // 開啟上傳模態框
+    // 開啟上傳頁面
     function openUploadModal() {
-        document.getElementById('modalTitle').textContent = '新增作品';
-        document.getElementById('portfolioForm').reset();
-        document.getElementById('portfolioId').value = '';
-        document.getElementById('portfolioModal').classList.add('show');
+        window.location.href = 'upload.html';
     }
 
-    // 關閉模態框
+    // 關閉模態框（已移除，因為沒有模態框）
     function closeModal() {
-        document.getElementById('portfolioModal').classList.remove('show');
+        // 模態框已移除，此函數保留以兼容性
+        console.log('closeModal called but no modal exists');
     }
 
     // 編輯功能改為導向詳情（避免舊連結觸發錯誤）

@@ -189,16 +189,17 @@ function getPortfolioList() {
 // 取得作品詳情
 function getPortfolioDetail() {
     $userId = getUserId();
-    if (!$userId) {
-        sendError('無法獲取使用者資訊', 401);
-        return;
-    }
-    
     $portfolioId = isset($_GET['portfolio_id']) ? (int)$_GET['portfolio_id'] : 0;
+    
     if (!$portfolioId) {
         sendError('缺少作品 ID', 400);
+        return;
     }
-    
+    // 調試：記錄目前連線的資料庫主機/版本資訊
+    $___db_host_info = (isset($GLOBALS['conn']) && function_exists('mysqli_get_host_info')) ? @mysqli_get_host_info($GLOBALS['conn']) : 'unknown';
+    $___db_server_info = (isset($GLOBALS['conn']) && function_exists('mysqli_get_server_info')) ? @mysqli_get_server_info($GLOBALS['conn']) : 'unknown';
+    $___db_debug_meta = 'db_host_info=' . $___db_host_info . '; db_server_info=' . $___db_server_info;
+
     try {
         $stmt = $GLOBALS['conn']->prepare("
             SELECT 
@@ -209,17 +210,32 @@ function getPortfolioDetail() {
         ");
         
         if (!$stmt) {
-            sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情');
+            sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情（資料庫錯誤） | ' . $___db_debug_meta);
             return;
         }
         
         $stmt->bind_param("i", $portfolioId);
         $stmt->execute();
-        $result = $stmt->get_result();
-        $portfolio = $result->fetch_assoc();
+        $result = null;
+        $portfolio = null;
+        if (method_exists($stmt, 'get_result')) {
+            $result = $stmt->get_result();
+            if ($result) {
+                $portfolio = $result->fetch_assoc();
+            }
+        }
+        // Fallback：某些環境無 mysqlnd，改用直接查詢
+        if (!$portfolio) {
+            $safeId = (int)$portfolioId;
+            $fallbackSql = "SELECT p.*, u.name AS author_name, u.department, u.grade FROM portfolios p LEFT JOIN users u ON p.user_id = u.id WHERE p.id = ${safeId} LIMIT 1";
+            $fallbackRes = @$GLOBALS['conn']->query($fallbackSql);
+            if ($fallbackRes && $fallbackRes->num_rows > 0) {
+                $portfolio = $fallbackRes->fetch_assoc();
+            }
+        }
         
         if (!$portfolio) {
-            sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情');
+            sendResponse(getDefaultPortfolioDetail($portfolioId), 200, '使用預設作品詳情（未找到或查詢失敗） | ' . $___db_debug_meta);
             return;
         }
         
@@ -808,7 +824,7 @@ function getDefaultPortfolios() {
             'status' => 'published',
             'category' => 'web',
             'tags' => ['HTML5', 'CSS3', 'JavaScript', '響應式'],
-            'cover_image' => 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design',
+            'cover_image' => 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect width="400" height="200" fill="#667eea"/><text x="200" y="100" text-anchor="middle" fill="white" font-family="Arial" font-size="24">Web Design</text></svg>'),
             'views' => 156,
             'likes' => 23,
             'comments' => 8,
@@ -823,7 +839,7 @@ function getDefaultPortfolios() {
             'status' => 'published',
             'category' => 'mobile',
             'tags' => ['React Native', 'JavaScript', 'Firebase', '跨平台'],
-            'cover_image' => 'https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App',
+            'cover_image' => 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect width="400" height="200" fill="#764ba2"/><text x="200" y="100" text-anchor="middle" fill="white" font-family="Arial" font-size="24">Mobile App</text></svg>'),
             'views' => 203,
             'likes' => 45,
             'comments' => 12,
@@ -843,7 +859,7 @@ function getDefaultPortfolioDetail($portfolioId) {
         'status' => 'published',
         'category' => 'web',
         'tags' => ['HTML5', 'CSS3', 'JavaScript', '響應式'],
-        'cover_image' => 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design',
+        'cover_image' => 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect width="400" height="200" fill="#667eea"/><text x="200" y="100" text-anchor="middle" fill="white" font-family="Arial" font-size="24">Web Design</text></svg>'),
         // 舊鍵名（保留相容）
         'view_count' => 156,
         'like_count' => 23,
@@ -909,19 +925,27 @@ function formatTime($datetime) {
 
 // 取得使用者 ID
 function getUserId() {
-    if (isset($_SESSION['user_id'])) {
-        return $_SESSION['user_id'];
+    // 優先從 GET 參數獲取（前端傳遞）
+    if (isset($_GET['user_id']) && !empty($_GET['user_id'])) {
+        return (int)$_GET['user_id'];
     }
+    
+    // 從 POST 參數獲取
+    if (isset($_POST['user_id']) && !empty($_POST['user_id'])) {
+        return (int)$_POST['user_id'];
+    }
+    
+    // 從請求頭獲取
     $headers = function_exists('getallheaders') ? getallheaders() : [];
-    if (isset($headers['X-User-ID'])) {
-        return $headers['X-User-ID'];
+    if (isset($headers['X-User-ID']) && !empty($headers['X-User-ID'])) {
+        return (int)$headers['X-User-ID'];
     }
-    if (isset($_GET['user_id'])) {
-        return $_GET['user_id'];
+    
+    // 從 session 獲取（最後選擇）
+    if (isset($_SESSION['user_id'])) {
+        return (int)$_SESSION['user_id'];
     }
-    if (isset($_POST['user_id'])) {
-        return $_POST['user_id'];
-    }
+    
     return null;
 }
 

@@ -94,11 +94,11 @@
                     <div class="form-section" id="step1Content">
                         <h3>作品基本資訊</h3>
                         <div class="form-grid">
-                        <div class="form-group tooltip" data-tooltip="為您的作品取一個吸引人的標題">
+                        <div class="form-group">
                                 <label for="title">作品標題</label>
                                 <input type="text" id="title" name="title" required placeholder="請輸入作品標題">
                             </div>
-                            <div class="form-group tooltip" data-tooltip="選擇最符合您作品的學群分類">
+                            <div class="form-group">
                                 <label for="categoryFilter">作品學群分類</label>
                                 <select id="categoryFilter" name="category" required>
                                     <option value="">全部分類</option>
@@ -124,15 +124,15 @@
                                     <option value="other">其他</option>
                                 </select>
                             </div>
-                            <div class="form-group full-width tooltip" data-tooltip="詳細描述您的作品，讓企業了解您的技術能力">
+                            <div class="form-group full-width">
                                 <label for="description">作品描述</label>
                                 <textarea id="description" name="description" rows="4" required placeholder="請詳細描述您的作品，包括使用的技術、功能特色等..."></textarea>
                             </div>
-                            <div class="form-group tooltip" data-tooltip="添加相關標籤，幫助企業更容易找到您的作品">
+                            <div class="form-group">
                                 <label for="tags">標籤</label>
                                 <input type="text" id="tags" name="tags" placeholder="用逗號分隔標籤，例如：JavaScript, React, UI/UX">
                             </div>
-                            <div class="form-group tooltip" data-tooltip="選擇發布狀態，草稿可以稍後再發布">
+                            <div class="form-group">
                                 <label for="status">發布狀態</label>
                                 <select id="status" name="status">
                                     <option value="draft">草稿</option>
@@ -281,9 +281,22 @@
     <script>
         // 簡化的初始化腳本，主要功能由 upload.js 處理
         document.addEventListener('DOMContentLoaded', function() {
+            // 確保第一步驟內容立即顯示
+            const step1Content = document.getElementById('step1Content');
+            if (step1Content) {
+                step1Content.style.display = 'block';
+            }
+            
             // 等待 upload.js 載入後初始化
             if (typeof initializeUpload === 'function') {
                 initializeUpload();
+            } else {
+                // 如果函數還沒載入，等待一下再試
+                setTimeout(function() {
+                    if (typeof initializeUpload === 'function') {
+                        initializeUpload();
+                    }
+                }, 100);
             }
         });
     </script>

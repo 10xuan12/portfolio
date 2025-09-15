@@ -1041,67 +1041,6 @@
     animation: shimmer 2s infinite;
 }
 
-/* 工具提示 */
-.form-group.tooltip {
-    position: relative;
-}
-
-.form-group.tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 0.8rem 1.2rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    max-width: 250px;
-    white-space: normal;
-    text-align: center;
-    line-height: 1.4;
-    font-weight: 400;
-}
-
-.form-group.tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.9);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    z-index: 9999;
-}
-
-/* 移除hover自動顯示，改用JavaScript控制 */
-/* .form-group.tooltip:hover::after,
-.form-group.tooltip:hover::before {
-    opacity: 1;
-} */
-
-/* 新增show-tooltip類別來控制顯示 */
-.form-group.tooltip.show-tooltip::after,
-.form-group.tooltip.show-tooltip::before {
-    opacity: 1;
-}
-
-/* 確保工具提示不會被輸入框遮擋 */
-.form-group.tooltip input,
-.form-group.tooltip select,
-.form-group.tooltip textarea {
-    position: relative;
-    z-index: 1;
-}
 
 /* 從 upload.html 移入的內聯樣式 */
 #step2Content,
@@ -1120,4 +1059,32 @@
 #prevBtn,
 #submitBtn {
     display: none;
+}
+
+/* 確保第一步驟內容顯示 */
+#step1Content {
+    display: block !important;
+}
+
+/* 強制顯示所有表單元素 */
+#step1Content .form-group,
+#step1Content .form-group input,
+#step1Content .form-group select,
+#step1Content .form-group textarea,
+#step1Content .form-group label {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#step1Content .form-group input,
+#step1Content .form-group select,
+#step1Content .form-group textarea {
+    height: auto !important;
+    min-height: 40px !important;
+    background: white !important;
+    border: 2px solid #e2e8f0 !important;
+    padding: 1rem 1.2rem !important;
+    font-size: 1rem !important;
+    color: #2d3748 !important;
 }
