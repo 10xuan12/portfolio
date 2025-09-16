@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>學生個人資料 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/enterprise/student-profile.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(res => res.text())
+        .then(html => {
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        });
+    })();
+    </script>
+
+    <main class="student-profile-container">
+        <div class="container">
+            <div class="student-header">
+                <div class="student-avatar">
+                    <img id="spAvatar" alt="頭像">
+                </div>
+                <div class="student-meta">
+                    <h1 id="spName"></h1>
+                    <p id="spInfo"></p>
+                    <div class="student-stats">
+                        <span id="spStatPortfolios"></span>
+                        <span id="spStatViews"></span>
+                        <span id="spStatLikes"></span>
+                    </div>
+                    <div class="student-actions">
+                        <button class="btn btn-primary" id="btnContact"><i class="fas fa-envelope"></i> 聯絡學生</button>
+                        <button class="btn btn-outline" id="btnBookmark"><i class="fas fa-bookmark"></i> 收藏人才</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="student-content-grid">
+                <div class="main-content">
+                    <h3>公開作品</h3>
+                    <div id="spWorks" class="works-grid"></div>
+                </div>
+                <aside class="sidebar">
+                    <div class="sidebar-card">
+                        <h3>關於</h3>
+                        <p id="spBio" style="white-space: pre-wrap;"></p>
+                    </div>
+                    <div class="sidebar-card">
+                        <h3>社群連結</h3>
+                        <ul id="spSocial" class="social-list"></ul>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/config.js?v=20250916-1"></script>
+    <script src="../js/api-service.js?v=20250916-1"></script>
+    <script src="../js/app.js?v=20250916-1"></script>
+    <script src="../js/enterprise/student-profile.js?v=20250916-1"></script>
+</body>
+</html>
+
+

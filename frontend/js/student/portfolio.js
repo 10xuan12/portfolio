@@ -52,6 +52,11 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
+            // 清除快取，確保取得最新資料
+            if (window.apiService && window.apiService.clearCache) {
+                window.apiService.clearCache();
+            }
+            
             // 使用標準化的API服務方法
             const result = await apiService.getUserPortfolios(user.id);
             
@@ -63,6 +68,7 @@
                 portfolios = [];
             }
             
+            console.log('載入的作品資料:', portfolios);
             renderPortfolios();
             
         } catch (error) {

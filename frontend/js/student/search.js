@@ -33,6 +33,7 @@ const searchSuggestions = [
 document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
     loadSearchHistory();
+    loadCategoriesForSearch();
     // 不自動執行搜尋，讓用戶主動搜尋
 });
 
@@ -90,6 +91,29 @@ function initEventListeners() {
             currentSearch.sort = this.value;
             applyFilters();
         });
+    }
+}
+
+// 動態載入分類（使用後端 categories）
+async function loadCategoriesForSearch() {
+    try {
+        const service = window.apiService || window.initializeApiService?.();
+        let result = null;
+        // 先嘗試通用 categories 端點
+        try {
+            result = await (service?.request ? service.request('categories') : fetch((window.getApiUrl ? getApiUrl('categories') : '/api/categories')).then(r => r.json()));
+        } catch (_) {}
+        // 失敗再退回 student/portfolio.php?action=categories
+        if (!result || (result && result.status !== 200 && !Array.isArray(result))) {
+            result = await (service?.request ? service.request('student/portfolio.php?action=categories') : fetch((window.getApiUrl ? getApiUrl('student/portfolio.php?action=categories') : '/api/student/portfolio.php?action=categories')).then(r => r.json()));
+        }
+        const categories = Array.isArray(result) ? result : (result.data || []);
+        const select = document.getElementById('categoryFilter');
+        if (!select) return;
+        const options = ['<option value="">全部分類</option>'].concat(categories.map(c => `<option value="${c.slug}">${c.name}</option>`));
+        select.innerHTML = options.join('');
+    } catch (e) {
+        console.warn('載入分類失敗', e);
     }
 }
 

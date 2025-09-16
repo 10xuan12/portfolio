@@ -30,14 +30,15 @@ try {
     $types = '';
 
     if ($q !== '') {
-        $where .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ? OR u.name LIKE ?)";
+        $where .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ? OR u.username LIKE ? OR sp.display_name LIKE ?)";
         $keyword = "%$q%";
-        array_push($params, $keyword, $keyword, $keyword, $keyword);
-        $types .= 'ssss';
+        array_push($params, $keyword, $keyword, $keyword, $keyword, $keyword);
+        $types .= 'sssss';
     }
 
     if ($category !== '') {
-        $where .= ' AND p.category = ?';
+        // 使用分類 slug 篩選，需要連接 categories 表
+        $where .= ' AND c.slug = ?';
         $params[] = $category;
         $types .= 's';
     }
@@ -49,18 +50,20 @@ try {
     }
 
     if ($author !== '') {
-        $where .= ' AND u.name LIKE ?';
-        $params[] = "%$author%";
-        $types .= 's';
+        $where .= ' AND (u.username LIKE ? OR sp.display_name LIKE ?)';
+        $like = "%$author%";
+        $params[] = $like;
+        $params[] = $like;
+        $types .= 'ss';
     }
 
-    // 時間篩選（簡化：支持 last7d/last30d/last90d）
-    if ($time === 'last7d') {
-        $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
-    } elseif ($time === 'last30d') {
-        $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
-    } elseif ($time === 'last90d') {
-        $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)";
+    // 時間篩選（與前端一致：week/month/year）
+    if ($time === 'week') {
+        $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)";
+    } elseif ($time === 'month') {
+        $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+    } elseif ($time === 'year') {
+        $where .= " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
     }
 
     // 排序
@@ -83,11 +86,13 @@ try {
 
     $sql = "
         SELECT 
-            p.id, p.title, p.description, p.category, p.tags, p.cover_image,
+            p.id, p.title, p.description, p.category_id, c.slug AS category, p.tags, p.cover_image,
             p.view_count, p.like_count, p.created_at,
-            u.name AS author_name
+            COALESCE(sp.display_name, u.username) AS author_name
         FROM portfolios p
         LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN student_profiles sp ON sp.user_id = p.user_id
+        LEFT JOIN categories c ON p.category_id = c.id
         $where
         ORDER BY $orderBy
         LIMIT 100

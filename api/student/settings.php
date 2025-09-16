@@ -178,11 +178,13 @@ function getUserId() {
 
 // 注意：sendResponse 和 sendError 函數已在 config.php 中定義
 
-// 驗證必填欄位
-function validateRequired($data, $requiredFields) {
-    foreach ($requiredFields as $field) {
-        if (!isset($data[$field]) || empty(trim($data[$field]))) {
-            sendError("缺少必填欄位: {$field}", 400);
+// 驗證必填欄位（避免與全域函數重複宣告）
+if (!function_exists('validateRequired')) {
+    function validateRequired($data, $requiredFields) {
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || empty(trim($data[$field]))) {
+                sendError("缺少必填欄位: {$field}", 400);
+            }
         }
     }
 }

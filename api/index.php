@@ -201,17 +201,19 @@ function handleSearch() {
     
     // 關鍵字搜尋
     if (!empty($query)) {
-        $where .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ?)";
+        $where .= " AND (p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ? OR u.username LIKE ? OR sp.display_name LIKE ?)";
         $searchTerm = "%$query%";
         $params[] = $searchTerm;
         $params[] = $searchTerm;
         $params[] = $searchTerm;
-        $types .= "sss";
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
+        $types .= "sssss";
     }
     
-    // 分類篩選
+    // 分類篩選（使用 categories.slug）
     if (!empty($category)) {
-        $where .= " AND p.category = ?";
+        $where .= " AND c.slug = ?";
         $params[] = $category;
         $types .= "s";
     }
@@ -223,11 +225,12 @@ function handleSearch() {
         $types .= "s";
     }
     
-    // 作者篩選
+    // 作者篩選（username 或 display_name）
     if (!empty($author)) {
-        $where .= " AND u.name LIKE ?";
+        $where .= " AND (u.username LIKE ? OR sp.display_name LIKE ?)";
         $params[] = "%$author%";
-        $types .= "s";
+        $params[] = "%$author%";
+        $types .= "ss";
     }
     
     // 時間篩選
@@ -280,12 +283,14 @@ function handleSearch() {
     // 搜尋作品
     $stmt = $GLOBALS['conn']->prepare("
         SELECT 
-            p.id, p.title, p.description, p.status, p.category, p.tags,
+            p.id, p.title, p.description, p.status, c.slug AS category, p.tags,
             p.cover_image, p.view_count, p.like_count, p.comment_count, 
             p.created_at, p.published_at,
-            u.name as author_name, u.department, u.grade
+            COALESCE(sp.display_name, u.username) as author_name, sp.major as department, sp.grade as grade
         FROM portfolios p
         LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN student_profiles sp ON sp.user_id = p.user_id
+        LEFT JOIN categories c ON p.category_id = c.id
         $where
         $orderBy
         LIMIT ? OFFSET ?
@@ -326,6 +331,8 @@ function handleSearch() {
     $countStmt = $GLOBALS['conn']->prepare("
         SELECT COUNT(*) as total FROM portfolios p
         LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN student_profiles sp ON sp.user_id = p.user_id
+        LEFT JOIN categories c ON p.category_id = c.id
         $where
     ");
     

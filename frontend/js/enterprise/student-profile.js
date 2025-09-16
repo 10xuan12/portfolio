@@ -1,0 +1,96 @@
+(function() {
+    function getQueryId() {
+        try { return Number(new URLSearchParams(location.search).get('id')) || null; } catch (_) { return null; }
+    }
+
+    async function fetchPublicProfile(studentId) {
+        const svc = window.apiService || window.initializeApiService?.();
+        return svc.request(`enterprise/profile.php?action=get_student_public_profile&student_id=${studentId}`);
+    }
+
+    async function fetchPublicPortfolios(studentId) {
+        const svc = window.apiService || window.initializeApiService?.();
+        return svc.request(`enterprise/profile.php?action=get_student_public_portfolios&student_id=${studentId}`);
+    }
+
+    function renderProfile(profile) {
+        const name = profile.display_name || profile.username || `${profile.first_name || ''}${profile.last_name || ''}` || '學生';
+        const schoolMajor = [profile.school, profile.major].filter(Boolean).join(' · ');
+        const gradeGrad = [profile.grade, profile.graduation_year].filter(Boolean).join(' · ');
+        const meta = [schoolMajor, gradeGrad].filter(Boolean).join(' | ');
+        const initial = (name || '學').trim().charAt(0);
+
+        const avatar = document.getElementById('spAvatar');
+        if (avatar) {
+            if (profile.avatar_url) {
+                avatar.src = profile.avatar_url.startsWith('http') ? profile.avatar_url : ('../' + profile.avatar_url.replace(/^\/?/, ''));
+            } else {
+                avatar.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initial)}`;
+            }
+            avatar.alt = name;
+        }
+        const nameEl = document.getElementById('spName'); if (nameEl) nameEl.textContent = name;
+        const infoEl = document.getElementById('spInfo'); if (infoEl) infoEl.textContent = meta;
+        const bioEl = document.getElementById('spBio'); if (bioEl) bioEl.textContent = profile.bio || '';
+
+        const stats = profile.stats || {};
+        const spStatPortfolios = document.getElementById('spStatPortfolios'); if (spStatPortfolios) spStatPortfolios.textContent = `${stats.portfolio_count || 0} 個作品`;
+        const spStatViews = document.getElementById('spStatViews'); if (spStatViews) spStatViews.textContent = `${stats.total_views || 0} 次瀏覽`;
+        const spStatLikes = document.getElementById('spStatLikes'); if (spStatLikes) spStatLikes.textContent = `${stats.total_likes || 0} 個讚`;
+
+        // 社群
+        const socialUl = document.getElementById('spSocial');
+        if (socialUl) {
+            const social = profile.social_media || {};
+            const entries = Object.entries(social);
+            socialUl.innerHTML = entries.length ? entries.map(([platform, url]) => (
+                `<li><a href="${url}" target="_blank" rel="noopener noreferrer"><i class="fab fa-${platform}"></i> ${platform}</a></li>`
+            )).join('') : '<li>尚無公開社群連結</li>';
+        }
+    }
+
+    function renderWorks(list) {
+        const container = document.getElementById('spWorks');
+        if (!container) return;
+        container.innerHTML = (list || []).map(w => `
+            <div class="work-card" onclick="window.location.href='../student/portfolio-detail.html?id=${w.id}'">
+                <div class="work-cover" style="background-image:url('${(w.cover_image || '').replace(/'/g, "\\'")}');"></div>
+                <div class="work-body">
+                    <div class="work-title">${escapeHtml(w.title || '')}</div>
+                    <div class="work-desc">${escapeHtml(w.description || '')}</div>
+                    <div class="work-stats"><i class="fas fa-eye"></i> ${w.views || 0} · <i class="fas fa-heart"></i> ${w.likes || 0}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        if (typeof initializeApiService === 'function') {
+            initializeApiService();
+        }
+        const id = getQueryId();
+        if (!id) {
+            alert('缺少學生 ID');
+            return;
+        }
+        try {
+            const [p1, p2] = await Promise.all([
+                fetchPublicProfile(id),
+                fetchPublicPortfolios(id)
+            ]);
+            const profile = p1.data || p1;
+            const works = p2.data || p2;
+            renderProfile(profile);
+            renderWorks(Array.isArray(works) ? works : []);
+        } catch (e) {
+            console.error('載入學生公開資料失敗', e);
+            alert('無法載入學生資料');
+        }
+    });
+})();
+
+

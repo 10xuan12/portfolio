@@ -232,7 +232,13 @@
                         skills: profileResult.data.skills || '',
                         languages: profileResult.data.languages || '',
                         interests: profileResult.data.interests || '',
-                        avatar: profileResult.data.avatar_url || '/portfolio/uploads/avatars/default-avatar.jpg',
+                        avatar: (() => {
+                            const url = profileResult.data.avatar_url;
+                            if (!url) return '/portfolio/uploads/avatars/default-avatar.jpg';
+                            // 若為相對路徑，補上前綴，避免被前端路徑誤導
+                            if (/^https?:\/\//i.test(url)) return url;
+                            return url.startsWith('/') ? `/portfolio${url}` : `/portfolio/${url}`;
+                        })(),
                         social_media: profileResult.data.social_media || {},
                         stats: {
                             portfolios: profileResult.data.stats?.portfolio_count || 0,
@@ -292,7 +298,14 @@
         
         // 更新頭像
         if (studentData.avatar) {
-            document.getElementById('avatarImage').src = studentData.avatar;
+            const imgEl = document.getElementById('avatarImage');
+            if (imgEl) {
+                imgEl.onerror = function() {
+                    this.onerror = null;
+                    this.src = '/portfolio/uploads/avatars/default-avatar.jpg';
+                };
+                imgEl.src = studentData.avatar;
+            }
         }
         
         // 更新統計資料

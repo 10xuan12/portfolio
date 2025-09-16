@@ -198,8 +198,9 @@ function getPortfolioDetail() {
 
     // 單筆詳情（不用 get_result，避免 mysqlnd 依賴）
     $sql = "SELECT 
-                p.id, p.title, p.description, p.status, p.tags, p.cover_image,
-                p.view_count, p.download_count, p.created_at, p.published_at,
+                p.id, p.user_id AS author_id, p.title, p.description, p.status, p.tags, p.cover_image,
+                p.view_count, p.like_count, p.comment_count, p.download_count, 
+                p.created_at, p.published_at,
                 u.username AS author_name,
                 sp.major, sp.grade,
                 c.slug AS category
@@ -242,15 +243,13 @@ function getPortfolioDetail() {
         }
     }
 
-    // 計數
-    $likeCount = 0; $commentCount = 0;
-    $resLike = @$GLOBALS['conn']->query("SELECT COUNT(*) AS cnt FROM likes WHERE portfolio_id = {$safeId}");
-    if ($resLike) { $likeCount = (int)($resLike->fetch_assoc()['cnt'] ?? 0); }
-    $resComm = @$GLOBALS['conn']->query("SELECT COUNT(*) AS cnt FROM portfolio_comments WHERE portfolio_id = {$safeId}");
-    if ($resComm) { $commentCount = (int)($resComm->fetch_assoc()['cnt'] ?? 0); }
+    // 直接使用資料庫中的計數欄位
+    $likeCount = (int)($row['like_count'] ?? 0);
+    $commentCount = (int)($row['comment_count'] ?? 0);
 
     $portfolio = [
         'id' => (int)$row['id'],
+        'author_id' => isset($row['author_id']) ? (int)$row['author_id'] : null,
         'title' => $row['title'] ?? '',
         'description' => $row['description'] ?? '',
         'status' => $row['status'] ?? 'draft',
@@ -477,6 +476,14 @@ function togglePortfolioLike($data) {
             $cntStmt->bind_param("i", $portfolioId);
             $cntStmt->execute();
             $likeCountNow = (int)($cntStmt->get_result()->fetch_assoc()['cnt'] ?? 0);
+
+            // 同步更新 portfolios.like_count
+            $upd = $GLOBALS['conn']->prepare("UPDATE portfolios SET like_count = ? WHERE id = ?");
+            if ($upd) {
+                $upd->bind_param("ii", $likeCountNow, $portfolioId);
+                $upd->execute();
+            }
+
             sendResponse(['liked' => false, 'like_count' => $likeCountNow], 200, '已取消讚');
         } else {
             // 新增讚
@@ -491,6 +498,14 @@ function togglePortfolioLike($data) {
             $cntStmt->bind_param("i", $portfolioId);
             $cntStmt->execute();
             $likeCountNow = (int)($cntStmt->get_result()->fetch_assoc()['cnt'] ?? 0);
+
+            // 同步更新 portfolios.like_count
+            $upd = $GLOBALS['conn']->prepare("UPDATE portfolios SET like_count = ? WHERE id = ?");
+            if ($upd) {
+                $upd->bind_param("ii", $likeCountNow, $portfolioId);
+                $upd->execute();
+            }
+
             sendResponse(['liked' => true, 'like_count' => $likeCountNow], 200, '已讚作品');
         }
     } catch (Exception $e) {
@@ -521,6 +536,12 @@ function addPortfolioComment($data) {
         
         if ($stmt->execute()) {
             $commentId = $GLOBALS['conn']->insert_id;
+            
+            // 更新 portfolios 資料表中的 comment_count
+            $updateStmt = $GLOBALS['conn']->prepare("UPDATE portfolios SET comment_count = comment_count + 1 WHERE id = ?");
+            $updateStmt->bind_param("i", $portfolioId);
+            $updateStmt->execute();
+            
             sendResponse(['comment_id' => $commentId, 'message' => '評論發表成功'], 201, '發表成功');
         } else {
             sendError('發表失敗: ' . $stmt->error, 500);

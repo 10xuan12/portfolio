@@ -34,6 +34,71 @@ let portfolioDetail = {
 // 回覆目標的父留言 ID（無則為 null）
 let selectedParentCommentId = null;
 
+// 切換作品狀態
+async function togglePortfolioStatus() {
+    try {
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            throw new Error('無法獲取使用者資訊');
+        }
+        
+        // 決定新狀態
+        const currentStatus = portfolioDetail.status;
+        let newStatus;
+        let confirmMessage;
+        
+        if (currentStatus === 'draft') {
+            newStatus = 'published';
+            confirmMessage = '確定要發布此作品嗎？發布後其他使用者將可以看到您的作品。';
+        } else if (currentStatus === 'published') {
+            newStatus = 'draft';
+            confirmMessage = '確定要將此作品改為草稿嗎？改為草稿後其他使用者將無法看到您的作品。';
+        } else {
+            // 如果是 review 狀態，不允許切換
+            Utils.showNotification('審核中的作品無法修改狀態', 'warning');
+            return;
+        }
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        // 發送狀態切換請求
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'toggle_status',
+                id: portfolioDetail.id,
+                status: newStatus,
+                user_id: user.id
+            })
+        });
+        
+        if (result.status === 200 || result.success) {
+            // 更新本地狀態
+            portfolioDetail.status = newStatus;
+            
+            // 更新顯示
+            updatePortfolioDisplay();
+            
+            const statusText = newStatus === 'published' ? '已發布' : '草稿';
+            Utils.showNotification(`作品狀態已更新為：${statusText}`, 'success');
+        } else {
+            throw new Error(result.message || '狀態更新失敗');
+        }
+        
+    } catch (error) {
+        console.error('切換作品狀態失敗:', error);
+        Utils.showNotification('狀態更新失敗，請稍後再試', 'error');
+    }
+}
+
+// 立即將函數暴露到全域，確保可用
+window.togglePortfolioStatus = togglePortfolioStatus;
+console.log('togglePortfolioStatus 函數已定義並暴露到全域');
+
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
     // 避免重複初始化
@@ -130,8 +195,9 @@ function updatePortfolioDisplay() {
     }
     const statusEl = document.getElementById('detailStatus');
     if (statusEl) {
-        statusEl.className = `info-status status-${portfolioDetail.status}`;
+        statusEl.className = `info-status clickable status-${portfolioDetail.status}`;
         statusEl.textContent = portfolioDetail.status === 'published' ? '已發布' : (portfolioDetail.status === 'review' ? '審核中' : '草稿');
+        statusEl.title = '點擊切換狀態';
     }
 
     // 統計
@@ -140,7 +206,7 @@ function updatePortfolioDisplay() {
     const downloads = (portfolioDetail.downloads ?? portfolioDetail.download_count ?? 0) | 0;
     const sv = document.getElementById('statViews'); if (sv) sv.textContent = `${views} 次瀏覽`;
     const sl = document.getElementById('statLikes'); if (sl) sl.textContent = `${likes} 個讚`;
-    const commentCount = Array.isArray(portfolioDetail.comments) ? portfolioDetail.comments.length : (portfolioDetail.comments || 0);
+    const commentCount = portfolioDetail.comment_count || (Array.isArray(portfolioDetail.comments) ? portfolioDetail.comments.length : 0);
     const sc = document.getElementById('statComments'); if (sc) sc.textContent = `${commentCount} 則評論`;
     const sd = document.getElementById('statDownloads'); if (sd) sd.textContent = `${downloads} 次下載`;
 
@@ -168,6 +234,33 @@ function updatePortfolioDisplay() {
             </div>
         `).join('');
     }
+
+    // 作者卡片
+    try {
+        const authorNameEl = document.getElementById('authorName');
+        const authorMetaEl = document.getElementById('authorMeta');
+        const authorAvatarEl = document.getElementById('authorAvatar');
+        const authorPortfoliosEl = document.getElementById('authorPortfolios');
+        const authorViewsEl = document.getElementById('authorViews');
+
+        if (authorNameEl) authorNameEl.textContent = portfolioDetail.author_name || portfolioDetail.author?.name || '';
+        if (authorMetaEl) authorMetaEl.textContent = [portfolioDetail.major || portfolioDetail.author?.department || '', portfolioDetail.grade || portfolioDetail.author?.grade || ''].filter(Boolean).join(' · ');
+        if (authorAvatarEl) {
+            // 若無頭像，用文字頭像占位
+            const initial = (portfolioDetail.author_name || '').trim().charAt(0) || '用';
+            if (portfolioDetail.author_avatar) {
+                authorAvatarEl.src = portfolioDetail.author_avatar;
+                authorAvatarEl.alt = initial;
+            } else {
+                authorAvatarEl.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initial)}`;
+                authorAvatarEl.alt = initial;
+            }
+        }
+        if (authorPortfoliosEl) authorPortfoliosEl.textContent = `${portfolioDetail.author_portfolio_count ?? ''}`.trim() ? `${portfolioDetail.author_portfolio_count} 個作品` : '';
+        if (authorViewsEl) authorViewsEl.textContent = `${portfolioDetail.author_total_views ?? ''}`.trim() ? `${portfolioDetail.author_total_views} 次總瀏覽` : '';
+        const authorCard = document.getElementById('authorCard');
+        if (authorCard) authorCard.dataset.authorId = portfolioDetail.author_id || '';
+    } catch (_) {}
 
     // 讚按鈕狀態
     updateLikeButton();
@@ -277,18 +370,18 @@ async function likePortfolio() {
         });
         
         if (result.status === 200 || result.success) {
-            // 更新本地狀態
-            portfolioDetail.isLiked = !portfolioDetail.isLiked;
-            const currentLikes = (portfolioDetail.likes ?? portfolioDetail.like_count ?? 0) | 0;
-            portfolioDetail.likes = portfolioDetail.isLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1);
-            
+            // 以後端回傳為準，避免本地推測不一致
+            const payload = result.data || result;
+            const likedNow = typeof payload.liked !== 'undefined' ? !!payload.liked : !portfolioDetail.isLiked;
+            const likeCountNow = (payload.like_count ?? payload.likes ?? portfolioDetail.likes ?? 0) | 0;
+
+            portfolioDetail.isLiked = likedNow;
+            portfolioDetail.likes = likeCountNow;
+
             updateLikeButton();
             updatePortfolioDisplay();
-            
-            Utils.showNotification(
-                portfolioDetail.isLiked ? '已讚作品' : '已取消讚',
-                'success'
-            );
+
+            Utils.showNotification(likedNow ? '已讚作品' : '已取消讚', 'success');
         } else {
             throw new Error(result.message || '操作失敗');
         }
@@ -478,6 +571,9 @@ async function submitComment() {
             }
             portfolioDetail.comments.unshift(newComment);
             
+            // 更新評論數
+            portfolioDetail.comment_count = (portfolioDetail.comment_count || 0) + 1;
+            
             // 清空輸入框
             commentInput.value = '';
             selectedParentCommentId = null;
@@ -494,6 +590,7 @@ async function submitComment() {
                 const serverComments = Array.isArray(refreshed?.data) ? refreshed.data : (Array.isArray(refreshed) ? refreshed : []);
                 if (serverComments.length > 0) {
                     portfolioDetail.comments = serverComments;
+                    portfolioDetail.comment_count = serverComments.length;
                     updateCommentsDisplay();
                 }
             } catch (_) { /* 忽略刷新失敗，不阻斷使用者流程 */ }
@@ -738,6 +835,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 全域函數供 HTML 使用
 window.likePortfolio = likePortfolio;
+window.togglePortfolioStatus = togglePortfolioStatus;
 window.sharePortfolio = sharePortfolio;
 window.editPortfolio = editPortfolio;
 window.deletePortfolio = deletePortfolio;
@@ -751,3 +849,26 @@ window.shareToTwitter = shareToTwitter;
 window.shareToLinkedIn = shareToLinkedIn;
 window.copyLink = copyLink; 
 window.loadMoreComments = loadMoreComments;
+
+// 查看作者個人資料（企業或訪客可用）
+function viewAuthorProfile() {
+    const authorId = (window.portfolioDetail && window.portfolioDetail.author_id) || (document.getElementById('authorCard')?.dataset?.authorId);
+    if (!authorId) {
+        Utils?.showNotification?.('找不到作者資料', 'error');
+        return;
+    }
+    // 依角色導向不同頁面：企業導向學生公開檔案頁，學生導向學生端個人頁
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const role = user?.role || 'visitor';
+    const isAuthorSelf = user && Number(user.id) === Number(authorId);
+    // 非作者本人（任何身份）一律看公開版
+    if (!isAuthorSelf) {
+        window.location.href = `../enterprise/student-profile.html?id=${authorId}`;
+        return;
+    }
+    // 作者本人（學生）仍導向自己的編輯/個人頁
+    window.location.href = `../student/profile.html?user_id=${authorId}`;
+}
+
+// 暴露全域供 HTML onclick 使用
+window.viewAuthorProfile = viewAuthorProfile;

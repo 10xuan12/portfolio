@@ -4,8 +4,20 @@ require_once '../config.php';
 // 企業資料管理 API
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        if (isset($_GET['action']) && $_GET['action'] === 'get') {
-            getEnterpriseProfile();
+        if (isset($_GET['action'])) {
+            switch ($_GET['action']) {
+                case 'get':
+                    getEnterpriseProfile();
+                    break;
+                case 'get_student_public_profile':
+                    getStudentPublicProfile();
+                    break;
+                case 'get_student_public_portfolios':
+                    getStudentPublicPortfolios();
+                    break;
+                default:
+                    sendError('無效的請求', 400);
+            }
         } else {
             sendError('無效的請求', 400);
         }
@@ -92,6 +104,95 @@ function getEnterpriseProfile() {
     }
     
     sendResponse($profile, 200, '取得企業資料成功');
+}
+
+// 企業端：取得學生公開個人資料（不需登入學生，只需企業登入）
+function getStudentPublicProfile() {
+    // 僅檢查呼叫者為企業
+    $enterpriseId = checkPermission('enterprise');
+    if (!$enterpriseId) { sendError('無權限', 403); }
+
+    $studentId = isset($_GET['student_id']) ? (int)$_GET['student_id'] : 0;
+    if (!$studentId) { sendError('缺少 student_id', 400); }
+
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT 
+            u.id, u.username, u.email,
+            sp.display_name, sp.first_name, sp.last_name,
+            sp.school, sp.major, sp.grade, sp.graduation_year,
+            sp.bio, sp.avatar_url
+         FROM users u
+         LEFT JOIN student_profiles sp ON u.id = sp.user_id
+         WHERE u.id = ?"
+    );
+    $stmt->bind_param("i", $studentId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $profile = $res->fetch_assoc();
+
+    if (!$profile) { sendError('學生不存在', 404); }
+
+    // 統計資料（公開）
+    $statsStmt = $GLOBALS['conn']->prepare(
+        "SELECT 
+            COUNT(*) AS portfolio_count,
+            COALESCE(SUM(view_count),0) AS total_views,
+            COALESCE(SUM(like_count),0) AS total_likes
+         FROM portfolios WHERE user_id = ? AND status = 'published'"
+    );
+    $statsStmt->bind_param("i", $studentId);
+    $statsStmt->execute();
+    $stats = $statsStmt->get_result()->fetch_assoc();
+
+    $profile['stats'] = [
+        'portfolio_count' => (int)($stats['portfolio_count'] ?? 0),
+        'total_views' => (int)($stats['total_views'] ?? 0),
+        'total_likes' => (int)($stats['total_likes'] ?? 0)
+    ];
+
+    // 公開社群
+    $sm = $GLOBALS['conn']->prepare("SELECT platform, url FROM user_social_media WHERE user_id = ? AND is_public = 1 ORDER BY platform");
+    $sm->bind_param("i", $studentId);
+    $sm->execute();
+    $smRes = $sm->get_result();
+    $social = [];
+    while ($row = $smRes->fetch_assoc()) { $social[$row['platform']] = $row['url']; }
+    $profile['social_media'] = $social;
+
+    sendResponse($profile, 200, '取得學生公開資料成功');
+}
+
+// 企業端：取得學生公開作品（已發布）
+function getStudentPublicPortfolios() {
+    $enterpriseId = checkPermission('enterprise');
+    if (!$enterpriseId) { sendError('無權限', 403); }
+
+    $studentId = isset($_GET['student_id']) ? (int)$_GET['student_id'] : 0;
+    if (!$studentId) { sendError('缺少 student_id', 400); }
+
+    $stmt = $GLOBALS['conn']->prepare(
+        "SELECT id, title, description, cover_image, view_count, like_count, comment_count, published_at
+         FROM portfolios
+         WHERE user_id = ? AND status = 'published'
+         ORDER BY published_at DESC, id DESC"
+    );
+    $stmt->bind_param("i", $studentId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $list = [];
+    while ($row = $res->fetch_assoc()) {
+        $list[] = [
+            'id' => (int)$row['id'],
+            'title' => $row['title'],
+            'description' => $row['description'],
+            'cover_image' => $row['cover_image'],
+            'views' => (int)$row['view_count'],
+            'likes' => (int)$row['like_count'],
+            'comment_count' => (int)$row['comment_count'],
+            'published_at' => $row['published_at']
+        ];
+    }
+    sendResponse($list, 200, '取得學生公開作品成功');
 }
 
 // 更新企業資料
