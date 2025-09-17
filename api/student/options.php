@@ -24,6 +24,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 case 'grades':
                     getGrades();
                     break;
+                case 'categories':
+                    getCategories();
+                    break;
                 case 'all':
                     getAllOptions();
                     break;
@@ -102,7 +105,7 @@ function getGrades() {
 // 取得所有選項
 function getAllOptions() {
     try {
-        // 並行取得科系和年級
+        // 並行取得科系、年級與學群分類
         $departmentsStmt = $GLOBALS['conn']->prepare(
             "SELECT id, name, code, school, description 
              FROM departments 
@@ -120,6 +123,15 @@ function getAllOptions() {
         );
         $gradesStmt->execute();
         $gradesResult = $gradesStmt->get_result();
+
+        $categoriesStmt = $GLOBALS['conn']->prepare(
+            "SELECT id, name, slug, description, icon, color 
+             FROM categories 
+             WHERE is_active = 1 
+             ORDER BY sort_order ASC, name ASC"
+        );
+        $categoriesStmt->execute();
+        $categoriesResult = $categoriesStmt->get_result();
         
         // 處理科系資料
         $departments = [];
@@ -145,13 +157,57 @@ function getAllOptions() {
             ];
         }
         
+        // 處理學群分類
+        $categories = [];
+        while ($row = $categoriesResult->fetch_assoc()) {
+            $categories[] = [
+                'id' => $row['id'],
+                'name' => $row['name'],
+                'slug' => $row['slug'],
+                'description' => $row['description'],
+                'icon' => $row['icon'],
+                'color' => $row['color']
+            ];
+        }
+        
         sendResponse([
             'departments' => $departments,
-            'grades' => $grades
+            'grades' => $grades,
+            'categories' => $categories
         ], 200);
         
     } catch (Exception $e) {
         sendError('取得選項失敗: ' . $e->getMessage(), 500);
+    }
+}
+
+// 取得學群分類（categories）
+function getCategories() {
+    try {
+        $stmt = $GLOBALS['conn']->prepare(
+            "SELECT id, name, slug, description, icon, color 
+             FROM categories 
+             WHERE is_active = 1 
+             ORDER BY sort_order ASC, name ASC"
+        );
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $categories = [];
+        while ($row = $result->fetch_assoc()) {
+            $categories[] = [
+                'id' => $row['id'],
+                'name' => $row['name'],
+                'slug' => $row['slug'],
+                'description' => $row['description'],
+                'icon' => $row['icon'],
+                'color' => $row['color']
+            ];
+        }
+        
+        sendResponse($categories, 200);
+    } catch (Exception $e) {
+        sendError('取得學群分類失敗: ' . $e->getMessage(), 500);
     }
 }
 

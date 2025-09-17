@@ -54,6 +54,9 @@ function initializeUpload() {
     }
     
     initEventListeners();
+
+    // 動態載入學群分類
+    loadCategories();
     
     // 設定當前步驟為1，但不調用updateStepDisplay避免重複設定
     currentStep = 1;
@@ -718,3 +721,39 @@ window.hideGithubIntegration = hideGithubIntegration;
 window.fetchGithubInfo = fetchGithubInfo;
 window.initializeUpload = initializeUpload;
 window.showUploadProgress = showUploadProgress; 
+
+// 由後端載入 categories 並填入下拉
+async function loadCategories() {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        // 從統一 options 端點載入，以便未來同頁需要其他選項
+        const result = await svc.request('student/options.php?action=all');
+        const categories = result?.data?.categories || [];
+        const select = document.getElementById('categoryFilter') || document.getElementById('category');
+        if (!select) return;
+
+        // 保留第一個佔位（如果存在）
+        const placeholder = select.querySelector('option[value=""]');
+        select.innerHTML = '';
+        if (placeholder) {
+            select.appendChild(placeholder);
+        } else {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '全部分類';
+            select.appendChild(opt);
+        }
+
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.slug; // 用 slug 作為值
+            option.textContent = cat.name; // 顯示中文名稱
+            option.dataset.id = cat.id;
+            option.dataset.color = cat.color || '';
+            option.dataset.icon = cat.icon || '';
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('載入學群分類失敗:', err);
+    }
+}

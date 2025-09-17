@@ -110,6 +110,14 @@ function getStudentProfile() {
         $profile['stats'] = $stats;
     }
     
+    // 若無頭像，提供預設頭像路徑
+    if (empty($profile['avatar_url'])) {
+        $profile['avatar_url'] = '/portfolio/uploads/avatars/default-avatar.jpg';
+    } elseif (strpos($profile['avatar_url'], '/portfolio/') !== 0 && strpos($profile['avatar_url'], 'http') !== 0) {
+        // 將資料庫中相對路徑統一轉為以 /portfolio 為前綴的絕對路徑
+        $profile['avatar_url'] = '/portfolio/' . ltrim($profile['avatar_url'], '/');
+    }
+    
     // 取得社群媒體連結
     $socialMedia = getSocialMedia($userId);
     $profile['social_media'] = $socialMedia;
@@ -187,6 +195,9 @@ function updateStudentProfile($data) {
         sendError('無效的畢業年份', 400);
     }
     
+    // 使用 SQL 的 NULLIF 在語句中轉為 NULL（這裡保留空字串，避免 PHP 綁定 null 觸發錯誤）
+    // $birthDate 與 $graduationYear 若為空字串，將在 SQL 以 NULLIF(?, '') 轉為 NULL
+    
     // 開始交易
     $GLOBALS['conn']->begin_transaction();
     
@@ -202,8 +213,8 @@ function updateStudentProfile($data) {
             $stmt = $GLOBALS['conn']->prepare(
                 "UPDATE student_profiles SET 
                     first_name = ?, last_name = ?, display_name = ?, gender = ?,
-                    birth_date = ?, phone = ?, address = ?, bio = ?, student_id = ?,
-                    major = ?, school = ?, grade = ?, graduation_year = ?, 
+                    birth_date = NULLIF(?, ''), phone = ?, address = ?, bio = ?, student_id = ?,
+                    major = ?, school = ?, grade = ?, graduation_year = NULLIF(?, ''), 
                     skills = ?, interests = ?, 
                     updated_at = CURRENT_TIMESTAMP
                 WHERE user_id = ?"
@@ -220,7 +231,7 @@ function updateStudentProfile($data) {
                     user_id, first_name, last_name, display_name, gender,
                     birth_date, phone, address, bio, student_id,
                     major, school, grade, graduation_year, skills, interests
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                ) VALUES (?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)"
             );
             $stmt->bind_param("isssssssssssssss", 
                 $userId, $firstName, $lastName, $displayName, $gender, $birthDate, 
@@ -333,16 +344,18 @@ function uploadAvatar() {
     }
     
     // 更新資料庫中的頭像路徑
-    $avatarUrl = 'uploads/avatars/' . $filename;
+    // 資料庫儲存相對路徑，回應給前端使用絕對路徑
+    $dbAvatarUrl = 'uploads/avatars/' . $filename;
+    $responseAvatarUrl = '/portfolio/' . $dbAvatarUrl;
     
     $stmt = $GLOBALS['conn']->prepare(
         "UPDATE student_profiles SET avatar_url = ? WHERE user_id = ?"
     );
-    $stmt->bind_param("si", $avatarUrl, $userId);
+    $stmt->bind_param("si", $dbAvatarUrl, $userId);
     
     if ($stmt->execute()) {
         sendResponse([
-            'avatar_url' => $avatarUrl,
+            'avatar_url' => $responseAvatarUrl,
             'message' => '頭像上傳成功'
         ], 200, '上傳成功');
     } else {
