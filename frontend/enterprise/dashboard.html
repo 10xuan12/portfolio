@@ -6,10 +6,20 @@
     <title>企業儀表板 - Portfolio+</title>
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/enterprise/dashboard.css">
+    <link rel="stylesheet" href="../css/student/dashboard.css">
     <script>
-        // 設定企業端主題
-        document.body.classList.add('enterprise-theme');
+        // 套用與學生端一致的主題
+        (function(){
+            if (document && document.body) {
+                document.body.classList.remove('enterprise-theme');
+                document.body.classList.add('student-theme');
+            } else {
+                document.addEventListener('DOMContentLoaded', function(){
+                    document.body.classList.remove('enterprise-theme');
+                    document.body.classList.add('student-theme');
+                });
+            }
+        })();
     </script>
     <style>
         @keyframes spin {
@@ -41,6 +51,139 @@
         
         .alert i {
             margin-right: 8px;
+        }
+
+        /* 搜尋篩選：企業儀表板本頁圓潤樣式覆蓋 */
+        /* 另外移除任何頁首漸層背景 */
+        .dashboard-header { background: none !important; }
+        .dashboard-header::before { display: none !important; }
+
+        .search-filters {
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+            display: flex;
+            align-items: stretch;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;            /* 允許換行：第二行放關鍵字/排序/按鈕 */
+            overflow-x: visible;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .search-filters .filter-row {
+            display: flex;              /* 每個 row 自成一行 */
+            width: 100%;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+            align-items: flex-end;      /* 底線對齊 */
+        }
+
+        /* 統一欄位內距與堆疊 */
+        .search-filters .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 200px;
+        }
+
+        .search-filters .filter-group select,
+        .search-filters .filter-group input[type="text"] {
+            height: 36px;
+            line-height: 36px;
+        }
+
+        /* 第一行三欄等寬 */
+        .search-filters .row-1 .filter-group { flex: 1 1 0; }
+
+        /* 第二行前兩欄等寬，按鈕靠右且不撐寬 */
+        .search-filters .row-2 .filter-group { flex: 1 1 0; }
+        .search-filters .row-2 .filter-group:last-child { flex: 0 0 auto; margin-left: auto; }
+
+        /* 讓每行的最後一個欄位（年級／搜尋按鈕）靠右對齊 */
+        .search-filters .filter-row .filter-group:last-child {
+            margin-left: auto;
+        }
+
+        .search-filters .filter-group {
+            background: transparent;
+            border-radius: 24px;
+            padding: 0;
+            border: none;
+            transition: transform 0.1s ease;
+        }
+
+        .filter-card { display: contents; }
+
+        .filter-card:hover {
+            box-shadow: 0 12px 26px rgba(0,0,0,0.09);
+            border-color: var(--gray-300);
+            transform: translateY(-1px);
+        }
+
+        .filter-thumb { display: none; }
+
+        .filter-content { display: flex; flex-direction: column; gap: 6px; }
+
+        .search-filters .filter-group:focus-within {
+            transform: translateY(-1px);
+        }
+
+        .search-filters .filter-group label {
+            font-size: var(--text-xs);
+            color: var(--gray-600);
+            padding-left: 2px;
+        }
+
+        .search-filters .filter-group select,
+        .search-filters .filter-group input[type="text"] {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--gray-200);
+            border-radius: 9999px; /* 膠囊形狀 */
+            background: var(--white);
+            font-size: var(--text-sm);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .search-filters .filter-group select:focus,
+        .search-filters .filter-group input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(39, 62, 195, 0.12);
+        }
+
+        .search-filters .btn.btn-primary {
+            border-radius: 9999px;
+            padding: 0 12px;
+            width: auto;
+            white-space: nowrap;
+            box-shadow: none !important; /* 移除背景陰影 */
+            transition: none;
+            height: 36px;               /* 與輸入高度一致 */
+            background: var(--primary-color) !important;
+            color: #fff !important;
+            border: 1px solid var(--primary-color) !important;
+        }
+
+        .search-filters .btn.btn-primary:hover {
+            transform: none;
+            box-shadow: none !important;
+            background: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+        }
+
+        .search-filters .btn.btn-primary:active {
+            transform: none;
+            box-shadow: none !important;
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        @media (max-width: 768px) {
+            .filter-card { min-width: 180px; }
         }
     </style>
 </head>
@@ -138,11 +281,19 @@
                             <i class="fas fa-chart-bar"></i>
                             <span>數據分析</span>
                         </a>
+                        <a href="notifications.html" class="quick-action">
+                            <i class="fas fa-bell"></i>
+                            <span>通知</span>
+                        </a>
+                        <a href="search.html" class="quick-action">
+                            <i class="fas fa-search"></i>
+                            <span>搜尋人才</span>
+                        </a>
                     </div>
 
                     <h2>搜尋篩選</h2>
                     <div class="search-filters">
-                        <div class="filter-row">
+                        <div class="filter-row row-1">
                             <div class="filter-group">
                                 <label>技能</label>
                                 <select>
@@ -172,11 +323,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label>關鍵字搜尋</label>
-                                <input type="text" placeholder="搜尋作品標題或描述...">
-                            </div>
+                        <div class="filter-row row-2">
                             <div class="filter-group">
                                 <label>排序方式</label>
                                 <select>
@@ -187,8 +334,12 @@
                                 </select>
                             </div>
                             <div class="filter-group">
+                                <label>關鍵字搜尋</label>
+                                <input type="text" placeholder="搜尋作品標題或描述...">
+                            </div>
+                            <div class="filter-group">
                                 <label>&nbsp;</label>
-                                <button class="btn btn-primary" style="width: 100%;">搜尋</button>
+                                <button class="btn btn-primary" style="width: auto;">搜尋</button>
                             </div>
                         </div>
                     </div>

@@ -107,6 +107,11 @@
     gap: var(--spacing-lg);
 }
 
+/* 推薦人才：增加卡片之間的間距 */
+.candidate-grid.recommended-students {
+    gap: var(--spacing-xl);
+}
+
 .candidate-card {
     background: var(--gray-50);
     border-radius: var(--radius-lg);

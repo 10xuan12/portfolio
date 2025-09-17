@@ -33,6 +33,12 @@
     <!-- 主要內容 -->
     <main class="jobs-container">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="jobs-header">
                 <h1 class="jobs-title">職缺管理</h1>
                 <div class="jobs-actions">
@@ -230,5 +236,16 @@
 
     <script src="../js/app.js"></script>
     <script src="../js/enterprise/jobs.js"></script>
+    <script>
+    if (typeof goBack !== 'function') {
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+    }
+    </script>
 </body>
 </html> 

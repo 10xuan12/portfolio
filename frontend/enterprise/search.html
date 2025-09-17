@@ -33,6 +33,12 @@
     <!-- 主要內容 -->
     <main class="search-container">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="search-header">
                 <h1 class="search-title">人才搜尋</h1>
                 <div class="search-actions">
@@ -224,5 +230,16 @@
 
     <script src="../js/app.js"></script>
     <script src="../js/enterprise/search.js"></script>
+    <script>
+    if (typeof goBack !== 'function') {
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+    }
+    </script>
 </body>
 </html> 
