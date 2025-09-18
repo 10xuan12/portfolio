@@ -111,7 +111,7 @@
 }
 
 .portfolio-item:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
 }
 
 .portfolio-image {
@@ -166,6 +166,12 @@
     margin-right: var(--spacing-xs);
     font-size: inherit;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
 }
 
 .btn i:only-child {

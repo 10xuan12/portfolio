@@ -509,7 +509,7 @@ body {
 }
 
 .portfolio-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
 }
 
 .portfolio-image img {

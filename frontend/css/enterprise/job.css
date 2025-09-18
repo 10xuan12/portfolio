@@ -3,6 +3,11 @@
     padding: var(--spacing-2xl) 0;
 }
 
+.jobs-container .container {
+    max-width: none;
+    padding: 0 var(--spacing-md);
+}
+
 .jobs-header {
     display: flex;
     justify-content: between;
@@ -25,7 +30,7 @@
 
 .jobs-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: var(--spacing-xl);
 }
 
@@ -34,6 +39,8 @@
     border-radius: var(--radius-xl);
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-md);
+    margin: 0 calc(-1 * var(--spacing-md));
+    border-radius: 0;
 }
 
 .job-item {
@@ -157,8 +164,9 @@
     border-radius: var(--radius-xl);
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-md);
-    position: sticky;
-    top: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+    margin: var(--spacing-xl) calc(-1 * var(--spacing-md)) 0;
+    border-radius: 0;
 }
 
 .form-section {
@@ -273,10 +281,6 @@
 @media (max-width: 1024px) {
     .jobs-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .job-form {
-        position: static;
     }
 }
 

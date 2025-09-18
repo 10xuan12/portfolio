@@ -753,6 +753,11 @@ function exportReviews() {
     }
 }
 
+// 返回上一頁
+function goBack() {
+    window.history.back();
+}
+
 // 全域函數，供 HTML 直接調用
 window.switchTab = switchTab;
 window.viewPortfolio = viewPortfolio;
@@ -768,4 +773,5 @@ window.viewReport = viewReport;
 window.resolveReport = resolveReport;
 window.dismissReport = dismissReport;
 window.refreshReviews = refreshReviews;
-window.exportReviews = exportReviews; 
+window.exportReviews = exportReviews;
+window.goBack = goBack; 

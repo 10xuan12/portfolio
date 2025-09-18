@@ -246,6 +246,10 @@ async function markAsRead(notificationId) {
             const notificationElement = document.querySelector(`[data-id="${notificationId}"]`);
             if (notificationElement) {
                 notificationElement.classList.remove('unread');
+                // 加入一次性動畫類名
+                notificationElement.classList.add('just-read');
+                // 動畫結束後移除類名，避免重複堆疊
+                setTimeout(() => notificationElement.classList.remove('just-read'), 900);
             }
             
             updateStats();

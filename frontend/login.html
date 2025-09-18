@@ -7,17 +7,184 @@
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        // 設定主色調主題
-        document.body.classList.add('main-theme');
+        // 登入頁面樣式設定
     </script>
     <style>
         .login-container {
             min-height: 100vh;
             display: flex;
+            align-items: stretch;
+            justify-content: center;
+            background: var(--background-color);
+            padding: var(--spacing-md);
+            gap: var(--spacing-3xl);
+        }
+        
+        .login-left {
+            flex: 1;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+        }
+        
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, var(--primary-color) 10%, var(--secondary-color) 100%, var(--white) 10%);
-            padding: var(--spacing-md);
+        }
+        
+        .hero-visual {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .floating-card {
+            position: absolute;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-sm);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        
+        .floating-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .floating-card i {
+            font-size: var(--text-2xl);
+            color: var(--primary-color);
+        }
+        
+        .floating-card span {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--gray-700);
+            text-align: center;
+        }
+        
+        .card-1 {
+            top: 8%;
+            left: 5%;
+            right: auto;
+            width: 120px;
+            height: 100px;
+            animation: float1 4s ease-in-out infinite;
+            transform-origin: center;
+        }
+        
+        .card-2 {
+            top: 12%;
+            left: auto;
+            right: 8%;
+            width: 120px;
+            height: 100px;
+            animation: float2 3.5s ease-in-out infinite 0.8s;
+            transform-origin: center;
+        }
+        
+        .card-3 {
+            top: 38%;
+            left: 5%;
+            right: auto;
+            width: 120px;
+            height: 100px;
+            animation: float3 4.2s ease-in-out infinite 1.5s;
+            transform-origin: center;
+        }
+        
+        .card-4 {
+            top: 42%;
+            left: auto;
+            right: 3%;
+            width: 120px;
+            height: 100px;
+            animation: float4 3.8s ease-in-out infinite 0.3s;
+            transform-origin: center;
+        }
+        
+        .card-5 {
+            top: 52%;
+            left: 29%;
+            right: auto;
+            width: 120px;
+            height: 100px;
+            animation: float5 4.5s ease-in-out infinite 2.1s;
+            transform-origin: center;
+        }
+        
+        .card-6 {
+            top: 65%;
+            left: auto;
+            right: 6%;
+            width: 120px;
+            height: 100px;
+            animation: float6 3.2s ease-in-out infinite 1.2s;
+            transform-origin: center;
+        }
+        
+        .card-7 {
+            top: 23%;
+            left: 45%;
+            right: auto;
+            width: 120px;
+            height: 100px;
+            animation: float7 4.1s ease-in-out infinite 0.6s;
+            transform-origin: center;
+        }
+        
+        @keyframes float1 {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes float2 {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes float3 {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes float4 {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+        
+        @keyframes float5 {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        
+        @keyframes float6 {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-14px); }
+        }
+        
+        @keyframes float7 {
+            0%, 100% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-11px); }
+        }
+        
+        
+        .login-right {
+            flex: 1;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
         }
         
         .login-card {
@@ -27,6 +194,9 @@
             padding: var(--spacing-2xl);
             width: 100%;
             max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .login-header {
@@ -178,10 +348,17 @@
             display: flex;
             align-items: center;
             gap: var(--spacing-xs);
+            background: var(--primary-color);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-lg);
+            transition: all 0.2s ease;
+            z-index: 1000;
         }
         
         .back-home:hover {
-            text-decoration: underline;
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
 
         /* 測試帳號樣式 */
@@ -269,6 +446,41 @@
         }
         
         /* 響應式設計 */
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                gap: var(--spacing-xl);
+            }
+            
+            .login-left {
+                order: 2;
+                max-width: 300px;
+            }
+            
+            .login-right {
+                order: 1;
+            }
+            
+            .hero-image {
+                max-width: 300px;
+                height: 100%;
+            }
+            
+            .floating-card {
+                width: 100px;
+                height: 80px;
+                padding: var(--spacing-md);
+            }
+            
+            .floating-card i {
+                font-size: var(--text-xl);
+            }
+            
+            .floating-card span {
+                font-size: var(--text-xs);
+            }
+        }
+        
         @media (max-width: 480px) {
             .login-card {
                 padding: var(--spacing-xl);
@@ -284,6 +496,25 @@
             .test-fill-btn {
                 align-self: flex-end;
             }
+            
+            .hero-image {
+                max-width: 250px;
+                height: 100%;
+            }
+            
+            .floating-card {
+                width: 80px;
+                height: 70px;
+                padding: var(--spacing-sm);
+            }
+            
+            .floating-card i {
+                font-size: var(--text-lg);
+            }
+            
+            .floating-card span {
+                font-size: 10px;
+            }
         }
     </style>
 </head>
@@ -294,7 +525,43 @@
     </a>
 
     <div class="login-container">
-        <div class="login-card">
+        <div class="login-left">
+            <div class="hero-image">
+                <div class="hero-visual">
+                    <div class="floating-card card-1">
+                        <i class="fas fa-code"></i>
+                        <span>程式作品</span>
+                    </div>
+                    <div class="floating-card card-2">
+                        <i class="fas fa-palette"></i>
+                        <span>設計作品</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <i class="fas fa-chart-line"></i>
+                        <span>數據分析</span>
+                    </div>
+                    <div class="floating-card card-4">
+                        <i class="fas fa-camera"></i>
+                        <span>攝影作品</span>
+                    </div>
+                    <div class="floating-card card-5">
+                        <i class="fas fa-music"></i>
+                        <span>音樂創作</span>
+                    </div>
+                    <div class="floating-card card-6">
+                        <i class="fas fa-video"></i>
+                        <span>影片製作</span>
+                    </div>
+                    <div class="floating-card card-7">
+                        <i class="fas fa-pen-fancy"></i>
+                        <span>寫作作品</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="login-right">
+            <div class="login-card">
             <div class="login-header">
                 <h1>登入 Portfolio+</h1>
                 <p>選擇您的身份並登入</p>
@@ -384,6 +651,7 @@
 
             <div class="register-link">
                 還沒有帳號？ <a href="register.html">立即註冊</a>
+            </div>
             </div>
         </div>
     </div>

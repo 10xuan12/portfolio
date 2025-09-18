@@ -33,6 +33,12 @@
     <!-- 主要內容 -->
     <main class="reports-container">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="reports-header">
                 <h1 class="reports-title">報告管理</h1>
                 <div class="reports-actions">
@@ -218,8 +224,8 @@
 
             <!-- 分頁 -->
             <div class="pagination">
-                <button class="page-btn" onclick="changePage(1)">1</button>
-                <button class="page-btn active" onclick="changePage(2)">2</button>
+                <button class="page-btn active" onclick="changePage(1)">1</button>
+                <button class="page-btn" onclick="changePage(2)">2</button>
                 <button class="page-btn" onclick="changePage(3)">3</button>
                 <button class="page-btn" onclick="changePage(4)">4</button>
                 <button class="page-btn" onclick="changePage(5)">5</button>
@@ -232,5 +238,14 @@
 
     <script src="../js/app.js"></script>
     <script src="../js/admin/reports.js"></script>
+    <script>
+        // 確保 goBack 函數立即可用
+        if (typeof goBack === 'undefined') {
+            function goBack() {
+                window.history.back();
+            }
+            window.goBack = goBack;
+        }
+    </script>
 </body>
 </html> 

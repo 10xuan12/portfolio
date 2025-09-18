@@ -452,6 +452,11 @@ function changePage(page) {
     Utils.showNotification(`切換到第 ${page} 頁`, 'info');
 }
 
+// 返回上一頁
+function goBack() {
+    window.history.back();
+}
+
 // 全域函數，供 HTML 直接調用
 window.viewReport = viewReport;
 window.resolveReport = resolveReport;
@@ -459,4 +464,5 @@ window.dismissReport = dismissReport;
 window.reopenReport = reopenReport;
 window.refreshReports = refreshReports;
 window.exportReports = exportReports;
-window.changePage = changePage; 
+window.changePage = changePage;
+window.goBack = goBack; 

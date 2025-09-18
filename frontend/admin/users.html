@@ -33,6 +33,12 @@
     <!-- 主要內容 -->
     <main class="users-container">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="users-header">
                 <h1 class="users-title">使用者管理</h1>
                 <div class="users-actions">
@@ -177,7 +183,7 @@
                                         <button class="action-btn" onclick="editUser(1)">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="action-btn" onclick="suspendUser(1)">
+                                        <button class="action-btn" onclick="toggleSuspendUser(1)" title="暫停/恢復使用者">
                                             <i class="fas fa-pause"></i>
                                         </button>
                                         <button class="action-btn danger" onclick="deleteUser(1)">
@@ -224,7 +230,7 @@
                                         <button class="action-btn" onclick="editUser(2)">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="action-btn" onclick="suspendUser(2)">
+                                        <button class="action-btn" onclick="toggleSuspendUser(2)" title="暫停/恢復使用者">
                                             <i class="fas fa-pause"></i>
                                         </button>
                                         <button class="action-btn danger" onclick="deleteUser(2)">
@@ -274,7 +280,57 @@
                                         <button class="action-btn" onclick="rejectUser(3)">
                                             <i class="fas fa-times"></i>
                                         </button>
+                                        <button class="action-btn" onclick="toggleSuspendUser(3)" title="暫停/恢復使用者">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
                                         <button class="action-btn danger" onclick="deleteUser(3)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="user-select" value="4">
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-avatar avatar-student">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div class="user-details">
+                                            <h4>王小美</h4>
+                                            <p>wang@example.com</p>
+                                            <p>設計學系</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>學生</td>
+                                <td>
+                                    <span class="user-status status-suspended">暫停</span>
+                                </td>
+                                <td>
+                                    <div class="user-stats">
+                                        <span>4 作品</span>
+                                        <span>456 瀏覽</span>
+                                        <span>34 讚</span>
+                                    </div>
+                                </td>
+                                <td>2024-01-12</td>
+                                <td>2024-01-15 11:20</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <button class="action-btn" onclick="viewUser(4)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="editUser(4)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn" onclick="toggleSuspendUser(4)" title="暫停/恢復使用者">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="action-btn danger" onclick="deleteUser(4)">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -288,8 +344,8 @@
 
             <!-- 分頁 -->
             <div class="pagination">
-                <button class="page-btn" onclick="changePage(1)">1</button>
-                <button class="page-btn active" onclick="changePage(2)">2</button>
+                <button class="page-btn active" onclick="changePage(1)">1</button>
+                <button class="page-btn" onclick="changePage(2)">2</button>
                 <button class="page-btn" onclick="changePage(3)">3</button>
                 <button class="page-btn" onclick="changePage(4)">4</button>
                 <button class="page-btn" onclick="changePage(5)">5</button>
@@ -302,5 +358,14 @@
 
     <script src="../js/app.js"></script>
     <script src="../js/admin/users.js"></script>
+    <script>
+        // 確保 goBack 函數立即可用
+        if (typeof goBack === 'undefined') {
+            function goBack() {
+                window.history.back();
+            }
+            window.goBack = goBack;
+        }
+    </script>
 </body>
 </html> 

@@ -597,10 +597,16 @@ window.clearCache = clearCache;
 window.optimizeDatabase = optimizeDatabase;
 window.checkSystemHealth = checkSystemHealth;
 window.updateSystem = updateSystem;
+// 返回上一頁
+function goBack() {
+    window.history.back();
+}
+
 window.generateReport = generateReport;
 window.createBackup = createBackup;
 window.scheduleBackup = scheduleBackup;
 window.restoreBackup = restoreBackup;
 window.testBackup = testBackup;
 window.clearLogs = clearLogs;
-window.exportLogs = exportLogs; 
+window.exportLogs = exportLogs;
+window.goBack = goBack; 

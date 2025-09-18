@@ -33,6 +33,12 @@
     <!-- 主要內容 -->
     <main class="content-container">
         <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
             <div class="content-header">
                 <h1 class="content-title">內容審核</h1>
                 <div class="content-actions">
@@ -50,32 +56,25 @@
             <!-- 統計卡片 -->
             <div class="stats-cards">
                 <div class="stat-card">
-                    <div class="stat-content-box">
-                        <div class="number">12</div>
-                        <div class="label">待審核作品</div>
-                    </div>
+                    <div class="number">12</div>
+                    <div class="label">待審核作品</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-content-box">
-                        <div class="number">3</div>
-                        <div class="label">待審核職缺</div>
-                    </div>
+                    <div class="number">3</div>
+                    <div class="label">待審核職缺</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-content-box">
-                        <div class="number">5</div>
-                        <div class="label">待審核使用者</div>
-                    </div>
+                    <div class="number">5</div>
+                    <div class="label">待審核使用者</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-content-box">
-                        <div class="number">8</div>
-                        <div class="label">待處理報告</div>
-                    </div>
+                    <div class="number">8</div>
+                    <div class="label">待處理報告</div>
                 </div>
             </div>
 
             <!-- 內容標籤 -->
+            <div class="content-white-wrap">
             <div class="content-tabs">
                 <button class="content-tab active" onclick="switchTab('portfolios')">
                     <i class="fas fa-folder"></i>
@@ -325,10 +324,20 @@
                     <!-- 假資料結束 -->
                 </div>
             </div>
+            </div>
         </div>
     </main>
 
     <script src="../js/app.js"></script>
     <script src="../js/admin/content.js"></script>
+    <script>
+        // 確保 goBack 函數立即可用
+        if (typeof goBack === 'undefined') {
+            function goBack() {
+                window.history.back();
+            }
+            window.goBack = goBack;
+        }
+    </script>
 </body>
 </html> 

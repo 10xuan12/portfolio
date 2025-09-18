@@ -5,7 +5,7 @@
 
 .notifications-header {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-xl);
     flex-wrap: wrap;
@@ -25,7 +25,7 @@
 
 .notifications-grid {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr 350px;
     gap: var(--spacing-xl);
 }
 
@@ -39,7 +39,7 @@
     padding: var(--spacing-lg);
     border-bottom: 2px solid var(--gray-200);
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -51,6 +51,7 @@
 .notifications-filters {
     display: flex;
     gap: var(--spacing-sm);
+    justify-content: flex-end;
 }
 
 .filter-btn {
@@ -73,7 +74,7 @@
 .notification-item {
     padding: var(--spacing-lg);
     border-bottom: 1px solid var(--gray-200);
-    transition: background-color 0.2s ease;
+    transition: background-color 0.3s ease, opacity 0.3s ease, transform 0.2s ease;
     cursor: pointer;
 }
 
@@ -131,7 +132,7 @@
 
 .notification-meta {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     font-size: var(--text-sm);
     color: var(--gray-500);
@@ -162,6 +163,24 @@
     color: var(--primary-color);
 }
 
+/* 已讀狀態：微淡化標題與內容，讓變化更明顯 */
+.notification-item:not(.unread) .notification-title {
+    color: var(--gray-700);
+}
+.notification-item:not(.unread) .notification-message {
+    color: var(--gray-600);
+}
+
+/* 標記已讀瞬間的過渡動畫 */
+.notification-item.just-read {
+    animation: readFlash 800ms ease;
+}
+
+@keyframes readFlash {
+    0% { background: rgba(46, 204, 113, 0.25); }
+    100% { background: transparent; }
+}
+
 .notification-sidebar {
     display: flex;
     flex-direction: column;
@@ -171,8 +190,9 @@
 .sidebar-card {
     background: var(--white);
     border-radius: var(--radius-xl);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     box-shadow: var(--shadow-md);
+    box-sizing: border-box;
 }
 
 .sidebar-card h3 {
@@ -184,8 +204,51 @@
 
 .notification-stats {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.stat-card {
+    text-align: center;
+    padding: var(--spacing-sm);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 70px;
+    box-sizing: border-box;
+}
+
+.stat-content-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* 防止統計卡片在側欄寬度不足時凸出 */
+.notification-sidebar .stat-card { width: 100%; }
+.notification-sidebar .stat-content-box {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
+}
+
+/* 通知統計：移除背景、圓角、陰影（更簡潔） */
+.notification-sidebar .stat-card {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+.notification-sidebar .stat-content-box {
+    background: rgba(39, 62, 195, 0.06);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md) var(--spacing-sm);
+    box-shadow: none;
 }
 
 .stat-item {
@@ -202,6 +265,17 @@
     margin-bottom: var(--spacing-xs);
 }
 
+.number {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.label {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+}
+
 .stat-label {
     font-size: var(--text-sm);
     color: var(--gray-600);
@@ -213,7 +287,7 @@
 
 .type-item {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     padding: var(--spacing-sm) 0;
     border-bottom: 1px solid var(--gray-200);
@@ -269,6 +343,11 @@
     
     .notification-stats {
         grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, 1fr);
+    }
+    
+    .stat-card {
+        min-height: 60px;
     }
 }
 

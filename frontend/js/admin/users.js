@@ -187,8 +187,8 @@ function renderUsers(filteredUsers = null) {
                             <i class="fas fa-times"></i>
                         </button>
                     ` : `
-                        <button class="action-btn" onclick="suspendUser(${user.id})">
-                            <i class="fas fa-pause"></i>
+                        <button class="action-btn" onclick="toggleSuspendUser(${user.id})" title="${user.status === 'suspended' ? '恢復使用者' : '暫停使用者'}">
+                            <i class="fas ${user.status === 'suspended' ? 'fa-play' : 'fa-pause'}"></i>
                         </button>
                     `}
                     <button class="action-btn danger" onclick="deleteUser(${user.id})">
@@ -369,6 +369,33 @@ async function rejectUser(userId) {
             Utils.showNotification('操作失敗，請稍後再試', 'error');
             console.error('拒絕使用者錯誤:', error);
         }
+    }
+}
+
+// 暫停/恢復 使用者（切換）
+async function toggleSuspendUser(userId) {
+    try {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        if (user.status === 'suspended') {
+            if (!confirm('確定要恢復這個使用者並設定為啟用嗎？')) return;
+            // TODO: 呼叫後端恢復 API
+            // await fetch(`/api/admin/users/${userId}/resume`, { method: 'PUT' });
+            user.status = 'active';
+            renderUsers();
+            Utils.showNotification('使用者已恢復並啟用', 'success');
+        } else {
+            if (!confirm('確定要暫停這個使用者嗎？')) return;
+            // TODO: 呼叫後端暫停 API
+            // await fetch(`/api/admin/users/${userId}/suspend`, { method: 'PUT' });
+            user.status = 'suspended';
+            renderUsers();
+            Utils.showNotification('使用者已暫停', 'success');
+        }
+    } catch (error) {
+        Utils.showNotification('操作失敗，請稍後再試', 'error');
+        console.error('切換暫停/恢復錯誤:', error);
     }
 }
 
@@ -606,6 +633,11 @@ function changePage(page) {
     Utils.showNotification(`切換到第 ${page} 頁`, 'info');
 }
 
+// 返回上一頁
+function goBack() {
+    window.history.back();
+}
+
 // 全域函數，供 HTML 直接調用
 window.toggleUserSelection = toggleUserSelection;
 window.toggleSelectAll = toggleSelectAll;
@@ -615,6 +647,7 @@ window.editUser = editUser;
 window.approveUser = approveUser;
 window.rejectUser = rejectUser;
 window.suspendUser = suspendUser;
+window.toggleSuspendUser = toggleSuspendUser;
 window.deleteUser = deleteUser;
 window.bulkActivate = bulkActivate;
 window.bulkDeactivate = bulkDeactivate;
@@ -622,4 +655,5 @@ window.bulkDelete = bulkDelete;
 window.createUser = createUser;
 window.refreshUsers = refreshUsers;
 window.exportUsers = exportUsers;
-window.changePage = changePage; 
+window.changePage = changePage;
+window.goBack = goBack; 

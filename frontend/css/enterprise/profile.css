@@ -43,9 +43,19 @@
 
 .sidebar-card {
     background: var(--white);
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--gray-200);
+}
+
+.sidebar-card h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--gray-200);
+    padding-bottom: var(--spacing-sm);
 }
 
 .form-section {
@@ -138,62 +148,118 @@
     font-size: var(--text-sm);
 }
 
-.stats-grid {
+/* 企業統計樣式 */
+.profile-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
 }
 
-.stat-item {
-    text-align: center;
-    padding: var(--spacing-md);
+.stat-card {
     background: var(--gray-50);
     border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--gray-200);
 }
 
-.stat-number {
+.stat-content-box {
+    text-align: center;
+}
+
+.stat-content-box .number {
     font-size: var(--text-2xl);
     font-weight: 700;
     color: var(--primary-color);
     margin-bottom: var(--spacing-xs);
+    display: block;
 }
 
-.stat-label {
+.stat-content-box .label {
     font-size: var(--text-sm);
     color: var(--gray-600);
+    font-weight: 500;
 }
 
+/* 最近活動樣式 */
 .activity-list {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .activity-item {
-    padding: var(--spacing-sm) 0;
-    border-bottom: 1px solid var(--gray-200);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
     display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
 }
 
 .activity-item:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .activity-icon {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: var(--text-sm);
+    flex-shrink: 0;
 }
 
-.activity-job { background: var(--primary-color); color: var(--white); }
-.activity-application { background: var(--success-color); color: var(--white); }
-.activity-view { background: var(--accent-color); color: var(--white); }
-.activity-contact { background: var(--warning-color); color: var(--white); }
+.activity-item > div:last-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-item > div:last-child > div:first-child {
+    font-size: var(--text-sm);
+    color: var(--gray-800);
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.4;
+}
+
+.activity-item > div:last-child small {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    font-weight: 400;
+}
+
+/* 活動類型顏色 */
+.activity-job,
+.activity-application,
+.activity-view,
+.activity-contact { 
+    background: var(--primary-color); 
+    color: var(--white); 
+}
+
+/* 快速操作按鈕樣式 */
+.sidebar-card .btn {
+    width: 100%;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    text-decoration: none;
+    border: 2px solid var(--primary-color);
+    background: var(--white);
+    color: var(--primary-color);
+}
+
+.sidebar-card .btn i {
+    font-size: var(--text-sm);
+}
 
 @media (max-width: 1024px) {
     .profile-grid {
@@ -206,8 +272,32 @@
         grid-template-columns: 1fr;
     }
     
-    .stats-grid {
+    .profile-stats {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
+    
+    .stat-card {
+        padding: var(--spacing-sm);
+    }
+    
+    .stat-content-box .number {
+        font-size: var(--text-xl);
+    }
+    
+    .activity-item {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+    
+    .activity-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .sidebar-card .btn {
+        padding: var(--spacing-sm);
+        font-size: var(--text-sm);
     }
 }
 
