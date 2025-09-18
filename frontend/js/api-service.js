@@ -355,6 +355,117 @@ if (typeof window.ApiService === 'undefined') {
 
         // 根據端點和方法返回對應的假資料
         switch (endpoint) {
+            // 管理員端相關（假資料準備）
+            case 'admin/dashboard':
+                return {
+                    status: 200,
+                    data: {
+                        stats: {
+                            totalUsers: 1234,
+                            totalStudents: 890,
+                            totalEnterprises: 156,
+                            totalPortfolios: 2345,
+                            totalJobs: 89,
+                            totalApplications: 456,
+                            thisMonthUsers: 123,
+                            thisMonthPortfolios: 234,
+                            thisMonthJobs: 12,
+                            thisMonthApplications: 67
+                        },
+                        recentActivities: [
+                            { id: 1, type: 'user', text: '新學生註冊：張小明 (資訊管理學系)', time: '10 分鐘前', status: 'pending' },
+                            { id: 2, type: 'enterprise', text: '新企業註冊：台灣微軟股份有限公司', time: '30 分鐘前', status: 'approved' }
+                        ],
+                        pendingReviews: [
+                            { id: 1, type: 'user', title: '學生註冊審核', count: 5, description: '等待審核的學生註冊申請' },
+                            { id: 2, type: 'enterprise', title: '企業註冊審核', count: 2, description: '等待審核的企業註冊申請' }
+                        ],
+                        systemHealth: { status: 'healthy', uptime: '99.9%', responseTime: '120ms', activeUsers: 234, serverLoad: '45%' },
+                        topUsers: [
+                            { id: 1, name: '張小明', type: 'student', department: '資訊管理學系', portfolios: 8, views: 1234, likes: 89 },
+                            { id: 2, name: '台灣微軟', type: 'enterprise', jobs: 5, applications: 23, views: 567 }
+                        ],
+                        recentReports: [
+                            { id: 1, type: 'inappropriate', reporter: '張小明', reported: '李大明', reason: '不當內容', status: 'pending', time: '1 小時前' }
+                        ]
+                    }
+                };
+
+            case 'admin/reviews':
+                return {
+                    status: 200,
+                    data: {
+                        portfolios: [
+                            {
+                                id: 1,
+                                title: '響應式網站設計',
+                                author: '張小明',
+                                type: 'web',
+                                status: 'pending',
+                                submitted_at: '2024-01-20 14:30',
+                                description: '使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。',
+                                skills: ['HTML5', 'CSS3', 'JavaScript', '響應式'],
+                                image: 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design'
+                            }
+                        ],
+                        jobs: [
+                            {
+                                id: 1,
+                                title: '前端開發實習生',
+                                enterprise: '台灣微軟',
+                                type: 'intern',
+                                status: 'pending',
+                                submitted_at: '2024-01-20 10:45',
+                                description: '尋找對前端開發有熱情的實習生',
+                                location: '台北市',
+                                salary: '月薪 30,000-35,000',
+                                requirements: ['JavaScript', 'React', 'HTML/CSS', 'Git']
+                            }
+                        ],
+                        users: [
+                            { id: 1, name: 'Google 台灣', type: 'enterprise', status: 'pending', submitted_at: '2024-01-20 09:30', description: '企業帳號申請', email: 'hr@google.com.tw', website: 'https://careers.google.com', company_type: '科技公司', company_size: '1000人以上' }
+                        ],
+                        reports: [
+                            { id: 1, type: 'inappropriate', reporter: '張小明', reported: '李大明', status: 'pending', submitted_at: '2024-01-20 16:20', reason: '作品描述包含不當用語', description: '違反平台規範', details: '使用不適合的語言' }
+                        ]
+                    }
+                };
+
+            case 'admin/reports':
+                return {
+                    status: 200,
+                    data: [
+                        { id: 1, type: 'inappropriate', reporter: '張小明', reported: '李大明', status: 'pending', submitted_at: '2024-01-20 16:20', reason: '不當用語', description: '違反平台規範', details: '使用不適合的語言', content_type: 'portfolio', content_id: 123 }
+                    ]
+                };
+
+            case 'admin/users':
+                return {
+                    status: 200,
+                    data: [
+                        { id: 1, name: '張小明', email: 'zhang@example.com', type: 'student', department: '資訊管理學系', status: 'active', stats: { portfolios: 8, views: 1234, likes: 89 }, registered_at: '2024-01-15', last_login: '2024-01-20 14:30' }
+                    ]
+                };
+
+            case 'admin/settings':
+                return { status: 200, data: { general: { siteName: 'Portfolio+', siteDescription: '學生作品展示與企業招募平台', adminEmail: 'admin@portfolio.com', supportEmail: 'support@portfolio.com', timezone: 'Asia/Taipei', language: 'zh-TW', maxFileSize: 10, sessionTimeout: 120 }, security: { minPasswordLength: 8, passwordExpiry: 90, requireComplexPassword: true, require2FA: false, maxLoginAttempts: 5, lockoutDuration: 30, enableIPWhitelist: false, allowedIPs: '' }, notifications: { smtpHost: 'smtp.gmail.com', smtpPort: 587, smtpEncryption: 'tls', smtpUsername: '', smtpPassword: '', enableEmailNotifications: true, notifyNewUsers: true, notifyNewPortfolios: true, notifyNewJobs: false, notifySystemErrors: true }, appearance: { primaryColor: '#667eea', accentColor: '#f093fb', themeMode: 'light', enableAnimations: true }, backup: { backupFrequency: 'weekly', enableAutoBackup: true, confirmRestore: true }, logs: { logLevel: 'info', logRetention: 30, enableLiveLogs: false } } };
+
+            case 'admin/reports/resolve':
+            case 'admin/reports/dismiss':
+            case 'admin/reports/reopen':
+            case 'admin/users/approve':
+            case 'admin/users/reject':
+            case 'admin/users/suspend':
+            case 'admin/users/resume':
+            case 'admin/users/bulk-activate':
+            case 'admin/users/bulk-deactivate':
+            case 'admin/users/bulk-delete':
+            case 'admin/portfolios/approve':
+            case 'admin/portfolios/reject':
+            case 'admin/jobs/approve':
+            case 'admin/jobs/reject':
+            case 'admin/settings/update':
+                return { status: 200, message: 'OK', data: null };
             // 使用者相關
             case 'users':
             case 'users/':
@@ -530,6 +641,85 @@ if (typeof window.ApiService === 'undefined') {
      */
     async getUser(userId) {
         return this.request(`users/${userId}`);
+    }
+
+    // ==================== 管理員端 API 方法 ====================
+
+    async getAdminDashboard() {
+        return this.request('admin/dashboard');
+    }
+
+    async getAdminReviews(filters = {}) {
+        const qs = new URLSearchParams(filters).toString();
+        const ep = qs ? `admin/reviews?${qs}` : 'admin/reviews';
+        return this.request(ep);
+    }
+
+    async getAdminReports(filters = {}) {
+        const qs = new URLSearchParams(filters).toString();
+        const ep = qs ? `admin/reports?${qs}` : 'admin/reports';
+        return this.request(ep);
+    }
+
+    async resolveAdminReport(reportId, payload = {}) {
+        return this.request('admin/reports/resolve', { method: 'POST', body: JSON.stringify({ id: reportId, ...payload }) });
+    }
+
+    async dismissAdminReport(reportId, reason = '') {
+        return this.request('admin/reports/dismiss', { method: 'POST', body: JSON.stringify({ id: reportId, reason }) });
+    }
+
+    async reopenAdminReport(reportId) {
+        return this.request('admin/reports/reopen', { method: 'POST', body: JSON.stringify({ id: reportId }) });
+    }
+
+    async getAdminUsers(filters = {}) {
+        const qs = new URLSearchParams(filters).toString();
+        const ep = qs ? `admin/users?${qs}` : 'admin/users';
+        return this.request(ep);
+    }
+
+    async approveAdminUser(userId) {
+        return this.request('admin/users/approve', { method: 'POST', body: JSON.stringify({ id: userId }) });
+    }
+    async rejectAdminUser(userId) {
+        return this.request('admin/users/reject', { method: 'POST', body: JSON.stringify({ id: userId }) });
+    }
+    async suspendAdminUser(userId) {
+        return this.request('admin/users/suspend', { method: 'POST', body: JSON.stringify({ id: userId }) });
+    }
+    async resumeAdminUser(userId) {
+        return this.request('admin/users/resume', { method: 'POST', body: JSON.stringify({ id: userId }) });
+    }
+    async bulkActivateAdminUsers(ids) {
+        return this.request('admin/users/bulk-activate', { method: 'POST', body: JSON.stringify({ ids }) });
+    }
+    async bulkDeactivateAdminUsers(ids) {
+        return this.request('admin/users/bulk-deactivate', { method: 'POST', body: JSON.stringify({ ids }) });
+    }
+    async bulkDeleteAdminUsers(ids) {
+        return this.request('admin/users/bulk-delete', { method: 'POST', body: JSON.stringify({ ids }) });
+    }
+
+    async approveAdminPortfolio(id) {
+        return this.request('admin/portfolios/approve', { method: 'POST', body: JSON.stringify({ id }) });
+    }
+    async rejectAdminPortfolio(id) {
+        return this.request('admin/portfolios/reject', { method: 'POST', body: JSON.stringify({ id }) });
+    }
+    async approveAdminJob(id) {
+        return this.request('admin/jobs/approve', { method: 'POST', body: JSON.stringify({ id }) });
+    }
+    async rejectAdminJob(id) {
+        return this.request('admin/jobs/reject', { method: 'POST', body: JSON.stringify({ id }) });
+    }
+
+    async getAdminSettings() {
+        return this.request('admin/settings');
+    }
+
+    async updateAdminSettings(data) {
+        return this.request('admin/settings/update', { method: 'POST', body: JSON.stringify(data) });
     }
 
     /**

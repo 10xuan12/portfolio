@@ -132,165 +132,22 @@
 
             <!-- 作品審核 -->
             <div class="content-section active" id="portfoliosSection">
-                <div class="review-grid" id="portfoliosGrid">
-                    <!-- TODO: 從資料庫載入作品審核列表 -->
-                    <!-- 假資料開始 -->
-                    <div class="review-item pending">
-                        <div class="review-header">
-                            <div class="review-info">
-                                <h3>響應式網站設計</h3>
-                                <div class="review-meta">
-                                    <span>作者：張小明</span>
-                                    <span>提交時間：2024-01-20 14:30</span>
-                                </div>
-                            </div>
-                            <span class="review-status status-pending">待審核</span>
-                        </div>
-                        <div class="review-content">
-                            <p class="review-description">使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。</p>
-                            <div class="review-preview">
-                                <img src="https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design" alt="作品預覽">
-                                <p><strong>技能標籤：</strong>HTML5, CSS3, JavaScript, 響應式</p>
-                            </div>
-                        </div>
-                        <div class="review-actions">
-                            <button class="action-btn" onclick="viewPortfolio(1)">
-                                <i class="fas fa-eye"></i> 查看詳情
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="review-item pending">
-                        <div class="review-header">
-                            <div class="review-info">
-                                <h3>行動應用程式</h3>
-                                <div class="review-meta">
-                                    <span>作者：李大明</span>
-                                    <span>提交時間：2024-01-20 12:15</span>
-                                </div>
-                            </div>
-                            <span class="review-status status-pending">待審核</span>
-                        </div>
-                        <div class="review-content">
-                            <p class="review-description">使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。</p>
-                            <div class="review-preview">
-                                <img src="https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App" alt="作品預覽">
-                                <p><strong>技能標籤：</strong>React Native, JavaScript, Firebase, 跨平台</p>
-                            </div>
-                        </div>
-                        <div class="review-actions">
-                            <button class="action-btn" onclick="viewPortfolio(2)">
-                                <i class="fas fa-eye"></i> 查看詳情
-                            </button>
-                        </div>
-                    </div>
-                    <!-- 假資料結束 -->
-                </div>
+                <div class="review-grid" id="portfoliosGrid"></div>
             </div>
 
             <!-- 職缺審核 -->
             <div class="content-section" id="jobsSection">
-                <div class="review-grid" id="jobsGrid">
-                    <!-- TODO: 從資料庫載入職缺審核列表 -->
-                    <!-- 假資料開始 -->
-                    <div class="review-item pending">
-                        <div class="review-header">
-                            <div class="review-info">
-                                <h3>前端開發實習生</h3>
-                                <div class="review-meta">
-                                    <span>企業：台灣微軟</span>
-                                    <span>提交時間：2024-01-20 10:45</span>
-                                </div>
-                            </div>
-                            <span class="review-status status-pending">待審核</span>
-                        </div>
-                        <div class="review-content">
-                            <p class="review-description">我們正在尋找對前端開發有熱情的實習生，協助開發公司內部系統和客戶專案。</p>
-                            <div class="review-preview">
-                                <p><strong>職缺類型：</strong>實習</p>
-                                <p><strong>工作地點：</strong>台北市</p>
-                                <p><strong>技能要求：</strong>JavaScript, React, HTML/CSS, Git</p>
-                                <p><strong>薪資範圍：</strong>月薪 30,000-35,000</p>
-                            </div>
-                        </div>
-                        <div class="review-actions">
-                            <button class="action-btn" onclick="viewJob(1)">
-                                <i class="fas fa-eye"></i> 查看詳情
-                            </button>
-                        </div>
-                    </div>
-                    <!-- 假資料結束 -->
-                </div>
+                <div class="review-grid" id="jobsGrid"></div>
             </div>
 
             <!-- 使用者審核 -->
             <div class="content-section" id="usersSection">
-                <div class="review-grid" id="usersGrid">
-                    <!-- TODO: 從資料庫載入使用者審核列表 -->
-                    <!-- 假資料開始 -->
-                    <div class="review-item pending">
-                        <div class="review-header">
-                            <div class="review-info">
-                                <h3>新企業註冊</h3>
-                                <div class="review-meta">
-                                    <span>企業：Google 台灣</span>
-                                    <span>提交時間：2024-01-20 09:30</span>
-                                </div>
-                            </div>
-                            <span class="review-status status-pending">待審核</span>
-                        </div>
-                        <div class="review-content">
-                            <p class="review-description">Google 台灣分公司申請註冊企業帳號，用於招募實習生和正職員工。</p>
-                            <div class="review-preview">
-                                <p><strong>企業類型：</strong>科技公司</p>
-                                <p><strong>公司規模：</strong>1000人以上</p>
-                                <p><strong>聯絡信箱：</strong>hr@google.com.tw</p>
-                                <p><strong>公司網站：</strong>https://careers.google.com</p>
-                            </div>
-                        </div>
-                        <div class="review-actions">
-                            <button class="action-btn" onclick="viewUser(1)">
-                                <i class="fas fa-eye"></i> 查看詳情
-                            </button>
-                        </div>
-                    </div>
-                    <!-- 假資料結束 -->
-                </div>
+                <div class="review-grid" id="usersGrid"></div>
             </div>
 
             <!-- 報告處理 -->
             <div class="content-section" id="reportsSection">
-                <div class="review-grid" id="reportsGrid">
-                    <!-- TODO: 從資料庫載入報告處理列表 -->
-                    <!-- 假資料開始 -->
-                    <div class="review-item pending">
-                        <div class="review-header">
-                            <div class="review-info">
-                                <h3>不當內容報告</h3>
-                                <div class="review-meta">
-                                    <span>報告者：張小明</span>
-                                    <span>提交時間：2024-01-20 16:20</span>
-                                </div>
-                            </div>
-                            <span class="review-status status-pending">待處理</span>
-                        </div>
-                        <div class="review-content">
-                            <p class="review-description">報告李大明作品「行動應用程式」包含不當內容，違反平台規範。</p>
-                            <div class="review-preview">
-                                <p><strong>報告類型：</strong>不當內容</p>
-                                <p><strong>被報告者：</strong>李大明</p>
-                                <p><strong>報告原因：</strong>作品描述包含不當用語</p>
-                                <p><strong>詳細說明：</strong>作品描述中使用了不適合的語言</p>
-                            </div>
-                        </div>
-                        <div class="review-actions">
-                            <button class="action-btn" onclick="viewReport(1)">
-                                <i class="fas fa-eye"></i> 查看詳情
-                            </button>
-                        </div>
-                    </div>
-                    <!-- 假資料結束 -->
-                </div>
+                <div class="review-grid" id="reportsGrid"></div>
             </div>
             </div>
         </div>

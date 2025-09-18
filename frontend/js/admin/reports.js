@@ -65,10 +65,41 @@ const itemsPerPage = 10;
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
-    renderReports();
     initEventListeners();
-    updateStats();
+    const grid = document.getElementById('reportsGrid');
+    if (grid) grid.innerHTML = `<div style="display:flex;justify-content:center;padding:20px;color:var(--text-secondary);"><i class=\"fas fa-spinner fa-spin\" style=\"margin-right:8px;\"></i>載入中...</div>`;
+    loadReports();
 });
+
+// 從 API 載入報告資料
+async function loadReports() {
+    try {
+        Utils.showNotification('載入報告資料中...', 'info');
+        const resp = await apiService.getAdminReports(buildReportFilters());
+        const data = resp?.data || resp;
+        reports = Array.isArray(data) ? data : (Array.isArray(data?.reports) ? data.reports : reports);
+        renderReports();
+        updateStats();
+        Utils.showNotification('報告資料已載入', 'success');
+        if (!reports || reports.length === 0) {
+            const grid = document.getElementById('reportsGrid');
+            if (grid) grid.innerHTML = `<div class="empty-state"><i class="fas fa-flag"></i><h3>沒有符合條件的報告</h3></div>`;
+        }
+    } catch (e) {
+        console.warn('載入報告失敗，使用本地假資料。', e);
+        renderReports();
+        updateStats();
+    }
+}
+
+function buildReportFilters() {
+    const f = {};
+    if (currentFilters.search) f.q = currentFilters.search;
+    if (currentFilters.type) f.type = currentFilters.type;
+    if (currentFilters.status) f.status = currentFilters.status;
+    if (currentFilters.date) f.date = currentFilters.date;
+    return f;
+}
 
 // 初始化事件監聽器
 function initEventListeners() {
@@ -265,10 +296,7 @@ function viewReport(reportId) {
 // 處理報告
 async function resolveReport(reportId) {
     try {
-        // TODO: 發送處理報告請求到後端 API
-        // await fetch(`/api/admin/reports/${reportId}/resolve`, {
-        //     method: 'PUT'
-        // });
+        await apiService.resolveAdminReport(reportId);
         
         // 更新本地狀態
         const report = reports.find(r => r.id === reportId);
@@ -293,12 +321,7 @@ async function dismissReport(reportId) {
     if (dismissReason === null) return; // 使用者取消
     
     try {
-        // TODO: 發送駁回報告請求到後端 API
-        // await fetch(`/api/admin/reports/${reportId}/dismiss`, {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ reason: dismissReason })
-        // });
+        await apiService.dismissAdminReport(reportId, dismissReason);
         
         // 更新本地狀態
         const report = reports.find(r => r.id === reportId);
@@ -322,10 +345,7 @@ async function dismissReport(reportId) {
 async function reopenReport(reportId) {
     if (confirm('確定要重新開啟這個報告嗎？')) {
         try {
-            // TODO: 發送重新開啟報告請求到後端 API
-            // await fetch(`/api/admin/reports/${reportId}/reopen`, {
-            //     method: 'PUT'
-            // });
+            await apiService.reopenAdminReport(reportId);
             
             // 更新本地狀態
             const report = reports.find(r => r.id === reportId);
@@ -350,14 +370,8 @@ async function reopenReport(reportId) {
 
 // 重新整理報告列表
 function refreshReports() {
-    // TODO: 從後端 API 重新載入報告資料
     Utils.showNotification('正在重新整理...', 'info');
-    
-    setTimeout(() => {
-        applyFilters();
-        updateStats();
-        Utils.showNotification('報告列表已更新', 'success');
-    }, 1000);
+    loadReports();
 }
 
 // 匯出報告資料

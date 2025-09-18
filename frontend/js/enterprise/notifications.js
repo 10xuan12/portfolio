@@ -3,75 +3,68 @@
  * 包含通知管理、篩選、標記已讀等功能
  */
 
-// TODO: 從後端 API 載入通知資料
-let notifications = [
-    {
-        id: 1,
-        type: 'application',
-        title: '新的實習申請',
-        message: '張小明申請了「前端開發實習生」職缺。請查看申請資料並回覆。',
-        time: '2 小時前',
-        isRead: false,
-        actions: ['viewApplication', 'markAsRead']
-    },
-    {
-        id: 2,
-        type: 'job',
-        title: '職缺瀏覽數增加',
-        message: '「UI/UX 設計師」職缺今日瀏覽次數增加 15 次，共有 89 次瀏覽。',
-        time: '4 小時前',
-        isRead: false,
-        actions: ['viewJob', 'markAsRead']
-    },
-    {
-        id: 3,
-        type: 'view',
-        title: '作品被瀏覽',
-        message: '李大明瀏覽了您的企業資料頁面，並對「前端開發實習生」職缺表示興趣。',
-        time: '6 小時前',
-        isRead: true,
-        actions: ['viewStudent', 'contactStudent']
-    },
-    {
-        id: 4,
-        type: 'contact',
-        title: '學生聯絡訊息',
-        message: '王小美發送了一則聯絡訊息，詢問關於實習機會的詳細資訊。',
-        time: '1 天前',
-        isRead: true,
-        actions: ['viewMessage', 'replyMessage']
-    },
-    {
-        id: 5,
-        type: 'system',
-        title: '系統維護通知',
-        message: '系統將於今晚 23:00-02:00 進行維護，期間可能無法使用部分功能。',
-        time: '2 天前',
-        isRead: true,
-        actions: ['markAsRead']
-    }
-];
+// 從後端 API 載入通知資料
+let notifications = [];
 
 // 當前篩選條件
 let currentFilter = 'all';
 
-// 通知統計
+// 通知統計（初始為 0，載入後由實際資料覆蓋）
 let notificationStats = {
-    total: 12,
-    unread: 5,
-    application: 3,
-    job: 2,
-    view: 4,
-    contact: 2,
-    system: 1
+    total: 0,
+    unread: 0,
+    application: 0,
+    job: 0,
+    view: 0,
+    contact: 0,
+    system: 0
 };
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadNotifications();
     renderNotifications();
     updateStats();
     initEventListeners();
 });
+
+// 載入通知
+async function loadNotifications(page = 1) {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        const params = new URLSearchParams({ action: 'list', page: String(page), limit: '20' });
+        const res = await svc.request(`enterprise/notifications.php?${params.toString()}`);
+        const data = res?.data || res || {};
+        const list = Array.isArray(data.notifications) ? data.notifications : (Array.isArray(data) ? data : []);
+        notifications = list.map(n => ({
+            id: n.id,
+            type: n.type || 'system',
+            title: n.title || '',
+            message: n.message || '',
+            time: n.time_ago || n.created_at || '',
+            isRead: !!n.is_read,
+            actions: ['markAsRead']
+        }));
+        // 依通知陣列即時計算統計
+        computeAndUpdateStatsFromNotifications();
+    } catch (e) {
+        console.error('載入通知失敗', e);
+        notifications = [];
+    }
+}
+// 根據目前通知陣列計算統計並更新UI
+function computeAndUpdateStatsFromNotifications() {
+    const total = notifications.length;
+    const unread = notifications.filter(n => !n.isRead).length;
+    const application = notifications.filter(n => n.type === 'application').length;
+    const job = notifications.filter(n => n.type === 'job').length;
+    notificationStats = { total, unread, application, job, view: 0, contact: 0, system: 0 };
+    // 更新 header 數量
+    updateNotificationsCount(total);
+    // 更新側邊統計
+    updateStats();
+}
 
 // 初始化事件監聽器
 function initEventListeners() {
@@ -204,37 +197,27 @@ function updateNotificationsCount(count) {
     }
 }
 
-// 更新統計資料
+// 更新統計資料（套用到通知頁側欄樣式）
 function updateStats() {
-    const stats = notificationStats;
-    
-    // 更新統計數字
-    const statNumbers = document.querySelectorAll('.stat-number');
-    if (statNumbers.length >= 4) {
-        statNumbers[0].textContent = stats.total;
-        statNumbers[1].textContent = stats.unread;
-        statNumbers[2].textContent = stats.application;
-        statNumbers[3].textContent = stats.job;
-    }
-    
-    // 更新類型統計
-    const typeCounts = document.querySelectorAll('.type-count');
-    if (typeCounts.length >= 5) {
-        typeCounts[0].textContent = stats.application;
-        typeCounts[1].textContent = stats.job;
-        typeCounts[2].textContent = stats.view;
-        typeCounts[3].textContent = stats.contact;
-        typeCounts[4].textContent = stats.system;
+    const stats = notificationStats || { total: 0, unread: 0, application: 0, job: 0 };
+    const sidebarNumbers = document.querySelectorAll('.notification-stats .number');
+    if (sidebarNumbers && sidebarNumbers.length >= 4) {
+        sidebarNumbers[0].textContent = String(stats.total || 0);
+        sidebarNumbers[1].textContent = String(stats.unread || 0);
+        sidebarNumbers[2].textContent = String(stats.application || 0);
+        sidebarNumbers[3].textContent = String(stats.job || 0);
     }
 }
 
 // 標記通知為已讀
 async function markAsRead(notificationId) {
     try {
-        // TODO: 發送標記已讀請求到後端 API
-        // await fetch(`/api/enterprise/notifications/${notificationId}/read`, {
-        //     method: 'PUT'
-        // });
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        await svc.request('enterprise/notifications.php', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'mark_read', notification_id: Number(notificationId) })
+        });
         
         // 更新本地狀態
         const notification = notifications.find(n => n.id == notificationId);
@@ -265,10 +248,12 @@ async function markAsRead(notificationId) {
 // 全部標記已讀
 async function markAllAsRead() {
     try {
-        // TODO: 發送全部標記已讀請求到後端 API
-        // await fetch('/api/enterprise/notifications/mark-all-read', {
-        //     method: 'PUT'
-        // });
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        await svc.request('enterprise/notifications.php', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'mark_all_read' })
+        });
         
         // 更新本地狀態
         notifications.forEach(n => n.isRead = true);
@@ -292,10 +277,12 @@ async function markAllAsRead() {
 function clearNotifications() {
     if (confirm('確定要清除所有通知嗎？此操作無法復原。')) {
         try {
-            // TODO: 發送清除通知請求到後端 API
-            // await fetch('/api/enterprise/notifications', {
-            //     method: 'DELETE'
-            // });
+            const svc = window.apiService || window.initializeApiService?.();
+            if (!svc) throw new Error('API 服務未就緒');
+            svc.request('enterprise/notifications.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'clear_all' })
+            });
             
             // 清除本地資料
             notifications = [];
@@ -361,11 +348,13 @@ function refreshNotifications() {
     // TODO: 從後端重新載入通知
     Utils.showNotification('正在重新整理...', 'info');
     
-    setTimeout(() => {
+    loadNotifications().then(() => {
         renderNotifications();
-        updateStats();
+        computeAndUpdateStatsFromNotifications();
         Utils.showNotification('通知已更新', 'success');
-    }, 1000);
+    }).catch(() => {
+        Utils.showNotification('通知更新失敗', 'error');
+    });
 }
 
 // 全域函數，供 HTML 直接調用

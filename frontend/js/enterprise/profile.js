@@ -4,35 +4,13 @@
  */
 
 // TODO: 從後端 API 載入企業資料
-let enterpriseData = {
-    id: 1,
-    name: '台灣微軟股份有限公司',
-    type: '科技公司',
-    size: '51-200人',
-    industry: '軟體開發',
-    email: 'hr@microsoft.com.tw',
-    phone: '02-2345-6789',
-    website: 'https://www.microsoft.com/zh-tw',
-    address: '台北市信義區信義路五段7號',
-    description: '台灣微軟是微軟公司在台灣的分公司，致力於推動台灣的數位轉型。我們提供各種軟體解決方案，包括雲端服務、人工智慧、企業應用程式等。我們重視人才發展，提供良好的工作環境和學習機會。',
-    hrName: '王小明',
-    hrEmail: 'hr@microsoft.com.tw',
-    hrPhone: '02-2345-6789#123',
-    recruitmentProcess: '筆試+面試',
-    benefits: '• 具競爭力的薪資待遇\n• 完善的保險制度（勞保、健保、團保）\n• 年終獎金及績效獎金\n• 教育訓練補助\n• 員工旅遊\n• 彈性工作時間\n• 免費咖啡及零食\n• 健身房補助',
-    logo: 'https://via.placeholder.com/120x120/667eea/ffffff?text=微軟',
-    stats: {
-        jobs: 5,
-        applications: 23,
-        views: 156,
-        contacts: 8
-    }
-};
+let enterpriseData = { id: null, name: '', type: '', size: '', industry: '', email: '', phone: '', website: '', address: '', description: '', hrName: '', hrEmail: '', hrPhone: '', recruitmentProcess: '', benefits: '', logo: '', stats: { jobs: 0, applications: 0, views: 0, contacts: 0 } };
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
     loadEnterpriseData();
     initEventListeners();
+    loadRecentActivities();
 });
 
 // 初始化事件監聽器
@@ -53,13 +31,31 @@ function initEventListeners() {
 // 載入企業資料
 async function loadEnterpriseData() {
     try {
-        // TODO: 從後端 API 載入企業資料
-        // const response = await fetch('/api/enterprise/profile');
-        // enterpriseData = await response.json();
-        
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        const res = await svc.request('enterprise/profile.php?action=get');
+        const data = res?.data || res || {};
+        enterpriseData = {
+            id: data.id,
+            name: data.company_name || '',
+            type: data.company_type || '',
+            size: data.company_size || '',
+            industry: data.industry || '',
+            email: data.contact_email || data.email || '',
+            phone: data.phone || '',
+            website: data.website || '',
+            address: data.address || '',
+            description: data.description || '',
+            hrName: data.contact_person || '',
+            hrEmail: data.contact_email || '',
+            hrPhone: '',
+            recruitmentProcess: '',
+            benefits: data.benefits_description || '',
+            logo: data.logo_url || '',
+            stats: data.stats || { jobs: 0, applications: 0, views: 0, contacts: 0 }
+        };
         populateForm();
         updateStats();
-        
         console.log('企業資料載入完成');
     } catch (error) {
         console.error('載入企業資料錯誤:', error);
@@ -92,15 +88,24 @@ function populateForm() {
 
 // 更新統計資料
 function updateStats() {
-    const stats = enterpriseData.stats;
+    const stats = enterpriseData.stats || { jobs: 0, applications: 0, views: 0, contacts: 0 };
     
-    // 更新統計數字
+    // 儀表卡樣式（例如 dashboard 用）
     const statNumbers = document.querySelectorAll('.stat-number');
-    if (statNumbers.length >= 4) {
+    if (statNumbers && statNumbers.length >= 4) {
         statNumbers[0].textContent = stats.jobs;
         statNumbers[1].textContent = stats.applications;
         statNumbers[2].textContent = stats.views;
         statNumbers[3].textContent = stats.contacts;
+    }
+    
+    // profile.html 側邊欄統計（.profile-stats .number 順序：發布職缺、收到申請、瀏覽次數、聯絡學生）
+    const profileStatNumbers = document.querySelectorAll('.profile-stats .number');
+    if (profileStatNumbers && profileStatNumbers.length >= 4) {
+        profileStatNumbers[0].textContent = String(stats.jobs || 0);
+        profileStatNumbers[1].textContent = String(stats.applications || 0);
+        profileStatNumbers[2].textContent = String(stats.views || 0);
+        profileStatNumbers[3].textContent = String(stats.contacts || 0);
     }
 }
 
@@ -179,16 +184,28 @@ async function saveProfile() {
             logo: enterpriseData.logo
         };
         
-        // TODO: 發送更新請求到後端 API
-        // const response = await fetch('/api/enterprise/profile', {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(updatedData)
-        // });
-        
-        // 更新本地資料
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        const payload = {
+            action: 'update',
+            company_name: updatedData.name,
+            company_type: updatedData.type,
+            industry: updatedData.industry,
+            company_size: updatedData.size,
+            description: updatedData.description,
+            website: updatedData.website,
+            address: updatedData.address,
+            phone: updatedData.phone,
+            contact_person: updatedData.hrName,
+            contact_email: updatedData.hrEmail,
+            benefits_description: updatedData.benefits
+        };
+        const res = await svc.request('enterprise/profile.php', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        if (res?.status !== 200) throw new Error(res?.message || '更新失敗');
         enterpriseData = { ...enterpriseData, ...updatedData };
-        
         Utils.showNotification('企業資料已儲存', 'success');
         
     } catch (error) {
@@ -231,9 +248,6 @@ function uploadLogo() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('logoImage').src = e.target.result;
-                enterpriseData.logo = e.target.result;
-                
-                // TODO: 上傳檔案到後端
                 uploadLogoToServer(file);
             };
             reader.readAsDataURL(file);
@@ -248,20 +262,16 @@ function uploadLogo() {
 // 上傳標誌到伺服器
 async function uploadLogoToServer(file) {
     try {
-        // TODO: 實作檔案上傳到後端
-        // const formData = new FormData();
-        // formData.append('logo', file);
-        // 
-        // const response = await fetch('/api/enterprise/upload-logo', {
-        //     method: 'POST',
-        //     body: formData
-        // });
-        // 
-        // const result = await response.json();
-        // enterpriseData.logo = result.logoUrl;
-        
+        const formData = new FormData();
+        formData.append('action', 'upload_logo');
+        formData.append('logo', file);
+        const uploadUrl = (window.apiService || window.initializeApiService?.()).getApiUrl('enterprise/profile.php');
+        const resp = await fetch(uploadUrl, { method: 'POST', body: formData });
+        if (!resp.ok) throw new Error('上傳失敗');
+        const json = await resp.json();
+        if (json?.status !== 200) throw new Error(json?.message || '上傳失敗');
+        enterpriseData.logo = json?.data?.logo_url || enterpriseData.logo;
         Utils.showNotification('企業標誌已更新', 'success');
-        
     } catch (error) {
         Utils.showNotification('上傳失敗，請稍後再試', 'error');
         console.error('上傳標誌錯誤:', error);
@@ -328,6 +338,50 @@ function resetForm() {
 function previewProfile() {
     // TODO: 在新視窗中開啟企業頁面預覽
     Utils.showNotification('預覽功能開發中', 'info');
+}
+
+// 載入最近活動（企業端）
+async function loadRecentActivities(limit = 10) {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        const res = await svc.request(`enterprise/dashboard.php?action=recent_activities&limit=${encodeURIComponent(String(limit))}`);
+        const list = res?.data || res || [];
+        renderRecentActivitiesProfile(Array.isArray(list) ? list : []);
+    } catch (e) {
+        console.error('載入最近活動失敗:', e);
+        renderRecentActivitiesProfile([]);
+    }
+}
+
+// 渲染 profile 頁面的最近活動到 .activity-list
+function renderRecentActivitiesProfile(activities) {
+    const ul = document.querySelector('.sidebar .activity-list');
+    if (!ul) return;
+    if (!activities || activities.length === 0) {
+        ul.innerHTML = '<li class="activity-item"><div>目前沒有最近活動</div></li>';
+        return;
+    }
+    ul.innerHTML = activities.map(act => {
+        const type = act.type || '';
+        const icon = type === 'job_application' ? 'fa-file-alt' : (type === 'portfolio_view' ? 'fa-eye' : (type === 'contact' ? 'fa-envelope' : 'fa-info-circle'));
+        const desc = act.description || '';
+        const timeText = act.time_ago || act.activity_date || '';
+        const typeClass = type === 'job_application' ? 'activity-application' : (type === 'portfolio_view' ? 'activity-view' : (type === 'contact' ? 'activity-contact' : 'activity-generic'));
+        return `
+            <li class="activity-item">
+                <div class="activity-icon ${typeClass}"><i class="fas ${icon}"></i></div>
+                <div>
+                    <div>${escapeHtml(desc)}</div>
+                    <small>${escapeHtml(timeText)}</small>
+                </div>
+            </li>
+        `;
+    }).join('');
+}
+
+function escapeHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 // 全域函數，供 HTML 直接調用

@@ -143,8 +143,8 @@ let dashboardData = {
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
-    loadDashboardData();
     initEventListeners();
+    loadDashboardData();
     startRealTimeUpdates();
 });
 
@@ -176,21 +176,54 @@ function initEventListeners() {
 // 載入儀表板資料
 async function loadDashboardData() {
     try {
-        // TODO: 從後端 API 載入管理員儀表板資料
-        // const response = await fetch('/api/admin/dashboard');
-        // dashboardData = await response.json();
-        
+        Utils.showNotification('載入儀表板資料中...', 'info');
+        // 顯示載入中狀態
+        const reviewsGrid = document.querySelector('.reviews-grid');
+        if (reviewsGrid) {
+            reviewsGrid.innerHTML = `<div style="display:flex;justify-content:center;padding:20px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>載入中...</div>`;
+        }
+        const healthCard = document.querySelector('.system-health');
+        if (healthCard) {
+            healthCard.innerHTML = `<div style="display:flex;justify-content:center;padding:20px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>載入中...</div>`;
+        }
+        const activityList = document.querySelector('.recent-activity');
+        if (activityList) {
+            activityList.innerHTML = `<li style="display:flex;justify-content:center;padding:12px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>載入中...</li>`;
+        }
+        const resp = await apiService.getAdminDashboard();
+        const data = resp?.data || resp;
+        if (data) {
+            dashboardData = {
+                stats: data.stats || dashboardData.stats,
+                recentActivities: data.recentActivities || dashboardData.recentActivities,
+                pendingReviews: data.pendingReviews || dashboardData.pendingReviews,
+                systemHealth: data.systemHealth || dashboardData.systemHealth,
+                topUsers: data.topUsers || dashboardData.topUsers,
+                recentReports: data.recentReports || dashboardData.recentReports
+            };
+        }
         renderStats();
         renderRecentActivities();
         renderPendingReviews();
         renderSystemHealth();
         renderTopUsers();
         renderRecentReports();
-        
-        console.log('管理員儀表板資料載入完成');
+        Utils.showNotification('儀表板資料載入完成', 'success');
+        // 空狀態處理
+        if (reviewsGrid && (!data?.pendingReviews || data.pendingReviews.length === 0)) {
+            reviewsGrid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><h3>目前沒有待審核內容</h3></div>`;
+        }
+        if (activityList && (!data?.recentActivities || data.recentActivities.length === 0)) {
+            activityList.innerHTML = `<li style="text-align:center;color:var(--text-secondary);padding:12px;">沒有最近活動</li>`;
+        }
     } catch (error) {
-        console.error('載入管理員儀表板資料錯誤:', error);
-        Utils.showNotification('載入資料失敗，請稍後再試', 'error');
+        console.warn('載入儀表板資料失敗，使用預設資料。', error);
+        renderStats();
+        renderRecentActivities();
+        renderPendingReviews();
+        renderSystemHealth();
+        renderTopUsers();
+        renderRecentReports();
     }
 }
 

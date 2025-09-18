@@ -84,9 +84,51 @@ let selectedUsers = new Set();
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
-    renderUsers();
     initEventListeners();
+    const tbody = document.getElementById('usersTableBody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8"><div style=\"display:flex;justify-content:center;padding:20px;color:var(--text-secondary);\"><i class=\"fas fa-spinner fa-spin\" style=\"margin-right:8px;\"></i>載入中...</div></td></tr>`;
+    loadUsers();
 });
+
+// 從 API 載入使用者資料
+async function loadUsers() {
+    try {
+        Utils.showNotification('載入使用者資料中...', 'info');
+        const resp = await apiService.getAdminUsers(buildUserFilters());
+        const data = resp?.data || resp;
+        users = Array.isArray(data) ? data : (Array.isArray(data?.users) ? data.users : users);
+        renderUsers();
+        Utils.showNotification('使用者資料已載入', 'success');
+        if (!users || users.length === 0) {
+            const tbody = document.getElementById('usersTableBody');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <h3>沒有符合條件的使用者</h3>
+                                <p>請調整搜尋或篩選條件</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    } catch (e) {
+        console.warn('載入使用者失敗，使用本地假資料。', e);
+        renderUsers();
+    }
+}
+
+function buildUserFilters() {
+    const f = {};
+    if (currentFilters.search) f.q = currentFilters.search;
+    if (currentFilters.type) f.type = currentFilters.type;
+    if (currentFilters.status) f.status = currentFilters.status;
+    if (currentFilters.department) f.department = currentFilters.department;
+    return f;
+}
 
 // 初始化事件監聽器
 function initEventListeners() {
@@ -329,10 +371,7 @@ function editUser(userId) {
 // 核准使用者
 async function approveUser(userId) {
     try {
-        // TODO: 發送核准請求到後端 API
-        // await fetch(`/api/admin/users/${userId}/approve`, {
-        //     method: 'PUT'
-        // });
+        await apiService.approveAdminUser(userId);
         
         // 更新本地狀態
         const user = users.find(u => u.id === userId);
@@ -352,10 +391,7 @@ async function approveUser(userId) {
 async function rejectUser(userId) {
     if (confirm('確定要拒絕這個使用者嗎？')) {
         try {
-            // TODO: 發送拒絕請求到後端 API
-            // await fetch(`/api/admin/users/${userId}/reject`, {
-            //     method: 'PUT'
-            // });
+            await apiService.rejectAdminUser(userId);
             
             // 更新本地狀態
             const user = users.find(u => u.id === userId);
@@ -380,15 +416,13 @@ async function toggleSuspendUser(userId) {
 
         if (user.status === 'suspended') {
             if (!confirm('確定要恢復這個使用者並設定為啟用嗎？')) return;
-            // TODO: 呼叫後端恢復 API
-            // await fetch(`/api/admin/users/${userId}/resume`, { method: 'PUT' });
+            await apiService.resumeAdminUser(userId);
             user.status = 'active';
             renderUsers();
             Utils.showNotification('使用者已恢復並啟用', 'success');
         } else {
             if (!confirm('確定要暫停這個使用者嗎？')) return;
-            // TODO: 呼叫後端暫停 API
-            // await fetch(`/api/admin/users/${userId}/suspend`, { method: 'PUT' });
+            await apiService.suspendAdminUser(userId);
             user.status = 'suspended';
             renderUsers();
             Utils.showNotification('使用者已暫停', 'success');
@@ -427,10 +461,7 @@ async function suspendUser(userId) {
 async function deleteUser(userId) {
     if (confirm('確定要刪除這個使用者嗎？此操作無法復原。')) {
         try {
-            // TODO: 發送刪除請求到後端 API
-            // await fetch(`/api/admin/users/${userId}`, {
-            //     method: 'DELETE'
-            // });
+            await apiService.bulkDeleteAdminUsers([userId]);
             
             // 從本地列表中移除
             users = users.filter(u => u.id !== userId);
@@ -453,12 +484,7 @@ async function bulkActivate() {
     
     if (confirm(`確定要啟用選中的 ${selectedUsers.size} 個使用者嗎？`)) {
         try {
-            // TODO: 發送批量啟用請求到後端 API
-            // await fetch('/api/admin/users/bulk-activate', {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(Array.from(selectedUsers))
-            // });
+            await apiService.bulkActivateAdminUsers(Array.from(selectedUsers));
             
             // 更新本地狀態
             users.forEach(user => {
@@ -488,12 +514,7 @@ async function bulkDeactivate() {
     
     if (confirm(`確定要停用選中的 ${selectedUsers.size} 個使用者嗎？`)) {
         try {
-            // TODO: 發送批量停用請求到後端 API
-            // await fetch('/api/admin/users/bulk-deactivate', {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(Array.from(selectedUsers))
-            // });
+            await apiService.bulkDeactivateAdminUsers(Array.from(selectedUsers));
             
             // 更新本地狀態
             users.forEach(user => {
@@ -523,12 +544,7 @@ async function bulkDelete() {
     
     if (confirm(`確定要刪除選中的 ${selectedUsers.size} 個使用者嗎？此操作無法復原。`)) {
         try {
-            // TODO: 發送批量刪除請求到後端 API
-            // await fetch('/api/admin/users/bulk-delete', {
-            //     method: 'DELETE',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(Array.from(selectedUsers))
-            // });
+            await apiService.bulkDeleteAdminUsers(Array.from(selectedUsers));
             
             // 從本地列表中移除
             users = users.filter(user => !selectedUsers.has(user.id));
@@ -552,13 +568,8 @@ function createUser() {
 
 // 重新整理使用者列表
 function refreshUsers() {
-    // TODO: 從後端 API 重新載入使用者資料
     Utils.showNotification('正在重新整理...', 'info');
-    
-    setTimeout(() => {
-        applyFilters();
-        Utils.showNotification('使用者列表已更新', 'success');
-    }, 1000);
+    loadUsers();
 }
 
 // 匯出使用者資料

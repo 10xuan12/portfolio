@@ -3,65 +3,8 @@
  * 包含搜尋、篩選、排序、收藏等功能
  */
 
-// TODO: 從後端 API 載入作品資料
-let portfolios = [
-    {
-        id: 1,
-        title: '響應式網站設計',
-        author: '張小明',
-        department: '資訊管理學系',
-        description: '使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。',
-        category: 'web',
-        tags: ['HTML5', 'CSS3', 'JavaScript', '響應式'],
-        image: 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design',
-        views: 156,
-        likes: 23,
-        comments: 8,
-        created_at: '2024-01-15'
-    },
-    {
-        id: 2,
-        title: '行動應用程式',
-        author: '李大明',
-        department: '資訊工程學系',
-        description: '使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。',
-        category: 'mobile',
-        tags: ['React Native', 'JavaScript', 'Firebase', '跨平台'],
-        image: 'https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App',
-        views: 203,
-        likes: 45,
-        comments: 12,
-        created_at: '2024-01-14'
-    },
-    {
-        id: 3,
-        title: 'UI/UX 設計作品',
-        author: '王小美',
-        department: '設計學系',
-        description: '使用 Figma 設計的現代化使用者介面，注重使用者體驗和視覺美感。',
-        category: 'design',
-        tags: ['Figma', 'UI/UX', '設計系統', '原型設計'],
-        image: 'https://via.placeholder.com/400x200/f093fb/ffffff?text=UI+Design',
-        views: 89,
-        likes: 12,
-        comments: 3,
-        created_at: '2024-01-13'
-    },
-    {
-        id: 4,
-        title: '數據視覺化專案',
-        author: '陳小華',
-        department: '資訊管理學系',
-        description: '使用 D3.js 製作的互動式數據視覺化專案，展示複雜數據的清晰呈現。',
-        category: 'data',
-        tags: ['D3.js', 'Python', 'Pandas', '數據分析'],
-        image: 'https://via.placeholder.com/400x200/4ade80/ffffff?text=Data+Viz',
-        views: 67,
-        likes: 8,
-        comments: 2,
-        created_at: '2024-01-12'
-    }
-];
+// 從後端 API 載入作品資料
+let portfolios = [];
 
 // 當前篩選條件
 let currentFilters = {
@@ -75,7 +18,8 @@ let currentFilters = {
 let likedPortfolios = new Set();
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadPortfolios();
     renderPortfolios();
     initEventListeners();
     loadLikedPortfolios();
@@ -281,15 +225,42 @@ function loadLikedPortfolios() {
     }
 }
 
+// 從後端載入作品（企業端預設取最近瀏覽作品）
+async function loadPortfolios() {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        const res = await svc.request('enterprise/dashboard.php?action=recent_portfolios&limit=20');
+        const list = res?.data || res || [];
+        portfolios = (Array.isArray(list) ? list : []).map(p => ({
+            id: p.id,
+            title: p.title,
+            author: p.student_name || p.display_name || '',
+            department: p.major || '',
+            description: p.description || '',
+            category: p.category_slug || 'other',
+            tags: p.tags || [],
+            image: p.cover_image || p.thumbnail_url || '',
+            views: p.view_count ?? 0,
+            likes: p.like_count ?? 0,
+            comments: p.comment_count ?? 0,
+            created_at: p.created_at || p.published_at || ''
+        }));
+    } catch (e) {
+        console.error('載入作品失敗', e);
+        portfolios = [];
+    }
+}
+
 // 重新整理作品列表
 function refreshPortfolios() {
-    // TODO: 從後端 API 重新載入作品資料
     Utils.showNotification('正在重新整理...', 'info');
-    
-    setTimeout(() => {
+    loadPortfolios().then(() => {
         applyFilters();
         Utils.showNotification('作品列表已更新', 'success');
-    }, 1000);
+    }).catch(() => {
+        Utils.showNotification('作品列表更新失敗', 'error');
+    });
 }
 
 // 匯出作品結果

@@ -58,7 +58,7 @@
                 <div class="notifications-list">
                     <div class="notifications-header-bar">
                         <div class="notifications-count">
-                            <span id="notificationsCount">12</span> 個通知
+                            <span id="notificationsCount">0</span> 個通知
                         </div>
                         <div class="notifications-filters">
                             <button class="filter-btn active" onclick="filterNotifications('all')">全部</button>
@@ -69,132 +69,7 @@
                         </div>
                     </div>
                     
-                    <div id="notificationsList">
-                        <!-- TODO: 從資料庫載入通知列表 -->
-                        <!-- 假資料開始 -->
-                        <div class="notification-item unread" data-type="application" data-id="1">
-                            <div class="notification-header">
-                                <div class="notification-icon notification-application">
-                                    <i class="fas fa-file-alt"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <div class="notification-title">新的實習申請</div>
-                                    <div class="notification-message">
-                                        張小明申請了「前端開發實習生」職缺。請查看申請資料並回覆。
-                                    </div>
-                                    <div class="notification-meta">
-                                        <span class="notification-time">2 小時前</span>
-                                        <div class="notification-actions">
-                                            <button class="notification-action" onclick="viewApplication(1)">
-                                                查看申請
-                                            </button>
-                                            <button class="notification-action" onclick="markAsRead(1)">
-                                                標記已讀
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item unread" data-type="job" data-id="2">
-                            <div class="notification-header">
-                                <div class="notification-icon notification-job">
-                                    <i class="fas fa-briefcase"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <div class="notification-title">職缺瀏覽數增加</div>
-                                    <div class="notification-message">
-                                        「UI/UX 設計師」職缺今日瀏覽次數增加 15 次，共有 89 次瀏覽。
-                                    </div>
-                                    <div class="notification-meta">
-                                        <span class="notification-time">4 小時前</span>
-                                        <div class="notification-actions">
-                                            <button class="notification-action" onclick="viewJob(2)">
-                                                查看職缺
-                                            </button>
-                                            <button class="notification-action" onclick="markAsRead(2)">
-                                                標記已讀
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item" data-type="view" data-id="3">
-                            <div class="notification-header">
-                                <div class="notification-icon notification-view">
-                                    <i class="fas fa-eye"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <div class="notification-title">作品被瀏覽</div>
-                                    <div class="notification-message">
-                                        李大明瀏覽了您的企業資料頁面，並對「前端開發實習生」職缺表示興趣。
-                                    </div>
-                                    <div class="notification-meta">
-                                        <span class="notification-time">6 小時前</span>
-                                        <div class="notification-actions">
-                                            <button class="notification-action" onclick="viewStudent(3)">
-                                                查看學生
-                                            </button>
-                                            <button class="notification-action" onclick="contactStudent(3)">
-                                                聯絡學生
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item" data-type="contact" data-id="4">
-                            <div class="notification-header">
-                                <div class="notification-icon notification-contact">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <div class="notification-title">學生聯絡訊息</div>
-                                    <div class="notification-message">
-                                        王小美發送了一則聯絡訊息，詢問關於實習機會的詳細資訊。
-                                    </div>
-                                    <div class="notification-meta">
-                                        <span class="notification-time">1 天前</span>
-                                        <div class="notification-actions">
-                                            <button class="notification-action" onclick="viewMessage(4)">
-                                                查看訊息
-                                            </button>
-                                            <button class="notification-action" onclick="replyMessage(4)">
-                                                回覆
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item" data-type="system" data-id="5">
-                            <div class="notification-header">
-                                <div class="notification-icon notification-system">
-                                    <i class="fas fa-cog"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <div class="notification-title">系統維護通知</div>
-                                    <div class="notification-message">
-                                        系統將於今晚 23:00-02:00 進行維護，期間可能無法使用部分功能。
-                                    </div>
-                                    <div class="notification-meta">
-                                        <span class="notification-time">2 天前</span>
-                                        <div class="notification-actions">
-                                            <button class="notification-action" onclick="markAsRead(5)">
-                                                標記已讀
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 假資料結束 -->
-                    </div>
+                    <div id="notificationsList"><!-- 通知列表由 JS 動態載入 --></div>
                 </div>
 
                 <!-- 側邊欄 -->
@@ -205,25 +80,25 @@
                         <div class="notification-stats">
                             <div class="stat-card">
                                 <div class="stat-content-box">
-                                    <div class="number">12</div>
+                                    <div class="number">0</div>
                                     <div class="label">總通知</div>
                                 </div>
                             </div>
                             <div class="stat-card">
                                 <div class="stat-content-box">
-                                    <div class="number">5</div>
+                                    <div class="number">0</div>
                                     <div class="label">未讀</div>
                                 </div>
                             </div>
                             <div class="stat-card">
                                 <div class="stat-content-box">
-                                    <div class="number">3</div>
+                                    <div class="number">0</div>
                                     <div class="label">申請</div>
                                 </div>
                             </div>
                             <div class="stat-card">
                                 <div class="stat-content-box">
-                                    <div class="number">2</div>
+                                    <div class="number">0</div>
                                     <div class="label">職缺</div>
                                 </div>
                             </div>

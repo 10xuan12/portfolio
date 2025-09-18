@@ -3,41 +3,8 @@
  * 包含職缺 CRUD、申請管理、狀態控制等功能
  */
 
-// TODO: 從後端 API 載入職缺資料
-let jobs = [
-    {
-        id: 1,
-        title: '前端開發實習生',
-        department: '技術部',
-        type: '實習',
-        location: '台北市',
-        description: '我們正在尋找對前端開發有熱情的實習生，協助開發公司內部系統和客戶專案。',
-        requirements: ['JavaScript', 'React', 'HTML/CSS', 'Git'],
-        salary: '月薪 30,000-35,000',
-        duration: '3-6 個月',
-        status: 'active',
-        applications: 12,
-        views: 156,
-        likes: 23,
-        created_at: '2024-01-10'
-    },
-    {
-        id: 2,
-        title: 'UI/UX 設計師',
-        department: '設計部',
-        type: '正職',
-        location: '台北市',
-        description: '負責公司產品的使用者介面設計，與開發團隊協作完成專案。',
-        requirements: ['Figma', 'Adobe Creative Suite', 'UI/UX Design', 'Prototyping'],
-        salary: '月薪 45,000-60,000',
-        duration: '長期',
-        status: 'active',
-        applications: 8,
-        views: 89,
-        likes: 15,
-        created_at: '2024-01-08'
-    }
-];
+// 透過後端 API 載入職缺資料
+let jobs = [];
 
 // 當前編輯的職缺
 let currentJob = null;
@@ -46,10 +13,42 @@ let currentJob = null;
 let requirements = [];
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadJobs();
     renderJobs();
     initEventListeners();
 });
+
+// 從後端載入職缺
+async function loadJobs(page = 1) {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        const params = new URLSearchParams({ action: 'list', page: String(page), limit: '10' });
+        const res = await svc.request(`enterprise/jobs.php?${params.toString()}`);
+        const data = res?.data || res || {};
+        const list = Array.isArray(data.jobs) ? data.jobs : (Array.isArray(data) ? data : []);
+        jobs = list.map(j => ({
+            id: j.id,
+            title: j.title,
+            department: j.department || '',
+            type: j.job_type || '',
+            location: j.location || '',
+            description: j.description || '',
+            requirements: (j.skills_required || []),
+            salary: j.salary_range || '',
+            duration: '',
+            status: j.status,
+            applications: j.application_count ?? 0,
+            views: j.view_count ?? 0,
+            likes: j.bookmark_count ?? 0,
+            created_at: (j.created_at || '').split(' ')[0]
+        }));
+    } catch (e) {
+        console.error('載入職缺失敗', e);
+        jobs = [];
+    }
+}
 
 // 初始化事件監聽器
 function initEventListeners() {
@@ -198,14 +197,13 @@ async function handleJobSubmit(e) {
     
     try {
         if (currentJob) {
-            // 更新職缺
             await updateJob(currentJob.id, jobData);
         } else {
-            // 創建新職缺
             await createJob(jobData);
         }
         
         cancelJobForm();
+        await loadJobs();
         renderJobs();
         
     } catch (error) {
@@ -216,42 +214,51 @@ async function handleJobSubmit(e) {
 
 // 創建職缺
 async function createJob(jobData) {
-    // TODO: 發送創建職缺請求到後端 API
-    // const response = await fetch('/api/enterprise/jobs', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(jobData)
-    // });
-    
-    // 模擬創建職缺
-    const newJob = {
-        id: Date.now(),
-        ...jobData,
-        status: 'active',
-        applications: 0,
-        views: 0,
-        likes: 0,
-        created_at: new Date().toISOString().split('T')[0]
+    const svc = window.apiService || window.initializeApiService?.();
+    if (!svc) throw new Error('API 服務未就緒');
+    const payload = {
+        action: 'create',
+        title: jobData.title,
+        description: jobData.description,
+        requirements: (jobData.requirements || []).join(','),
+        job_type: jobData.type,
+        location: jobData.location,
+        department: jobData.department,
+        status: 'active'
     };
-    
-    jobs.unshift(newJob);
-    Utils.showNotification('職缺發布成功', 'success');
+    const res = await svc.request('enterprise/jobs.php', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+    if (res?.status === 201 || res?.status === 200) {
+        Utils.showNotification('職缺發布成功', 'success');
+    } else {
+        throw new Error(res?.message || '建立職缺失敗');
+    }
 }
 
 // 更新職缺
 async function updateJob(jobId, jobData) {
-    // TODO: 發送更新職缺請求到後端 API
-    // const response = await fetch(`/api/enterprise/jobs/${jobId}`, {
-    //     method: 'PUT',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(jobData)
-    // });
-    
-    // 模擬更新職缺
-    const jobIndex = jobs.findIndex(j => j.id === jobId);
-    if (jobIndex !== -1) {
-        jobs[jobIndex] = { ...jobs[jobIndex], ...jobData };
+    const svc = window.apiService || window.initializeApiService?.();
+    if (!svc) throw new Error('API 服務未就緒');
+    const payload = {
+        action: 'update',
+        id: jobId,
+        title: jobData.title,
+        description: jobData.description,
+        requirements: (jobData.requirements || []).join(','),
+        job_type: jobData.type,
+        location: jobData.location,
+        department: jobData.department
+    };
+    const res = await svc.request('enterprise/jobs.php', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+    if (res?.status === 200) {
         Utils.showNotification('職缺更新成功', 'success');
+    } else {
+        throw new Error(res?.message || '更新職缺失敗');
     }
 }
 
@@ -263,19 +270,16 @@ async function toggleJobStatus(jobId) {
     const newStatus = job.status === 'active' ? 'paused' : 'active';
     
     try {
-        // TODO: 發送狀態更新請求到後端 API
-        // await fetch(`/api/enterprise/jobs/${jobId}/status`, {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ status: newStatus })
-        // });
-        
-        // 更新本地狀態
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        const res = await svc.request('enterprise/jobs.php', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'toggle_status', id: jobId, status: newStatus })
+        });
+        if (res?.status !== 200) throw new Error(res?.message || '更新狀態失敗');
         job.status = newStatus;
         renderJobs();
-        
         Utils.showNotification(`職缺已${newStatus === 'active' ? '恢復招募' : '暫停招募'}`, 'success');
-        
     } catch (error) {
         Utils.showNotification('狀態更新失敗，請稍後再試', 'error');
         console.error('更新職缺狀態錯誤:', error);
@@ -365,16 +369,20 @@ function exportJobs() {
 function deleteJob(jobId) {
     if (confirm('確定要刪除這個職缺嗎？此操作無法復原。')) {
         try {
-            // TODO: 發送刪除職缺請求到後端 API
-            // await fetch(`/api/enterprise/jobs/${jobId}`, {
-            //     method: 'DELETE'
-            // });
-            
-            // 從本地列表中移除
-            jobs = jobs.filter(j => j.id !== jobId);
-            renderJobs();
-            
-            Utils.showNotification('職缺已刪除', 'success');
+            const svc = window.apiService || window.initializeApiService?.();
+            if (!svc) throw new Error('API 服務未就緒');
+            svc.request('enterprise/jobs.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'delete', id: jobId })
+            }).then(async (res) => {
+                if (res?.status !== 200) throw new Error(res?.message || '刪除失敗');
+                await loadJobs();
+                renderJobs();
+                Utils.showNotification('職缺已刪除', 'success');
+            }).catch((e) => {
+                Utils.showNotification('刪除失敗，請稍後再試', 'error');
+                console.error('刪除職缺錯誤:', e);
+            });
             
         } catch (error) {
             Utils.showNotification('刪除失敗，請稍後再試', 'error');

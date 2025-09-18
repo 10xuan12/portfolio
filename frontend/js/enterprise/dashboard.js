@@ -3,8 +3,7 @@
  * 包含企業統計、人才推薦、作品瀏覽等功能
  */
 
-// API 基礎 URL
-const API_BASE_URL = '/portfolio/api/enterprise';
+// 透過全域 apiService 串接後端
 
 // 頁面載入時初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -18,141 +17,57 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadDashboardData() {
     try {
         showLoadingState();
-        
-        // 從後端 API 載入企業儀表板資料
-        const response = await fetch(`${API_BASE_URL}/dashboard.php`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'get_dashboard_data'
-            })
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+
+        // 並行請求各區塊資料
+        const [statsRes, recentPortfoliosRes, recommendedStudentsRes, recentActivitiesRes, jobSummaryRes] = await Promise.all([
+            svc.request('enterprise/dashboard.php?action=stats'),
+            svc.request('enterprise/dashboard.php?action=recent_portfolios&limit=6'),
+            svc.request('enterprise/dashboard.php?action=recommended_students&limit=8'),
+            svc.request('enterprise/dashboard.php?action=recent_activities&limit=10'),
+            svc.request('enterprise/dashboard.php?action=job_summary&limit=5')
+        ]);
+
+        const stats = statsRes?.data || statsRes || {};
+        const recentPortfolios = recentPortfoliosRes?.data || recentPortfoliosRes || [];
+        const recommendedStudents = recommendedStudentsRes?.data || recommendedStudentsRes || [];
+        const recentActivities = recentActivitiesRes?.data || recentActivitiesRes || [];
+        const jobs = jobSummaryRes?.data || jobSummaryRes || [];
+
+        renderStats({
+            total_views: stats?.portfolios?.total_views ?? 0,
+            total_favorites: stats?.portfolios?.total_bookmarks ?? 0,
+            total_contacts: stats?.contacts?.total ?? 0,
+            total_jobs: stats?.jobs?.total ?? 0
         });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        renderRecentPortfolios(Array.isArray(recentPortfolios) ? recentPortfolios : []);
+        renderRecommendedStudents(Array.isArray(recommendedStudents) ? recommendedStudents : []);
+        renderRecentActivities(Array.isArray(recentActivities) ? recentActivities : []);
+        renderJobPostings(Array.isArray(jobs) ? jobs.map(j => ({
+            id: j.id,
+            title: j.title,
+            status: j.status,
+            applications: j.pending_applications ?? j.application_count ?? 0,
+            views: j.view_count ?? 0
+        })) : []);
+
+        const companyNameElement = document.getElementById('company-name');
+        if (companyNameElement) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            companyNameElement.textContent = user.company_name || '企業';
         }
-        
-        const result = await response.json();
-        
-        if (result.status === 200) {
-            const dashboardData = result.data;
-            renderStats(dashboardData.stats);
-            renderRecentPortfolios(dashboardData.recent_portfolios);
-            renderRecommendedStudents(dashboardData.recommended_students);
-            renderRecentActivities(dashboardData.recent_activities);
-            renderJobPostings(dashboardData.job_postings);
-            
-            // 顯示企業名稱
-            const companyNameElement = document.getElementById('company-name');
-            if (companyNameElement) {
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                companyNameElement.textContent = user.company_name || '企業';
-            }
-            
-            hideLoadingState();
-            console.log('企業儀表板資料載入完成');
-        } else {
-            throw new Error(result.message || '載入資料失敗');
-        }
+
+        hideLoadingState();
+        console.log('企業儀表板資料載入完成');
     } catch (error) {
         console.error('載入企業儀表板資料錯誤:', error);
         hideLoadingState();
         showErrorMessage('載入資料失敗，請稍後再試');
-        
-        // 如果 API 失敗，使用備用的 mock 資料
-        loadFallbackData();
     }
 }
 
-/**
- * 載入備用資料（當 API 失敗時）
- */
-function loadFallbackData() {
-    console.log('使用備用資料...');
-    const enterpriseId = 1; // 使用測試企業ID
-    const dashboardData = {
-        stats: {
-            total_views: 1250,
-            total_favorites: 89,
-            total_contacts: 23,
-            total_jobs: 5
-        },
-        recent_portfolios: [
-            {
-                id: 1,
-                title: '電商網站開發',
-                student_name: '王小明',
-                thumbnail_url: '/portfolio/images/portfolio1.jpg',
-                view_count: 156,
-                created_at: '2024-01-15'
-            },
-            {
-                id: 2,
-                title: '手機APP設計',
-                student_name: '李小華',
-                thumbnail_url: '/portfolio/images/portfolio2.jpg',
-                view_count: 89,
-                created_at: '2024-01-10'
-            }
-        ],
-        recommended_students: [
-            {
-                id: 1,
-                name: '王小明',
-                major: '資訊管理',
-                university: '台灣大學',
-                skills: 'JavaScript, React, Node.js',
-                avatar_url: '/portfolio/images/avatar1.jpg'
-            },
-            {
-                id: 2,
-                name: '李小華',
-                major: '資訊工程',
-                university: '清華大學',
-                skills: 'Python, Django, MySQL',
-                avatar_url: '/portfolio/images/avatar2.jpg'
-            }
-        ],
-        recent_activities: [
-            {
-                id: 1,
-                type: 'portfolio_view',
-                message: '瀏覽了王小明的最新作品集',
-                timestamp: '2024-01-20 14:30:00'
-            },
-            {
-                id: 2,
-                type: 'job_application',
-                message: '收到新的職缺申請',
-                timestamp: '2024-01-20 12:15:00'
-            }
-        ],
-        job_postings: [
-            {
-                id: 1,
-                title: '前端工程師',
-                status: 'active',
-                applications: 12,
-                views: 89
-            },
-            {
-                id: 2,
-                title: '後端工程師',
-                status: 'active',
-                applications: 8,
-                views: 67
-            }
-        ]
-    };
-    
-    renderStats(dashboardData.stats);
-    renderRecentPortfolios(dashboardData.recent_portfolios);
-    renderRecommendedStudents(dashboardData.recommended_students);
-    renderRecentActivities(dashboardData.recent_activities);
-    renderJobPostings(dashboardData.job_postings);
-}
+// 已移除本地 mock，統一使用後端 API
 
 /**
  * 顯示載入狀態

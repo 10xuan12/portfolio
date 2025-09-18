@@ -85,10 +85,51 @@ let currentFilters = {
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
-    renderReviews();
     initEventListeners();
-    updateStats();
+    // 載入中 spinner
+    ['portfoliosGrid','jobsGrid','usersGrid','reportsGrid'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<div style="display:flex;justify-content:center;padding:20px;color:var(--text-secondary);"><i class=\"fas fa-spinner fa-spin\" style=\"margin-right:8px;\"></i>載入中...</div>`;
+    });
+    loadReviews();
 });
+
+// 從 API 載入審核資料
+async function loadReviews() {
+    try {
+        Utils.showNotification('載入審核項目中...', 'info');
+        const resp = await apiService.getAdminReviews(buildReviewFilters());
+        const data = resp?.data || resp || {};
+        // 標準化結構
+        reviews = {
+            portfolios: Array.isArray(data.portfolios) ? data.portfolios : (reviews.portfolios || []),
+            jobs: Array.isArray(data.jobs) ? data.jobs : (reviews.jobs || []),
+            users: Array.isArray(data.users) ? data.users : (reviews.users || []),
+            reports: Array.isArray(data.reports) ? data.reports : (reviews.reports || [])
+        };
+        renderReviews();
+        updateStats();
+        Utils.showNotification('審核資料已載入', 'success');
+        // 空狀態處理
+        if (reviews.portfolios.length === 0) setEmpty('portfoliosGrid','沒有待審核的作品');
+        if (reviews.jobs.length === 0) setEmpty('jobsGrid','沒有待審核的職缺');
+        if (reviews.users.length === 0) setEmpty('usersGrid','沒有待審核的使用者');
+        if (reviews.reports.length === 0) setEmpty('reportsGrid','沒有待處理的報告');
+    } catch (e) {
+        console.warn('載入審核資料失敗，使用本地假資料。', e);
+        renderReviews();
+        updateStats();
+    }
+}
+
+function buildReviewFilters() {
+    const f = {};
+    if (currentFilters.search) f.q = currentFilters.search;
+    if (currentFilters.status) f.status = currentFilters.status;
+    if (currentFilters.type) f.type = currentFilters.type;
+    if (currentFilters.date) f.date = currentFilters.date;
+    return f;
+}
 
 // 初始化事件監聽器
 function initEventListeners() {
@@ -501,10 +542,7 @@ function viewPortfolio(portfolioId) {
 // 核准作品
 async function approvePortfolio(portfolioId) {
     try {
-        // TODO: 發送核准請求到後端 API
-        // await fetch(`/api/admin/portfolios/${portfolioId}/approve`, {
-        //     method: 'PUT'
-        // });
+        await apiService.approveAdminPortfolio(portfolioId);
         
         // 更新本地狀態
         const portfolio = reviews.portfolios.find(p => p.id === portfolioId);
@@ -525,10 +563,7 @@ async function approvePortfolio(portfolioId) {
 async function rejectPortfolio(portfolioId) {
     if (confirm('確定要拒絕這個作品嗎？')) {
         try {
-            // TODO: 發送拒絕請求到後端 API
-            // await fetch(`/api/admin/portfolios/${portfolioId}/reject`, {
-            //     method: 'PUT'
-            // });
+            await apiService.rejectAdminPortfolio(portfolioId);
             
             // 更新本地狀態
             const portfolio = reviews.portfolios.find(p => p.id === portfolioId);
@@ -554,10 +589,7 @@ function viewJob(jobId) {
 // 核准職缺
 async function approveJob(jobId) {
     try {
-        // TODO: 發送核准請求到後端 API
-        // await fetch(`/api/admin/jobs/${jobId}/approve`, {
-        //     method: 'PUT'
-        // });
+        await apiService.approveAdminJob(jobId);
         
         // 更新本地狀態
         const job = reviews.jobs.find(j => j.id === jobId);
@@ -578,10 +610,7 @@ async function approveJob(jobId) {
 async function rejectJob(jobId) {
     if (confirm('確定要拒絕這個職缺嗎？')) {
         try {
-            // TODO: 發送拒絕請求到後端 API
-            // await fetch(`/api/admin/jobs/${jobId}/reject`, {
-            //     method: 'PUT'
-            // });
+            await apiService.rejectAdminJob(jobId);
             
             // 更新本地狀態
             const job = reviews.jobs.find(j => j.id === jobId);
@@ -607,10 +636,7 @@ function viewUser(userId) {
 // 核准使用者
 async function approveUser(userId) {
     try {
-        // TODO: 發送核准請求到後端 API
-        // await fetch(`/api/admin/users/${userId}/approve`, {
-        //     method: 'PUT'
-        // });
+        await apiService.approveAdminUser(userId);
         
         // 更新本地狀態
         const user = reviews.users.find(u => u.id === userId);
@@ -631,10 +657,7 @@ async function approveUser(userId) {
 async function rejectUser(userId) {
     if (confirm('確定要拒絕這個使用者嗎？')) {
         try {
-            // TODO: 發送拒絕請求到後端 API
-            // await fetch(`/api/admin/users/${userId}/reject`, {
-            //     method: 'PUT'
-            // });
+            await apiService.rejectAdminUser(userId);
             
             // 更新本地狀態
             const user = reviews.users.find(u => u.id === userId);
@@ -660,10 +683,7 @@ function viewReport(reportId) {
 // 處理報告
 async function resolveReport(reportId) {
     try {
-        // TODO: 發送處理報告請求到後端 API
-        // await fetch(`/api/admin/reports/${reportId}/resolve`, {
-        //     method: 'PUT'
-        // });
+        await apiService.resolveAdminReport(reportId);
         
         // 更新本地狀態
         const report = reviews.reports.find(r => r.id === reportId);
@@ -684,10 +704,7 @@ async function resolveReport(reportId) {
 async function dismissReport(reportId) {
     if (confirm('確定要駁回這個報告嗎？')) {
         try {
-            // TODO: 發送駁回報告請求到後端 API
-            // await fetch(`/api/admin/reports/${reportId}/dismiss`, {
-            //     method: 'PUT'
-            // });
+            await apiService.dismissAdminReport(reportId);
             
             // 更新本地狀態
             const report = reviews.reports.find(r => r.id === reportId);
@@ -712,14 +729,20 @@ function applyFilters() {
 
 // 重新整理審核項目
 function refreshReviews() {
-    // TODO: 從後端 API 重新載入審核資料
     Utils.showNotification('正在重新整理...', 'info');
-    
-    setTimeout(() => {
-        renderReviews();
-        updateStats();
-        Utils.showNotification('審核項目已更新', 'success');
-    }, 1000);
+    loadReviews();
+}
+
+function setEmpty(containerId, text) {
+    const el = document.getElementById(containerId);
+    if (el) {
+        el.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>${text}</h3>
+            </div>
+        `;
+    }
 }
 
 // 匯出審核記錄

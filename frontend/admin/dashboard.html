@@ -104,187 +104,20 @@
                     </div>
 
                     <h2>待審核內容</h2>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>類型</th>
-                                <th>標題</th>
-                                <th>提交者</th>
-                                <th>提交時間</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- TODO: 從資料庫載入待審核內容 -->
-                            <!-- 假資料開始 -->
-                            <tr>
-                                <td>作品集</td>
-                                <td>數據視覺化專案</td>
-                                <td>張小明</td>
-                                <td>2024-01-15 14:30</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-primary btn-sm">審核</button>
-                                        <button class="btn btn-outline btn-sm">查看</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>企業資料</td>
-                                <td>新創科技公司</td>
-                                <td>科技公司 B</td>
-                                <td>2024-01-15 13:45</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-primary btn-sm">審核</button>
-                                        <button class="btn btn-outline btn-sm">查看</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>作品集</td>
-                                <td>UI/UX 設計作品</td>
-                                <td>王小美</td>
-                                <td>2024-01-15 12:20</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-primary btn-sm">審核</button>
-                                        <button class="btn btn-outline btn-sm">查看</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>評論</td>
-                                <td>對「響應式網站設計」的評論</td>
-                                <td>企業用戶 A</td>
-                                <td>2024-01-15 11:15</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-primary btn-sm">審核</button>
-                                        <button class="btn btn-outline btn-sm">查看</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- 假資料結束 -->
-                        </tbody>
-                    </table>
+                    <div class="reviews-grid">
+                        <!-- 由 frontend/js/admin/dashboard.js 動態渲染 -->
+                    </div>
 
                     <h2>系統狀態</h2>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>服務項目</th>
-                                <th>狀態</th>
-                                <th>最後檢查</th>
-                                <th>回應時間</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- TODO: 從系統監控 API 載入服務狀態 -->
-                            <!-- 假資料開始 -->
-                            <tr>
-                                <td>網站服務</td>
-                                <td><span class="status-badge status-active">正常</span></td>
-                                <td>2024-01-15 15:00</td>
-                                <td>120ms</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm">重啟</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>資料庫服務</td>
-                                <td><span class="status-badge status-active">正常</span></td>
-                                <td>2024-01-15 15:00</td>
-                                <td>45ms</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm">重啟</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>檔案上傳服務</td>
-                                <td><span class="status-badge status-active">正常</span></td>
-                                <td>2024-01-15 15:00</td>
-                                <td>200ms</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm">重啟</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>電子郵件服務</td>
-                                <td><span class="status-badge status-pending">警告</span></td>
-                                <td>2024-01-15 15:00</td>
-                                <td>500ms</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm">重啟</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- 假資料結束 -->
-                        </tbody>
-                    </table>
+                    <div class="system-health">
+                        <!-- 由 frontend/js/admin/dashboard.js 動態渲染 -->
+                    </div>
                 </div>
 
                 <div class="sidebar">
                     <div class="sidebar-card">
                         <h3>最近活動</h3>
-                        <ul class="recent-activity">
-                            <!-- TODO: 從資料庫載入管理員活動記錄 -->
-                            <!-- 假資料開始 -->
-                            <li>
-                                <div class="activity-icon activity-user">
-                                    <i class="fas fa-user-plus"></i>
-                                </div>
-                                <div>
-                                    <div>新使用者註冊</div>
-                                    <small>2 分鐘前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-enterprise">
-                                    <i class="fas fa-building"></i>
-                                </div>
-                                <div>
-                                    <div>新企業註冊</div>
-                                    <small>15 分鐘前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-portfolio">
-                                    <i class="fas fa-upload"></i>
-                                </div>
-                                <div>
-                                    <div>新作品上傳</div>
-                                    <small>30 分鐘前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-review">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <div>
-                                    <div>內容審核完成</div>
-                                    <small>1 小時前</small>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="activity-icon activity-user">
-                                    <i class="fas fa-user-times"></i>
-                                </div>
-                                <div>
-                                    <div>使用者帳號停用</div>
-                                    <small>2 小時前</small>
-                                </div>
-                            </li>
-                            <!-- 假資料結束 -->
-                        </ul>
+                        <ul class="recent-activity"></ul>
                     </div>
 
                     <div class="sidebar-card">

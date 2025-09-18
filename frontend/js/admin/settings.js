@@ -60,9 +60,9 @@ let currentTab = 'general';
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
-    loadSettings();
     initEventListeners();
     initColorPickers();
+    loadSettings();
 });
 
 // 初始化事件監聽器
@@ -106,13 +106,20 @@ function updateColorDisplay(colorInput) {
 }
 
 // 載入設定
-function loadSettings() {
-    // TODO: 從後端 API 載入設定
-    // const response = await fetch('/api/admin/settings');
-    // settings = await response.json();
-    
-    // 套用設定到表單
-    applySettingsToForm();
+async function loadSettings() {
+    try {
+        Utils.showNotification('載入系統設定中...', 'info');
+        const resp = await apiService.getAdminSettings();
+        const data = resp?.data || resp;
+        if (data && data.general) {
+            settings = data;
+        }
+        applySettingsToForm();
+        Utils.showNotification('系統設定已載入', 'success');
+    } catch (e) {
+        console.warn('載入設定失敗，使用預設設定。', e);
+        applySettingsToForm();
+    }
 }
 
 // 套用設定到表單
@@ -205,15 +212,11 @@ async function saveSettings() {
         
         Utils.showNotification('正在儲存設定...', 'info');
         
-        // TODO: 發送設定到後端 API
-        // const response = await fetch('/api/admin/settings', {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(formData)
-        // });
-        
-        // 更新本地設定
-        settings = formData;
+        // 送到後端 API
+        const resp = await apiService.updateAdminSettings(formData);
+        const ok = resp?.status === 200 || resp?.success === true;
+        // 更新本地設定（失敗則仍維持原本設定）
+        if (ok) settings = formData;
         
         // 更新按鈕狀態
         const saveButton = document.querySelector('.settings-actions .btn-primary');
@@ -222,7 +225,7 @@ async function saveSettings() {
             saveButton.style.background = '';
         }
         
-        Utils.showNotification('設定已儲存', 'success');
+        Utils.showNotification(ok ? '設定已儲存' : '已暫存於前端，後端儲存失敗', ok ? 'success' : 'warning');
         
     } catch (error) {
         Utils.showNotification('儲存設定失敗，請稍後再試', 'error');

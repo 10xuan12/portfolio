@@ -166,8 +166,16 @@
     text-align: center;
     background: rgba(39, 62, 195, 0.06);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-md) var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-sm);
     box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
 }
 
 .stat-content-box .number {
