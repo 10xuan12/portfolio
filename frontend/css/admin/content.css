@@ -102,11 +102,11 @@
 .review-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: var(--spacing-lg);
+    gap: var(--spacing-2xl);
 }
 
 .review-item {
-    background: var(--white);
+    background: var(--gray-50);
     border-radius: var(--radius-xl);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-md);
@@ -177,6 +177,7 @@
     height: 200px;
     object-fit: cover;
     border-radius: var(--radius-md);
+    border: 1px solid var(--gray-300);
     margin-bottom: var(--spacing-sm);
 }
 
@@ -234,6 +235,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: var(--spacing-md);
+    margin: var(--spacing-lg) 0 var(--spacing-xl);
 }
 
 .filter-group {
