@@ -1173,48 +1173,107 @@ input[type="date"]:focus {
     background: var(--navbar-bg, var(--primary-color)) !important;
 }
 
-/* 徽章成就區塊 icon 樣式 */
+/* 徽章成就區塊樣式 - 採用最近活動的設計 */
 .badge-item {
-    text-align: center;
-    padding: var(--spacing-md);
-    background: var(--gray-50);
-    border-radius: var(--radius-lg);
-    border: 2px solid transparent;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
     transition: all 0.2s ease;
 }
-.badge-item.earned {
-    border-color: var(--success-color);
-    background: var(--primary-color);
-    color: var(--white);
+
+.badge-item:last-child {
+    border-bottom: none;
 }
-.badge-item.earned i {
-    color: var(--white) !important;
-    background: var(--primary-color);
+
+/* 徽章圖標區域 - 與活動圖標相同 */
+.badge-icon {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--text-2xl);
-    margin: 0 auto var(--spacing-xs);
+    font-size: var(--text-sm);
+    flex-shrink: 0;
+    background: #ccc !important;
+    color: #666 !important;
 }
-.badge-item:not(.earned) i {
-    color: var(--primary-color) !important;
-    background: var(--gray-200);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--text-2xl);
-    margin: 0 auto var(--spacing-xs);
-    opacity: 0.5;
+
+/* 確保圖標顯示 */
+.badge-icon i {
+    font-size: inherit !important;
+    color: inherit !important;
+    display: inline-block !important;
 }
-.badge-name {
-    font-size: var(--text-xs);
-    font-weight: 500;
-    color: var(--gray-700);
-    margin-top: var(--spacing-xs);
+
+/* 徽章資訊區域 */
+.badge-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 徽章顏色主題 - 簡化版 */
+/* 已獲得徽章 - 黃色 */
+.badge-item.earned .badge-icon {
+    background: #FFC107 !important;
+    color: white !important;
+}
+
+/* 未獲得徽章 - 灰色 */
+.badge-item:not(.earned) .badge-icon {
+    background: #ccc !important;
+    color: #666 !important;
+}
+
+.badge-item:not(.earned) .badge-name {
+    color: var(--gray-500);
+}
+
+.badge-item:not(.earned) .badge-description {
+    color: var(--gray-400);
+}
+
+/* 徽章容器 - 使用列表樣式 */
+#badges-container,
+.badge-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* 載入中樣式 - 適配列表項 */
+.badge-item.loading-placeholder {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--gray-500);
+    border-bottom: none;
+}
+
+.badge-item.loading-placeholder i {
+    font-size: var(--text-xl);
+    margin-bottom: var(--spacing-sm);
+    display: block;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .badge-item {
+        padding: var(--spacing-xs) 0;
+    }
+    
+    .badge-icon {
+        width: 28px;
+        height: 28px;
+        font-size: var(--text-xs);
+    }
+    
+    .badge-name {
+        font-size: var(--text-xs);
+    }
+    
+    .badge-description {
+        font-size: 10px;
+    }
 }

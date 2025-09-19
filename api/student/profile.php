@@ -271,7 +271,17 @@ function updateStudentProfile($data) {
         }
         
         $GLOBALS['conn']->commit();
-        sendResponse(['message' => '個人資料更新成功'], 200, '更新成功');
+        
+        // 檢查並授予徽章
+        require_once '../badge-manager.php';
+        $awardedBadges = checkSpecificBadge($userId, '完整個人檔案');
+        
+        $response = ['message' => '個人資料更新成功'];
+        if ($awardedBadges) {
+            $response['new_badge'] = '完整個人檔案';
+        }
+        
+        sendResponse($response, 200, '更新成功');
         
     } catch (Exception $e) {
         $GLOBALS['conn']->rollback();

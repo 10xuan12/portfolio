@@ -334,37 +334,12 @@
 }
 
 .badge-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.badge-item {
-    text-align: center;
-    padding: var(--spacing-md);
-    background: var(--gray-50);
-    border-radius: var(--radius-lg);
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-}
-
-.badge-item.earned {
-    border-color: var(--success-color);
-    background: var(--success-color);
-    color: var(--white);
-}
-
-.badge-item i {
-    font-size: var(--text-2xl);
-    margin-bottom: var(--spacing-sm);
-    display: block;
-}
-
-.badge-item .badge-name {
-    font-size: var(--text-xs);
-    font-weight: 500;
-}
+/* 徽章樣式已移至 app.css */
 
 .activity-list {
     list-style: none;

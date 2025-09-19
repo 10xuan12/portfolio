@@ -99,6 +99,13 @@ function handleLogin($data) {
         'expires_in' => 3600
     ];
     
+    // 檢查並授予徽章
+    require_once '../badge-manager.php';
+    $awardedBadges = checkAndAwardBadges($user['id']);
+    if (!empty($awardedBadges)) {
+        $response['new_badges'] = $awardedBadges;
+    }
+    
     sendApiResponse($response, 200, '登入成功');
 }
 
@@ -167,12 +174,18 @@ function handleRegister($data) {
         $stmt->bind_param("isssssss", $userId, $firstName, $lastName, $displayName, $major, $grade, $phone, $address);
         $stmt->execute();
         
+        // 授予首次登入徽章
+        require_once '../badge-manager.php';
+        $badgeManager = new BadgeManager($GLOBALS['conn']);
+        $badgeManager->awardBadge($userId, 1, '初次登入'); // badge_id = 1 是初次登入徽章
+        
         $GLOBALS['conn']->commit();
         
         sendResponse([
             'user_id' => $userId,
             'username' => $username,
-            'message' => '註冊成功'
+            'message' => '註冊成功',
+            'new_badge' => '初次登入'
         ], 201, '註冊成功');
         
     } catch (Exception $e) {

@@ -6,6 +6,7 @@
     <title>上傳作品 - Portfolio+</title>
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../css/student/upload.css">
 </head>
 <body>
@@ -125,112 +126,90 @@
                     <!-- 步驟 2: 上傳檔案 -->
                     <div class="form-section" id="step2Content">
                         <h3>上傳作品檔案</h3>
+                        <p style="color: #718096; margin-bottom: 2rem; font-size: 0.95rem;">支援多種格式，單個檔案最大 50MB</p>
                         
-                        <div class="upload-area" id="uploadArea">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <h3>拖拽檔案到這裡或點擊上傳</h3>
-                            <p>支援多種格式：圖片、影片、音頻、3D模型、文件、程式碼等</p>
-                            <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                                <i class="fas fa-upload"></i>
-                                選擇檔案
-                            </button>
-                            <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.obj,.stl,.fbx,.glb,.gltf,.mp4,.avi,.mov,.wmv,.mp3,.wav,.flac,.aac">
+                        <div class="upload-container">
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <h4>拖拽檔案或資料夾到這裡</h4>
+                                    <p>或點擊下方按鈕選擇檔案或資料夾</p>
+                                </div>
+                                <div class="upload-buttons">
+                                    <button type="button" class="btn btn-outline upload-btn" onclick="document.getElementById('fileInput').click()">
+                                        <i class="fas fa-file"></i>
+                                        選擇檔案
+                                    </button>
+                                    <button type="button" class="btn btn-outline upload-btn" onclick="document.getElementById('folderInput').click()">
+                                        <i class="fas fa-folder"></i>
+                                        選擇資料夾
+                                    </button>
+                                </div>
+                                <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.obj,.stl,.fbx,.glb,.gltf,.mp4,.avi,.mov,.wmv,.mp3,.wav,.flac,.aac" style="display: none;">
+                                <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+                            </div>
                             
-                            <!-- 上傳進度條 -->
-                            <div class="progress-bar" id="progressBar" style="display: none;">
-                                <div class="progress-fill" id="progressFill"></div>
+                            <!-- 上傳進度 -->
+                            <div class="upload-progress" id="uploadProgress" style="display: none;">
+                                <div class="progress-header">
+                                    <span class="progress-text">上傳中...</span>
+                                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="file-preview" id="filePreview">
-                            <h4>已選擇的檔案</h4>
-                            <div id="previewList"></div>
-                        </div>
-
-                        <div class="upload-options">
-                            <div class="option-card" data-type="image" onclick="selectUploadOption(this)">
-                                <i class="fas fa-image"></i>
-                                <h4>圖片檔案</h4>
-                                <p>JPG, PNG, GIF, SVG</p>
+                        <!-- 檔案列表 -->
+                        <div class="file-list" id="fileList" style="display: none;">
+                            <div class="file-list-header">
+                                <h4>已選擇的檔案</h4>
+                                <span class="file-count" id="fileCount">0 個檔案</span>
                             </div>
-                            <div class="option-card" data-type="video" onclick="selectUploadOption(this)">
-                                <i class="fas fa-video"></i>
-                                <h4>影片檔案</h4>
-                                <p>MP4, AVI, MOV, WMV</p>
-                            </div>
-                            <div class="option-card" data-type="audio" onclick="selectUploadOption(this)">
-                                <i class="fas fa-music"></i>
-                                <h4>音頻檔案</h4>
-                                <p>MP3, WAV, FLAC, AAC</p>
-                            </div>
-                            <div class="option-card" data-type="3d" onclick="selectUploadOption(this)">
-                                <i class="fas fa-cube"></i>
-                                <h4>3D模型</h4>
-                                <p>OBJ, STL, FBX, GLB</p>
-                            </div>
-                            <div class="option-card" data-type="document" onclick="selectUploadOption(this)">
-                                <i class="fas fa-file-pdf"></i>
-                                <h4>文件檔案</h4>
-                                <p>PDF, DOC, PPT</p>
-                            </div>
-                            <div class="option-card" data-type="archive" onclick="selectUploadOption(this)">
-                                <i class="fas fa-file-archive"></i>
-                                <h4>壓縮檔案</h4>
-                                <p>ZIP, RAR</p>
-                            </div>
-                            <div class="option-card" data-type="github" onclick="selectUploadOption(this)">
-                                <i class="fab fa-github"></i>
-                                <h4>GitHub 連結</h4>
-                                <p>程式碼庫、專案連結</p>
-                            </div>
-                            <div class="option-card" data-type="link" onclick="selectUploadOption(this)">
-                                <i class="fas fa-link"></i>
-                                <h4>外部連結</h4>
-                                <p>網站、線上作品</p>
-                            </div>
-                        </div>
-
-                        <!-- GitHub 整合 -->
-                        <div class="github-integration" id="githubIntegration">
-                            <h4>GitHub 專案整合</h4>
-                            <div class="github-form">
-                                <div class="form-group">
-                                    <label for="githubUrl">GitHub 專案 URL</label>
-                                    <input type="url" id="githubUrl" name="githubUrl" placeholder="https://github.com/username/repository">
-                                </div>
-                                <div class="form-group">
-                                    <label for="githubBranch">分支 (可選)</label>
-                                    <input type="text" id="githubBranch" name="githubBranch" placeholder="main" value="main">
-                                </div>
-                                <div class="form-group">
-                                    <label for="githubDescription">專案描述</label>
-                                    <textarea id="githubDescription" name="githubDescription" rows="3" placeholder="請描述這個GitHub專案的主要功能和技術特色..."></textarea>
-                                </div>
-                                <button type="button" class="btn btn-outline" onclick="fetchGithubInfo()">
-                                    <i class="fab fa-github"></i>
-                                    獲取專案資訊
-                                </button>
-                            </div>
+                            <div class="file-items" id="fileItems"></div>
                         </div>
                     </div>
 
                     <!-- 步驟 3: 預覽確認 -->
                     <div class="form-section" id="step3Content">
                         <h3>預覽確認</h3>
+                        <p style="color: #718096; margin-bottom: 2rem; font-size: 0.95rem;">請確認作品資訊無誤後發布</p>
                         
-                        <div class="preview-section">
-                            <h4>作品資訊</h4>
-                            <div class="preview-content">
-                                <div class="preview-title" id="previewTitle">作品標題</div>
-                                <div class="preview-description" id="previewDescription">作品描述</div>
-                                <div class="preview-tags" id="previewTags"></div>
+                        <div class="preview-container">
+                            <!-- 作品資訊預覽 -->
+                            <div class="preview-card">
+                                <div class="preview-card-header">
+                                    <i class="bi bi-info-circle"></i>
+                                    <h4>作品資訊</h4>
+                                </div>
+                                <div class="preview-card-content">
+                                    <div class="preview-item">
+                                        <label>標題</label>
+                                        <div class="preview-value" id="previewTitle">作品標題</div>
+                                    </div>
+                                    <div class="preview-item">
+                                        <label>描述</label>
+                                        <div class="preview-value" id="previewDescription">作品描述</div>
+                                    </div>
+                                    <div class="preview-item">
+                                        <label>標籤</label>
+                                        <div class="preview-tags" id="previewTags"></div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="preview-section">
-                            <h4>上傳的檔案</h4>
-                            <div class="preview-content">
-                                <div id="previewFiles"></div>
+                            <!-- 檔案預覽 -->
+                            <div class="preview-card">
+                                <div class="preview-card-header">
+                                    <i class="bi bi-folder-open"></i>
+                                    <h4>上傳檔案</h4>
+                                </div>
+                                <div class="preview-card-content">
+                                    <div class="file-preview-grid" id="previewFiles"></div>
+                                </div>
                             </div>
                         </div>
                     </div>

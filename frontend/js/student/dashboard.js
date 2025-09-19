@@ -67,7 +67,7 @@ async function loadDashboardData() {
         
         // 處理API回應格式
         const activities = activitiesResp && activitiesResp.success ? activitiesResp.data : (activitiesResp || []);
-        const badges = badgesResp && badgesResp.success ? badgesResp.data : (badgesResp || []);
+        const badges = badgesResp && badgesResp.success ? (badgesResp.data?.badges || badgesResp.data || []) : (badgesResp || []);
         const notifications = notificationsResp && notificationsResp.success ? notificationsResp.data : (notificationsResp || []);
 
         // 渲染資料
@@ -258,6 +258,32 @@ function renderRecentActivities(activities) {
 }
 
 /**
+ * 根據徽章名稱或類別決定徽章類型
+ */
+function getBadgeType(badgeName, category) {
+    // 簡化版：所有徽章都使用 achievement 類型
+    return 'achievement';
+}
+
+/**
+ * 根據徽章類型獲取預設圖標 - Bootstrap Icons
+ */
+function getDefaultIcon(badgeType) {
+    const iconMap = {
+        'login': 'bi bi-box-arrow-in-right',
+        'upload': 'bi bi-cloud-upload',
+        'profile': 'bi bi-person-circle',
+        'creator': 'bi bi-star-fill',
+        'popular': 'bi bi-fire',
+        'social': 'bi bi-people-fill',
+        'achievement': 'bi bi-trophy-fill',
+        'special': 'bi bi-gem'
+    };
+    
+    return iconMap[badgeType] || 'bi bi-star-fill';
+}
+
+/**
  * 渲染徽章
  */
 function renderBadges(badges) {
@@ -268,29 +294,53 @@ function renderBadges(badges) {
     
     const badgeArray = Array.isArray(badges) ? badges : [];
     
+    // 調試：輸出徽章數據
+    console.log('徽章數據:', badgeArray);
+    console.log('徽章數據類型:', typeof badgeArray, Array.isArray(badgeArray));
+    
     if (badgeArray.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'no-badges';
+        const empty = document.createElement('li');
+        empty.className = 'badge-item loading-placeholder';
         empty.innerHTML = `
-            <i class="fas fa-star"></i>
-            <p>暫無徽章</p>
-            <small>完成更多作品來獲得徽章</small>
+            <div class="badge-icon">
+                <i class="bi bi-star"></i>
+            </div>
+            <div>
+                <div>暫無徽章</div>
+                <small>完成更多作品來獲得徽章</small>
+            </div>
         `;
         badgesContainer.appendChild(empty);
         return;
     }
     
-    badgeArray.forEach(badge => {
-        const badgeItem = document.createElement('div');
-        badgeItem.className = `badge-item ${badge.earned ? 'earned' : 'not-earned'}`;
+    badgeArray.forEach((badge, index) => {
+        const badgeItem = document.createElement('li');
+        
+        // 根據徽章名稱或類別決定CSS類別
+        const badgeType = getBadgeType(badge.name, badge.category);
+        const badgeClass = badge.earned ? `earned badge-${badgeType}` : 'not-earned';
+        
+        // 調試：輸出每個徽章的資訊
+        console.log(`徽章 ${index}:`, {
+            name: badge.name,
+            icon: badge.icon,
+            earned: badge.earned,
+            category: badge.category,
+            badgeType: badgeType,
+            badgeClass: badgeClass,
+            finalIconClass: badge.icon || getDefaultIcon(badgeType)
+        });
+        
+        badgeItem.className = `badge-item ${badgeClass}`;
         badgeItem.innerHTML = `
             <div class="badge-icon">
-                <i class="${badge.icon || 'fas fa-star'}"></i>
+                <i class="${badge.icon || getDefaultIcon(badgeType)}"></i>
             </div>
-            <div class="badge-info">
-                <div class="badge-name">${badge.name || '未知徽章'}</div>
-                <div class="badge-description">${badge.description || '暫無描述'}</div>
-                ${badge.earned_date ? `<div class="badge-date">獲得於 ${badge.earned_date}</div>` : ''}
+            <div>
+                <div>${badge.name || '未知徽章'}</div>
+                <small>${badge.description || '暫無描述'}</small>
+                ${badge.earned_date ? `<small>獲得於 ${badge.earned_date}</small>` : ''}
             </div>
         `;
         badgesContainer.appendChild(badgeItem);

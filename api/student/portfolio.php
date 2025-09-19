@@ -347,10 +347,21 @@ function createPortfolio($data) {
         
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
-            sendResponse([
+            
+            // 檢查並授予徽章
+            require_once '../badge-manager.php';
+            $awardedBadges = checkSpecificBadge($userId, '首次上傳');
+            
+            $response = [
                 'portfolio_id' => $portfolioId,
                 'message' => '作品建立成功'
-            ], 201, '建立成功');
+            ];
+            
+            if ($awardedBadges) {
+                $response['new_badge'] = '首次上傳';
+            }
+            
+            sendResponse($response, 201, '建立成功');
         } else {
             sendError('建立失敗: ' . $stmt->error, 500);
         }

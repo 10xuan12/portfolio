@@ -254,9 +254,16 @@
 
             // 處理徽章回應
             if (badgesResult && (badgesResult.status === 200 || badgesResult.success)) {
-                if (badgesResult.data) {
-                    studentData.badges = badgesResult.data;
+                let badges = [];
+                if (Array.isArray(badgesResult.data)) {
+                    badges = badgesResult.data;
+                } else if (Array.isArray(badgesResult.data?.badges)) {
+                    badges = badgesResult.data.badges;
+                } else if (Array.isArray(badgesResult.badges)) {
+                    badges = badgesResult.badges;
                 }
+                studentData.badges = badges;
+                console.log('個人資料徽章數據處理結果:', badges);
             }
 
             // 處理活動回應
@@ -695,23 +702,77 @@
         
         const badges = studentData.badges || [];
         
+        // 調試：輸出徽章數據
+        console.log('個人資料徽章數據:', badges);
+        
         if (badges.length > 0) {
-            badgeGrid.innerHTML = badges.map(badge => `
-                <div class="badge-item ${badge.earned ? 'earned' : 'not-earned'}">
-                    <i class="${badge.icon || 'fas fa-star'}"></i>
-                    <div class="badge-name">${badge.name || '未知徽章'}</div>
-                    ${badge.description ? `<div class="badge-description">${badge.description}</div>` : ''}
-                </div>
-            `).join('');
+            badgeGrid.innerHTML = badges.map((badge, index) => {
+                // 根據徽章名稱或類別決定CSS類別
+                const badgeType = getBadgeType(badge.name, badge.category);
+                const badgeClass = badge.earned ? `earned badge-${badgeType}` : 'not-earned';
+                
+                // 調試：輸出每個徽章的資訊
+                console.log(`個人資料徽章 ${index}:`, {
+                    name: badge.name,
+                    icon: badge.icon,
+                    earned: badge.earned,
+                    category: badge.category,
+                    badgeType: badgeType,
+                    badgeClass: badgeClass
+                });
+                
+                return `
+                    <li class="badge-item ${badgeClass}">
+                        <div class="badge-icon">
+                            <i class="${badge.icon || getDefaultIcon(badgeType)}"></i>
+                        </div>
+                        <div>
+                            <div>${badge.name || '未知徽章'}</div>
+                            <small>${badge.description || '暫無描述'}</small>
+                            ${badge.earned_date ? `<small>獲得於 ${badge.earned_date}</small>` : ''}
+                        </div>
+                    </li>
+                `;
+            }).join('');
         } else {
             badgeGrid.innerHTML = `
-                <div class="no-badges">
-                    <i class="fas fa-star"></i>
-                    <p>目前還沒有徽章</p>
-                    <small>完成更多作品來獲得徽章</small>
-                </div>
+                <li class="badge-item loading-placeholder">
+                    <div class="badge-icon">
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <div>
+                        <div>目前還沒有徽章</div>
+                        <small>完成更多作品來獲得徽章</small>
+                    </div>
+                </li>
             `;
         }
+    }
+
+    /**
+     * 根據徽章名稱或類別決定徽章類型
+     */
+    function getBadgeType(badgeName, category) {
+        // 簡化版：所有徽章都使用 achievement 類型
+        return 'achievement';
+    }
+
+    /**
+     * 根據徽章類型獲取預設圖標 - Bootstrap Icons
+     */
+    function getDefaultIcon(badgeType) {
+        const iconMap = {
+            'login': 'bi bi-box-arrow-in-right',
+            'upload': 'bi bi-cloud-upload',
+            'profile': 'bi bi-person-circle',
+            'creator': 'bi bi-star-fill',
+            'popular': 'bi bi-fire',
+            'social': 'bi bi-people-fill',
+            'achievement': 'bi bi-trophy-fill',
+            'special': 'bi bi-gem'
+        };
+        
+        return iconMap[badgeType] || 'bi bi-star-fill';
     }
 
     // 渲染活動記錄

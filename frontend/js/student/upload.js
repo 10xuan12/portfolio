@@ -3,6 +3,77 @@
  * 包含檔案上傳、表單驗證、預覽功能等
  */
 
+// 顯示通知
+function showNotification(message, type = 'info') {
+    // 創建通知元素
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    // 添加樣式
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        animation: slideInRight 0.3s ease-out;
+        max-width: 300px;
+    `;
+    
+    // 根據類型設定背景色
+    if (type === 'error') {
+        notification.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
+    } else if (type === 'success') {
+        notification.style.background = 'linear-gradient(135deg, #51cf66, #40c057)';
+    } else {
+        notification.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+    }
+    
+    // 添加到頁面
+    document.body.appendChild(notification);
+    
+    // 3秒後自動移除
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// 添加動畫樣式
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
 // 上傳狀態
 let currentStep = 1;
 let uploadedFiles = [];
@@ -80,24 +151,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 初始化事件監聽器
 function initEventListeners() {
+    console.log('初始化事件監聽器...');
+    
     // 檔案上傳相關
     const fileInput = document.getElementById('fileInput');
+    const folderInput = document.getElementById('folderInput');
     const uploadArea = document.getElementById('uploadArea');
+    
+    console.log('fileInput:', fileInput);
+    console.log('folderInput:', folderInput);
+    console.log('uploadArea:', uploadArea);
     
     if (fileInput) {
         fileInput.addEventListener('change', handleFileSelect);
+        console.log('檔案輸入事件監聽器已綁定');
+    }
+    
+    if (folderInput) {
+        folderInput.addEventListener('change', handleFolderSelect);
+        console.log('資料夾輸入事件監聽器已綁定');
     }
     
     if (uploadArea) {
         uploadArea.addEventListener('dragover', handleDragOver);
         uploadArea.addEventListener('dragleave', handleDragLeave);
         uploadArea.addEventListener('drop', handleDrop);
+        console.log('拖拽事件監聽器已綁定');
     }
     
     // 表單提交
     const uploadForm = document.getElementById('uploadForm');
     if (uploadForm) {
         uploadForm.addEventListener('submit', handleFormSubmit);
+        console.log('表單提交事件監聽器已綁定');
     }
     
     // 標籤輸入
@@ -111,15 +197,23 @@ function initEventListeners() {
         });
     }
     
-    // 初始化工具提示控制（暫時禁用以測試）
-    // initTooltipControl();
+    console.log('事件監聽器初始化完成');
 }
 
 // 下一步
 function nextStep() {
     if (validateCurrentStep()) {
+        // 收集當前步驟的表單資料
+        collectFormData();
         currentStep++;
         updateStepDisplay();
+        
+        // 如果進入第三步驟，確保預覽是最新的
+        if (currentStep === 3) {
+            setTimeout(() => {
+                updatePreview();
+            }, 200);
+        }
     }
 }
 
@@ -181,6 +275,14 @@ function updateStepDisplay() {
             if (submitBtn) submitBtn.style.display = 'none';
         }
     }
+    
+    // 當進入第三步驟時更新預覽
+    if (currentStep === 3) {
+        // 延遲一點時間確保DOM已更新
+        setTimeout(() => {
+            updatePreview();
+        }, 100);
+    }
 }
 
 // 顯示指定步驟
@@ -239,16 +341,11 @@ function validateStep1() {
 
 // 驗證步驟2 - 檔案上傳
 function validateStep2() {
-    const fileInput = document.getElementById('fileInput');
-    const files = fileInput ? Array.from(fileInput.files) : [];
-    
-    if (files.length === 0) {
-        Utils.showNotification('請至少上傳一個檔案', 'error');
+    // 檢查 uploadedFiles 陣列而不是 fileInput.files
+    if (uploadedFiles.length === 0) {
+        showNotification('請至少上傳一個檔案', 'error');
         return false;
     }
-    
-    // 更新上傳檔案列表
-    uploadedFiles = files;
     
     return true;
 }
@@ -272,14 +369,58 @@ function validateStep3() {
 
 // 處理檔案選擇
 function handleFileSelect(e) {
+    console.log('檔案選擇事件觸發:', e.target.files);
     const files = Array.from(e.target.files);
+    console.log('選擇的檔案:', files);
     addFiles(files);
 }
 
-// 處理拖拽懸停
-function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
+// 處理資料夾選擇
+function handleFolderSelect(e) {
+    console.log('資料夾選擇事件觸發:', e.target.files);
+    const files = Array.from(e.target.files);
+    console.log('選擇的資料夾檔案:', files);
+    
+    if (files.length > 0) {
+        // 顯示資料夾信息
+        const folderName = files[0].webkitRelativePath.split('/')[0];
+        console.log('資料夾名稱:', folderName);
+        
+        // 組織檔案結構
+        const folderStructure = organizeFolderStructure(files);
+        console.log('資料夾結構:', folderStructure);
+        
+        addFiles(files, folderName, folderStructure);
+    }
+}
+
+// 組織資料夾結構
+function organizeFolderStructure(files) {
+    const structure = {};
+    
+    files.forEach(file => {
+        const path = file.webkitRelativePath;
+        const pathParts = path.split('/');
+        
+        let current = structure;
+        for (let i = 0; i < pathParts.length - 1; i++) {
+            const part = pathParts[i];
+            if (!current[part]) {
+                current[part] = { type: 'folder', children: {} };
+            }
+            current = current[part].children;
+        }
+        
+        const fileName = pathParts[pathParts.length - 1];
+        current[fileName] = {
+            type: 'file',
+            file: file,
+            size: file.size,
+            lastModified: file.lastModified
+        };
+    });
+    
+    return structure;
 }
 
 // 處理拖拽離開
@@ -298,33 +439,90 @@ function handleDrop(e) {
 }
 
 // 添加檔案
-function addFiles(files) {
+function addFiles(files, folderName = null, folderStructure = null) {
+    console.log('addFiles 被調用，檔案數量:', files.length);
+    console.log('資料夾名稱:', folderName);
+    console.log('資料夾結構:', folderStructure);
+    
+    let addedCount = 0;
+    let folderInfo = null;
+    
+    if (folderName && folderStructure) {
+        folderInfo = {
+            name: folderName,
+            structure: folderStructure,
+            totalFiles: files.length,
+            totalSize: files.reduce((sum, file) => sum + file.size, 0)
+        };
+    }
+    
     files.forEach(file => {
+        console.log('處理檔案:', file.name, '大小:', file.size);
         if (validateFile(file)) {
+            // 為檔案添加資料夾信息
+            if (folderName) {
+                file.folderName = folderName;
+                file.folderPath = file.webkitRelativePath;
+            }
+            
             uploadedFiles.push(file);
+            addedCount++;
+            console.log('檔案添加成功:', file.name);
+        } else {
+            console.log('檔案驗證失敗:', file.name);
         }
     });
     
-    updateFilePreview();
+    console.log('總共添加檔案數:', addedCount, '當前檔案總數:', uploadedFiles.length);
+    
+    if (addedCount > 0) {
+        if (folderName) {
+            showNotification(`成功添加資料夾 "${folderName}"，包含 ${addedCount} 個檔案`, 'success');
+        } else {
+            showNotification(`成功添加 ${addedCount} 個檔案`, 'success');
+        }
+        
+        updateFilePreview();
+        
+        // 同步更新 fileInput 的 files 屬性
+        updateFileInput();
+    }
+}
+
+// 更新檔案輸入框的 files 屬性
+function updateFileInput() {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput && uploadedFiles.length > 0) {
+        // 創建新的 DataTransfer 物件來設定 files
+        const dt = new DataTransfer();
+        uploadedFiles.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+    }
 }
 
 // 驗證檔案
 function validateFile(file) {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-        'application/pdf', 'application/zip', 'application/x-rar-compressed',
-        'text/plain', 'text/html', 'text/css', 'text/javascript',
-        'application/json', 'application/xml'
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    const allowedExtensions = [
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
+        'mp4', 'avi', 'mov', 'wmv', 'webm',
+        'mp3', 'wav', 'flac', 'aac',
+        'pdf', 'doc', 'docx', 'txt',
+        'zip', 'rar', '7z',
+        'html', 'css', 'js', 'json', 'xml',
+        'obj', 'stl', 'fbx', 'glb', 'gltf'
     ];
     
+    // 檢查檔案大小
     if (file.size > maxSize) {
-        Utils.showNotification(`檔案 ${file.name} 超過 10MB 限制`, 'error');
+        showNotification(`檔案 ${file.name} 超過 50MB 限制`, 'error');
         return false;
     }
     
-    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|gif|webp|pdf|zip|rar|txt|html|css|js|json|xml)$/i)) {
-        Utils.showNotification(`檔案 ${file.name} 格式不支援`, 'error');
+    // 檢查檔案副檔名
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+        showNotification(`檔案 ${file.name} 格式不支援`, 'error');
         return false;
     }
     
@@ -333,42 +531,73 @@ function validateFile(file) {
 
 // 更新檔案預覽
 function updateFilePreview() {
-    const previewList = document.getElementById('previewList');
-    if (!previewList) return;
+    console.log('updateFilePreview 被調用，檔案數量:', uploadedFiles.length);
     
-    previewList.innerHTML = '';
+    const fileList = document.getElementById('fileList');
+    const fileItems = document.getElementById('fileItems');
+    const fileCount = document.getElementById('fileCount');
     
-    uploadedFiles.forEach((file, index) => {
-        const previewItem = createFilePreview(file, index);
-        previewList.appendChild(previewItem);
-    });
+    console.log('DOM元素:', { fileList, fileItems, fileCount });
+    
+    if (!fileList || !fileItems || !fileCount) {
+        console.error('找不到必要的DOM元素');
+        return;
+    }
+    
+    // 更新檔案數量
+    fileCount.textContent = `${uploadedFiles.length} 個檔案`;
+    console.log('檔案數量已更新:', fileCount.textContent);
+    
+    // 顯示或隱藏檔案列表
+    if (uploadedFiles.length > 0) {
+        fileList.style.display = 'block';
+        fileItems.innerHTML = '';
+        
+        uploadedFiles.forEach((file, index) => {
+            const fileItem = createFileItem(file, index);
+            fileItems.appendChild(fileItem);
+            console.log('檔案項目已添加:', file.name);
+        });
+        
+        console.log('檔案列表已顯示');
+    } else {
+        fileList.style.display = 'none';
+        console.log('檔案列表已隱藏');
+    }
 }
 
-// 建立檔案預覽項目
-function createFilePreview(file, index) {
-    const previewItem = document.createElement('div');
-    previewItem.className = 'preview-item';
+// 建立檔案項目
+function createFileItem(file, index) {
+    const fileItem = document.createElement('div');
+    fileItem.className = 'file-item';
     
     const fileType = getFileType(file);
     const icon = getFileIcon(fileType);
     
-    previewItem.innerHTML = `
-        <div class="preview-icon">
+    // 檢查是否為資料夾中的檔案
+    const isFromFolder = file.folderName && file.folderPath;
+    const displayName = isFromFolder ? `${file.folderName}/${file.name}` : file.name;
+    
+    fileItem.innerHTML = `
+        <div class="file-icon">
             <i class="${icon}"></i>
         </div>
-        <div class="preview-info">
-            <div class="preview-name">${file.name}</div>
-            <div class="preview-size">${formatFileSize(file.size)}</div>
-            <div class="preview-type">${fileType}</div>
+        <div class="file-info">
+            <div class="file-name" title="${displayName}">${displayName}</div>
+            <div class="file-details">
+                <span class="file-type">${fileType.toUpperCase()}</span>
+                <span class="file-size">${formatFileSize(file.size)}</span>
+                ${isFromFolder ? `<span class="folder-indicator">📁 資料夾</span>` : ''}
+            </div>
         </div>
-        <div class="preview-actions">
+        <div class="file-actions">
             <button type="button" class="btn-remove" onclick="removeFile(${index})">
                 <i class="fas fa-times"></i>
             </button>
         </div>
     `;
     
-    return previewItem;
+    return fileItem;
 }
 
 // 取得檔案類型
@@ -407,12 +636,7 @@ function removeFile(index) {
     uploadedFiles.splice(index, 1);
     
     // 更新檔案輸入框
-    const fileInput = document.getElementById('fileInput');
-    if (fileInput) {
-        const dt = new DataTransfer();
-        uploadedFiles.forEach(file => dt.items.add(file));
-        fileInput.files = dt.files;
-    }
+    updateFileInput();
     
     updateFilePreview();
 }
@@ -508,35 +732,111 @@ function displayGithubInfo(repoInfo) {
     }
 }
 
+// 收集表單資料
+function collectFormData() {
+    console.log('collectFormData 被調用');
+    
+    // 收集第一步驟的資料
+    const title = document.getElementById('title');
+    const category = document.getElementById('categoryFilter');
+    const description = document.getElementById('description');
+    const tags = document.getElementById('tags');
+    const status = document.getElementById('status');
+    
+    console.log('表單元素:', { title, category, description, tags, status });
+    
+    if (title) {
+        portfolioData.title = title.value;
+        console.log('標題:', portfolioData.title);
+    }
+    if (category) {
+        portfolioData.category = category.value;
+        console.log('分類:', portfolioData.category);
+    }
+    if (description) {
+        portfolioData.description = description.value;
+        console.log('描述:', portfolioData.description);
+    }
+    if (tags) {
+        portfolioData.tags = tags.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        console.log('標籤:', portfolioData.tags);
+    }
+    if (status) {
+        portfolioData.status = status.value;
+        console.log('狀態:', portfolioData.status);
+    }
+    
+    // 收集第三步驟的額外資料
+    const githubUrl = document.getElementById('githubUrl');
+    if (githubUrl) {
+        portfolioData.github = githubUrl.value.trim();
+        console.log('GitHub URL:', portfolioData.github);
+    }
+    
+    console.log('收集的表單資料:', portfolioData);
+}
+
 // 更新預覽
 function updatePreview() {
+    console.log('updatePreview 被調用');
+    console.log('當前 portfolioData:', portfolioData);
+    console.log('當前 uploadedFiles:', uploadedFiles);
+    
+    // 確保資料是最新的
+    collectFormData();
+    
     const previewTitle = document.getElementById('previewTitle');
     const previewDescription = document.getElementById('previewDescription');
     const previewTags = document.getElementById('previewTags');
     const previewFiles = document.getElementById('previewFiles');
     
+    console.log('預覽DOM元素:', { previewTitle, previewDescription, previewTags, previewFiles });
+    
     if (previewTitle) {
         previewTitle.textContent = portfolioData.title || '作品標題';
+        console.log('標題已更新:', previewTitle.textContent);
     }
     
     if (previewDescription) {
         previewDescription.textContent = portfolioData.description || '作品描述';
+        console.log('描述已更新:', previewDescription.textContent);
     }
     
     if (previewTags) {
-        previewTags.innerHTML = portfolioData.tags.map(tag => 
-            `<span class="tag">${tag}</span>`
-        ).join('');
+        if (portfolioData.tags && portfolioData.tags.length > 0) {
+            previewTags.innerHTML = portfolioData.tags.map(tag => 
+                `<span class="tag">${tag}</span>`
+            ).join('');
+            console.log('標籤已更新:', portfolioData.tags);
+        } else {
+            previewTags.innerHTML = '<span class="text-muted">無標籤</span>';
+            console.log('標籤為空，顯示預設文字');
+        }
     }
     
     if (previewFiles) {
-        previewFiles.innerHTML = uploadedFiles.map(file => 
-            `<div class="file-item">
-                <i class="fas ${getFileIcon(getFileType(file))}"></i>
-                <span>${file.name}</span>
-            </div>`
-        ).join('');
+        if (uploadedFiles && uploadedFiles.length > 0) {
+            previewFiles.innerHTML = uploadedFiles.map(file => {
+                const fileType = getFileType(file);
+                const icon = getFileIcon(fileType);
+                const displayName = file.folderName ? `${file.folderName}/${file.name}` : file.name;
+                
+                return `
+                    <div class="file-preview-item">
+                        <i class="${icon}"></i>
+                        <div class="preview-file-name" title="${displayName}">${displayName}</div>
+                        ${file.folderName ? '<div class="folder-badge">📁</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+            console.log('檔案預覽已更新，檔案數量:', uploadedFiles.length);
+        } else {
+            previewFiles.innerHTML = '<div class="text-muted">無檔案</div>';
+            console.log('無檔案，顯示預設文字');
+        }
     }
+    
+    console.log('預覽更新完成');
 }
 
 // 處理表單提交
@@ -566,9 +866,11 @@ async function handleFormSubmit(e) {
         formData.append('github', portfolioData.github);
         
         // 添加檔案
-        uploadedFiles.forEach((file) => {
-            formData.append('files[]', file);
-        });
+        if (uploadedFiles && uploadedFiles.length > 0) {
+            uploadedFiles.forEach((file) => {
+                formData.append('files[]', file);
+            });
+        }
         
         // 使用API服務上傳
         const response = await window.apiService.createPortfolio(formData);
@@ -650,6 +952,7 @@ function resetForm() {
     // 清空檔案
     uploadedFiles = [];
     updateFilePreview();
+    updateFileInput();
     
     // 重置表單資料
     const form = document.getElementById('uploadForm');
@@ -720,7 +1023,95 @@ window.showGithubIntegration = showGithubIntegration;
 window.hideGithubIntegration = hideGithubIntegration;
 window.fetchGithubInfo = fetchGithubInfo;
 window.initializeUpload = initializeUpload;
-window.showUploadProgress = showUploadProgress; 
+window.showUploadProgress = showUploadProgress;
+
+// 測試函數
+window.testUpload = function() {
+    console.log('=== 測試上傳功能 ===');
+    console.log('當前步驟:', currentStep);
+    console.log('上傳檔案數量:', uploadedFiles.length);
+    console.log('作品資料:', portfolioData);
+    
+    // 測試檔案添加
+    const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+    addFiles([testFile]);
+    
+    // 測試預覽更新
+    setTimeout(() => {
+        updatePreview();
+    }, 1000);
+};
+
+// 測試資料夾上傳函數
+window.testFolderUpload = function() {
+    console.log('=== 測試資料夾上傳功能 ===');
+    
+    // 創建模擬的資料夾檔案
+    const folderFiles = [
+        new File(['content1'], 'folder1/file1.txt', { type: 'text/plain' }),
+        new File(['content2'], 'folder1/file2.txt', { type: 'text/plain' }),
+        new File(['content3'], 'folder1/subfolder/file3.txt', { type: 'text/plain' })
+    ];
+    
+    // 為每個檔案添加 webkitRelativePath 屬性
+    folderFiles.forEach(file => {
+        file.webkitRelativePath = file.name;
+    });
+    
+    addFiles(folderFiles, 'folder1', organizeFolderStructure(folderFiles));
+    
+    setTimeout(() => {
+        updatePreview();
+    }, 1000);
+};
+
+// 測試步驟切換功能
+window.testStepNavigation = function() {
+    console.log('=== 測試步驟切換功能 ===');
+    
+    // 填寫第一步驟資料
+    const titleInput = document.getElementById('title');
+    const categorySelect = document.getElementById('categoryFilter');
+    const descriptionTextarea = document.getElementById('description');
+    
+    if (titleInput) titleInput.value = '測試作品標題';
+    if (categorySelect) categorySelect.value = 'engineering';
+    if (descriptionTextarea) descriptionTextarea.value = '這是一個測試作品描述';
+    
+    console.log('第一步驟資料已填寫');
+    
+    // 測試進入第二步驟
+    setTimeout(() => {
+        nextStep();
+        console.log('已進入第二步驟，當前步驟:', currentStep);
+        
+        // 添加測試檔案
+        const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+        addFiles([testFile]);
+        
+        // 測試進入第三步驟
+        setTimeout(() => {
+            nextStep();
+            console.log('已進入第三步驟，當前步驟:', currentStep);
+            console.log('預覽應該已更新');
+        }, 1000);
+    }, 1000);
+};
+
+// 測試預覽功能
+window.testPreview = function() {
+    console.log('=== 測試預覽功能 ===');
+    
+    // 確保有資料
+    collectFormData();
+    console.log('收集的資料:', portfolioData);
+    console.log('上傳的檔案:', uploadedFiles);
+    
+    // 更新預覽
+    updatePreview();
+    console.log('預覽已更新');
+};
+
 
 // 由後端載入 categories 並填入下拉
 async function loadCategories() {
