@@ -113,7 +113,7 @@ function initializeUpload() {
         });
         
         // 強制設定第一步驟為顯示
-        step1Content.style.display = 'block';
+        step1Content.style.setProperty('display', 'block', 'important');
         step1Content.style.visibility = 'visible';
         step1Content.style.opacity = '1';
         
@@ -122,6 +122,20 @@ function initializeUpload() {
             visibility: step1Content.style.visibility,
             opacity: step1Content.style.opacity
         });
+    }
+    
+    // 確保第二步驟和第三步驟被隱藏
+    const step2Content = document.getElementById('step2Content');
+    const step3Content = document.getElementById('step3Content');
+    
+    if (step2Content) {
+        step2Content.style.setProperty('display', 'none', 'important');
+        console.log('第二步驟已隱藏');
+    }
+    
+    if (step3Content) {
+        step3Content.style.setProperty('display', 'none', 'important');
+        console.log('第三步驟已隱藏');
     }
     
     initEventListeners();
@@ -163,16 +177,25 @@ function initEventListeners() {
     console.log('uploadArea:', uploadArea);
     
     if (fileInput) {
+        // 移除舊的事件監聽器（如果有的話）
+        fileInput.removeEventListener('change', handleFileSelect);
         fileInput.addEventListener('change', handleFileSelect);
         console.log('檔案輸入事件監聽器已綁定');
     }
     
     if (folderInput) {
+        // 移除舊的事件監聽器（如果有的話）
+        folderInput.removeEventListener('change', handleFolderSelect);
         folderInput.addEventListener('change', handleFolderSelect);
         console.log('資料夾輸入事件監聽器已綁定');
     }
     
     if (uploadArea) {
+        // 移除舊的事件監聽器（如果有的話）
+        uploadArea.removeEventListener('dragover', handleDragOver);
+        uploadArea.removeEventListener('dragleave', handleDragLeave);
+        uploadArea.removeEventListener('drop', handleDrop);
+        
         uploadArea.addEventListener('dragover', handleDragOver);
         uploadArea.addEventListener('dragleave', handleDragLeave);
         uploadArea.addEventListener('drop', handleDrop);
@@ -182,6 +205,7 @@ function initEventListeners() {
     // 表單提交
     const uploadForm = document.getElementById('uploadForm');
     if (uploadForm) {
+        uploadForm.removeEventListener('submit', handleFormSubmit);
         uploadForm.addEventListener('submit', handleFormSubmit);
         console.log('表單提交事件監聽器已綁定');
     }
@@ -202,18 +226,26 @@ function initEventListeners() {
 
 // 下一步
 function nextStep() {
+    console.log('nextStep 被調用，當前步驟:', currentStep);
+    
     if (validateCurrentStep()) {
         // 收集當前步驟的表單資料
         collectFormData();
+        console.log('收集的資料:', portfolioData);
+        
         currentStep++;
+        console.log('進入步驟:', currentStep);
         updateStepDisplay();
         
         // 如果進入第三步驟，確保預覽是最新的
         if (currentStep === 3) {
+            console.log('進入第三步驟，準備更新預覽');
             setTimeout(() => {
                 updatePreview();
             }, 200);
         }
+    } else {
+        console.log('步驟驗證失敗');
     }
 }
 
@@ -249,10 +281,10 @@ function updateStepDisplay() {
         if (content) {
             if (index + 1 === currentStep) {
                 console.log(`顯示步驟 ${index + 1} 內容`);
-                content.style.display = 'block';
+                content.style.setProperty('display', 'block', 'important');
             } else {
                 console.log(`隱藏步驟 ${index + 1} 內容`);
-                content.style.display = 'none';
+                content.style.setProperty('display', 'none', 'important');
             }
         }
     });
@@ -280,6 +312,7 @@ function updateStepDisplay() {
     if (currentStep === 3) {
         // 延遲一點時間確保DOM已更新
         setTimeout(() => {
+            console.log('第三步驟顯示完成，開始更新預覽');
             updatePreview();
         }, 100);
     }
@@ -289,6 +322,14 @@ function updateStepDisplay() {
 function showStep(step) {
     currentStep = step;
     updateStepDisplay();
+    
+    // 如果進入第三步驟，強制更新預覽
+    if (step === 3) {
+        setTimeout(() => {
+            console.log('強制更新第三步驟預覽');
+            updatePreview();
+        }, 200);
+    }
 }
 
 // 驗證當前步驟
@@ -307,6 +348,8 @@ function validateCurrentStep() {
 
 // 驗證步驟1 - 基本資訊
 function validateStep1() {
+    console.log('驗證步驟1開始');
+    
     const titleElement = document.getElementById('title');
     const title = titleElement ? titleElement.value.trim() : '';
     
@@ -316,18 +359,20 @@ function validateStep1() {
     const descriptionElement = document.getElementById('description');
     const description = descriptionElement ? descriptionElement.value.trim() : '';
     
+    console.log('表單資料:', { title, category, description });
+    
     if (!title) {
-        Utils.showNotification('請輸入作品標題', 'error');
+        showNotification('請輸入作品標題', 'error');
         return false;
     }
     
     if (!category) {
-        Utils.showNotification('請選擇作品學群分類', 'error');
+        showNotification('請選擇作品學群分類', 'error');
         return false;
     }
     
     if (!description) {
-        Utils.showNotification('請輸入作品描述', 'error');
+        showNotification('請輸入作品描述', 'error');
         return false;
     }
     
@@ -336,34 +381,50 @@ function validateStep1() {
     portfolioData.category = category;
     portfolioData.description = description;
     
+    console.log('步驟1驗證通過，資料已儲存:', portfolioData);
     return true;
 }
 
 // 驗證步驟2 - 檔案上傳
 function validateStep2() {
+    console.log('驗證步驟2開始，檔案數量:', uploadedFiles.length);
+    
     // 檢查 uploadedFiles 陣列而不是 fileInput.files
     if (uploadedFiles.length === 0) {
         showNotification('請至少上傳一個檔案', 'error');
         return false;
     }
     
+    // 收集標籤資料（現在在第二步驟）
+    const tagsInput = document.getElementById('tags');
+    if (tagsInput && tagsInput.value) {
+        portfolioData.tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        console.log('標籤已收集:', portfolioData.tags);
+    }
+    
+    console.log('步驟2驗證通過');
     return true;
 }
 
-// 驗證步驟3 - 詳細資訊
+// 驗證步驟3 - 發布設定
 function validateStep3() {
-    // 步驟3的驗證是可選的，主要是標籤和連結
-    const tagsInput = document.getElementById('tags');
-    if (tagsInput) {
-        const tagsText = tagsInput.value.trim();
-        portfolioData.tags = tagsText ? tagsText.split(',').map(tag => tag.trim()) : [];
+    console.log('驗證步驟3開始');
+    
+    // 收集發布狀態（現在在第三步驟）
+    const statusInput = document.getElementById('status');
+    if (statusInput && statusInput.value) {
+        portfolioData.status = statusInput.value;
+        console.log('發布狀態已收集:', portfolioData.status);
     }
     
+    // 收集其他可選資料
     const githubUrl = document.getElementById('githubUrl');
-    if (githubUrl) {
+    if (githubUrl && githubUrl.value) {
         portfolioData.github = githubUrl.value.trim();
+        console.log('GitHub URL已收集:', portfolioData.github);
     }
     
+    console.log('步驟3驗證通過');
     return true;
 }
 
@@ -421,6 +482,12 @@ function organizeFolderStructure(files) {
     });
     
     return structure;
+}
+
+// 處理拖拽進入
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
 }
 
 // 處理拖拽離開
@@ -691,7 +758,7 @@ async function fetchGithubInfo() {
     const branch = document.getElementById('githubBranch').value;
     
     if (!url) {
-        Utils.showNotification('請輸入GitHub專案URL', 'error');
+        showNotification('請輸入GitHub專案URL', 'error');
         return;
     }
     
@@ -701,7 +768,7 @@ async function fetchGithubInfo() {
         displayGithubInfo(repoInfo);
     } catch (error) {
         console.error('GitHub API 錯誤:', error);
-        Utils.showNotification('無法獲取GitHub專案資訊，請檢查URL是否正確', 'error');
+        showNotification('無法獲取GitHub專案資訊，請檢查URL是否正確', 'error');
     }
 }
 
@@ -745,30 +812,30 @@ function collectFormData() {
     
     console.log('表單元素:', { title, category, description, tags, status });
     
-    if (title) {
-        portfolioData.title = title.value;
+    if (title && title.value) {
+        portfolioData.title = title.value.trim();
         console.log('標題:', portfolioData.title);
     }
-    if (category) {
+    if (category && category.value) {
         portfolioData.category = category.value;
         console.log('分類:', portfolioData.category);
     }
-    if (description) {
-        portfolioData.description = description.value;
+    if (description && description.value) {
+        portfolioData.description = description.value.trim();
         console.log('描述:', portfolioData.description);
     }
-    if (tags) {
+    if (tags && tags.value) {
         portfolioData.tags = tags.value.split(',').map(tag => tag.trim()).filter(tag => tag);
         console.log('標籤:', portfolioData.tags);
     }
-    if (status) {
+    if (status && status.value) {
         portfolioData.status = status.value;
         console.log('狀態:', portfolioData.status);
     }
     
     // 收集第三步驟的額外資料
     const githubUrl = document.getElementById('githubUrl');
-    if (githubUrl) {
+    if (githubUrl && githubUrl.value) {
         portfolioData.github = githubUrl.value.trim();
         console.log('GitHub URL:', portfolioData.github);
     }
@@ -793,13 +860,15 @@ function updatePreview() {
     console.log('預覽DOM元素:', { previewTitle, previewDescription, previewTags, previewFiles });
     
     if (previewTitle) {
-        previewTitle.textContent = portfolioData.title || '作品標題';
-        console.log('標題已更新:', previewTitle.textContent);
+        const titleText = portfolioData.title || '作品標題';
+        previewTitle.textContent = titleText;
+        console.log('標題已更新:', titleText);
     }
     
     if (previewDescription) {
-        previewDescription.textContent = portfolioData.description || '作品描述';
-        console.log('描述已更新:', previewDescription.textContent);
+        const descText = portfolioData.description || '作品描述';
+        previewDescription.textContent = descText;
+        console.log('描述已更新:', descText);
     }
     
     if (previewTags) {
@@ -813,6 +882,7 @@ function updatePreview() {
             console.log('標籤為空，顯示預設文字');
         }
     }
+    
     
     if (previewFiles) {
         if (uploadedFiles && uploadedFiles.length > 0) {
@@ -852,7 +922,7 @@ async function handleFormSubmit(e) {
     try {
         // 顯示上傳中狀態
         showUploadProgress(true);
-        Utils.showNotification('正在上傳作品...', 'info');
+        showNotification('正在上傳作品...', 'info');
         
         // 準備上傳資料
         const formData = new FormData();
@@ -873,11 +943,16 @@ async function handleFormSubmit(e) {
         }
         
         // 使用API服務上傳
-        const response = await window.apiService.createPortfolio(formData);
+        const apiService = window.apiService || window.initializeApiService?.();
+        if (!apiService) {
+            throw new Error('API服務未初始化');
+        }
+        
+        const response = await apiService.createPortfolio(formData);
         
         if (response.success) {
             showUploadProgress(false);
-            Utils.showNotification('作品上傳成功！', 'success');
+            showNotification('作品上傳成功！', 'success');
             
             // 添加成功動畫
             document.querySelector('.upload-content').classList.add('success-animation');
@@ -898,7 +973,7 @@ async function handleFormSubmit(e) {
         
     } catch (error) {
         showUploadProgress(false);
-        Utils.showNotification('上傳失敗，請稍後再試', 'error');
+        showNotification('上傳失敗，請稍後再試', 'error');
         console.error('上傳作品錯誤:', error);
         
         // 添加錯誤動畫
@@ -1075,7 +1150,7 @@ window.testStepNavigation = function() {
     const descriptionTextarea = document.getElementById('description');
     
     if (titleInput) titleInput.value = '測試作品標題';
-    if (categorySelect) categorySelect.value = 'engineering';
+    if (categorySelect) categorySelect.value = 'information';
     if (descriptionTextarea) descriptionTextarea.value = '這是一個測試作品描述';
     
     console.log('第一步驟資料已填寫');
@@ -1112,6 +1187,48 @@ window.testPreview = function() {
     console.log('預覽已更新');
 };
 
+// 測試完整流程
+window.testFullFlow = function() {
+    console.log('=== 測試完整上傳流程 ===');
+    
+    // 填寫第一步驟資料
+    const titleInput = document.getElementById('title');
+    const categorySelect = document.getElementById('categoryFilter');
+    const descriptionTextarea = document.getElementById('description');
+    
+    if (titleInput) titleInput.value = '測試作品標題';
+    if (categorySelect) categorySelect.value = 'information';
+    if (descriptionTextarea) descriptionTextarea.value = '這是一個測試作品描述';
+    
+    console.log('第一步驟資料已填寫');
+    
+    // 測試進入第二步驟
+    setTimeout(() => {
+        nextStep();
+        console.log('已進入第二步驟，當前步驟:', currentStep);
+        
+        // 填寫標籤
+        const tagsInput = document.getElementById('tags');
+        if (tagsInput) tagsInput.value = 'JavaScript, React, UI/UX';
+        
+        // 添加測試檔案
+        const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
+        addFiles([testFile]);
+        
+        // 測試進入第三步驟
+        setTimeout(() => {
+            nextStep();
+            console.log('已進入第三步驟，當前步驟:', currentStep);
+            
+            // 設定發布狀態
+            const statusSelect = document.getElementById('status');
+            if (statusSelect) statusSelect.value = 'published';
+            
+            console.log('預覽應該已更新');
+        }, 1000);
+    }, 1000);
+};
+
 
 // 由後端載入 categories 並填入下拉
 async function loadCategories() {
@@ -1146,5 +1263,35 @@ async function loadCategories() {
         });
     } catch (err) {
         console.error('載入學群分類失敗:', err);
+    }
+}
+
+// 測試步驟切換功能
+function testStepSwitch() {
+    console.log('測試步驟切換功能...');
+    
+    // 檢查當前步驟
+    console.log('當前步驟:', currentStep);
+    
+    // 檢查各步驟的顯示狀態
+    const step1 = document.getElementById('step1Content');
+    const step2 = document.getElementById('step2Content');
+    const step3 = document.getElementById('step3Content');
+    
+    console.log('步驟1顯示狀態:', step1 ? step1.style.display : '未找到');
+    console.log('步驟2顯示狀態:', step2 ? step2.style.display : '未找到');
+    console.log('步驟3顯示狀態:', step3 ? step3.style.display : '未找到');
+    
+    // 強制切換到第二步驟
+    if (currentStep === 1) {
+        console.log('強制切換到第二步驟');
+        currentStep = 2;
+        updateStepDisplay();
+        
+        // 再次檢查顯示狀態
+        setTimeout(() => {
+            console.log('切換後步驟2顯示狀態:', step2 ? step2.style.display : '未找到');
+            console.log('切換後步驟1顯示狀態:', step1 ? step1.style.display : '未找到');
+        }, 100);
     }
 }

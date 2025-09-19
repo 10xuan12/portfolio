@@ -513,7 +513,7 @@
     color: #4a5568;
     font-size: 0.9rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -522,34 +522,21 @@
     color: #2d3748;
     font-size: 1rem;
     line-height: 1.6;
-    padding: 1rem 1.2rem;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 12px;
-    border: 2px solid #e2e8f0;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-}
-
-.preview-value:hover {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.05);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    margin-bottom: 0.5rem;
 }
 
 .preview-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
 }
 
 .preview-tags .tag {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: #667eea;
     color: white;
-    padding: 0.3rem 0.8rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 500;
@@ -612,17 +599,6 @@
     font-style: italic;
 }
 
-.preview-tags .tag {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    margin-right: 0.5rem;
-    margin-bottom: 0.5rem;
-    display: inline-block;
-}
 
 /* 檔案項目樣式 */
 .file-item {
@@ -969,22 +945,6 @@
     font-size: 1.2rem;
 }
 
-.preview-item {
-    display: flex;
-    align-items: center;
-    padding: 1.2rem;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 12px;
-    margin-bottom: 0.8rem;
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.preview-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
-}
 
 .preview-icon {
     margin-right: 1.2rem;
@@ -1110,28 +1070,6 @@
     font-size: 1rem;
 }
 
-.preview-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-bottom: 1.5rem;
-}
-
-.preview-tags .tag {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
-}
-
-.preview-tags .tag:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
 
 /* 按鈕組 */
 .form-actions {
@@ -1504,7 +1442,13 @@
 
 /* 確保第一步驟內容顯示 */
 #step1Content {
-    display: block !important;
+    display: block;
+}
+
+/* 確保第二步驟和第三步驟內容預設隱藏 */
+#step2Content,
+#step3Content {
+    display: none;
 }
 
 /* 強制顯示所有表單元素 */

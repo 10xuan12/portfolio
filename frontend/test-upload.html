@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上傳功能測試 - Portfolio+</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/student/upload.css">
+</head>
+<body>
+    <div class="container" style="padding: 2rem;">
+        <h1>上傳功能測試</h1>
+        
+        <div class="test-controls" style="margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+            <h3>測試控制</h3>
+            <button onclick="testStepNavigation()" class="btn btn-primary" style="margin-right: 1rem;">
+                測試步驟切換
+            </button>
+            <button onclick="testPreview()" class="btn btn-secondary" style="margin-right: 1rem;">
+                測試預覽功能
+            </button>
+            <button onclick="testFullFlow()" class="btn btn-success" style="margin-right: 1rem;">
+                測試完整流程
+            </button>
+            <button onclick="testUpload()" class="btn btn-warning">
+                測試檔案上傳
+            </button>
+        </div>
+        
+        <div class="test-results" id="testResults" style="margin-bottom: 2rem; padding: 1rem; background: #e9ecef; border-radius: 8px; min-height: 100px;">
+            <h3>測試結果</h3>
+            <div id="testOutput">等待測試...</div>
+        </div>
+        
+        <!-- 嵌入上傳表單 -->
+        <div id="uploadFormContainer">
+            <!-- 這裡會載入上傳表單 -->
+        </div>
+    </div>
+
+    <!-- JavaScript 檔案 -->
+    <script src="js/config.js"></script>
+    <script src="js/api-service.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/student/upload.js"></script>
+    
+    <script>
+        // 測試結果輸出函數
+        function logTest(message) {
+            const output = document.getElementById('testOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            console.log(`[TEST] ${message}`);
+        }
+        
+        // 載入上傳表單
+        function loadUploadForm() {
+            fetch('student/upload.html')
+                .then(response => response.text())
+                .then(html => {
+                    // 提取表單部分
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const formSection = doc.querySelector('.upload-content');
+                    
+                    if (formSection) {
+                        document.getElementById('uploadFormContainer').innerHTML = formSection.outerHTML;
+                        
+                        // 重新初始化
+                        setTimeout(() => {
+                            if (typeof initializeUpload === 'function') {
+                                initializeUpload();
+                                logTest('上傳表單已載入並初始化');
+                            }
+                        }, 100);
+                    }
+                })
+                .catch(error => {
+                    logTest('載入上傳表單失敗: ' + error.message);
+                });
+        }
+        
+        // 頁面載入時載入表單
+        document.addEventListener('DOMContentLoaded', function() {
+            logTest('測試頁面已載入');
+            loadUploadForm();
+        });
+        
+        // 重寫測試函數以包含日誌
+        const originalTestStepNavigation = window.testStepNavigation;
+        window.testStepNavigation = function() {
+            logTest('開始測試步驟切換功能');
+            if (originalTestStepNavigation) {
+                originalTestStepNavigation();
+            }
+        };
+        
+        const originalTestPreview = window.testPreview;
+        window.testPreview = function() {
+            logTest('開始測試預覽功能');
+            if (originalTestPreview) {
+                originalTestPreview();
+            }
+        };
+        
+        const originalTestFullFlow = window.testFullFlow;
+        window.testFullFlow = function() {
+            logTest('開始測試完整流程');
+            if (originalTestFullFlow) {
+                originalTestFullFlow();
+            }
+        };
+        
+        const originalTestUpload = window.testUpload;
+        window.testUpload = function() {
+            logTest('開始測試檔案上傳');
+            if (originalTestUpload) {
+                originalTestUpload();
+            }
+        };
+    </script>
+</body>
+</html>
