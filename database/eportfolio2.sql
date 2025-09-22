@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： localhost
--- 產生時間： 2025-09-17 11:26:46
+-- 產生時間： 2025-09-22 12:12:46
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -41,11 +41,11 @@ CREATE TABLE `badges` (
 --
 
 INSERT INTO `badges` (`id`, `name`, `description`, `icon`, `category`, `required_points`) VALUES
-(1, '初次登入', '第一次登入系統', 'fa-user-check', 'achievement', 1),
-(2, '首次上傳', '上傳第一個作品', 'fa-upload', 'achievement', 5),
-(3, '完整個人檔案', '完成個人基本資料', 'fa-id-card', 'achievement', 10),
-(4, '熱門作品', '作品瀏覽數破 100', 'fa-fire', 'achievement', 100),
-(5, '明星創作者', '累積 10 個讚', 'fa-star', 'achievement', 10);
+(1, '初次登入', '第一次登入系統', 'bi bi-box-arrow-in-right', 'achievement', 1),
+(2, '首次上傳', '上傳第一個作品', 'bi bi-cloud-upload', 'achievement', 5),
+(3, '完整個人檔案', '完成個人基本資料', 'bi bi-person-circle', 'achievement', 10),
+(4, '熱門作品', '作品瀏覽數破 100', 'bi bi-fire', 'achievement', 100),
+(5, '明星創作者', '累積 10 個讚', 'bi bi-star-fill', 'achievement', 10);
 
 -- --------------------------------------------------------
 
@@ -65,7 +65,10 @@ CREATE TABLE `bookmarks` (
 --
 
 INSERT INTO `bookmarks` (`id`, `user_id`, `portfolio_id`, `created_at`) VALUES
-(1, 5, 9, '2025-08-29 07:10:55');
+(1, 5, 9, '2025-08-29 07:10:55'),
+(2, 5, 6, '2025-09-17 02:30:00'),
+(3, 5, 8, '2025-09-17 02:35:00'),
+(4, 5, 10, '2025-09-17 02:40:00');
 
 -- --------------------------------------------------------
 
@@ -187,7 +190,36 @@ INSERT INTO `departments` (`id`, `name`, `code`, `school`, `description`, `is_ac
 (5, '統計學系', 'STAT', '靜宜大學', '培養統計分析專業人才，專精於數據分析與統計建模', 1, 5, '2025-08-29 02:37:33', '2025-08-29 02:37:33'),
 (6, '企業管理學系', 'BA', '靜宜大學', '培養企業管理專業人才，專精於組織管理與策略規劃', 1, 6, '2025-08-29 02:37:33', '2025-08-29 02:37:33'),
 (7, '會計學系', 'ACC', '靜宜大學', '培養會計專業人才，專精於財務會計與審計', 1, 7, '2025-08-29 02:37:33', '2025-08-29 02:37:33'),
-(8, '經濟學系', 'ECON', '靜宜大學', '培養經濟學專業人才，專精於經濟理論與政策分析', 1, 8, '2025-08-29 02:37:33', '2025-08-29 02:37:33');
+(8, '經濟學系', 'ECON', '靜宜大學', '培養經濟學專業人才，專精於經濟理論與政策分析', 1, 8, '2025-08-29 02:37:33', '2025-08-29 02:37:33'),
+(9, '資訊安全學系', 'INFOSEC', '靜宜大學', '資訊安全、資安管理與滲透測試', 1, 9, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(10, '資料科學學系', 'DS', '靜宜大學', '資料探勘、機器學習與數據工程', 1, 10, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(11, '人工智慧學系', 'AI', '靜宜大學', '深度學習、電腦視覺與自然語言處理', 1, 11, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(12, '電機工程學系', 'EE', '靜宜大學', '電機系統、通訊與控制工程', 1, 12, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(13, '電子工程學系', 'ECE', '靜宜大學', '半導體、嵌入式系統與物聯網', 1, 13, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(14, '機械工程學系', 'ME', '靜宜大學', '機械設計、製造與自動化', 1, 14, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(15, '土木工程學系', 'CE', '靜宜大學', '結構、營建與永續工程', 1, 15, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(16, '化學工程學系', 'CHE', '靜宜大學', '製程設計、材料與環境工程', 1, 16, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(17, '材料科學與工程學系', 'MSE', '靜宜大學', '材料科學、奈米與先進製造', 1, 17, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(18, '生物醫學工程學系', 'BME', '靜宜大學', '醫療儀器、生醫訊號與醫材', 1, 18, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(19, '數學系', 'MATH', '靜宜大學', '純數、應用數學與統計', 1, 19, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(20, '物理學系', 'PHYS', '靜宜大學', '基礎物理、量測與計算物理', 1, 20, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(21, '化學系', 'CHEM', '靜宜大學', '有機、無機、分析與物化', 1, 21, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(22, '生命科學系', 'BIO', '靜宜大學', '分生、生態與生物技術', 1, 22, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(23, '心理學系', 'PSY', '靜宜大學', '基礎心理、測評與諮商', 1, 23, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(24, '社會學系', 'SOC', '靜宜大學', '社會理論、研究方法與政策', 1, 24, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(25, '外國語文學系', 'LANG', '靜宜大學', '英語、第二外語與跨文化溝通', 1, 25, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(26, '中國文學系', 'CHIN', '靜宜大學', '國學、現代文學與寫作', 1, 26, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(27, '歷史學系', 'HIST', '靜宜大學', '世界史、臺灣史與史學方法', 1, 27, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(28, '哲學系', 'PHIL', '靜宜大學', '倫理、形上與邏輯', 1, 28, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(29, '觀光暨休閒學系', 'TOUR', '靜宜大學', '觀光管理、餐旅與休閒規劃', 1, 29, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(30, '大眾傳播學系', 'COMM', '靜宜大學', '新聞、廣告、公關與數位媒體', 1, 30, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(31, '教育學系', 'EDU', '靜宜大學', '課程教學、教育科技與評量', 1, 31, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(32, '醫學系', 'MED', '靜宜大學', '臨床醫學與基礎醫學', 1, 32, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(33, '護理學系', 'NURS', '靜宜大學', '臨床護理、社區護理與長照', 1, 33, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(34, '公共衛生學系', 'PH', '靜宜大學', '流病、環衛與健康政策', 1, 34, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(35, '建築學系', 'ARCH', '靜宜大學', '建築設計、都市與永續', 1, 35, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(36, '都市計畫學系', 'URP', '靜宜大學', '都市規劃、土地使用與交通', 1, 36, '2025-08-28 18:37:33', '2025-08-28 18:37:33'),
+(37, '人力資源管理學系', 'HRM', '靜宜大學', '招募、人才發展與薪酬制度', 1, 37, '2025-08-28 18:37:33', '2025-08-28 18:37:33');
 
 -- --------------------------------------------------------
 
@@ -207,6 +239,33 @@ CREATE TABLE `enterprise_analytics` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- 傾印資料表的資料 `enterprise_analytics`
+--
+
+INSERT INTO `enterprise_analytics` (`id`, `enterprise_id`, `date`, `portfolio_views`, `portfolio_bookmarks`, `student_contacts`, `job_views`, `job_applications`, `created_at`) VALUES
+(1, 10, '2025-09-22', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(2, 10, '2025-09-21', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(3, 10, '2025-09-20', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(4, 10, '2025-09-19', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(5, 10, '2025-09-18', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(6, 10, '2025-09-17', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(7, 10, '2025-09-16', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(8, 11, '2025-09-22', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(9, 11, '2025-09-21', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(10, 11, '2025-09-20', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(11, 11, '2025-09-19', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(12, 11, '2025-09-18', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(13, 11, '2025-09-17', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(14, 11, '2025-09-16', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(15, 12, '2025-09-22', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(16, 12, '2025-09-21', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(17, 12, '2025-09-20', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(18, 12, '2025-09-19', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(19, 12, '2025-09-18', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(20, 12, '2025-09-17', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
+(21, 12, '2025-09-16', 0, 0, 0, 0, 0, '2025-09-22 09:18:57');
+
 -- --------------------------------------------------------
 
 --
@@ -220,6 +279,21 @@ CREATE TABLE `enterprise_bookmarks` (
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `enterprise_bookmarks`
+--
+
+INSERT INTO `enterprise_bookmarks` (`id`, `enterprise_id`, `portfolio_id`, `notes`, `created_at`) VALUES
+(1, 10, 6, '初始收藏', '2025-09-22 09:21:55'),
+(2, 10, 8, '初始收藏', '2025-09-22 09:21:55'),
+(3, 10, 9, '初始收藏', '2025-09-22 09:21:55'),
+(4, 11, 7, '熱門作品', '2025-09-22 09:21:56'),
+(5, 11, 8, '熱門作品', '2025-09-22 09:21:56'),
+(6, 11, 10, '熱門作品', '2025-09-22 09:21:56'),
+(7, 12, 21, '候選人追蹤', '2025-09-22 09:21:56'),
+(8, 12, 16, '候選人追蹤', '2025-09-22 09:21:56'),
+(9, 12, 18, '候選人追蹤', '2025-09-22 09:21:56');
 
 -- --------------------------------------------------------
 
@@ -269,6 +343,40 @@ CREATE TABLE `enterprise_profiles` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `enterprise_profiles`
+--
+
+INSERT INTO `enterprise_profiles` (`id`, `user_id`, `company_name`, `company_type`, `industry`, `company_size`, `founded_year`, `employee_count`, `revenue_range`, `description`, `logo_url`, `website`, `address`, `phone`, `contact_person`, `contact_email`, `social_media`, `company_culture`, `benefits_description`, `is_verified`, `verification_date`, `created_at`, `updated_at`) VALUES
+(2, 10, '台灣微軟股份有限公司', '科技', '資訊軟體', '201-500', 1990, 300, 'NT$1B+', '微軟台灣分公司，關注雲服務與企業數位轉型。', NULL, 'https://www.microsoft.com/zh-tw', '台北市信義區', '02-1234-5678', 'HR 團隊', 'hr@microsoft.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/microsoft\", \"website\": \"https://www.microsoft.com\"}', '多元包容、創新為本', '員工旅遊、年終獎金', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(3, 11, 'Google 台灣', '科技', '網路服務', '201-500', 2006, 400, 'NT$1B+', 'Google 在台灣的研發與營運據點。', NULL, 'https://about.google', '台北市信義區', '02-5678-1234', 'HR Team', 'hr@google.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/google\", \"website\": \"https://about.google\"}', '創新、使用者至上', '彈性工時、住宿補助', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(4, 12, 'Apple 台灣', '科技', '硬體/軟體', '201-500', 2001, 350, 'NT$1B+', 'Apple 在台灣的設計與營運團隊。', NULL, 'https://www.apple.com/tw', '台北市內湖區', '02-9876-5432', 'HR Team', 'hr@apple.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/apple\", \"website\": \"https://www.apple.com\"}', '追求完美、設計導向', '員購福利、健康保險', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `enterprise_recommendations`
+--
+
+CREATE TABLE `enterprise_recommendations` (
+  `id` int(11) NOT NULL,
+  `enterprise_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `score` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `reason` varchar(255) DEFAULT NULL,
+  `meta` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`meta`)),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `expires_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `enterprise_recommendations`
+--
+
+INSERT INTO `enterprise_recommendations` (`id`, `enterprise_id`, `student_id`, `score`, `reason`, `meta`, `created_at`, `expires_at`) VALUES
+(1, 10, 5, 88.00, '與近期瀏覽技能相符', '{\"kw\": [\"javascript\", \"react\", \"ui\"]}', '2025-09-22 09:21:56', '2025-09-29 09:21:56'),
+(2, 11, 5, 90.00, '資料分析技能相符', '{\"kw\": [\"python\", \"data\", \"dashboard\"]}', '2025-09-22 09:23:30', '2025-09-29 09:23:30');
 
 -- --------------------------------------------------------
 
@@ -347,6 +455,14 @@ CREATE TABLE `jobs` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- 傾印資料表的資料 `jobs`
+--
+
+INSERT INTO `jobs` (`id`, `enterprise_id`, `title`, `description`, `requirements`, `responsibilities`, `salary_min`, `salary_max`, `salary_type`, `job_type`, `location`, `department`, `experience_level`, `education_level`, `skills_required`, `benefits`, `status`, `view_count`, `application_count`, `bookmark_count`, `is_featured`, `published_at`, `deadline`, `created_at`, `updated_at`) VALUES
+(1, 10, '前端工程師', '負責前端產品開發與最佳化。', '熟悉 ES6、React、API 串接', '與設計/後端協作、撰寫單元測試', 60000.00, 100000.00, '月薪', '全職', '台北市', '技術部', '1-3年', '大學', 'JavaScript,React,HTML,CSS,Git', '員工旅遊, 年終獎金', 'active', 0, 0, 0, 0, '2025-09-22 09:18:56', '2025-11-21', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(2, 11, '資料分析師', '負責數據分析與可視化儀表板。', '熟悉 SQL、Python、BI 工具', '建立數據報表、協助決策', 70000.00, 110000.00, '月薪', '全職', '台北市', '數據部', '1-3年', '大學', 'Python,SQL,PowerBI,Tableau', '年終獎金, 在家工作', 'active', 0, 0, 0, 0, '2025-09-22 09:18:56', '2025-11-06', '2025-09-22 09:18:56', '2025-09-22 09:18:56');
+
 -- --------------------------------------------------------
 
 --
@@ -391,7 +507,10 @@ CREATE TABLE `likes` (
 INSERT INTO `likes` (`id`, `user_id`, `portfolio_id`, `created_at`) VALUES
 (2, 5, 8, '2025-08-29 07:10:55'),
 (18, 5, 16, '2025-09-16 06:08:02'),
-(20, 5, 21, '2025-09-16 06:31:04');
+(20, 5, 21, '2025-09-16 06:31:04'),
+(21, 5, 6, '2025-09-17 03:00:00'),
+(22, 5, 9, '2025-09-17 03:05:00'),
+(23, 5, 10, '2025-09-17 03:10:00');
 
 -- --------------------------------------------------------
 
@@ -408,6 +527,15 @@ CREATE TABLE `messages` (
   `is_read` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `messages`
+--
+
+INSERT INTO `messages` (`id`, `sender_id`, `receiver_id`, `subject`, `content`, `is_read`, `created_at`) VALUES
+(1, 11, 5, '關於您的作品：資料儀表板', '您好，我是 Google HR，對您的資料儀表板作品很感興趣，方便約時間聊聊嗎？', 0, '2025-09-17 01:40:00'),
+(2, 5, 11, 'Re: 關於您的作品：資料儀表板', '您好，感謝來信！本週三下午或週五上午都可以，請告知您方便的時段。', 0, '2025-09-17 02:05:00'),
+(3, 12, 5, 'iOS/UI 相關實習機會', '您好，我們有一個 UI/UX 實習職缺，覺得您很合適，是否願意了解？', 0, '2025-09-17 04:20:00');
 
 -- --------------------------------------------------------
 
@@ -437,7 +565,13 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`
 (4, 5, 'view', '有人瀏覽了你的作品', '你的作品「Python 爬蟲程式開發」被瀏覽。', '{\"portfolio_id\": 9}', 1, '2025-08-29 08:42:39'),
 (5, 5, 'system', '系統更新', 'Portfolio+ 已更新，提升了儀表板載入效能。', '{\"version\": \"2.0.2\"}', 0, '2025-09-07 07:35:03'),
 (6, 5, 'like', '你的作品收到新的讚', '作品「資料儀表板設計與視覺化」新增 1 個讚。', '{\"portfolio_id\": 20}', 0, '2025-09-07 21:35:03'),
-(7, 5, 'comment', '你的作品收到新的留言', '有人於「資料儀表板設計與視覺化」留下好評。', '{\"portfolio_id\": 20, \"comment_preview\": \"視覺排版清楚...\"}', 0, '2025-09-08 02:35:03');
+(7, 5, 'comment', '你的作品收到新的留言', '有人於「資料儀表板設計與視覺化」留下好評。', '{\"portfolio_id\": 20, \"comment_preview\": \"視覺排版清楚...\"}', 0, '2025-09-08 02:35:03'),
+(8, 12, 'system', '歡迎使用企業儀表板', '您已成功加入企業端，開始搜尋合適人才吧！', '{\"level\": \"info\"}', 0, '2025-09-22 09:18:57'),
+(9, 11, 'system', '歡迎使用企業儀表板', '您已成功加入企業端，開始搜尋合適人才吧！', '{\"level\": \"info\"}', 0, '2025-09-22 09:18:57'),
+(10, 10, 'system', '歡迎使用企業儀表板', '您已成功加入企業端，開始搜尋合適人才吧！', '{\"level\": \"info\"}', 0, '2025-09-22 09:18:57'),
+(11, 5, 'enterprise', '企業邀請面談', 'Apple HR 邀請你進行面談', '{\"enterprise\": \"Apple\", \"contact\": \"hr@apple.com.tw\"}', 0, '2025-09-17 04:30:00'),
+(12, 5, 'view', '有人瀏覽了你的作品', '你的作品「Python 爬蟲程式開發」被 Apple HR 瀏覽。', '{\"portfolio_id\": 9, \"viewer\": \"Apple HR\"}', 0, '2025-09-17 04:31:00'),
+(13, 5, 'like', '你的作品收到新的讚', 'Google HR 對你的作品「電商網站使用者行為分析」按讚。', '{\"portfolio_id\": 6, \"liker\": \"Google HR\"}', 0, '2025-09-17 04:32:00');
 
 -- --------------------------------------------------------
 
@@ -459,8 +593,7 @@ CREATE TABLE `password_resets` (
 --
 
 INSERT INTO `password_resets` (`id`, `user_id`, `token`, `expires_at`, `used`, `created_at`) VALUES
-(1, 5, 'token123', '2025-09-01 12:00:00', 0, '2025-08-29 02:37:33'),
-(2, 6, 'token456', '2025-09-02 12:00:00', 0, '2025-08-29 02:37:33');
+(1, 5, 'token123', '2025-09-01 12:00:00', 0, '2025-08-29 02:37:33');
 
 -- --------------------------------------------------------
 
@@ -501,7 +634,8 @@ INSERT INTO `portfolios` (`id`, `user_id`, `title`, `description`, `category_id`
 (15, 5, '專案管理系統開發', '使用 React 和 Node.js 開發專案管理系統，包含任務分配、進度追蹤、團隊協作等功能。', 15, 'React, Node.js, 專案管理, 團隊協作, 任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 146, 19, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:10:55', '2025-09-15 09:52:49'),
 (16, 5, '我的第一個作品', '這是一個範例作品描述', 34, '範例,Demo', 'published', NULL, '內容...', 13, 2, 1, 0, 0, '2025-08-29 07:59:32', '2025-08-29 07:59:32', '2025-09-17 09:25:25'),
 (18, 5, '資料科學作品範例（測試）', '這是用於測試的作品描述。', 27, 'Python, 數據分析, 測試', 'published', '/portfolio/uploads/portfolios/test-cover.jpg', '## 測試內容', 3, 0, 0, 0, 0, '2025-09-02 09:31:09', '2025-09-02 09:31:09', '2025-09-17 09:24:13'),
-(21, 5, 'JAVA', 'JAVA新增', 27, 'java', 'draft', NULL, NULL, 70, 1, 4, 3, 0, NULL, '2025-09-15 06:05:18', '2025-09-17 09:13:54');
+(21, 5, 'JAVA', 'JAVA新增', 27, 'java', 'draft', NULL, NULL, 70, 1, 4, 3, 0, NULL, '2025-09-15 06:05:18', '2025-09-17 09:13:54'),
+(27, 9, 'Python', 'Python計算機', 27, '', 'draft', NULL, NULL, 1, 0, 0, 0, 0, NULL, '2025-09-19 02:47:51', '2025-09-19 02:48:00');
 
 -- --------------------------------------------------------
 
@@ -583,6 +717,14 @@ CREATE TABLE `resumes` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- 傾印資料表的資料 `resumes`
+--
+
+INSERT INTO `resumes` (`id`, `user_id`, `title`, `template`, `content`, `is_public`, `download_count`, `view_count`, `status`, `version`, `created_at`, `updated_at`) VALUES
+(1, 5, '資料分析履歷（一般版）', 'classic', '{\r\n  \"summary\": \"熱愛資料分析與視覺化，熟悉 Python 與 BI 工具\",\r\n  \"skills\": [\"Python\", \"Pandas\", \"SQL\", \"PowerBI\", \"Excel\"],\r\n  \"experience\": [\r\n    {\"title\": \"行銷資料分析專案\", \"details\": \"分析用戶行為並製作儀表板\"}\r\n  ]\r\n}', 1, 3, 12, 'published', 2, '2025-09-01 00:00:00', '2025-09-10 00:00:00'),
+(2, 5, 'UI/UX 履歷（精簡版）', 'modern', '{\r\n  \"summary\": \"具備 UI/UX 設計與使用者研究經驗\",\r\n  \"skills\": [\"Figma\", \"UI/UX\", \"Usability\", \"Responsive Design\"],\r\n  \"projects\": [\r\n    {\"name\": \"學生資訊系統改版\", \"role\": \"UI/UX 設計\"}\r\n  ]\r\n}', 0, 0, 4, 'draft', 1, '2025-09-05 01:30:00', '2025-09-05 01:30:00');
+
 -- --------------------------------------------------------
 
 --
@@ -618,9 +760,23 @@ CREATE TABLE `student_profiles` (
 
 INSERT INTO `student_profiles` (`id`, `user_id`, `first_name`, `last_name`, `display_name`, `gender`, `birth_date`, `phone`, `address`, `bio`, `avatar_url`, `student_id`, `major`, `school`, `grade`, `graduation_year`, `skills`, `interests`, `created_at`, `updated_at`) VALUES
 (1, 5, '玟瑄', '黃', '黃玟瑄', '女', '2000-01-15', '0912-345-678', '台中市西區精誠路123號', '我是靜宜大學資訊管理學系的學生，對數位行銷和資料分析有濃厚興趣。喜歡學習新技術，希望能在畢業後從事相關工作。', 'uploads/avatars/avatar_5_1758098146.jpg', '411146708', '資訊管理學系', '靜宜大學', '碩士生', 2026, 'Python, JavaScript, HTML/CSS, SQL, Excel, PowerBI, 數位行銷, 資料分析', '人工智慧, 大數據分析, 數位行銷, 使用者體驗設計, 專案管理', '2025-08-29 06:34:32', '2025-09-17 08:39:56'),
-(2, 6, '達尼', '林', '達尼 林', NULL, NULL, '0965418312', '台中市', NULL, NULL, NULL, '國際企業學系', NULL, '碩士生', NULL, NULL, NULL, '2025-08-29 06:48:47', '2025-08-29 06:48:47'),
-(3, 7, '達尼', '陳', '達尼 陳', NULL, NULL, '0965418312', '台中市', NULL, NULL, NULL, '國際企業學系', NULL, '碩士生', NULL, NULL, NULL, '2025-08-29 06:50:51', '2025-08-29 06:50:51'),
-(4, 8, '123', '黃', '123 黃', NULL, NULL, '0965418312', '台中市', NULL, NULL, NULL, '資訊管理學系', NULL, '大學四年級', NULL, NULL, NULL, '2025-08-29 06:53:35', '2025-08-29 06:53:35');
+(9, 9, '玟瑄', '林', '玟瑄 林', NULL, NULL, '0965418312', '台北市大安區復興南路一段 390 號', NULL, NULL, NULL, '國際企業學系', NULL, '大學三年級', NULL, NULL, NULL, '2025-09-19 02:31:22', '2025-09-19 02:31:22');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `talent_search_logs`
+--
+
+CREATE TABLE `talent_search_logs` (
+  `id` int(11) NOT NULL,
+  `enterprise_id` int(11) NOT NULL,
+  `query` varchar(255) DEFAULT NULL,
+  `filters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`filters`)),
+  `result_count` int(11) DEFAULT 0,
+  `duration_ms` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -644,14 +800,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'admin', 'admin@portfolio.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active', '2025-08-29 06:29:47', '2025-08-29 06:29:47'),
-(2, 'microsoft_tw', 'hr@microsoft.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-08-29 06:29:47', '2025-08-29 06:29:47'),
-(3, 'google_tw', 'hr@google.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-08-29 06:29:47', '2025-08-29 06:29:47'),
-(4, 'apple_tw', 'hr@apple.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-08-29 06:29:47', '2025-08-29 06:29:47'),
 (5, 'selina101292@gmail.com', 'selina101292@gmail.com', '$2y$10$EZA6irjCgnHNPrUxaMlAiO/qpPXD6zaDjwS/cd.phY0MgrRtdHJHG', 'student', 'active', '2025-08-29 06:34:32', '2025-08-29 06:34:32'),
-(6, 'selina@gmail.com', 'selina@gmail.com', '$2y$10$AQWc.A.HWBnJ9Bn3a5H9Q.TtAgW2H0J2t.9jibUtd7kYR1S1SYMZG', 'student', 'active', '2025-08-29 06:48:47', '2025-08-29 06:48:47'),
-(7, 'selina11@gmail.com', 'selina11@gmail.com', '$2y$10$YyDQFkoHLV21XzBkgwHkyOeQWXxV1jocoSHYDApsW2kUsRHNGkfkO', 'student', 'active', '2025-08-29 06:50:51', '2025-08-29 06:50:51'),
-(8, 'selina55@gmail.com', 'selina55@gmail.com', '$2y$10$BUB5vbr8lK6VE/2IBr6euOqDzv79EY0cmp6qBM/XPFKXBn0FLV3Hu', 'student', 'active', '2025-08-29 06:53:35', '2025-08-29 06:53:35');
+(9, 'willykid03@gmail.com', 'willykid03@gmail.com', '$2y$10$xdrhcLdJf6HzWKRiG/siKO/x81fDPFNlOtC3M8HCEbXFDrbXVcuUS', 'student', 'active', '2025-09-19 02:31:22', '2025-09-19 02:31:22'),
+(10, 'microsoft_tw', 'hr@microsoft.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(11, 'google_tw', 'hr@google.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(12, 'apple_tw', 'hr@apple.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56');
 
 -- --------------------------------------------------------
 
@@ -662,7 +815,7 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `status
 CREATE TABLE `user_activities` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `type` enum('upload','view','like','comment','badge') NOT NULL,
+  `type` enum('upload','view','like','comment','badge','login') NOT NULL,
   `description` varchar(255) NOT NULL,
   `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`)),
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
@@ -703,7 +856,8 @@ INSERT INTO `user_badges` (`id`, `user_id`, `badge_id`, `achieved_at`, `notes`) 
 (1, 5, 1, '2025-08-24 16:32:01', NULL),
 (2, 5, 3, '2025-08-25 16:32:01', NULL),
 (3, 5, 2, '2025-08-26 16:32:01', NULL),
-(4, 5, 5, '2025-09-08 12:35:03', '累積點讚達標');
+(4, 5, 5, '2025-09-08 12:35:03', '累積點讚達標'),
+(5, 4, 1, '2025-09-19 10:46:25', '手動授予: 初次登入');
 
 -- --------------------------------------------------------
 
@@ -832,13 +986,24 @@ ALTER TABLE `enterprise_profiles`
   ADD KEY `idx_company_name` (`company_name`);
 
 --
+-- 資料表索引 `enterprise_recommendations`
+--
+ALTER TABLE `enterprise_recommendations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_enterprise_student` (`enterprise_id`,`student_id`),
+  ADD KEY `idx_score` (`score`),
+  ADD KEY `idx_expires_at` (`expires_at`),
+  ADD KEY `fk_reco_student` (`student_id`);
+
+--
 -- 資料表索引 `enterprise_views`
 --
 ALTER TABLE `enterprise_views`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_enterprise_id` (`enterprise_id`),
   ADD KEY `idx_portfolio_id` (`portfolio_id`),
-  ADD KEY `idx_view_date` (`view_date`);
+  ADD KEY `idx_view_date` (`view_date`),
+  ADD KEY `idx_enterprise_portfolio_date` (`enterprise_id`,`portfolio_id`,`view_date`);
 
 --
 -- 資料表索引 `jobs`
@@ -907,7 +1072,8 @@ ALTER TABLE `portfolios`
   ADD KEY `idx_category_id` (`category_id`),
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_published_at` (`published_at`),
-  ADD KEY `idx_portfolios_user` (`user_id`);
+  ADD KEY `idx_portfolios_user` (`user_id`),
+  ADD KEY `idx_user_status_published` (`user_id`,`status`,`published_at`);
 ALTER TABLE `portfolios` ADD FULLTEXT KEY `idx_search` (`title`,`description`,`tags`);
 
 --
@@ -942,6 +1108,16 @@ ALTER TABLE `student_profiles`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_student_id` (`student_id`);
+ALTER TABLE `student_profiles` ADD FULLTEXT KEY `ft_student_profiles_text` (`skills`,`bio`);
+
+--
+-- 資料表索引 `talent_search_logs`
+--
+ALTER TABLE `talent_search_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_enterprise_id` (`enterprise_id`),
+  ADD KEY `idx_created_at` (`created_at`);
+ALTER TABLE `talent_search_logs` ADD FULLTEXT KEY `ft_query` (`query`);
 
 --
 -- 資料表索引 `users`
@@ -993,7 +1169,7 @@ ALTER TABLE `badges`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `bookmarks`
 --
 ALTER TABLE `bookmarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `categories`
@@ -1011,13 +1187,13 @@ ALTER TABLE `comments`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_analytics`
 --
 ALTER TABLE `enterprise_analytics`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_bookmarks`
 --
 ALTER TABLE `enterprise_bookmarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_contacts`
@@ -1029,7 +1205,13 @@ ALTER TABLE `enterprise_contacts`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_profiles`
 --
 ALTER TABLE `enterprise_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_recommendations`
+--
+ALTER TABLE `enterprise_recommendations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_views`
@@ -1041,7 +1223,7 @@ ALTER TABLE `enterprise_views`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `jobs`
 --
 ALTER TABLE `jobs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `job_applications`
@@ -1053,25 +1235,25 @@ ALTER TABLE `job_applications`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolios`
 --
 ALTER TABLE `portfolios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolio_comments`
@@ -1089,19 +1271,25 @@ ALTER TABLE `portfolio_files`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `resumes`
 --
 ALTER TABLE `resumes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `student_profiles`
 --
 ALTER TABLE `student_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `talent_search_logs`
+--
+ALTER TABLE `talent_search_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user_activities`
@@ -1113,7 +1301,7 @@ ALTER TABLE `user_activities`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user_badges`
 --
 ALTER TABLE `user_badges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- 已傾印資料表的限制式
@@ -1159,6 +1347,13 @@ ALTER TABLE `enterprise_contacts`
 --
 ALTER TABLE `enterprise_profiles`
   ADD CONSTRAINT `enterprise_profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `enterprise_recommendations`
+--
+ALTER TABLE `enterprise_recommendations`
+  ADD CONSTRAINT `fk_reco_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_reco_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- 資料表的限制式 `enterprise_views`
@@ -1231,6 +1426,12 @@ ALTER TABLE `resumes`
 --
 ALTER TABLE `student_profiles`
   ADD CONSTRAINT `student_profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `talent_search_logs`
+--
+ALTER TABLE `talent_search_logs`
+  ADD CONSTRAINT `fk_talent_search_logs_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- 資料表的限制式 `user_activities`

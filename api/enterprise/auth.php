@@ -17,6 +17,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 case 'logout':
                     handleLogout();
                     break;
+                case 'password_reset_request':
+                    handlePasswordResetRequest($input);
+                    break;
                 default:
                     sendError('無效的操作', 400);
             }
@@ -46,7 +49,7 @@ function handleLogin($data) {
         $password = $data['password'];
         
         $stmt = $GLOBALS['conn']->prepare("
-            SELECT u.id, u.username, u.email, u.password, u.role, u.status,
+            SELECT u.id, u.username, u.email, u.password_hash, u.role, u.status,
                    ep.company_name, ep.logo_url
             FROM users u
             LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
@@ -59,7 +62,7 @@ function handleLogin($data) {
         $password = $data['password'];
         
         $stmt = $GLOBALS['conn']->prepare("
-            SELECT u.id, u.username, u.email, u.password, u.role, u.status,
+            SELECT u.id, u.username, u.email, u.password_hash, u.role, u.status,
                    ep.company_name, ep.logo_url
             FROM users u
             LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
@@ -79,7 +82,7 @@ function handleLogin($data) {
         sendError('帳號已被停用', 403);
     }
     
-    if (!password_verify($password, $user['password'])) {
+    if (!password_verify($password, $user['password_hash'])) {
         sendError('電子郵件或密碼錯誤', 401);
     }
     
@@ -199,6 +202,33 @@ function handleLogout() {
     session_start();
     session_destroy();
     sendResponse([], 200, '登出成功');
+}
+
+// 發送企業密碼重設請求（示意：寫入 password_resets 並回傳）
+function handlePasswordResetRequest($data) {
+    if (!isset($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        sendError('請提供有效的電子郵件', 400);
+    }
+    $email = sanitizeInput($data['email']);
+
+    // 確認企業用戶存在
+    $stmt = $GLOBALS['conn']->prepare("SELECT id FROM users WHERE email = ? AND role = 'enterprise' LIMIT 1");
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $user = $res->fetch_assoc();
+    if (!$user) {
+        sendResponse([], 200, '如果信箱存在，將寄送重設指示');
+    }
+
+    // 產生 token 並寫入 password_resets
+    $token = bin2hex(random_bytes(16));
+    $expires = date('Y-m-d H:i:s', time() + 3600);
+    $ins = $GLOBALS['conn']->prepare("INSERT INTO password_resets (user_id, token, expires_at, used) VALUES (?, ?, ?, 0)");
+    $ins->bind_param('iss', $user['id'], $token, $expires);
+    $ins->execute();
+
+    sendResponse(['token' => $token, 'expires_at' => $expires], 200, '如果信箱存在，將寄送重設指示');
 }
 
 // 檢查認證狀態

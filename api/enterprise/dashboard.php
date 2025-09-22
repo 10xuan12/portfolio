@@ -382,19 +382,30 @@ function getAnalytics() {
     $applicationStmt->execute();
     $applicationStats = $applicationStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     
-    // 熱門技能統計
+    // 熱門技能統計（修正關聯：以企業瀏覽之作品對應的學生技能為來源）
     $skillStmt = $GLOBALS['conn']->prepare("
         SELECT 
-            TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(sp.skills, ',', numbers.n), ',', -1)) as skill,
-            COUNT(*) as count
+            TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(sp.skills, ',', numbers.n), ',', -1)) AS skill,
+            COUNT(*) AS count
         FROM (
             SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
         ) numbers
-        JOIN student_profiles sp ON CHAR_LENGTH(sp.skills) - CHAR_LENGTH(REPLACE(sp.skills, ',', '')) >= numbers.n - 1
-        JOIN enterprise_views ev ON sp.user_id = ev.enterprise_id
-        WHERE ev.enterprise_id = ? AND ev.view_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        JOIN enterprise_views ev 
+            ON ev.enterprise_id = ? 
+           AND ev.view_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        JOIN portfolios p 
+            ON p.id = ev.portfolio_id 
+           AND p.status = 'published'
+        JOIN users u 
+            ON u.id = p.user_id 
+           AND u.role = 'student' 
+           AND u.status = 'active'
+        LEFT JOIN student_profiles sp 
+            ON sp.user_id = u.id
+        WHERE sp.skills IS NOT NULL AND sp.skills <> ''
+          AND CHAR_LENGTH(sp.skills) - CHAR_LENGTH(REPLACE(sp.skills, ',', '')) >= numbers.n - 1
         GROUP BY skill
-        HAVING skill != ''
+        HAVING skill <> ''
         ORDER BY count DESC
         LIMIT 10
     ");

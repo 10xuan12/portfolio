@@ -667,7 +667,6 @@
     </div>
 
     <script>
-        // TODO: 實作角色選擇功能
         const roleOptions = document.querySelectorAll('.role-option');
         let selectedRole = 'student';
 
@@ -780,11 +779,37 @@
             }
         });
 
-        // TODO: 實作忘記密碼功能
         document.querySelector('.forgot-password').addEventListener('click', function(e) {
             e.preventDefault();
-            alert('忘記密碼功能開發中...');
-            // TODO: 實作忘記密碼流程
+            try {
+                const email = prompt('請輸入註冊時的電子郵件，用於重設密碼：');
+                if (!email) return;
+                const role = selectedRole || 'student';
+                let endpoint = '';
+                let payload = {};
+                if (role === 'student') {
+                    endpoint = '/portfolio/api/student/password.php';
+                    payload = { action: 'request_reset', email };
+                } else if (role === 'enterprise') {
+                    endpoint = '/portfolio/api/enterprise/auth.php';
+                    payload = { action: 'password_reset_request', email };
+                } else {
+                    endpoint = '/portfolio/api/admin/auth.php';
+                    payload = { action: 'password_reset_request', email };
+                }
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(r => r.json()).then(res => {
+                    if (res && (res.status === 200 || res.success)) {
+                        alert('我們已寄出密碼重設指示，請查收您的信箱。');
+                    } else {
+                        alert(res?.message || '無法送出重設請求，請稍後再試');
+                    }
+                }).catch(() => alert('網路或伺服器異常，請稍後再試'));
+            } catch (_) {}
         });
 
         // 測試帳號快速填入功能

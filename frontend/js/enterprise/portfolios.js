@@ -190,13 +190,15 @@ function viewPortfolio(portfolioId) {
 function contactStudent(portfolioId) {
     const portfolio = portfolios.find(p => p.id === portfolioId);
     if (portfolio) {
-        // TODO: 實作聯絡學生功能
-        Utils.showNotification(`正在聯絡 ${portfolio.author}...`, 'info');
-        
-        // 模擬聯絡功能
-        setTimeout(() => {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) return Utils.showNotification('API 服務未就緒', 'error');
+        const msg = `您好，我們對您的作品「${portfolio.title}」很感興趣，方便進一步聯繫嗎？`;
+        svc.request('enterprise/portfolios.php', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'contact', student_id: null, subject: `關於作品 ${portfolio.title}`, message: msg })
+        }).then(() => {
             Utils.showNotification(`已發送聯絡訊息給 ${portfolio.author}`, 'success');
-        }, 1000);
+        }).catch(() => Utils.showNotification('聯絡失敗', 'error'));
     }
 }
 

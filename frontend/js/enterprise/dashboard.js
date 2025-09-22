@@ -7,6 +7,7 @@
 
 // 頁面載入時初始化
 document.addEventListener('DOMContentLoaded', function() {
+    loadFilterOptions();
     loadDashboardData();
     setupEventListeners();
 });
@@ -24,14 +25,21 @@ async function loadDashboardData() {
         const [statsRes, recentPortfoliosRes, recommendedStudentsRes, recentActivitiesRes, jobSummaryRes] = await Promise.all([
             svc.request('enterprise/dashboard.php?action=stats'),
             svc.request('enterprise/dashboard.php?action=recent_portfolios&limit=6'),
-            svc.request('enterprise/dashboard.php?action=recommended_students&limit=8'),
+            svc.request('enterprise/recommendations.php?action=list&limit=8'),
             svc.request('enterprise/dashboard.php?action=recent_activities&limit=10'),
             svc.request('enterprise/dashboard.php?action=job_summary&limit=5')
         ]);
 
         const stats = statsRes?.data || statsRes || {};
         const recentPortfolios = recentPortfoliosRes?.data || recentPortfoliosRes || [];
-        const recommendedStudents = recommendedStudentsRes?.data || recommendedStudentsRes || [];
+        const recommendedStudents = (recommendedStudentsRes?.data?.recommendations || recommendedStudentsRes?.recommendations || []).map(r => ({
+            id: r.id,
+            name: r.name,
+            avatar_url: r.avatar,
+            major: r.department,
+            university: '',
+            skills: Array.isArray(r.skills) ? r.skills.join(', ') : ''
+        }));
         const recentActivities = recentActivitiesRes?.data || recentActivitiesRes || [];
         const jobs = jobSummaryRes?.data || jobSummaryRes || [];
 
@@ -99,6 +107,43 @@ function hideLoadingState() {
 }
 
 /**
+ * 載入篩選選單（技能/科系/年級）
+ */
+async function loadFilterOptions() {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) return;
+        const res = await svc.request('enterprise/meta.php?action=search_filters');
+        const data = res?.data || res || {};
+        const skills = Array.isArray(data.skills) ? data.skills : [];
+        const departments = Array.isArray(data.departments) ? data.departments : [];
+        const grades = Array.isArray(data.grades) ? data.grades : [];
+
+        const skillSel = document.getElementById('dash-skill-select');
+        const deptSel = document.getElementById('dash-dept-select');
+        const gradeSel = document.getElementById('dash-grade-select');
+
+        if (skillSel && skills.length) {
+            const cur = skillSel.value;
+            skillSel.innerHTML = '<option>全部技能</option>' + skills.map(s => `<option>${s}</option>`).join('');
+            if (cur) skillSel.value = cur;
+        }
+        if (deptSel && departments.length) {
+            const cur = deptSel.value;
+            deptSel.innerHTML = '<option>全部科系</option>' + departments.map(d => `<option>${d}</option>`).join('');
+            if (cur) deptSel.value = cur;
+        }
+        if (gradeSel && grades.length) {
+            const cur = gradeSel.value;
+            gradeSel.innerHTML = '<option>全部年級</option>' + grades.map(g => `<option>${g}</option>`).join('');
+            if (cur) gradeSel.value = cur;
+        }
+    } catch (e) {
+        console.warn('載入篩選選單失敗', e);
+    }
+}
+
+/**
  * 顯示錯誤訊息
  */
 function showErrorMessage(message) {
@@ -119,28 +164,60 @@ function showErrorMessage(message) {
  */
 function setupEventListeners() {
     // 搜尋按鈕
-    const searchBtn = document.querySelector('.btn-primary');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', function() {
-            console.log('執行搜尋...');
-            // TODO: 實作搜尋功能
+    const searchBtn = document.getElementById('dash-search-btn');
+    if (searchBtn && typeof window !== 'undefined') {
+        searchBtn.addEventListener('click', async function() {
+            const keyword = document.getElementById('dash-keyword');
+            const skillSel = document.getElementById('dash-skill-select');
+            const deptSel = document.getElementById('dash-dept-select');
+            const gradeSel = document.getElementById('dash-grade-select');
+            try {
+                const svc = window.apiService || window.initializeApiService?.();
+                if (!svc) throw new Error('API 服務未就緒');
+                const params = new URLSearchParams({
+                    q: (keyword?.value || '').trim(),
+                    skills: (skillSel?.value || '').replace('全部技能','').trim(),
+                    department: (deptSel?.value || '').replace('全部科系','').trim(),
+                    grade: (gradeSel?.value || '').replace('全部年級','').trim(),
+                    page: '1',
+                    limit: '8'
+                });
+                const res = await svc.request(`enterprise/search.php?${params.toString()}`);
+                const list = res?.data?.students || res?.students || [];
+                const mapped = (Array.isArray(list)? list: []).map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    avatar_url: s.avatar,
+                    major: s.department,
+                    university: '',
+                    skills: Array.isArray(s.skills) ? s.skills.join(', ') : ''
+                }));
+                renderRecommendedStudents(mapped);
+            } catch (e) {
+                console.error('儀表板搜尋失敗', e);
+            }
         });
     }
     
     // 篩選選擇器
-    const filters = document.querySelectorAll('select');
-    filters.forEach(filter => {
-        filter.addEventListener('change', function() {
-            console.log('篩選條件變更:', this.value);
-            // TODO: 實作篩選功能
-        });
+    ['dash-skill-select','dash-dept-select','dash-grade-select','dash-sort-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', () => document.getElementById('dash-search-btn')?.click());
     });
     
-    // 重新整理按鈕
-    const refreshBtn = document.querySelector('.refresh-btn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', function() {
-            loadDashboardData();
+    // 推薦刷新按鈕（若頁面有放）
+    const refreshRecoBtn = document.querySelector('.refresh-recommendations');
+    if (refreshRecoBtn) {
+        refreshRecoBtn.addEventListener('click', async function() {
+            try {
+                const svc = window.apiService || window.initializeApiService?.();
+                if (!svc) throw new Error('API 服務未就緒');
+                await svc.request('enterprise/recommendations.php?action=refresh');
+                await loadDashboardData();
+            } catch (e) {
+                console.error(e);
+            }
         });
     }
 }

@@ -11,21 +11,44 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * 初始化分析頁面
  */
-function initializeAnalytics() {
-    // 使用統一假資料
-    const analyticsData = {
-        stats: MockData.stats.enterprise,
-        trends: MockData.analytics.trends,
-        skills: MockData.analytics.skills,
-        departments: MockData.analytics.departments,
-        popularPortfolios: MockData.analytics.popularPortfolios
-    };
-    
-    updateStats(analyticsData.stats);
-    updateSkillsChart(analyticsData.skills);
-    updateDepartmentChart(analyticsData.departments);
-    updatePopularPortfolios(analyticsData.popularPortfolios);
-    setupCharts(analyticsData.trends);
+let __analyticsCache = { stats: null, trends: null, skills: null, departments: null, popularPortfolios: [] };
+let __charts = { trends: null, skills: null, departments: null };
+
+async function initializeAnalytics(days = 30) {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+
+        // 併行取回統計與趨勢
+        const [statsRes, analyticsRes] = await Promise.all([
+            svc.request('enterprise/dashboard.php?action=stats'),
+            svc.request(`enterprise/dashboard.php?action=analytics&days=${encodeURIComponent(String(days))}`)
+        ]);
+
+        const stats = statsRes?.data || statsRes || {};
+        const analytics = analyticsRes?.data || analyticsRes || {};
+        const trends = analytics || { views: [], contacts: [], applications: [], top_skills: [] };
+
+        // 快取
+        __analyticsCache.stats = stats;
+        __analyticsCache.trends = trends;
+        __analyticsCache.skills = (trends.top_skills || []).map(s => ({ name: s.skill || s.name || '', percentage: s.count || s.percentage || 0 }));
+        __analyticsCache.departments = []; // 如需可從後端擴充
+
+        updateStats({
+            total_views: stats?.portfolios?.total_views ?? 0,
+            total_favorites: stats?.portfolios?.total_bookmarks ?? 0,
+            total_contacts: stats?.contacts?.total ?? 0,
+            total_jobs: stats?.jobs?.total ?? 0
+        });
+        await ensureChartJs();
+        updateSkillsChart(__analyticsCache.skills);
+        updateDepartmentChart(__analyticsCache.departments);
+        updatePopularPortfolios(__analyticsCache.popularPortfolios);
+        setupCharts(__analyticsCache.trends);
+    } catch (e) {
+        console.error('載入分析資料失敗:', e);
+    }
 }
 
 /**
@@ -65,22 +88,20 @@ function updateStats(stats) {
  * 更新技能圖表
  */
 function updateSkillsChart(skills) {
-    const skillsChart = document.querySelector('.skills-chart');
-    if (!skillsChart) return;
-
-    skillsChart.innerHTML = '';
-    
-    skills.forEach(skill => {
-        const skillItem = document.createElement('div');
-        skillItem.className = 'skill-item';
-        skillItem.innerHTML = `
-            <span class="skill-name">${skill.name}</span>
-            <div class="skill-bar">
-                <div class="skill-progress" style="width: ${skill.percentage}%"></div>
-            </div>
-            <span class="skill-percentage">${skill.percentage}%</span>
-        `;
-        skillsChart.appendChild(skillItem);
+    const wrap = document.querySelector('.skills-chart');
+    if (!wrap) return;
+    wrap.innerHTML = '<canvas id="skillsChartCanvas" height="220"></canvas>';
+    const ctx = document.getElementById('skillsChartCanvas').getContext('2d');
+    if (typeof Chart !== 'undefined' && window.__charts && window.__charts.skills) {
+        window.__charts.skills.destroy();
+    }
+    window.__charts = window.__charts || { trends: null, skills: null, departments: null };
+    const labels = skills.map(s => s.name);
+    const data = skills.map(s => Number(s.percentage || s.count || 0));
+    window.__charts.skills = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: '熱門技能', data, backgroundColor: '#60A5FA' }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
     });
 }
 
@@ -88,22 +109,20 @@ function updateSkillsChart(skills) {
  * 更新科系分布圖表
  */
 function updateDepartmentChart(departments) {
-    const departmentChart = document.querySelector('.department-chart');
-    if (!departmentChart) return;
-
-    departmentChart.innerHTML = '';
-    
-    departments.forEach(dept => {
-        const deptItem = document.createElement('div');
-        deptItem.className = 'department-item';
-        deptItem.innerHTML = `
-            <span class="department-name">${dept.name}</span>
-            <div class="department-bar">
-                <div class="department-progress" style="width: ${dept.percentage}%"></div>
-            </div>
-            <span class="department-percentage">${dept.percentage}%</span>
-        `;
-        departmentChart.appendChild(deptItem);
+    const wrap = document.querySelector('.department-chart');
+    if (!wrap) return;
+    wrap.innerHTML = '<canvas id="deptChartCanvas" height="220"></canvas>';
+    const ctx = document.getElementById('deptChartCanvas').getContext('2d');
+    if (typeof Chart !== 'undefined' && window.__charts && window.__charts.departments) {
+        window.__charts.departments.destroy();
+    }
+    window.__charts = window.__charts || { trends: null, skills: null, departments: null };
+    const labels = departments.map(d => d.name || d.department || '');
+    const data = departments.map(d => Number(d.percentage || d.count || 0));
+    window.__charts.departments = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ label: '科系分布', data, backgroundColor: ['#6366F1','#34D399','#F59E0B','#EF4444','#10B981','#3B82F6','#F472B6','#A78BFA'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
@@ -138,29 +157,61 @@ function updatePopularPortfolios(portfolios) {
  * 設定圖表
  */
 function setupCharts(trends) {
-    // TODO: 實作實際的圖表庫 (如 Chart.js 或 D3.js)
-    console.log('圖表功能待實作');
-    console.log('趨勢資料:', trends);
+    const container = document.querySelector('.trend-charts');
+    if (!container) return;
+    container.innerHTML = '<canvas id="trendChartCanvas" height="260"></canvas>';
+    const ctx = document.getElementById('trendChartCanvas').getContext('2d');
+    if (typeof Chart !== 'undefined' && window.__charts && window.__charts.trends) {
+        window.__charts.trends.destroy();
+    }
+    window.__charts = window.__charts || { trends: null, skills: null, departments: null };
+    const dates = (trends.views || []).map(d => d.date);
+    const ds = key => (Array.isArray(trends[key]) ? trends[key].map(d => Number(d.count || d[key] || 0)) : []);
+    window.__charts.trends = new Chart(ctx, {
+        type: 'line',
+        data: { labels: dates, datasets: [
+            { label: '瀏覽', data: ds('views'), borderColor: '#2563EB', backgroundColor: 'rgba(37,99,235,0.15)', tension: 0.3, fill: true },
+            { label: '聯絡', data: ds('contacts'), borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.15)', tension: 0.3, fill: true },
+            { label: '申請', data: ds('applications'), borderColor: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', tension: 0.3, fill: true }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, stacked: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+    });
 }
 
 /**
  * 更新趨勢圖表
  */
-function updateTrendChart(period) {
-    // TODO: 根據選擇的週期更新趨勢圖表
-    console.log(`更新趨勢圖表，週期: ${period} 天`);
-    
-    // 這裡可以根據週期從 MockData.analytics.trends 中取得對應的資料
-    const trends = MockData.analytics.trends;
-    console.log('趨勢資料:', trends);
+async function updateTrendChart(period) {
+    const days = parseInt(period, 10) || 30;
+    await initializeAnalytics(days);
 }
 
 /**
  * 匯出分析報表
  */
 function exportAnalytics() {
-    // TODO: 實作匯出功能
-    showNotification('報表匯出功能開發中...', 'info');
+    try {
+        const payload = {
+            exportedAt: new Date().toISOString(),
+            stats: __analyticsCache.stats,
+            trends: __analyticsCache.trends,
+            skills: __analyticsCache.skills,
+            departments: __analyticsCache.departments,
+            popularPortfolios: __analyticsCache.popularPortfolios
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `enterprise-analytics-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification('分析報表已匯出', 'success');
+    } catch (e) {
+        showNotification('匯出失敗', 'error');
+    }
 }
 
 /**

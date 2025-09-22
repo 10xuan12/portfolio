@@ -65,35 +65,29 @@
                 
                 <div class="advanced-filters">
                     <div class="filter-group">
-                        <label for="departmentFilter">學群</label>
+                        <label for="departmentFilter">科系</label>
                         <select id="departmentFilter">
+                            <option value="">全部科系</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="categoryFilter">學群</label>
+                        <select id="categoryFilter">
                             <option value="">全部學群</option>
-                            <option value="資訊學群">資訊學群</option>
-                            <option value="工程學群">工程學群</option>
-                            <option value="設計學群">設計學群</option>
-                            <option value="商管學群">商管學群</option>
-                            <option value="人文社會學群">人文社會學群</option>
-                            <option value="教育學群">教育學群</option>
-                            <option value="藝術學群">藝術學群</option>
-                            <option value="數理化學群">數理化學群</option>
-                            <option value="生命科學學群">生命科學學群</option>
-                            <option value="醫藥衛生學群">醫藥衛生學群</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label for="gradeFilter">年級</label>
                         <select id="gradeFilter">
                             <option value="">全部年級</option>
-                            <option value="大學一年級">大學一年級</option>
-                            <option value="大學二年級">大學二年級</option>
-                            <option value="大學三年級">大學三年級</option>
-                            <option value="大學四年級">大學四年級</option>
-                            <option value="碩士">碩士</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label for="skillFilter">技能</label>
-                        <input type="text" id="skillFilter" placeholder="JavaScript, React, Python...">
+                        <label for="skillTagInput">技能</label>
+                        <div id="skillTagBox" class="tag-input">
+                            <div id="skillTags" class="tag-list"></div>
+                            <input type="text" id="skillTagInput" placeholder="輸入技能後按 Enter 新增">
+                        </div>
                     </div>
                     <div class="filter-group">
                         <label for="matchFilter">最低匹配度</label>
@@ -109,121 +103,12 @@
                 
                 <div class="search-suggestions">
                     <div class="suggestion-title">熱門搜尋</div>
-                    <div class="suggestion-tags">
-                        <span class="suggestion-tag" onclick="setSearchTerm('JavaScript')">JavaScript</span>
-                        <span class="suggestion-tag" onclick="setSearchTerm('React')">React</span>
-                        <span class="suggestion-tag" onclick="setSearchTerm('Python')">Python</span>
-                        <span class="suggestion-tag" onclick="setSearchTerm('UI/UX')">UI/UX</span>
-                        <span class="suggestion-tag" onclick="setSearchTerm('前端開發')">前端開發</span>
-                        <span class="suggestion-tag" onclick="setSearchTerm('數據分析')">數據分析</span>
-                    </div>
+                    <div class="suggestion-tags"></div>
                 </div>
             </div>
 
             <!-- 搜尋結果 -->
-            <div class="search-results" id="searchResults">
-                <!-- TODO: 從資料庫載入搜尋結果 -->
-                <!-- 假資料開始 -->
-                <div class="student-card">
-                    <div class="student-header">
-                        <img src="https://via.placeholder.com/60x60/667eea/ffffff?text=張" alt="張小明" class="student-avatar">
-                        <div class="student-info">
-                            <div class="student-name">張小明</div>
-                            <div class="student-department">資訊管理學系 - 大學三年級</div>
-                        </div>
-                        <div class="match-score">
-                            <span class="score">95%</span>
-                            <span class="label">匹配</span>
-                        </div>
-                    </div>
-                    <div class="student-skills">
-                        <span class="skill-tag">JavaScript</span>
-                        <span class="skill-tag">React</span>
-                        <span class="skill-tag">Node.js</span>
-                        <span class="skill-tag">UI/UX Design</span>
-                    </div>
-                    <div class="student-stats">
-                        <span><i class="fas fa-folder"></i> 12 個作品</span>
-                        <span><i class="fas fa-eye"></i> 1,234 次瀏覽</span>
-                        <span><i class="fas fa-heart"></i> 89 個讚</span>
-                    </div>
-                    <div class="student-actions">
-                        <button class="action-btn" onclick="viewStudentProfile(1)">
-                            <i class="fas fa-user"></i> 查看資料
-                        </button>
-                        <button class="action-btn primary" onclick="contactStudent(1)">
-                            <i class="fas fa-envelope"></i> 聯絡
-                        </button>
-                    </div>
-                </div>
-
-                <div class="student-card">
-                    <div class="student-header">
-                        <img src="https://via.placeholder.com/60x60/764ba2/ffffff?text=李" alt="李大明" class="student-avatar">
-                        <div class="student-info">
-                            <div class="student-name">李大明</div>
-                            <div class="student-department">資訊工程學系 - 大學四年級</div>
-                        </div>
-                        <div class="match-score">
-                            <span class="score">88%</span>
-                            <span class="label">匹配</span>
-                        </div>
-                    </div>
-                    <div class="student-skills">
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">Machine Learning</span>
-                        <span class="skill-tag">Data Analysis</span>
-                        <span class="skill-tag">SQL</span>
-                    </div>
-                    <div class="student-stats">
-                        <span><i class="fas fa-folder"></i> 8 個作品</span>
-                        <span><i class="fas fa-eye"></i> 856 次瀏覽</span>
-                        <span><i class="fas fa-heart"></i> 45 個讚</span>
-                    </div>
-                    <div class="student-actions">
-                        <button class="action-btn" onclick="viewStudentProfile(2)">
-                            <i class="fas fa-user"></i> 查看資料
-                        </button>
-                        <button class="action-btn primary" onclick="contactStudent(2)">
-                            <i class="fas fa-envelope"></i> 聯絡
-                        </button>
-                    </div>
-                </div>
-
-                <div class="student-card">
-                    <div class="student-header">
-                        <img src="https://via.placeholder.com/60x60/f093fb/ffffff?text=王" alt="王小美" class="student-avatar">
-                        <div class="student-info">
-                            <div class="student-name">王小美</div>
-                            <div class="student-department">設計學系 - 大學三年級</div>
-                        </div>
-                        <div class="match-score">
-                            <span class="score">82%</span>
-                            <span class="label">匹配</span>
-                        </div>
-                    </div>
-                    <div class="student-skills">
-                        <span class="skill-tag">Figma</span>
-                        <span class="skill-tag">Adobe Creative Suite</span>
-                        <span class="skill-tag">UI/UX Design</span>
-                        <span class="skill-tag">Prototyping</span>
-                    </div>
-                    <div class="student-stats">
-                        <span><i class="fas fa-folder"></i> 15 個作品</span>
-                        <span><i class="fas fa-eye"></i> 1,567 次瀏覽</span>
-                        <span><i class="fas fa-heart"></i> 123 個讚</span>
-                    </div>
-                    <div class="student-actions">
-                        <button class="action-btn" onclick="viewStudentProfile(3)">
-                            <i class="fas fa-user"></i> 查看資料
-                        </button>
-                        <button class="action-btn primary" onclick="contactStudent(3)">
-                            <i class="fas fa-envelope"></i> 聯絡
-                        </button>
-                    </div>
-                </div>
-                <!-- 假資料結束 -->
-            </div>
+            <div class="search-results" id="searchResults"></div>
 
             <!-- 空狀態 -->
             <div class="empty-state" id="emptyState" style="display: none;">

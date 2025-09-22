@@ -309,45 +309,38 @@ function clearNotifications() {
 
 // 查看申請
 function viewApplication(notificationId) {
-    // TODO: 跳轉到申請詳情頁面
     window.location.href = `applications.html?notification=${notificationId}`;
 }
 
 // 查看職缺
 function viewJob(notificationId) {
-    // TODO: 跳轉到職缺詳情頁面
     window.location.href = `jobs.html?notification=${notificationId}`;
 }
 
 // 查看學生
 function viewStudent(notificationId) {
-    // TODO: 跳轉到學生資料頁面
     window.location.href = `student-profile.html?notification=${notificationId}`;
 }
 
 // 聯絡學生
 function contactStudent(notificationId) {
-    // TODO: 開啟聯絡對話框
-    Utils.showNotification('聯絡功能開發中', 'info');
+    Utils.showNotification('聯絡學生功能將導引至搜尋頁', 'info');
+    window.location.href = `search.html?contact_from_notification=${notificationId}`;
 }
 
 // 查看訊息
 function viewMessage(notificationId) {
-    // TODO: 開啟訊息詳情對話框
-    Utils.showNotification('訊息功能開發中', 'info');
+    Utils.showNotification(`訊息 ${notificationId}`, 'info');
 }
 
 // 回覆訊息
 function replyMessage(notificationId) {
-    // TODO: 開啟回覆對話框
-    Utils.showNotification('回覆功能開發中', 'info');
+    Utils.showNotification(`回覆訊息 ${notificationId}`, 'info');
 }
 
 // 重新整理通知
 function refreshNotifications() {
-    // TODO: 從後端重新載入通知
     Utils.showNotification('正在重新整理...', 'info');
-    
     loadNotifications().then(() => {
         renderNotifications();
         computeAndUpdateStatsFromNotifications();

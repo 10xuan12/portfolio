@@ -674,74 +674,6 @@ const UI = {
 
 // 資料載入功能
 const DataLoader = {
-    // 載入假資料
-    loadMockData: function(type) {
-        const mockData = {
-            portfolios: [
-                {
-                    id: 1,
-                    title: '響應式網站設計',
-                    description: '使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站',
-                    author: '張小明',
-                    views: 156,
-                    likes: 23,
-                    comments: 8,
-                    tags: ['HTML5', 'CSS3', 'JavaScript'],
-                    status: 'published',
-                    created_at: '2024-01-15'
-                },
-                {
-                    id: 2,
-                    title: '行動應用程式',
-                    description: '使用 React Native 開發的跨平台行動應用程式',
-                    author: '李小華',
-                    views: 203,
-                    likes: 45,
-                    comments: 12,
-                    tags: ['React Native', 'JavaScript', 'Firebase'],
-                    status: 'published',
-                    created_at: '2024-01-14'
-                }
-            ],
-            users: [
-                {
-                    id: 1,
-                    name: '張小明',
-                    role: 'student',
-                    department: '資訊管理學系',
-                    grade: '大學三年級',
-                    avatar: '張'
-                },
-                {
-                    id: 2,
-                    name: '李小華',
-                    role: 'student',
-                    department: '資訊管理學系',
-                    grade: '大學四年級',
-                    avatar: '李'
-                }
-            ],
-            enterprises: [
-                {
-                    id: 1,
-                    name: '科技公司 A',
-                    industry: '科技業',
-                    size: '51-200人',
-                    description: '專注於軟體開發的科技公司'
-                },
-                {
-                    id: 2,
-                    name: '設計工作室 B',
-                    industry: '服務業',
-                    size: '11-50人',
-                    description: '專業的 UI/UX 設計工作室'
-                }
-            ]
-        };
-        
-        return mockData[type] || [];
-    },
-    
     // 渲染作品列表
     renderPortfolios: function(container, portfolios) {
         if (!container) return;
@@ -789,12 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 初始化 UI
         UI.init();
         
-        // 載入假資料（如果頁面需要）
-        const portfolioContainer = document.querySelector('.portfolios-grid');
-        if (portfolioContainer) {
-            const portfolios = DataLoader.loadMockData('portfolios');
-            DataLoader.renderPortfolios(portfolioContainer, portfolios);
-        }
+        // 資料載入交由各頁面腳本向後端請求
         
         // 檢查登入狀態
         if (Auth.isLoggedIn()) {

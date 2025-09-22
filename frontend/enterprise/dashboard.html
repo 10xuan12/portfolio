@@ -308,7 +308,7 @@
                         <div class="filter-row row-1">
                             <div class="filter-group">
                                 <label>技能</label>
-                                <select>
+                                <select id="dash-skill-select">
                                     <option>全部技能</option>
                                     <option>JavaScript</option>
                                     <option>React</option>
@@ -318,7 +318,7 @@
                             </div>
                             <div class="filter-group">
                                 <label>科系</label>
-                                <select>
+                                <select id="dash-dept-select">
                                     <option>全部科系</option>
                                     <option>資訊管理學系</option>
                                     <option>財務金融學系</option>
@@ -327,7 +327,7 @@
                             </div>
                             <div class="filter-group">
                                 <label>年級</label>
-                                <select>
+                                <select id="dash-grade-select">
                                     <option>全部年級</option>
                                     <option>大學三年級</option>
                                     <option>大學四年級</option>
@@ -338,7 +338,7 @@
                         <div class="filter-row row-2">
                             <div class="filter-group">
                                 <label>排序方式</label>
-                                <select>
+                                <select id="dash-sort-select">
                                     <option>最新上傳</option>
                                     <option>最多瀏覽</option>
                                     <option>最多讚數</option>
@@ -347,17 +347,22 @@
                             </div>
                             <div class="filter-group">
                                 <label>關鍵字搜尋</label>
-                                <input type="text" placeholder="搜尋作品標題或描述...">
+                                <input id="dash-keyword" type="text" placeholder="搜尋學生姓名、技能或科系...">
                             </div>
                             <div class="filter-group">
                                 <label>&nbsp;</label>
-                                <button class="btn btn-primary" style="width: auto;">搜尋</button>
+                                <button id="dash-search-btn" class="btn btn-primary" style="width: auto;">搜尋</button>
                             </div>
                         </div>
                     </div>
 
-                    <h2>推薦人才</h2>
-                    <div class="candidate-grid recommended-students">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                        <h2 style="margin:0;">推薦人才</h2>
+                        <button class="btn refresh-recommendations" style="background:#6b7280; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;">
+                            <i class="fas fa-rotate"></i> 刷新推薦
+                        </button>
+                    </div>
+                    <div class="candidate-grid recommended-students" style="margin-top:8px;">
                         <!-- 資料將由 JavaScript 動態載入 -->
                     </div>
                 </div>
@@ -401,22 +406,66 @@
         console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
         console.log('環境:', getEnvironment());
         console.log('版本:', getVersion());
-        
-        // TODO: 實作搜尋篩選功能
-        // 當使用者選擇篩選條件時，更新推薦人才列表
-        document.querySelector('button').addEventListener('click', function() {
-            console.log('執行搜尋...');
-            // TODO: 發送搜尋請求到後端
-        });
-        
-        // TODO: 實作即時通知功能
-        // 例如：WebSocket 連接來接收即時通知
-        
-        // TODO: 實作收藏功能
-        // 當企業收藏作品時，更新收藏列表
-        
-        // TODO: 實作聯絡功能
-        // 當企業聯絡學生時，記錄活動並發送通知
+
+        // 儀表板搜尋篩選：以人才搜尋 API 更新推薦區塊內容
+        (function attachDashboardFilters(){
+            const btn = document.getElementById('dash-search-btn');
+            const keyword = document.getElementById('dash-keyword');
+            const skillSel = document.getElementById('dash-skill-select');
+            const deptSel = document.getElementById('dash-dept-select');
+            const gradeSel = document.getElementById('dash-grade-select');
+            const sortSel = document.getElementById('dash-sort-select');
+
+            async function runFilterSearch(){
+                try {
+                    const svc = window.apiService || window.initializeApiService?.();
+                    if (!svc) throw new Error('API 服務未就緒');
+
+                    const q = (keyword?.value || '').trim();
+                    const skills = (skillSel?.value || '').replace('全部技能','').trim();
+                    // 將常見顯示文字對應成後端 department 關鍵字
+                    const department = (deptSel?.value || '').replace('全部科系','').trim();
+                    const grade = (gradeSel?.value || '').replace('全部年級','').trim();
+
+                    const params = new URLSearchParams({
+                        q,
+                        skills,
+                        department,
+                        grade,
+                        minMatch: '0',
+                        page: '1',
+                        limit: '8'
+                    });
+
+                    const res = await svc.request(`enterprise/search.php?${params.toString()}`);
+                    const list = res?.data?.students || res?.students || [];
+
+                    const mapped = (Array.isArray(list)? list: []).map(s => ({
+                        id: s.id,
+                        name: s.name,
+                        avatar_url: s.avatar,
+                        major: s.department,
+                        university: '',
+                        skills: Array.isArray(s.skills) ? s.skills.join(', ') : ''
+                    }));
+                    // 直接覆蓋推薦區塊
+                    if (typeof renderRecommendedStudents === 'function') {
+                        renderRecommendedStudents(mapped);
+                    }
+                } catch (e) {
+                    console.error('儀表板篩選搜尋失敗:', e);
+                }
+            }
+
+            if (btn) btn.addEventListener('click', runFilterSearch);
+            if (keyword) keyword.addEventListener('keypress', (e)=>{ if (e.key==='Enter') runFilterSearch(); });
+            if (skillSel) skillSel.addEventListener('change', runFilterSearch);
+            if (deptSel) deptSel.addEventListener('change', runFilterSearch);
+            if (gradeSel) gradeSel.addEventListener('change', runFilterSearch);
+            if (sortSel) sortSel.addEventListener('change', runFilterSearch); // 目前僅觸發重新查詢
+        })();
+
+        // 即時通知、收藏、聯絡：屬進階功能，待啟用 WebSocket / 互動入口後實作
     </script>
 </body>
 </html> 

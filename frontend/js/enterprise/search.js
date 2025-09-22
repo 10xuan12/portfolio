@@ -3,69 +3,16 @@
  * 包含進階搜尋、匹配度計算、結果篩選等功能
  */
 
-// TODO: 從後端 API 載入學生資料
-let students = [
-    {
-        id: 1,
-        name: '張小明',
-        department: '資訊管理學系',
-        grade: '大學三年級',
-        skills: ['JavaScript', 'React', 'Node.js', 'UI/UX Design', 'HTML5', 'CSS3'],
-        avatar: 'https://via.placeholder.com/60x60/667eea/ffffff?text=張',
-        stats: {
-            portfolios: 12,
-            views: 1234,
-            likes: 89
-        },
-        matchScore: 95
-    },
-    {
-        id: 2,
-        name: '李大明',
-        department: '資訊工程學系',
-        grade: '大學四年級',
-        skills: ['Python', 'Machine Learning', 'Data Analysis', 'SQL', 'TensorFlow'],
-        avatar: 'https://via.placeholder.com/60x60/764ba2/ffffff?text=李',
-        stats: {
-            portfolios: 8,
-            views: 856,
-            likes: 45
-        },
-        matchScore: 88
-    },
-    {
-        id: 3,
-        name: '王小美',
-        department: '設計學系',
-        grade: '大學三年級',
-        skills: ['Figma', 'Adobe Creative Suite', 'UI/UX Design', 'Prototyping', 'Sketch'],
-        avatar: 'https://via.placeholder.com/60x60/f093fb/ffffff?text=王',
-        stats: {
-            portfolios: 15,
-            views: 1567,
-            likes: 123
-        },
-        matchScore: 82
-    },
-    {
-        id: 4,
-        name: '陳小華',
-        department: '資訊管理學系',
-        grade: '大學二年級',
-        skills: ['Java', 'Spring Boot', 'MySQL', 'Git', 'Docker'],
-        avatar: 'https://via.placeholder.com/60x60/4ade80/ffffff?text=陳',
-        stats: {
-            portfolios: 6,
-            views: 432,
-            likes: 28
-        },
-        matchScore: 75
-    }
-];
+// 從後端 API 載入學生資料
+let students = [];
+let currentPage = 1;
+let pageSize = 12;
+let hasNextPage = false;
 
 // 當前搜尋條件
 let currentSearch = {
     query: '',
+    category: '',
     department: '',
     grade: '',
     skills: [],
@@ -77,9 +24,11 @@ let searchHistory = ['JavaScript', 'React', 'Python', 'UI/UX', '前端開發'];
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', function() {
-    renderSearchResults();
+    injectRefreshRecommendationsButton();
+    loadFilterOptions();
     initEventListeners();
     loadSearchHistory();
+    performSearch(1);
 });
 
 // 初始化事件監聽器
@@ -92,45 +41,99 @@ function initEventListeners() {
     });
     
     // 篩選器變更
+    const categorySel = document.getElementById('categoryFilter');
+    if (categorySel) {
+        categorySel.addEventListener('change', function() {
+            currentSearch.category = this.value;
+            performSearch(1);
+        });
+    }
     document.getElementById('departmentFilter').addEventListener('change', function() {
         currentSearch.department = this.value;
-        applyFilters();
+        performSearch(1);
     });
     
     document.getElementById('gradeFilter').addEventListener('change', function() {
         currentSearch.grade = this.value;
-        applyFilters();
+        performSearch(1);
     });
     
-    document.getElementById('skillFilter').addEventListener('input', Utils.debounce(function() {
-        currentSearch.skills = this.value.split(',').map(s => s.trim()).filter(s => s);
-        applyFilters();
-    }, 300));
+    // 技能 Tag 輸入
+    const tagInput = document.getElementById('skillTagInput');
+    if (tagInput) {
+        tagInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const val = this.value.trim().replace(/^,|,$/g, '');
+                if (val && !currentSearch.skills.includes(val)) {
+                    currentSearch.skills.push(val);
+                    renderSkillTags();
+                    performSearch(1);
+                }
+                this.value = '';
+            } else if (e.key === 'Backspace' && this.value === '') {
+                // 刪除最後一個 tag
+                currentSearch.skills.pop();
+                renderSkillTags();
+                performSearch(1);
+            }
+        });
+    }
     
     document.getElementById('matchFilter').addEventListener('change', function() {
         currentSearch.minMatch = parseInt(this.value);
-        applyFilters();
+        performSearch(1);
     });
 }
 
 // 執行搜尋
-function performSearch() {
+async function performSearch(page = 1) {
+    currentPage = page;
     const query = document.getElementById('searchInput').value.trim();
-    
-    if (!query) {
-        Utils.showNotification('請輸入搜尋關鍵字', 'warning');
-        return;
-    }
-    
     currentSearch.query = query;
-    
-    // 添加到搜尋歷史
-    addToSearchHistory(query);
-    
-    // 執行篩選
-    applyFilters();
-    
-    Utils.showNotification(`找到 ${getFilteredStudents().length} 個符合條件的人才`, 'success');
+
+    // 添加到搜尋歷史（僅在有字時）
+    if (query) addToSearchHistory(query);
+
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+
+        const params = new URLSearchParams({
+            q: currentSearch.query || '',
+            skills: currentSearch.skills.join(',') || '',
+            category: currentSearch.category || '',
+            department: currentSearch.department || '',
+            grade: currentSearch.grade || '',
+            minMatch: String(currentSearch.minMatch || 0),
+            page: String(currentPage),
+            limit: String(pageSize)
+        });
+
+        const res = await svc.request(`enterprise/search.php?${params.toString()}`);
+        const list = res?.data?.students || res?.students || [];
+
+        // 後端返回已含 matchScore / stats；標準化欄位
+        students = (Array.isArray(list) ? list : []).map(s => ({
+            id: s.id,
+            name: s.name,
+            department: s.department || '',
+            grade: s.grade || '',
+            skills: Array.isArray(s.skills) ? s.skills : [],
+            avatar: s.avatar || 'https://via.placeholder.com/60x60/9CA3AF/ffffff?text=?',
+            stats: s.stats || { portfolios: 0, views: 0, likes: 0 },
+            matchScore: typeof s.matchScore === 'number' ? s.matchScore : 0
+        }));
+
+        hasNextPage = students.length >= pageSize; // 粗略判斷是否還有下一頁
+
+        renderSearchResults(students);
+        updateResultsCount(students.length);
+        renderPagination();
+    } catch (err) {
+        console.error('搜尋失敗:', err);
+        Utils.showNotification(err.message || '搜尋失敗', 'error');
+    }
 }
 
 // 設定搜尋關鍵字
@@ -138,7 +141,7 @@ function setSearchTerm(term) {
     document.getElementById('searchInput').value = term;
     currentSearch.query = term;
     addToSearchHistory(term);
-    applyFilters();
+    performSearch(1);
 }
 
 // 添加到搜尋歷史
@@ -159,90 +162,12 @@ function loadSearchHistory() {
 }
 
 // 應用篩選器
-function applyFilters() {
-    let filteredStudents = students;
-    
-    // 關鍵字搜尋
-    if (currentSearch.query) {
-        const query = currentSearch.query.toLowerCase();
-        filteredStudents = filteredStudents.filter(student => 
-            student.name.toLowerCase().includes(query) ||
-            student.department.toLowerCase().includes(query) ||
-            student.skills.some(skill => skill.toLowerCase().includes(query))
-        );
-    }
-    
-    // 科系篩選
-    if (currentSearch.department) {
-        filteredStudents = filteredStudents.filter(student => 
-            student.department === currentSearch.department
-        );
-    }
-    
-    // 年級篩選
-    if (currentSearch.grade) {
-        filteredStudents = filteredStudents.filter(student => 
-            student.grade === currentSearch.grade
-        );
-    }
-    
-    // 技能篩選
-    if (currentSearch.skills.length > 0) {
-        filteredStudents = filteredStudents.filter(student => 
-            currentSearch.skills.some(skill => 
-                student.skills.some(studentSkill => 
-                    studentSkill.toLowerCase().includes(skill.toLowerCase())
-                )
-            )
-        );
-    }
-    
-    // 計算匹配度
-    filteredStudents = filteredStudents.map(student => ({
-        ...student,
-        matchScore: calculateMatchScore(student)
-    }));
-    
-    // 匹配度篩選
-    if (currentSearch.minMatch > 0) {
-        filteredStudents = filteredStudents.filter(student => 
-            student.matchScore >= currentSearch.minMatch
-        );
-    }
-    
-    // 按匹配度排序
-    filteredStudents.sort((a, b) => b.matchScore - a.matchScore);
-    
-    renderSearchResults(filteredStudents);
-    updateResultsCount(filteredStudents.length);
-}
+// 後端已處理篩選與匹配度，此函數改為觸發伺服器端搜尋
+function applyFilters() { performSearch(1); }
 
 // 計算匹配度
-function calculateMatchScore(student) {
-    let score = 0;
-    const totalSkills = student.skills.length;
-    
-    // 基礎分數
-    score += 30;
-    
-    // 技能匹配加分
-    if (currentSearch.skills.length > 0) {
-        const matchedSkills = currentSearch.skills.filter(searchSkill => 
-            student.skills.some(studentSkill => 
-                studentSkill.toLowerCase().includes(searchSkill.toLowerCase())
-            )
-        );
-        score += (matchedSkills.length / currentSearch.skills.length) * 40;
-    }
-    
-    // 作品數量加分
-    score += Math.min(student.stats.portfolios * 2, 20);
-    
-    // 瀏覽次數加分
-    score += Math.min(student.stats.views / 100, 10);
-    
-    return Math.round(score);
-}
+// 匹配度已由後端提供
+function calculateMatchScore(student) { return student.matchScore || 0; }
 
 // 渲染搜尋結果
 function renderSearchResults(filteredStudents = null) {
@@ -293,6 +218,35 @@ function renderSearchResults(filteredStudents = null) {
     `).join('');
 }
 
+// 分頁渲染（上一頁 / 下一頁）
+function renderPagination() {
+    let bar = document.getElementById('paginationBar');
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'paginationBar';
+        bar.style.display = 'flex';
+        bar.style.justifyContent = 'center';
+        bar.style.gap = '12px';
+        bar.style.margin = '16px 0 24px';
+        const container = document.querySelector('.container') || document.body;
+        container.appendChild(bar);
+    }
+    const prevDisabled = currentPage <= 1;
+    const nextDisabled = !hasNextPage;
+    bar.innerHTML = `
+        <button class="btn btn-outline" ${prevDisabled ? 'disabled' : ''} onclick="goPrevPage()"><i class="fas fa-chevron-left"></i> 上一頁</button>
+        <span style="align-self:center">第 ${currentPage} 頁</span>
+        <button class="btn btn-outline" ${nextDisabled ? 'disabled' : ''} onclick="goNextPage()">下一頁 <i class="fas fa-chevron-right"></i></button>
+    `;
+}
+
+function goPrevPage() {
+    if (currentPage > 1) performSearch(currentPage - 1);
+}
+function goNextPage() {
+    if (hasNextPage) performSearch(currentPage + 1);
+}
+
 // 更新結果數量
 function updateResultsCount(count) {
     const title = document.querySelector('.search-title');
@@ -336,15 +290,14 @@ function clearSearch() {
         minMatch: 0
     };
     
-    renderSearchResults();
-    updateResultsCount(students.length);
+    performSearch(1);
     Utils.showNotification('已清除所有搜尋條件', 'info');
 }
 
 // 匯出搜尋結果
 function exportResults() {
     try {
-        const filteredStudents = getFilteredStudents();
+        const filteredStudents = students; // 目前列表即為伺服器端篩選結果
         const data = {
             exportDate: new Date().toISOString(),
             searchCriteria: currentSearch,
@@ -377,53 +330,7 @@ function exportResults() {
 }
 
 // 取得篩選後的學生
-function getFilteredStudents() {
-    let filtered = students;
-    
-    if (currentSearch.query) {
-        const query = currentSearch.query.toLowerCase();
-        filtered = filtered.filter(student => 
-            student.name.toLowerCase().includes(query) ||
-            student.department.toLowerCase().includes(query) ||
-            student.skills.some(skill => skill.toLowerCase().includes(query))
-        );
-    }
-    
-    if (currentSearch.department) {
-        filtered = filtered.filter(student => 
-            student.department === currentSearch.department
-        );
-    }
-    
-    if (currentSearch.grade) {
-        filtered = filtered.filter(student => 
-            student.grade === currentSearch.grade
-        );
-    }
-    
-    if (currentSearch.skills.length > 0) {
-        filtered = filtered.filter(student => 
-            currentSearch.skills.some(skill => 
-                student.skills.some(studentSkill => 
-                    studentSkill.toLowerCase().includes(skill.toLowerCase())
-                )
-            )
-        );
-    }
-    
-    filtered = filtered.map(student => ({
-        ...student,
-        matchScore: calculateMatchScore(student)
-    }));
-    
-    if (currentSearch.minMatch > 0) {
-        filtered = filtered.filter(student => 
-            student.matchScore >= currentSearch.minMatch
-        );
-    }
-    
-    return filtered.sort((a, b) => b.matchScore - a.matchScore);
-}
+function getFilteredStudents() { return students; }
 
 // 全域函數，供 HTML 直接調用
 window.performSearch = performSearch;
@@ -432,3 +339,111 @@ window.clearSearch = clearSearch;
 window.exportResults = exportResults;
 window.viewStudentProfile = viewStudentProfile;
 window.contactStudent = contactStudent; 
+
+// 渲染技能 Tag 清單與移除功能
+function renderSkillTags() {
+    const list = document.getElementById('skillTags');
+    if (!list) return;
+    const tags = currentSearch.skills || [];
+    list.innerHTML = tags.map((t, idx) => `
+        <span class="tag-item" data-idx="${idx}">
+            <span class="tag-text">${t}</span>
+            <button type="button" class="tag-remove" aria-label="移除" onclick="removeSkillTag(${idx})">×</button>
+        </span>
+    `).join('');
+}
+
+function removeSkillTag(index) {
+    if (index >= 0 && index < currentSearch.skills.length) {
+        currentSearch.skills.splice(index, 1);
+        renderSkillTags();
+        performSearch(1);
+    }
+}
+
+window.removeSkillTag = removeSkillTag;
+
+// 刷新推薦：加入按鈕並呼叫後端 refresh
+function injectRefreshRecommendationsButton() {
+    const actions = document.querySelector('.search-actions');
+    if (!actions) return;
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-outline';
+    btn.innerHTML = '<i class="fas fa-rotate"></i> 刷新推薦';
+    btn.onclick = refreshRecommendations;
+    actions.insertBefore(btn, actions.firstChild);
+}
+
+async function refreshRecommendations() {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) throw new Error('API 服務未就緒');
+        await svc.request('enterprise/recommendations.php?action=refresh');
+        Utils.showNotification('推薦已刷新', 'success');
+    } catch (e) {
+        console.error(e);
+        Utils.showNotification('刷新推薦失敗', 'error');
+    }
+}
+
+// 動態載入篩選選單與熱門搜尋（與 dashboard 共用 meta 端點）
+async function loadFilterOptions() {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) return;
+        const res = await svc.request('enterprise/meta.php?action=search_filters');
+        const data = res?.data || res || {};
+        const skills = Array.isArray(data.skills) ? data.skills : [];
+        const departments = Array.isArray(data.departments) ? data.departments : [];
+        const categories = Array.isArray(data.categories) ? data.categories : [];
+        const grades = Array.isArray(data.grades) ? data.grades : [];
+
+        // 部門/學群
+        const deptSel = document.getElementById('departmentFilter');
+        if (deptSel && departments.length) {
+            const cur = deptSel.value;
+            deptSel.innerHTML = '<option value="">全部學群/科系</option>' + departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            if (cur) deptSel.value = cur;
+        }
+
+        // 年級
+        const gradeSel = document.getElementById('gradeFilter');
+        if (gradeSel && grades.length) {
+            const cur = gradeSel.value;
+            gradeSel.innerHTML = '<option value="">全部年級</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+            if (cur) gradeSel.value = cur;
+        }
+
+        // 學群
+        const catSel = document.getElementById('categoryFilter');
+        if (catSel && categories.length) {
+            const cur = catSel.value;
+            catSel.innerHTML = '<option value="">全部學群</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+            if (cur) catSel.value = cur;
+        }
+
+        // 熱門搜尋標籤（技能）
+        const suggWrap = document.querySelector('.suggestion-tags');
+        if (suggWrap) {
+            suggWrap.innerHTML = (skills || []).slice(0, 12).map(s => {
+                const safe = String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                return `<span class="suggestion-tag" onclick="addSkillTag(\"${safe}\")">${safe}</span>`;
+            }).join('');
+        }
+    } catch (e) {
+        console.warn('載入搜尋篩選元資料失敗', e);
+    }
+}
+
+// 將熱門技能加入為 Tag 並觸發搜尋
+function addSkillTag(name) {
+    const val = String(name || '').trim();
+    if (!val) return;
+    if (!currentSearch.skills.includes(val)) {
+        currentSearch.skills.push(val);
+        renderSkillTags();
+        performSearch(1);
+    }
+}
+
+window.addSkillTag = addSkillTag;

@@ -1,6 +1,5 @@
 /**
  * Portfolio+ 統一 API 服務
- * 根據配置自動切換假資料和真實API
  */
 
 // 避免重複宣告
@@ -9,7 +8,6 @@ if (typeof window.ApiService === 'undefined') {
     constructor() {
         // 延遲初始化，等待 config 函數可用
         this.initialized = false;
-        this.mockDelay = 500; // 預設值
         this.cache = new Map(); // API緩存
         this.pendingRequests = new Map(); // 去重機制
         this.cacheExpiry = 5 * 60 * 1000; // 5分鐘緩存過期
@@ -23,7 +21,6 @@ if (typeof window.ApiService === 'undefined') {
     initConfig() {
         try {
             if (typeof getConfig === 'function' && typeof getApiBaseUrl === 'function') {
-                this.mockDelay = getConfig('MOCK_API_DELAY') || 500;
                 this.initialized = true;
                 if (typeof debugLog === 'function') {
                     debugLog('API 服務配置已初始化');
@@ -46,16 +43,6 @@ if (typeof window.ApiService === 'undefined') {
             return getApiBaseUrl();
         }
         return 'http://localhost:8000/api'; // 預設值
-    }
-
-    /**
-     * 動態取得是否使用假資料
-     */
-    get useMockData() {
-        if (typeof isUsingMockData === 'function') {
-            return isUsingMockData();
-        }
-        return false; // 預設值
     }
 
     /**
@@ -265,14 +252,6 @@ if (typeof window.ApiService === 'undefined') {
         }
 
         try {
-            // 假資料模式
-            if (this.useMockData) {
-                if (typeof mockApiDelay === 'function') {
-                    await mockApiDelay();
-                }
-                return this.handleMockResponse(endpoint, options);
-            }
-
             // 逾時控制（預設 15 秒，可由 options.timeout 覆蓋）
             const controller = new AbortController();
             const timeoutMs = typeof options.timeout === 'number' ? options.timeout : 15000;
@@ -289,7 +268,7 @@ if (typeof window.ApiService === 'undefined') {
                 ...options.headers
             };
 
-            const response = await fetch(url, {
+            const response = await fetch(this.getApiUrl(endpoint), {
                 headers,
                 signal: controller.signal,
                 ...options
@@ -342,297 +321,7 @@ if (typeof window.ApiService === 'undefined') {
         }
     }
 
-    /**
-     * 處理假資料回應
-     */
-    handleMockResponse(endpoint, options) {
-        const method = options.method || 'GET';
-        const body = options.body ? JSON.parse(options.body) : null;
 
-        if (typeof debugLog === 'function') {
-            debugLog(`處理假資料回應: ${method} ${endpoint}`);
-        }
-
-        // 根據端點和方法返回對應的假資料
-        switch (endpoint) {
-            // 管理員端相關（假資料準備）
-            case 'admin/dashboard':
-                return {
-                    status: 200,
-                    data: {
-                        stats: {
-                            totalUsers: 1234,
-                            totalStudents: 890,
-                            totalEnterprises: 156,
-                            totalPortfolios: 2345,
-                            totalJobs: 89,
-                            totalApplications: 456,
-                            thisMonthUsers: 123,
-                            thisMonthPortfolios: 234,
-                            thisMonthJobs: 12,
-                            thisMonthApplications: 67
-                        },
-                        recentActivities: [
-                            { id: 1, type: 'user', text: '新學生註冊：張小明 (資訊管理學系)', time: '10 分鐘前', status: 'pending' },
-                            { id: 2, type: 'enterprise', text: '新企業註冊：台灣微軟股份有限公司', time: '30 分鐘前', status: 'approved' }
-                        ],
-                        pendingReviews: [
-                            { id: 1, type: 'user', title: '學生註冊審核', count: 5, description: '等待審核的學生註冊申請' },
-                            { id: 2, type: 'enterprise', title: '企業註冊審核', count: 2, description: '等待審核的企業註冊申請' }
-                        ],
-                        systemHealth: { status: 'healthy', uptime: '99.9%', responseTime: '120ms', activeUsers: 234, serverLoad: '45%' },
-                        topUsers: [
-                            { id: 1, name: '張小明', type: 'student', department: '資訊管理學系', portfolios: 8, views: 1234, likes: 89 },
-                            { id: 2, name: '台灣微軟', type: 'enterprise', jobs: 5, applications: 23, views: 567 }
-                        ],
-                        recentReports: [
-                            { id: 1, type: 'inappropriate', reporter: '張小明', reported: '李大明', reason: '不當內容', status: 'pending', time: '1 小時前' }
-                        ]
-                    }
-                };
-
-            case 'admin/reviews':
-                return {
-                    status: 200,
-                    data: {
-                        portfolios: [
-                            {
-                                id: 1,
-                                title: '響應式網站設計',
-                                author: '張小明',
-                                type: 'web',
-                                status: 'pending',
-                                submitted_at: '2024-01-20 14:30',
-                                description: '使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。',
-                                skills: ['HTML5', 'CSS3', 'JavaScript', '響應式'],
-                                image: 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design'
-                            }
-                        ],
-                        jobs: [
-                            {
-                                id: 1,
-                                title: '前端開發實習生',
-                                enterprise: '台灣微軟',
-                                type: 'intern',
-                                status: 'pending',
-                                submitted_at: '2024-01-20 10:45',
-                                description: '尋找對前端開發有熱情的實習生',
-                                location: '台北市',
-                                salary: '月薪 30,000-35,000',
-                                requirements: ['JavaScript', 'React', 'HTML/CSS', 'Git']
-                            }
-                        ],
-                        users: [
-                            { id: 1, name: 'Google 台灣', type: 'enterprise', status: 'pending', submitted_at: '2024-01-20 09:30', description: '企業帳號申請', email: 'hr@google.com.tw', website: 'https://careers.google.com', company_type: '科技公司', company_size: '1000人以上' }
-                        ],
-                        reports: [
-                            { id: 1, type: 'inappropriate', reporter: '張小明', reported: '李大明', status: 'pending', submitted_at: '2024-01-20 16:20', reason: '作品描述包含不當用語', description: '違反平台規範', details: '使用不適合的語言' }
-                        ]
-                    }
-                };
-
-            case 'admin/reports':
-                return {
-                    status: 200,
-                    data: [
-                        { id: 1, type: 'inappropriate', reporter: '張小明', reported: '李大明', status: 'pending', submitted_at: '2024-01-20 16:20', reason: '不當用語', description: '違反平台規範', details: '使用不適合的語言', content_type: 'portfolio', content_id: 123 }
-                    ]
-                };
-
-            case 'admin/users':
-                return {
-                    status: 200,
-                    data: [
-                        { id: 1, name: '張小明', email: 'zhang@example.com', type: 'student', department: '資訊管理學系', status: 'active', stats: { portfolios: 8, views: 1234, likes: 89 }, registered_at: '2024-01-15', last_login: '2024-01-20 14:30' }
-                    ]
-                };
-
-            case 'admin/settings':
-                return { status: 200, data: { general: { siteName: 'Portfolio+', siteDescription: '學生作品展示與企業招募平台', adminEmail: 'admin@portfolio.com', supportEmail: 'support@portfolio.com', timezone: 'Asia/Taipei', language: 'zh-TW', maxFileSize: 10, sessionTimeout: 120 }, security: { minPasswordLength: 8, passwordExpiry: 90, requireComplexPassword: true, require2FA: false, maxLoginAttempts: 5, lockoutDuration: 30, enableIPWhitelist: false, allowedIPs: '' }, notifications: { smtpHost: 'smtp.gmail.com', smtpPort: 587, smtpEncryption: 'tls', smtpUsername: '', smtpPassword: '', enableEmailNotifications: true, notifyNewUsers: true, notifyNewPortfolios: true, notifyNewJobs: false, notifySystemErrors: true }, appearance: { primaryColor: '#667eea', accentColor: '#f093fb', themeMode: 'light', enableAnimations: true }, backup: { backupFrequency: 'weekly', enableAutoBackup: true, confirmRestore: true }, logs: { logLevel: 'info', logRetention: 30, enableLiveLogs: false } } };
-
-            case 'admin/reports/resolve':
-            case 'admin/reports/dismiss':
-            case 'admin/reports/reopen':
-            case 'admin/users/approve':
-            case 'admin/users/reject':
-            case 'admin/users/suspend':
-            case 'admin/users/resume':
-            case 'admin/users/bulk-activate':
-            case 'admin/users/bulk-deactivate':
-            case 'admin/users/bulk-delete':
-            case 'admin/portfolios/approve':
-            case 'admin/portfolios/reject':
-            case 'admin/jobs/approve':
-            case 'admin/jobs/reject':
-            case 'admin/settings/update':
-                return { status: 200, message: 'OK', data: null };
-            // 使用者相關
-            case 'users':
-            case 'users/':
-                return this.getMockUsers();
-            
-            case 'users/1':
-            case 'users/2':
-            case 'users/3':
-                const userId1 = parseInt(endpoint.split('/')[1]);
-                return MockData.getUserById(userId1);
-            
-            case 'users/students':
-                return MockData.getUsersByRole('student');
-            
-            case 'users/enterprises':
-                return MockData.getUsersByRole('enterprise');
-            
-            // 作品相關
-            case 'portfolios':
-            case 'portfolios/':
-                return this.getMockPortfolios();
-            
-            case 'portfolios/1':
-            case 'portfolios/2':
-            case 'portfolios/3':
-            case 'portfolios/4':
-                const portfolioId1 = parseInt(endpoint.split('/')[1]);
-                return MockData.getPortfolioById(portfolioId1);
-            
-            case 'portfolios/author/1':
-            case 'portfolios/author/2':
-            case 'portfolios/author/3':
-                const authorId = parseInt(endpoint.split('/')[2]);
-                return MockData.getPortfoliosByAuthor(authorId);
-            
-            // 統計相關
-            case 'stats/platform':
-                return MockData.stats.platform;
-            
-            case 'stats/student':
-                return MockData.stats.student;
-            
-            case 'stats/enterprise':
-                return MockData.stats.enterprise;
-            
-            case 'stats/admin':
-                return MockData.stats.admin;
-            
-            // 通知相關
-            case 'notifications':
-            case 'notifications/':
-                return this.getMockNotifications();
-            
-            case 'notifications/user/1':
-                const userId2 = parseInt(endpoint.split('/')[2]);
-                return MockData.getNotificationsByUser(userId2);
-            
-            // 活動相關
-            case 'activities':
-            case 'activities/':
-                return this.getMockActivities();
-            
-            case 'activities/user/1':
-                const userId3 = parseInt(endpoint.split('/')[2]);
-                return MockData.getActivitiesByUser(userId3);
-            
-            // 搜尋相關
-            case 'search/portfolios':
-                const searchParams1 = new URLSearchParams(window.location.search);
-                const keyword1 = searchParams1.get('q') || '';
-                const filters1 = {};
-                return MockData.searchPortfolios(keyword1, filters1);
-            
-            case 'search/users':
-                const searchParams2 = new URLSearchParams(window.location.search);
-                const keyword2 = searchParams2.get('q') || '';
-                const filters2 = {};
-                return MockData.searchUsers(keyword2, filters2);
-            
-            // 分析相關
-            case 'analytics/trends':
-                return MockData.analytics.trends;
-            
-            case 'analytics/skills':
-                return MockData.analytics.skills;
-            
-            case 'analytics/departments':
-                return MockData.analytics.departments;
-            
-            // 職缺相關
-            case 'jobs':
-            case 'jobs/':
-                return this.getMockJobs();
-            
-            // 評論相關
-            case 'comments/portfolio/1':
-                const portfolioId2 = parseInt(endpoint.split('/')[2]);
-                return MockData.getCommentsByPortfolio(portfolioId2);
-            
-            // 徽章相關
-            case 'badges/user/1':
-                const userId4 = parseInt(endpoint.split('/')[2]);
-                return MockData.getBadgesByUser(userId4);
-            
-            // 預設回應
-            default:
-                return {
-                    success: true,
-                    message: '假資料回應',
-                    data: null
-                };
-        }
-    }
-
-    /**
-     * 取得假資料使用者
-     */
-    getMockUsers() {
-        return {
-            success: true,
-            data: {
-                students: MockData.users.students,
-                enterprises: MockData.users.enterprises,
-                admins: MockData.users.admins
-            }
-        };
-    }
-
-    /**
-     * 取得假資料作品
-     */
-    getMockPortfolios() {
-        return {
-            success: true,
-            data: MockData.portfolios
-        };
-    }
-
-    /**
-     * 取得假資料通知
-     */
-    getMockNotifications() {
-        return {
-            success: true,
-            data: MockData.notifications
-        };
-    }
-
-    /**
-     * 取得假資料活動
-     */
-    getMockActivities() {
-        return {
-            success: true,
-            data: MockData.activities
-        };
-    }
-
-    /**
-     * 取得假資料職缺
-     */
-    getMockJobs() {
-        return {
-            success: true,
-            data: MockData.jobs
-        };
-    }
 
     // ==================== 具體 API 方法 ====================
 

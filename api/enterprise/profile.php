@@ -24,12 +24,24 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
         
     case 'POST':
+        // 嘗試解析 JSON；若為 multipart/form-data，$input 可能為 null
         $input = json_decode(file_get_contents('php://input'), true);
-        
+
+        // 兼容 multipart/form-data 上傳：表單欄位 action 由 $_POST 提供
+        $action = null;
         if (isset($input['action'])) {
-            switch ($input['action']) {
+            $action = $input['action'];
+        } elseif (isset($_POST['action'])) {
+            $action = $_POST['action'];
+        } elseif (!empty($_FILES)) {
+            // 沒有 action 但有檔案上傳，視為上傳 Logo
+            $action = 'upload_logo';
+        }
+
+        if ($action) {
+            switch ($action) {
                 case 'update':
-                    updateEnterpriseProfile($input);
+                    updateEnterpriseProfile(is_array($input) ? $input : $_POST);
                     break;
                 case 'upload_logo':
                     uploadLogo();

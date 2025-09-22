@@ -197,8 +197,7 @@ function getPortfolioDetail() {
         SELECT 
             p.*, c.name as category_name, c.slug as category_slug, c.color as category_color,
             sp.first_name, sp.last_name, sp.display_name, sp.avatar_url,
-            sp.major, sp.school, sp.grade, sp.skills, sp.bio, sp.github, sp.linkedin,
-            sp.website, sp.email as student_email,
+            sp.major, sp.school, sp.grade, sp.skills, sp.bio,
             u.username,
             CASE WHEN eb.id IS NOT NULL THEN 1 ELSE 0 END as is_bookmarked,
             eb.notes as bookmark_notes

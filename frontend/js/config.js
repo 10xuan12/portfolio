@@ -1,6 +1,6 @@
 /**
  * Portfolio+ 配置檔案
- * 用於控制應用程式的各種設定，包括假資料/真實API切換
+ * 用於控制應用程式的各種設定（真實 API）
  */
 
 // 避免重複宣告
@@ -8,8 +8,8 @@ if (typeof window.APP_CONFIG === 'undefined') {
     window.APP_CONFIG = {
     // ==================== 核心設定 ====================
     
-    // 是否使用假資料 (true: 使用假資料, false: 使用真實API)
-    USE_MOCK_DATA: true,
+    // 是否使用假資料（不使用）
+    USE_MOCK_DATA: false,
     
     // API 基礎 URL (當 USE_MOCK_DATA 為 false 時使用)
     API_BASE_URL: '/portfolio/api',
@@ -42,8 +42,8 @@ if (typeof window.APP_CONFIG === 'undefined') {
     // 是否啟用詳細日誌
     VERBOSE_LOGGING: false,
     
-    // 模擬 API 延遲 (毫秒)
-    MOCK_API_DELAY: 500,
+    // 模擬 API 延遲（不使用）
+    MOCK_API_DELAY: 0,
     
     // ==================== UI 設定 ====================
     
@@ -107,9 +107,7 @@ if (typeof window.APP_CONFIG === 'undefined') {
 /**
  * 檢查是否使用假資料
  */
-function isUsingMockData() {
-    return APP_CONFIG.USE_MOCK_DATA;
-}
+function isUsingMockData() { return false; }
 
 /**
  * 取得 API 基礎 URL
@@ -130,11 +128,7 @@ function getApiUrl(endpoint) {
 /**
  * 模擬 API 延遲
  */
-async function mockApiDelay() {
-    if (isUsingMockData() && APP_CONFIG.MOCK_API_DELAY > 0) {
-        await new Promise(resolve => setTimeout(resolve, APP_CONFIG.MOCK_API_DELAY));
-    }
-}
+async function mockApiDelay() { /* no-op: mock disabled */ }
 
 /**
  * 記錄除錯訊息
@@ -218,18 +212,7 @@ function setConfig(key, value) {
 /**
  * 切換假資料模式
  */
-function toggleMockData() {
-    const currentMode = isUsingMockData();
-    setConfig('USE_MOCK_DATA', !currentMode);
-    
-    const modeText = isUsingMockData() ? '假資料' : '真實API';
-    console.log(`已切換到 ${modeText} 模式`);
-    
-    // 重新載入頁面以應用新設定
-    if (confirm(`已切換到 ${modeText} 模式，需要重新載入頁面嗎？`)) {
-        window.location.reload();
-    }
-}
+function toggleMockData() { console.warn('Mock 模式已停用，無法切換'); }
 
 /**
  * 初始化配置
@@ -260,7 +243,7 @@ function initializeConfig() {
     
     // 強制確保使用真實API
     APP_CONFIG.USE_MOCK_DATA = false;
-    // 強制覆蓋 API Base URL 為本機 PHP 端點
+    // 保持 API Base URL（可在部署時於此調整）
     APP_CONFIG.API_BASE_URL = '/portfolio/api';
     
     // 強制覆蓋 localStorage 中的設定
