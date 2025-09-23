@@ -122,16 +122,31 @@ elseif ($pathParts[0] === 'enterprise') {
     if (isset($pathParts[1])) {
         switch ($pathParts[1]) {
             case 'auth':
-                // require_once 'enterprise/auth.php';
-                sendError('企業 API 尚未實作', 501);
+                require_once 'enterprise/auth.php';
                 break;
             case 'profile':
-                // require_once 'enterprise/profile.php';
-                sendError('企業 API 尚未實作', 501);
+                require_once 'enterprise/profile.php';
                 break;
             case 'jobs':
-                // require_once 'enterprise/jobs.php';
-                sendError('企業 API 尚未實作', 501);
+                require_once 'enterprise/jobs.php';
+                break;
+            case 'dashboard':
+                require_once 'enterprise/dashboard.php';
+                break;
+            case 'meta':
+                require_once 'enterprise/meta.php';
+                break;
+            case 'search':
+                require_once 'enterprise/search.php';
+                break;
+            case 'recommendations':
+                require_once 'enterprise/recommendations.php';
+                break;
+            case 'notifications':
+                require_once 'enterprise/notifications.php';
+                break;
+            case 'portfolios':
+                require_once 'enterprise/portfolios.php';
                 break;
             default:
                 sendError('無效的企業 API 端點', 404);

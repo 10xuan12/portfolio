@@ -719,11 +719,27 @@
                 } else {
                     console.error('找不到表單:', selectedRole + 'Form');
                 }
-                
-                // 重新驗證表單
+
+                // 根據顯示狀態啟用/停用欄位，並清除隱藏表單的驗證狀態
+                updateFormEnabledStates();
+
+                // 重新驗證當前顯示表單
                 validateCurrentForm();
             });
         });
+
+        // 啟用顯示中的表單欄位，停用其它表單欄位，並清除隱藏欄位的自訂驗證
+        function updateFormEnabledStates() {
+            formToggles.forEach(form => {
+                const isActive = form.classList.contains('show');
+                const fields = form.querySelectorAll('input, select, textarea');
+                fields.forEach(field => {
+                    field.disabled = !isActive;
+                    // 清除任何既有的自訂驗證，避免「not focusable」
+                    field.setCustomValidity('');
+                });
+            });
+        }
         
         // 驗證當前顯示的表單
         function validateCurrentForm() {
@@ -792,6 +808,8 @@
         // 頁面載入時初始化驗證
         document.addEventListener('DOMContentLoaded', function() {
             console.log('頁面載入完成，初始角色:', selectedRole);
+            // 初始狀態：確保隱藏表單欄位停用，避免校驗干擾
+            updateFormEnabledStates();
             validateCurrentForm();
         });
 
