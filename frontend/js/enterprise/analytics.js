@@ -77,10 +77,16 @@ function updateStats(stats) {
     // 更新統計數字
     const statNumbers = document.querySelectorAll('.stat-number');
     if (statNumbers.length >= 4) {
-        statNumbers[0].textContent = MockData.formatNumber(stats.total_views);
-        statNumbers[1].textContent = MockData.formatNumber(stats.total_favorites);
-        statNumbers[2].textContent = MockData.formatNumber(stats.total_contacts);
-        statNumbers[3].textContent = MockData.formatNumber(stats.total_jobs);
+        const fmt = (n) => {
+            const num = Number(n || 0);
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return String(num);
+        };
+        statNumbers[0].textContent = fmt(stats.total_views);
+        statNumbers[1].textContent = fmt(stats.total_favorites);
+        statNumbers[2].textContent = fmt(stats.total_contacts);
+        statNumbers[3].textContent = fmt(stats.total_jobs);
     }
 }
 
@@ -184,6 +190,19 @@ function setupCharts(trends) {
 async function updateTrendChart(period) {
     const days = parseInt(period, 10) || 30;
     await initializeAnalytics(days);
+}
+
+// 確保 Chart.js 存在，若無則嘗試載入 CDN
+async function ensureChartJs() {
+    if (typeof Chart !== 'undefined') return;
+    await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        s.async = true;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+    });
 }
 
 /**

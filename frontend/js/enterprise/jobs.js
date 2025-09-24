@@ -22,8 +22,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 // 從後端載入職缺
 async function loadJobs(page = 1) {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        const svc = await ensureApiServiceReady();
         const params = new URLSearchParams({ action: 'list', page: String(page), limit: '10' });
         const res = await svc.request(`enterprise/jobs.php?${params.toString()}`);
         const data = res?.data || res || {};
@@ -214,8 +213,7 @@ async function handleJobSubmit(e) {
 
 // 創建職缺
 async function createJob(jobData) {
-    const svc = window.apiService || window.initializeApiService?.();
-    if (!svc) throw new Error('API 服務未就緒');
+    const svc = await ensureApiServiceReady();
     const payload = {
         action: 'create',
         title: jobData.title,
@@ -239,8 +237,7 @@ async function createJob(jobData) {
 
 // 更新職缺
 async function updateJob(jobId, jobData) {
-    const svc = window.apiService || window.initializeApiService?.();
-    if (!svc) throw new Error('API 服務未就緒');
+    const svc = await ensureApiServiceReady();
     const payload = {
         action: 'update',
         id: jobId,
@@ -270,8 +267,7 @@ async function toggleJobStatus(jobId) {
     const newStatus = job.status === 'active' ? 'paused' : 'active';
     
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        const svc = await ensureApiServiceReady();
         const res = await svc.request('enterprise/jobs.php', {
             method: 'POST',
             body: JSON.stringify({ action: 'toggle_status', id: jobId, status: newStatus })
@@ -369,8 +365,7 @@ function exportJobs() {
 function deleteJob(jobId) {
     if (confirm('確定要刪除這個職缺嗎？此操作無法復原。')) {
         try {
-            const svc = window.apiService || window.initializeApiService?.();
-            if (!svc) throw new Error('API 服務未就緒');
+            ensureApiServiceReady().then((svc) => {
             svc.request('enterprise/jobs.php', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'delete', id: jobId })
@@ -383,7 +378,10 @@ function deleteJob(jobId) {
                 Utils.showNotification('刪除失敗，請稍後再試', 'error');
                 console.error('刪除職缺錯誤:', e);
             });
-            
+            }).catch((e) => {
+                Utils.showNotification('API 服務未就緒', 'error');
+                console.error(e);
+            });
         } catch (error) {
             Utils.showNotification('刪除失敗，請稍後再試', 'error');
             console.error('刪除職缺錯誤:', error);
@@ -423,3 +421,19 @@ window.removeRequirement = removeRequirement;
 window.exportJobs = exportJobs;
 window.deleteJob = deleteJob;
 window.duplicateJob = duplicateJob; 
+
+// 確保 API 服務就緒（帶重試）
+async function ensureApiServiceReady(maxRetries = 10, delayMs = 100) {
+    if (window.apiService) return window.apiService;
+    if (typeof window.initializeApiService === 'function') {
+        try { window.initializeApiService(); } catch (_) {}
+    }
+    for (let i = 0; i < maxRetries; i++) {
+        if (window.apiService) return window.apiService;
+        await new Promise(r => setTimeout(r, delayMs));
+    }
+    if (!window.apiService && typeof window.ApiService === 'function') {
+        try { window.apiService = new window.ApiService(); return window.apiService; } catch (_) {}
+    }
+    throw new Error('API 服務未就緒');
+}

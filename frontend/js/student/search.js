@@ -7,7 +7,7 @@
 let searchResults = [];
 
 // 搜尋歷史
-let searchHistory = ['JavaScript', 'React', 'UI/UX', '響應式'];
+let searchHistory = [];
 
 // 當前搜尋條件
 let currentSearch = {
@@ -20,20 +20,14 @@ let currentSearch = {
 };
 
 // 搜尋建議
-const searchSuggestions = [
-    'JavaScript', 'React', 'Vue.js', 'Angular', 'Node.js',
-    'Python', 'Java', 'C++', 'PHP', 'MySQL',
-    'MongoDB', 'Firebase', 'AWS', 'Docker', 'Git',
-    'Figma', 'Adobe XD', 'Sketch', 'Photoshop', 'Illustrator',
-    'UI/UX', '響應式', '跨平台', 'PWA', 'API',
-    'REST', 'GraphQL', '微服務', '雲端', 'AI'
-];
+let searchSuggestions = [];
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initEventListeners();
     loadSearchHistory();
     loadCategoriesForSearch();
+    await loadHotKeywords();
     // 不自動執行搜尋，讓用戶主動搜尋
 });
 
@@ -396,20 +390,9 @@ function loadSearchHistory() {
         searchHistory = storedHistory;
     }
     
-    if (searchHistory.length > 0) {
-        historyContainer.innerHTML = `
-            <h4>搜尋歷史</h4>
-            <div class="history-list">
-                ${searchHistory.map(query => `
-                    <div class="history-item" onclick="searchFromHistory('${query}')">
-                        <i class="fas fa-history"></i>
-                        <span>${query}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    } else {
-        historyContainer.innerHTML = '';
+    const tagsWrap = document.getElementById('historyTags');
+    if (tagsWrap) {
+        tagsWrap.innerHTML = (searchHistory || []).slice(0, 10).map(q => `<span class="history-tag" onclick="searchFromHistory('${q.replace(/'/g, "&#39;")}')">${q}</span>`).join('');
     }
 }
 
@@ -430,6 +413,25 @@ function loadStoredSearchHistory() {
     } catch (error) {
         console.error('載入搜尋歷史失敗:', error);
         return [];
+    }
+}
+
+// 動態載入熱門關鍵字（用企業端 meta 的 skills 作為熱門）
+async function loadHotKeywords() {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        const res = await (svc?.request ? svc.request('enterprise/meta.php?action=search_filters') : fetch((window.getApiUrl ? getApiUrl('enterprise/meta.php?action=search_filters') : '/api/enterprise/meta.php?action=search_filters')).then(r => r.json()));
+        const data = res?.data || res || {};
+        const skills = Array.isArray(data.skills) ? data.skills.slice(0, 12) : [];
+        searchSuggestions = skills;
+        // 也同步到搜尋歷史區塊（作為預設熱門）
+        const tagsWrap = document.getElementById('historyTags');
+        if (tagsWrap && skills.length) {
+            tagsWrap.innerHTML = skills.map(s => `<span class="history-tag" onclick="searchFromHistory('${String(s).replace(/'/g, "&#39;")}')">${s}</span>`).join('');
+        }
+    } catch (e) {
+        // 保底：若失敗則保持空陣列，UI 不顯示/維持手動輸入
+        console.warn('載入熱門關鍵字失敗', e);
     }
 }
 

@@ -42,10 +42,6 @@
             <div class="search-header">
                 <h1 class="search-title">人才搜尋</h1>
                 <div class="search-actions">
-                    <button class="btn btn-outline" onclick="exportResults()">
-                        <i class="fas fa-download"></i>
-                        匯出結果
-                    </button>
                     <button class="btn btn-primary" onclick="clearSearch()">
                         <i class="fas fa-times"></i>
                         清除搜尋
@@ -71,12 +67,6 @@
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label for="categoryFilter">學群</label>
-                        <select id="categoryFilter">
-                            <option value="">全部學群</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
                         <label for="gradeFilter">年級</label>
                         <select id="gradeFilter">
                             <option value="">全部年級</option>
@@ -88,16 +78,6 @@
                             <div id="skillTags" class="tag-list"></div>
                             <input type="text" id="skillTagInput" placeholder="輸入技能後按 Enter 新增">
                         </div>
-                    </div>
-                    <div class="filter-group">
-                        <label for="matchFilter">最低匹配度</label>
-                        <select id="matchFilter">
-                            <option value="0">不限</option>
-                            <option value="50">50%</option>
-                            <option value="70">70%</option>
-                            <option value="80">80%</option>
-                            <option value="90">90%</option>
-                        </select>
                     </div>
                 </div>
                 
@@ -119,8 +99,10 @@
         </div>
     </main>
 
-    <script src="../js/app.js"></script>
-    <script src="../js/enterprise/search.js"></script>
+    <script src="../js/config.js?v=20250924" defer></script>
+    <script src="../js/api-service.js?v=20250924" defer></script>
+    <script src="../js/app.js?v=20250924" defer></script>
+    <script src="../js/enterprise/search.js?v=20250924" defer></script>
     <script>
     if (typeof goBack !== 'function') {
         function goBack() {

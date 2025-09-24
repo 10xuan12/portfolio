@@ -74,9 +74,11 @@ function getPortfolioList() {
     $types = '';
     
     if ($category) {
-        $where .= " AND c.slug = ?";
+        // 同時支援以 slug 或 name 查詢（前端可能傳名稱）
+        $where .= " AND (c.slug = ? OR c.name = ?)";
         $params[] = $category;
-        $types .= "s";
+        $params[] = $category;
+        $types .= "ss";
     }
     
     if ($department) {
@@ -123,7 +125,7 @@ function getPortfolioList() {
             c.name as category_name, c.slug as category_slug, c.color as category_color,
             sp.first_name, sp.last_name, sp.display_name, sp.avatar_url,
             sp.major, sp.school, sp.grade, sp.skills,
-            u.username,
+            u.username, u.id AS student_id,
             CASE WHEN eb.id IS NOT NULL THEN 1 ELSE 0 END as is_bookmarked
         FROM portfolios p
         LEFT JOIN categories c ON p.category_id = c.id
@@ -198,7 +200,7 @@ function getPortfolioDetail() {
             p.*, c.name as category_name, c.slug as category_slug, c.color as category_color,
             sp.first_name, sp.last_name, sp.display_name, sp.avatar_url,
             sp.major, sp.school, sp.grade, sp.skills, sp.bio,
-            u.username,
+            u.username, u.id AS student_id,
             CASE WHEN eb.id IS NOT NULL THEN 1 ELSE 0 END as is_bookmarked,
             eb.notes as bookmark_notes
         FROM portfolios p

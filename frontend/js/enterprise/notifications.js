@@ -37,15 +37,24 @@ async function loadNotifications(page = 1) {
         const res = await svc.request(`enterprise/notifications.php?${params.toString()}`);
         const data = res?.data || res || {};
         const list = Array.isArray(data.notifications) ? data.notifications : (Array.isArray(data) ? data : []);
-        notifications = list.map(n => ({
-            id: n.id,
-            type: n.type || 'system',
-            title: n.title || '',
-            message: n.message || '',
-            time: n.time_ago || n.created_at || '',
-            isRead: !!n.is_read,
-            actions: ['markAsRead']
-        }));
+        notifications = list.map(n => {
+            // 後端型別對應：job_application → application；enterprise → contact
+            let mappedType = n.type || 'system';
+            if (mappedType === 'job_application') mappedType = 'application';
+            else if (mappedType === 'enterprise') mappedType = 'contact';
+            // 其他如 like/comment 視為 system
+            else if (mappedType === 'like' || mappedType === 'comment') mappedType = 'system';
+
+            return {
+                id: n.id,
+                type: mappedType,
+                title: n.title || '',
+                message: n.message || '',
+                time: n.time_ago || n.created_at || '',
+                isRead: !!n.is_read,
+                actions: ['markAsRead']
+            };
+        });
         // 依通知陣列即時計算統計
         computeAndUpdateStatsFromNotifications();
     } catch (e) {

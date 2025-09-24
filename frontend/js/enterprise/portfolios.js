@@ -19,6 +19,7 @@ let likedPortfolios = new Set();
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', async function() {
+    await loadFilterOptions();
     await loadPortfolios();
     renderPortfolios();
     initEventListeners();
@@ -50,6 +51,41 @@ function initEventListeners() {
         currentFilters.sort = this.value;
         applyFilters();
     });
+
+    // 搜尋按鈕
+    const searchBtn = document.getElementById('searchButton');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            applyFilters();
+        });
+    }
+}
+
+// 動態載入篩選選單（學群/科系）
+async function loadFilterOptions() {
+    try {
+        const svc = await ensureApiServiceReady();
+        const res = await svc.request('enterprise/meta.php?action=search_filters');
+        const data = res?.data || res || {};
+        const categories = Array.isArray(data.categories) ? data.categories : [];
+        const departments = Array.isArray(data.departments) ? data.departments : [];
+
+        const catSel = document.getElementById('categoryFilter');
+        if (catSel) {
+            const cur = catSel.value;
+            catSel.innerHTML = '<option value="">全部分類</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+            if (cur) catSel.value = cur;
+        }
+
+        const deptSel = document.getElementById('departmentFilter');
+        if (deptSel) {
+            const cur = deptSel.value;
+            deptSel.innerHTML = '<option value="">全部科系</option>' + departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            if (cur) deptSel.value = cur;
+        }
+    } catch (e) {
+        console.warn('載入篩選選單失敗', e);
+    }
 }
 
 // 渲染作品列表
@@ -127,35 +163,16 @@ function getCategoryText(category) {
 }
 
 // 應用篩選器
-function applyFilters() {
-    let filteredPortfolios = portfolios;
-    
-    // 搜尋篩選
-    if (currentFilters.search) {
-        const searchTerm = currentFilters.search.toLowerCase();
-        filteredPortfolios = filteredPortfolios.filter(p => 
-            p.title.toLowerCase().includes(searchTerm) ||
-            p.description.toLowerCase().includes(searchTerm) ||
-            p.author.toLowerCase().includes(searchTerm) ||
-            p.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-        );
+async function applyFilters() {
+    try {
+        await loadPortfolios();
+        renderPortfolios();
+        updateResultsCount(portfolios.length);
+    } catch (e) {
+        console.error('套用篩選失敗', e);
+        renderPortfolios([]);
+        updateResultsCount(0);
     }
-    
-    // 分類篩選
-    if (currentFilters.category) {
-        filteredPortfolios = filteredPortfolios.filter(p => p.category === currentFilters.category);
-    }
-    
-    // 科系篩選
-    if (currentFilters.department) {
-        filteredPortfolios = filteredPortfolios.filter(p => p.department === currentFilters.department);
-    }
-    
-    // 排序
-    filteredPortfolios = sortPortfolios(filteredPortfolios, currentFilters.sort);
-    
-    renderPortfolios(filteredPortfolios);
-    updateResultsCount(filteredPortfolios.length);
 }
 
 // 排序作品
@@ -183,22 +200,22 @@ function updateResultsCount(count) {
 
 // 查看作品詳情
 function viewPortfolio(portfolioId) {
-    window.location.href = `portfolio-detail.html?id=${portfolioId}`;
+    window.location.href = `../student/portfolio-detail.html?id=${portfolioId}`;
 }
 
 // 聯絡學生
 function contactStudent(portfolioId) {
     const portfolio = portfolios.find(p => p.id === portfolioId);
     if (portfolio) {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) return Utils.showNotification('API 服務未就緒', 'error');
+        ensureApiServiceReady().then((svc) => {
         const msg = `您好，我們對您的作品「${portfolio.title}」很感興趣，方便進一步聯繫嗎？`;
         svc.request('enterprise/portfolios.php', {
             method: 'POST',
-            body: JSON.stringify({ action: 'contact', student_id: null, subject: `關於作品 ${portfolio.title}`, message: msg })
+            body: JSON.stringify({ action: 'contact', student_id: portfolio.student_id || portfolio.user_id || null, subject: `關於作品 ${portfolio.title}`, message: msg })
         }).then(() => {
             Utils.showNotification(`已發送聯絡訊息給 ${portfolio.author}`, 'success');
         }).catch(() => Utils.showNotification('聯絡失敗', 'error'));
+        }).catch(() => Utils.showNotification('API 服務未就緒', 'error'));
     }
 }
 
@@ -230,17 +247,23 @@ function loadLikedPortfolios() {
 // 從後端載入作品（企業端預設取最近瀏覽作品）
 async function loadPortfolios() {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
-        const res = await svc.request('enterprise/dashboard.php?action=recent_portfolios&limit=20');
+        const svc = await ensureApiServiceReady();
+        const params = new URLSearchParams({ action: 'list', page: '1', limit: '20' });
+        if (currentFilters.search) params.set('search', currentFilters.search);
+        if (currentFilters.category) params.set('category', currentFilters.category);
+        if (currentFilters.department) params.set('department', currentFilters.department);
+        if (currentFilters.sort) params.set('sort', currentFilters.sort);
+        const res = await svc.request(`enterprise/portfolios.php?${params.toString()}`);
         const list = res?.data || res || [];
-        portfolios = (Array.isArray(list) ? list : []).map(p => ({
+        const arr = Array.isArray(list.portfolios) ? list.portfolios : (Array.isArray(list) ? list : []);
+        portfolios = arr.map(p => ({
             id: p.id,
             title: p.title,
             author: p.student_name || p.display_name || '',
+            student_id: p.student_id || null,
             department: p.major || '',
             description: p.description || '',
-            category: p.category_slug || 'other',
+            category: p.category_slug || p.category || 'other',
             tags: p.tags || [],
             image: p.cover_image || p.thumbnail_url || '',
             views: p.view_count ?? 0,
@@ -356,3 +379,19 @@ window.likePortfolio = likePortfolio;
 window.refreshPortfolios = refreshPortfolios;
 window.exportPortfolios = exportPortfolios;
 window.clearFilters = clearFilters; 
+
+// 全域保險：確保 API 服務就緒
+async function ensureApiServiceReady(maxRetries = 10, delayMs = 100) {
+    if (window.apiService) return window.apiService;
+    if (typeof window.initializeApiService === 'function') {
+        try { window.initializeApiService(); } catch (_) {}
+    }
+    for (let i = 0; i < maxRetries; i++) {
+        if (window.apiService) return window.apiService;
+        await new Promise(r => setTimeout(r, delayMs));
+    }
+    if (!window.apiService && typeof window.ApiService === 'function') {
+        try { window.apiService = new window.ApiService(); return window.apiService; } catch (_) {}
+    }
+    throw new Error('API 服務未就緒');
+}

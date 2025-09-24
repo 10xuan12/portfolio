@@ -104,6 +104,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // 避免重複初始化
     if (window.__portfolioDetailInitialized) return;
     window.__portfolioDetailInitialized = true;
+    // 依登入角色設定評論頭像
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const avatarImg = document.getElementById('myAvatar');
+        if (avatarImg && user && user.id) {
+            let avatarUrl = '';
+            if (user.role === 'student') {
+                avatarUrl = user.avatar || user.avatar_url || '';
+            } else if (user.role === 'enterprise') {
+                avatarUrl = user.avatar || user.logo_url || '';
+            } else if (user.role === 'admin') {
+                avatarUrl = user.avatar || '';
+            }
+            if (avatarUrl) {
+                avatarImg.src = avatarUrl;
+            } else {
+                const initial = (user.displayName || user.username || user.email || '用').trim().charAt(0);
+                avatarImg.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initial)}`;
+            }
+        }
+    } catch (_) {}
     loadPortfolioDetail();
     initEventListeners();
 });

@@ -63,7 +63,29 @@ async function loadDashboardData() {
         const companyNameElement = document.getElementById('company-name');
         if (companyNameElement) {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            companyNameElement.textContent = user.company_name || '企業';
+            let displayName = user.company_name || '企業';
+            companyNameElement.textContent = displayName;
+            // 若本地沒有公司名稱，嘗試向後端取一次企業資料
+            if (!user.company_name) {
+                try {
+                    const svc2 = (typeof ensureApiServiceReady === 'function') ? await ensureApiServiceReady() : (window.apiService || window.initializeApiService?.());
+                    if (svc2) {
+                        const prof = await svc2.request('enterprise/profile.php?action=get');
+                        const pdata = prof?.data || prof || {};
+                        const cname = pdata.company_name || '';
+                        if (cname) {
+                            companyNameElement.textContent = cname;
+                            // 回存到本地 user，供其他頁使用
+                            try {
+                                const merged = { ...user, company_name: cname };
+                                localStorage.setItem('user', JSON.stringify(merged));
+                            } catch (_) {}
+                        }
+                    }
+                } catch (e) {
+                    // 靜默失敗，不影響其他資料載入
+                }
+            }
         }
 
         hideLoadingState();
@@ -340,8 +362,8 @@ function renderRecentActivities(activities) {
                 <i class="fas ${getActivityIcon(activity.type)}"></i>
             </div>
             <div class="activity-content">
-                <p>${activity.message}</p>
-                <small class="text-muted">${formatDateTime(activity.timestamp)}</small>
+                <p>${activity.description || ''}</p>
+                <small class="text-muted">${activity.time_ago || ''}</small>
             </div>
         `;
         

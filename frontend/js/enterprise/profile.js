@@ -31,8 +31,7 @@ function initEventListeners() {
 // 載入企業資料
 async function loadEnterpriseData() {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        const svc = await ensureApiServiceReady();
         const res = await svc.request('enterprise/profile.php?action=get');
         const data = res?.data || res || {};
         enterpriseData = {
@@ -184,8 +183,7 @@ async function saveProfile() {
             logo: enterpriseData.logo
         };
         
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        const svc = await ensureApiServiceReady();
         const payload = {
             action: 'update',
             company_name: updatedData.name,
@@ -343,8 +341,7 @@ function previewProfile() {
 // 載入最近活動（企業端）
 async function loadRecentActivities(limit = 10) {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        const svc = await ensureApiServiceReady();
         const res = await svc.request(`enterprise/dashboard.php?action=recent_activities&limit=${encodeURIComponent(String(limit))}`);
         const list = res?.data || res || [];
         renderRecentActivitiesProfile(Array.isArray(list) ? list : []);
@@ -390,3 +387,19 @@ window.uploadLogo = uploadLogo;
 window.exportProfile = exportProfile;
 window.resetForm = resetForm;
 window.previewProfile = previewProfile; 
+
+// 全域保險：確保 API 服務初始化完成
+async function ensureApiServiceReady(maxRetries = 10, delayMs = 100) {
+    if (window.apiService) return window.apiService;
+    if (typeof window.initializeApiService === 'function') {
+        try { window.initializeApiService(); } catch (_) {}
+    }
+    for (let i = 0; i < maxRetries; i++) {
+        if (window.apiService) return window.apiService;
+        await new Promise(r => setTimeout(r, delayMs));
+    }
+    if (!window.apiService && typeof window.ApiService === 'function') {
+        try { window.apiService = new window.ApiService(); return window.apiService; } catch (_) {}
+    }
+    throw new Error('API 服務未就緒');
+}

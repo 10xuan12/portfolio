@@ -141,7 +141,7 @@ function getRecentPortfolios() {
             c.name as category_name, c.slug as category_slug, c.color as category_color,
             sp.first_name, sp.last_name, sp.display_name, sp.avatar_url,
             sp.major, sp.school, sp.grade, sp.skills,
-            u.username,
+            u.username, u.id AS student_id,
             ev.view_date
         FROM enterprise_views ev
         JOIN portfolios p ON ev.portfolio_id = p.id
@@ -271,7 +271,8 @@ function getRecentActivities() {
         ORDER BY activity_date DESC
         LIMIT ?
     ");
-    $stmt->bind_param("iiiiii", $userId, $limit, $userId, $limit, $userId, $limit, $limit);
+    // 共有 7 個整數參數：enterprise_id/limit 三組 + 最終 LIMIT
+    $stmt->bind_param("iiiiiii", $userId, $limit, $userId, $limit, $userId, $limit, $limit);
     $stmt->execute();
     $result = $stmt->get_result();
     $activities = $result->fetch_all(MYSQLI_ASSOC);

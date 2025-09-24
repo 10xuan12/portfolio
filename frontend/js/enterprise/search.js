@@ -12,7 +12,6 @@ let hasNextPage = false;
 // 當前搜尋條件
 let currentSearch = {
     query: '',
-    category: '',
     department: '',
     grade: '',
     skills: [],
@@ -23,7 +22,13 @@ let currentSearch = {
 let searchHistory = ['JavaScript', 'React', 'Python', 'UI/UX', '前端開發'];
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // 先確保 API 服務就緒（延長等待時間）
+        if (typeof ensureApiServiceReady === 'function') {
+            await ensureApiServiceReady(50, 100);
+        }
+    } catch (_) { /* 繼續執行，後續每次請求仍會各自保險 */ }
     injectRefreshRecommendationsButton();
     loadFilterOptions();
     initEventListeners();
@@ -34,29 +39,30 @@ document.addEventListener('DOMContentLoaded', function() {
 // 初始化事件監聽器
 function initEventListeners() {
     // 搜尋輸入
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
-    });
+    const searchInputEl = document.getElementById('searchInput');
+    if (searchInputEl) {
+        searchInputEl.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    }
     
-    // 篩選器變更
-    const categorySel = document.getElementById('categoryFilter');
-    if (categorySel) {
-        categorySel.addEventListener('change', function() {
-            currentSearch.category = this.value;
+    const deptSel = document.getElementById('departmentFilter');
+    if (deptSel) {
+        deptSel.addEventListener('change', function() {
+            currentSearch.department = this.value;
             performSearch(1);
         });
     }
-    document.getElementById('departmentFilter').addEventListener('change', function() {
-        currentSearch.department = this.value;
-        performSearch(1);
-    });
     
-    document.getElementById('gradeFilter').addEventListener('change', function() {
-        currentSearch.grade = this.value;
-        performSearch(1);
-    });
+    const gradeSel = document.getElementById('gradeFilter');
+    if (gradeSel) {
+        gradeSel.addEventListener('change', function() {
+            currentSearch.grade = this.value;
+            performSearch(1);
+        });
+    }
     
     // 技能 Tag 輸入
     const tagInput = document.getElementById('skillTagInput');
@@ -80,10 +86,13 @@ function initEventListeners() {
         });
     }
     
-    document.getElementById('matchFilter').addEventListener('change', function() {
-        currentSearch.minMatch = parseInt(this.value);
-        performSearch(1);
-    });
+    const matchSel = document.getElementById('matchFilter');
+    if (matchSel) {
+        matchSel.addEventListener('change', function() {
+            currentSearch.minMatch = parseInt(this.value);
+            performSearch(1);
+        });
+    }
 }
 
 // 執行搜尋
@@ -96,13 +105,11 @@ async function performSearch(page = 1) {
     if (query) addToSearchHistory(query);
 
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        const svc = await ensureApiServiceReady();
 
         const params = new URLSearchParams({
             q: currentSearch.query || '',
             skills: currentSearch.skills.join(',') || '',
-            category: currentSearch.category || '',
             department: currentSearch.department || '',
             grade: currentSearch.grade || '',
             minMatch: String(currentSearch.minMatch || 0),
@@ -263,15 +270,29 @@ function viewStudentProfile(studentId) {
 // 聯絡學生
 function contactStudent(studentId) {
     const student = students.find(s => s.id === studentId);
-    if (student) {
-        // TODO: 實作聯絡學生功能
-        Utils.showNotification(`正在聯絡 ${student.name}...`, 'info');
-        
-        // 模擬聯絡功能
-        setTimeout(() => {
-            Utils.showNotification(`已發送聯絡訊息給 ${student.name}`, 'success');
-        }, 1000);
+    if (!student) {
+        Utils.showNotification('找不到學生資料', 'error');
+        return;
     }
+    (async () => {
+        try {
+            const svc = await ensureApiServiceReady();
+            const subject = '企業聯絡';
+            const message = `您好，我們對您的背景（${(student.skills || []).slice(0,3).join(', ')}）很感興趣，方便進一步聯繫嗎？`;
+            const res = await svc.request('enterprise/portfolios.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'contact', student_id: Number(studentId), subject, message })
+            });
+            if (res && res.status === 200) {
+                Utils.showNotification(`已發送聯絡訊息給 ${student.name}`, 'success');
+            } else {
+                throw new Error(res?.message || '聯絡失敗');
+            }
+        } catch (e) {
+            console.error(e);
+            Utils.showNotification('聯絡失敗，請稍後再試', 'error');
+        }
+    })();
 }
 
 // 清除搜尋
@@ -294,40 +315,6 @@ function clearSearch() {
     Utils.showNotification('已清除所有搜尋條件', 'info');
 }
 
-// 匯出搜尋結果
-function exportResults() {
-    try {
-        const filteredStudents = students; // 目前列表即為伺服器端篩選結果
-        const data = {
-            exportDate: new Date().toISOString(),
-            searchCriteria: currentSearch,
-            students: filteredStudents.map(student => ({
-                id: student.id,
-                name: student.name,
-                department: student.department,
-                grade: student.grade,
-                skills: student.skills,
-                matchScore: student.matchScore,
-                stats: student.stats
-            }))
-        };
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `talent-search-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        Utils.showNotification('搜尋結果已匯出', 'success');
-    } catch (error) {
-        Utils.showNotification('匯出失敗，請稍後再試', 'error');
-        console.error('匯出搜尋結果錯誤:', error);
-    }
-}
 
 // 取得篩選後的學生
 function getFilteredStudents() { return students; }
@@ -336,7 +323,6 @@ function getFilteredStudents() { return students; }
 window.performSearch = performSearch;
 window.setSearchTerm = setSearchTerm;
 window.clearSearch = clearSearch;
-window.exportResults = exportResults;
 window.viewStudentProfile = viewStudentProfile;
 window.contactStudent = contactStudent; 
 
@@ -376,8 +362,7 @@ function injectRefreshRecommendationsButton() {
 
 async function refreshRecommendations() {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        const svc = await ensureApiServiceReady();
         await svc.request('enterprise/recommendations.php?action=refresh');
         Utils.showNotification('推薦已刷新', 'success');
     } catch (e) {
@@ -389,8 +374,7 @@ async function refreshRecommendations() {
 // 動態載入篩選選單與熱門搜尋（與 dashboard 共用 meta 端點）
 async function loadFilterOptions() {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) return;
+        const svc = await ensureApiServiceReady();
         const res = await svc.request('enterprise/meta.php?action=search_filters');
         const data = res?.data || res || {};
         const skills = Array.isArray(data.skills) ? data.skills : [];
@@ -402,7 +386,7 @@ async function loadFilterOptions() {
         const deptSel = document.getElementById('departmentFilter');
         if (deptSel && departments.length) {
             const cur = deptSel.value;
-            deptSel.innerHTML = '<option value="">全部學群/科系</option>' + departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            deptSel.innerHTML = '<option value="">全部/科系</option>' + departments.map(d => `<option value="${d}">${d}</option>`).join('');
             if (cur) deptSel.value = cur;
         }
 
@@ -412,14 +396,6 @@ async function loadFilterOptions() {
             const cur = gradeSel.value;
             gradeSel.innerHTML = '<option value="">全部年級</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
             if (cur) gradeSel.value = cur;
-        }
-
-        // 學群
-        const catSel = document.getElementById('categoryFilter');
-        if (catSel && categories.length) {
-            const cur = catSel.value;
-            catSel.innerHTML = '<option value="">全部學群</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
-            if (cur) catSel.value = cur;
         }
 
         // 熱門搜尋標籤（技能）
@@ -447,3 +423,26 @@ function addSkillTag(name) {
 }
 
 window.addSkillTag = addSkillTag;
+
+// 確保 API 服務就緒（帶重試）
+async function ensureApiServiceReady(maxRetries = 10, delayMs = 100) {
+    // 立即可用
+    if (window.apiService) return window.apiService;
+    // 嘗試初始化
+    if (typeof window.initializeApiService === 'function') {
+        try { window.initializeApiService(); } catch (_) {}
+    }
+    // 重試等待
+    for (let i = 0; i < maxRetries; i++) {
+        if (window.apiService) return window.apiService;
+        await new Promise(r => setTimeout(r, delayMs));
+    }
+    // 最後嘗試一次直接建構（若類別可用）
+    if (!window.apiService && typeof window.ApiService === 'function') {
+        try {
+            window.apiService = new window.ApiService();
+            return window.apiService;
+        } catch (_) {}
+    }
+    throw new Error('API 服務未就緒');
+}

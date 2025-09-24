@@ -893,6 +893,96 @@ if (typeof window.ApiService === 'undefined') {
         }
     }
 
+    // ==================== 企業端認證 API 方法 ====================
+
+    /**
+     * 企業登入（指向 enterprise/auth.php）
+     */
+    async enterpriseLogin(credentials) {
+        try {
+            const result = await this.request('enterprise/auth.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'login', ...credentials })
+            });
+
+            if (result && result.status === 200 && result.data) {
+                const userData = {
+                    id: result.data.user_id,
+                    username: result.data.username,
+                    email: result.data.email,
+                    role: result.data.role || 'enterprise',
+                    company_name: result.data.company_name,
+                    avatar: result.data.logo_url || null,
+                    loginTime: new Date().toISOString()
+                };
+
+                localStorage.setItem('user', JSON.stringify(userData));
+                if (result.data.token) {
+                    localStorage.setItem('auth_token', result.data.token);
+                } else {
+                    localStorage.setItem('auth_token', 'session_based');
+                }
+
+                this.clearCache();
+
+                return { success: true, data: userData, message: result.message || '登入成功' };
+            }
+
+            return { success: false, message: result?.message || '登入失敗' };
+        } catch (error) {
+            console.error('企業登入失敗:', error);
+            return { success: false, message: error.message || '登入失敗，請檢查網路連接' };
+        }
+    }
+
+    /**
+     * 企業註冊
+     */
+    async enterpriseRegister(data) {
+        try {
+            const result = await this.request('enterprise/auth.php', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'register', ...data })
+            });
+            return result;
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
+    /**
+     * 企業登出
+     */
+    async enterpriseLogout() {
+        try {
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_token');
+            try {
+                await this.request('enterprise/auth.php', {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'logout' })
+                });
+            } catch (e) {
+                console.warn('企業後端登出失敗:', e);
+            }
+            return { success: true, message: '登出成功' };
+        } catch (e) {
+            return { success: false, message: e.message || '登出失敗' };
+        }
+    }
+
+    /**
+     * 企業認證檢查
+     */
+    async enterpriseCheckAuth() {
+        try {
+            const result = await this.request('enterprise/auth.php?action=check');
+            return { success: result?.status === 200, data: result?.data, message: result?.message || '' };
+        } catch (e) {
+            return { success: false, message: e.message };
+        }
+    }
+
     /**
      * 檢查認證狀態
      */
@@ -1258,5 +1348,23 @@ if (typeof window.ApiService === 'undefined') {
     // 匯出 API 服務 (用於模組化)
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = ApiService;
+    }
+}
+
+// 全域：確保 API 服務就緒（帶重試），避免各頁面腳本搶先於初始化
+if (typeof window.ensureApiServiceReady !== 'function') {
+    window.ensureApiServiceReady = async function ensureApiServiceReady(maxRetries = 10, delayMs = 100) {
+        if (window.apiService) return window.apiService;
+        if (typeof window.initializeApiService === 'function') {
+            try { window.initializeApiService(); } catch (_) {}
+        }
+        for (let i = 0; i < maxRetries; i++) {
+            if (window.apiService) return window.apiService;
+            await new Promise(r => setTimeout(r, delayMs));
+        }
+        if (!window.apiService && typeof window.ApiService === 'function') {
+            try { window.apiService = new window.ApiService(); return window.apiService; } catch (_) {}
+        }
+        throw new Error('API 服務未就緒');
     }
 }
