@@ -31,19 +31,21 @@ document.addEventListener('DOMContentLoaded', async function() {
 // 載入通知
 async function loadNotifications(page = 1) {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        // 確保 API 服務已初始化
+        if (!window.apiService) {
+            window.apiService = new ApiService();
+        }
+        
+        const svc = window.apiService;
         const params = new URLSearchParams({ action: 'list', page: String(page), limit: '20' });
         const res = await svc.request(`enterprise/notifications.php?${params.toString()}`);
         const data = res?.data || res || {};
         const list = Array.isArray(data.notifications) ? data.notifications : (Array.isArray(data) ? data : []);
         notifications = list.map(n => {
-            // 後端型別對應：job_application → application；enterprise → contact
+            // 後端型別對應：enterprise → contact；其他保持原樣
             let mappedType = n.type || 'system';
-            if (mappedType === 'job_application') mappedType = 'application';
-            else if (mappedType === 'enterprise') mappedType = 'contact';
-            // 其他如 like/comment 視為 system
-            else if (mappedType === 'like' || mappedType === 'comment') mappedType = 'system';
+            if (mappedType === 'enterprise') mappedType = 'contact';
+            // 其他類型保持原樣
 
             return {
                 id: n.id,
@@ -60,15 +62,23 @@ async function loadNotifications(page = 1) {
     } catch (e) {
         console.error('載入通知失敗', e);
         notifications = [];
+        // 顯示錯誤訊息
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification('載入通知失敗，請稍後再試', 'error');
+        }
     }
 }
 // 根據目前通知陣列計算統計並更新UI
 function computeAndUpdateStatsFromNotifications() {
     const total = notifications.length;
     const unread = notifications.filter(n => !n.isRead).length;
-    const application = notifications.filter(n => n.type === 'application').length;
-    const job = notifications.filter(n => n.type === 'job').length;
-    notificationStats = { total, unread, application, job, view: 0, contact: 0, system: 0 };
+    const contact = notifications.filter(n => n.type === 'contact').length;
+    const system = notifications.filter(n => n.type === 'system').length;
+    const like = notifications.filter(n => n.type === 'like').length;
+    const comment = notifications.filter(n => n.type === 'comment').length;
+    const view = notifications.filter(n => n.type === 'view').length;
+    
+    notificationStats = { total, unread, contact, system, like, comment, view };
     // 更新 header 數量
     updateNotificationsCount(total);
     // 更新側邊統計
@@ -128,11 +138,11 @@ function renderNotifications(filteredNotifications = null) {
 // 取得通知圖示
 function getNotificationIcon(type) {
     const icons = {
-        'application': 'fa-file-alt',
-        'job': 'fa-briefcase',
-        'view': 'fa-eye',
         'contact': 'fa-envelope',
-        'system': 'fa-cog'
+        'system': 'fa-cog',
+        'like': 'fa-heart',
+        'comment': 'fa-comment',
+        'view': 'fa-eye'
     };
     return icons[type] || 'fa-bell';
 }
@@ -175,20 +185,20 @@ function filterNotifications(filter) {
         case 'unread':
             filteredNotifications = notifications.filter(n => !n.isRead);
             break;
-        case 'application':
-            filteredNotifications = notifications.filter(n => n.type === 'application');
-            break;
-        case 'job':
-            filteredNotifications = notifications.filter(n => n.type === 'job');
-            break;
-        case 'view':
-            filteredNotifications = notifications.filter(n => n.type === 'view');
-            break;
         case 'contact':
             filteredNotifications = notifications.filter(n => n.type === 'contact');
             break;
         case 'system':
             filteredNotifications = notifications.filter(n => n.type === 'system');
+            break;
+        case 'like':
+            filteredNotifications = notifications.filter(n => n.type === 'like');
+            break;
+        case 'comment':
+            filteredNotifications = notifications.filter(n => n.type === 'comment');
+            break;
+        case 'view':
+            filteredNotifications = notifications.filter(n => n.type === 'view');
             break;
         default:
             filteredNotifications = notifications;
@@ -208,21 +218,25 @@ function updateNotificationsCount(count) {
 
 // 更新統計資料（套用到通知頁側欄樣式）
 function updateStats() {
-    const stats = notificationStats || { total: 0, unread: 0, application: 0, job: 0 };
+    const stats = notificationStats || { total: 0, unread: 0, contact: 0, system: 0 };
     const sidebarNumbers = document.querySelectorAll('.notification-stats .number');
     if (sidebarNumbers && sidebarNumbers.length >= 4) {
         sidebarNumbers[0].textContent = String(stats.total || 0);
         sidebarNumbers[1].textContent = String(stats.unread || 0);
-        sidebarNumbers[2].textContent = String(stats.application || 0);
-        sidebarNumbers[3].textContent = String(stats.job || 0);
+        sidebarNumbers[2].textContent = String(stats.contact || 0);
+        sidebarNumbers[3].textContent = String(stats.system || 0);
     }
 }
 
 // 標記通知為已讀
 async function markAsRead(notificationId) {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        // 確保 API 服務已初始化
+        if (!window.apiService) {
+            window.apiService = new ApiService();
+        }
+        
+        const svc = window.apiService;
         await svc.request('enterprise/notifications.php', {
             method: 'POST',
             body: JSON.stringify({ action: 'mark_read', notification_id: Number(notificationId) })
@@ -245,11 +259,15 @@ async function markAsRead(notificationId) {
             }
             
             updateStats();
-            Utils.showNotification('已標記為已讀', 'success');
+            if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                Utils.showNotification('已標記為已讀', 'success');
+            }
         }
         
     } catch (error) {
-        Utils.showNotification('操作失敗，請稍後再試', 'error');
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification('操作失敗，請稍後再試', 'error');
+        }
         console.error('標記已讀錯誤:', error);
     }
 }
@@ -257,8 +275,12 @@ async function markAsRead(notificationId) {
 // 全部標記已讀
 async function markAllAsRead() {
     try {
-        const svc = window.apiService || window.initializeApiService?.();
-        if (!svc) throw new Error('API 服務未就緒');
+        // 確保 API 服務已初始化
+        if (!window.apiService) {
+            window.apiService = new ApiService();
+        }
+        
+        const svc = window.apiService;
         await svc.request('enterprise/notifications.php', {
             method: 'POST',
             body: JSON.stringify({ action: 'mark_all_read' })
@@ -274,10 +296,14 @@ async function markAllAsRead() {
         });
         
         updateStats();
-        Utils.showNotification('全部通知已標記為已讀', 'success');
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification('全部通知已標記為已讀', 'success');
+        }
         
     } catch (error) {
-        Utils.showNotification('操作失敗，請稍後再試', 'error');
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification('操作失敗，請稍後再試', 'error');
+        }
         console.error('全部標記已讀錯誤:', error);
     }
 }
@@ -286,8 +312,12 @@ async function markAllAsRead() {
 function clearNotifications() {
     if (confirm('確定要清除所有通知嗎？此操作無法復原。')) {
         try {
-            const svc = window.apiService || window.initializeApiService?.();
-            if (!svc) throw new Error('API 服務未就緒');
+            // 確保 API 服務已初始化
+            if (!window.apiService) {
+                window.apiService = new ApiService();
+            }
+            
+            const svc = window.apiService;
             svc.request('enterprise/notifications.php', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'clear_all' })
@@ -298,19 +328,23 @@ function clearNotifications() {
             notificationStats = {
                 total: 0,
                 unread: 0,
-                application: 0,
-                job: 0,
-                view: 0,
                 contact: 0,
-                system: 0
+                system: 0,
+                like: 0,
+                comment: 0,
+                view: 0
             };
             
             renderNotifications();
             updateStats();
-            Utils.showNotification('所有通知已清除', 'success');
+            if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                Utils.showNotification('所有通知已清除', 'success');
+            }
             
         } catch (error) {
-            Utils.showNotification('清除失敗，請稍後再試', 'error');
+            if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                Utils.showNotification('清除失敗，請稍後再試', 'error');
+            }
             console.error('清除通知錯誤:', error);
         }
     }
@@ -333,29 +367,41 @@ function viewStudent(notificationId) {
 
 // 聯絡學生
 function contactStudent(notificationId) {
-    Utils.showNotification('聯絡學生功能將導引至搜尋頁', 'info');
+    if (typeof Utils !== 'undefined' && Utils.showNotification) {
+        Utils.showNotification('聯絡學生功能將導引至搜尋頁', 'info');
+    }
     window.location.href = `search.html?contact_from_notification=${notificationId}`;
 }
 
 // 查看訊息
 function viewMessage(notificationId) {
-    Utils.showNotification(`訊息 ${notificationId}`, 'info');
+    if (typeof Utils !== 'undefined' && Utils.showNotification) {
+        Utils.showNotification(`訊息 ${notificationId}`, 'info');
+    }
 }
 
 // 回覆訊息
 function replyMessage(notificationId) {
-    Utils.showNotification(`回覆訊息 ${notificationId}`, 'info');
+    if (typeof Utils !== 'undefined' && Utils.showNotification) {
+        Utils.showNotification(`回覆訊息 ${notificationId}`, 'info');
+    }
 }
 
 // 重新整理通知
 function refreshNotifications() {
-    Utils.showNotification('正在重新整理...', 'info');
+    if (typeof Utils !== 'undefined' && Utils.showNotification) {
+        Utils.showNotification('正在重新整理...', 'info');
+    }
     loadNotifications().then(() => {
         renderNotifications();
         computeAndUpdateStatsFromNotifications();
-        Utils.showNotification('通知已更新', 'success');
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification('通知已更新', 'success');
+        }
     }).catch(() => {
-        Utils.showNotification('通知更新失敗', 'error');
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification('通知更新失敗', 'error');
+        }
     });
 }
 

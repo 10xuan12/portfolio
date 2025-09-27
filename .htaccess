@@ -2,12 +2,16 @@ RewriteEngine On
 
 # 啟用重寫模組
 <IfModule mod_rewrite.c>
-    # 處理 /portfolio/api/ 請求 - 重定向到實際的 API 路徑
+    # 處理 /portfolio/api/ 請求 - 重定向到實際的 API 路徑（排除 index.php 和其他 .php 檔案）
     RewriteCond %{REQUEST_URI} ^/portfolio/api/
+    RewriteCond %{REQUEST_URI} !^/portfolio/api/index\.php
+    RewriteCond %{REQUEST_URI} !^/portfolio/api/.*\.php
     RewriteRule ^portfolio/api/(.*)$ api/$1 [L,QSA]
     
-    # 處理所有 API 請求
+    # 處理所有 API 請求（排除 index.php 和其他 .php 檔案）
     RewriteCond %{REQUEST_URI} ^/api/
+    RewriteCond %{REQUEST_URI} !^/api/index\.php
+    RewriteCond %{REQUEST_URI} !^/api/.*\.php
     RewriteRule ^api/(.*)$ api/index.php?path=$1 [L,QSA]
 </IfModule>
 
@@ -30,6 +34,8 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/api/
 RewriteCond %{REQUEST_URI} !^/portfolio/api/
 RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$
+RewriteCond %{REQUEST_URI} !^/api/index\.php
+RewriteCond %{REQUEST_URI} !^/api/.*\.php
 RewriteRule ^(.*)$ frontend/index.html [L]
 
 # 安全性設定

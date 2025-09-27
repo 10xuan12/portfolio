@@ -3,7 +3,7 @@
  * 包含職缺 CRUD、申請管理、狀態控制等功能
  */
 
-// 透過後端 API 載入職缺資料
+// 透過後端 API 載入職缺資料 - 版本 20250927
 let jobs = [];
 
 // 當前編輯的職缺
@@ -35,8 +35,15 @@ async function loadJobs(page = 1) {
             location: j.location || '',
             description: j.description || '',
             requirements: (j.skills_required || []),
-            salary: j.salary_range || '',
-            duration: '',
+            salary_range: j.salary_range || '',
+            salary_min: j.salary_min,
+            salary_max: j.salary_max,
+            salary_type: j.salary_type,
+            benefits: j.benefits || '',
+            experience_level: j.experience_level || '',
+            education_level: j.education_level || '',
+            deadline: j.deadline || '',
+            responsibilities: j.responsibilities || '',
             status: j.status,
             applications: j.application_count ?? 0,
             views: j.view_count ?? 0,
@@ -70,7 +77,7 @@ function renderJobs() {
     if (jobs.length === 0) {
         jobsList.innerHTML = `
             <div class="empty-state">
-                <i class="fas fa-briefcase"></i>
+                <i class="bi bi-briefcase"></i>
                 <h3>還沒有發布任何職缺</h3>
                 <p>點擊「發布新職缺」開始招募人才</p>
             </div>
@@ -84,10 +91,10 @@ function renderJobs() {
                 <div>
                     <div class="job-title">${job.title}</div>
                     <div class="job-details">
-                        <span><i class="fas fa-building"></i> ${job.department}</span>
-                        <span><i class="fas fa-briefcase"></i> ${job.type}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> ${job.location}</span>
-                        <span><i class="fas fa-users"></i> ${job.applications} 個申請</span>
+                        <span><i class="bi bi-building"></i> ${job.department}</span>
+                        <span><i class="bi bi-briefcase"></i> ${job.type}</span>
+                        <span><i class="bi bi-geo-alt"></i> ${job.location}</span>
+                        <span><i class="bi bi-people"></i> ${job.applications} 個申請</span>
                     </div>
                 </div>
                 <span class="job-status status-${job.status}">${getJobStatusText(job.status)}</span>
@@ -99,20 +106,38 @@ function renderJobs() {
                     ${job.requirements.map(req => `<span class="requirement-tag">${req}</span>`).join('')}
                 </div>
             </div>
+            <div class="job-details-extended">
+                <div class="detail-item">
+                    <i class="bi bi-currency-dollar"></i>
+                    <span>薪資：${job.salary_range || '面議'}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="bi bi-person-badge"></i>
+                    <span>經驗：${job.experience_level || '不拘'}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="bi bi-mortarboard"></i>
+                    <span>學歷：${job.education_level || '不拘'}</span>
+                </div>
+                ${job.deadline ? `<div class="detail-item">
+                    <i class="bi bi-clock"></i>
+                    <span>截止：${job.deadline}</span>
+                </div>` : ''}
+            </div>
             <div class="job-stats">
-                <span><i class="fas fa-calendar"></i> ${job.created_at} 發布</span>
-                <span><i class="fas fa-eye"></i> ${job.views} 次瀏覽</span>
-                <span><i class="fas fa-heart"></i> ${job.likes} 個收藏</span>
+                <span><i class="bi bi-calendar3"></i> ${job.created_at} 發布</span>
+                <span><i class="bi bi-eye"></i> ${job.views} 次瀏覽</span>
+                <span><i class="bi bi-heart"></i> ${job.likes} 個收藏</span>
             </div>
             <div class="job-actions">
                 <button class="action-btn" onclick="editJob(${job.id})">
-                    <i class="fas fa-edit"></i> 編輯
+                    <i class="bi bi-pencil"></i> 編輯
                 </button>
                 <button class="action-btn" onclick="viewApplications(${job.id})">
-                    <i class="fas fa-list"></i> 查看申請
+                    <i class="bi bi-list-ul"></i> 查看申請
                 </button>
                 <button class="action-btn" onclick="toggleJobStatus(${job.id})">
-                    <i class="fas fa-${job.status === 'active' ? 'pause' : 'play'}"></i> 
+                    <i class="bi bi-${job.status === 'active' ? 'pause' : 'play'}"></i> 
                     ${job.status === 'active' ? '暫停招募' : '恢復招募'}
                 </button>
             </div>
@@ -135,45 +160,115 @@ function createNewJob() {
     currentJob = null;
     requirements = [];
     
-    document.getElementById('formTitle').textContent = '發布新職缺';
-    document.getElementById('jobFormElement').reset();
-    document.getElementById('requirementsList').innerHTML = '';
+    // 安全地設定表單欄位值
+    const setTextContent = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value || '';
+        } else {
+            console.warn(`找不到元素: ${id}`);
+        }
+    };
     
-    document.getElementById('jobForm').style.display = 'block';
+    const resetElement = (id) => {
+        const element = document.getElementById(id);
+        if (element) {
+            if (element.tagName === 'FORM') {
+                element.reset();
+            } else {
+                element.innerHTML = '';
+            }
+        } else {
+            console.warn(`找不到元素: ${id}`);
+        }
+    };
     
+    setTextContent('formTitle', '發布新職缺');
+    resetElement('jobFormElement');
+    resetElement('requirementsList');
+    
+    const jobForm = document.getElementById('jobForm');
+    if (jobForm) {
+        jobForm.style.display = 'block';
     // 滾動到表單
-    document.getElementById('jobForm').scrollIntoView({ behavior: 'smooth' });
+        jobForm.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
-// 編輯職缺
+// 編輯職缺 - 版本 20250927
 function editJob(jobId) {
+    console.log('editJob called with jobId:', jobId);
+    console.log('Available jobs:', jobs);
+    console.log('editJob function version: 20250927');
+    
     const job = jobs.find(j => j.id === jobId);
-    if (!job) return;
+    if (!job) {
+        console.error('Job not found:', jobId);
+        return;
+    }
+    
+    console.log('Found job:', job);
     
     currentJob = job;
     requirements = [...job.requirements];
     
-    document.getElementById('formTitle').textContent = '編輯職缺';
-    document.getElementById('jobId').value = job.id;
-    document.getElementById('jobTitle').value = job.title;
-    document.getElementById('jobDepartment').value = job.department;
-    document.getElementById('jobType').value = job.type;
-    document.getElementById('jobLocation').value = job.location;
-    document.getElementById('jobDescription').value = job.description;
-    document.getElementById('jobSalary').value = job.salary;
-    document.getElementById('jobDuration').value = job.duration;
+    // 安全地設定表單欄位值
+    const setFieldValue = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.value = value || '';
+            console.log(`Set ${id} = ${value || ''}`);
+        } else {
+            console.warn(`找不到元素: ${id}`);
+        }
+    };
+    
+    const setTextContent = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value || '';
+            console.log(`Set ${id} textContent = ${value || ''}`);
+        } else {
+            console.warn(`找不到元素: ${id}`);
+        }
+    };
+    
+    setTextContent('formTitle', '編輯職缺');
+    setFieldValue('jobId', job.id);
+    setFieldValue('jobTitle', job.title);
+    setFieldValue('jobDepartment', job.department);
+    setFieldValue('jobType', job.type);
+    setFieldValue('jobLocation', job.location);
+    setFieldValue('jobDescription', job.description);
+    
+    // 薪資相關欄位
+    setFieldValue('salaryMin', job.salary_min);
+    setFieldValue('salaryMax', job.salary_max);
+    setFieldValue('salaryType', job.salary_type);
+    setFieldValue('benefits', job.benefits);
+    
+    // 職位要求欄位
+    setFieldValue('experienceLevel', job.experience_level);
+    setFieldValue('educationLevel', job.education_level);
+    setFieldValue('deadline', job.deadline);
+    setFieldValue('responsibilities', job.responsibilities);
     
     renderRequirements();
     
-    document.getElementById('jobForm').style.display = 'block';
-    
+    const jobForm = document.getElementById('jobForm');
+    if (jobForm) {
+        jobForm.style.display = 'block';
     // 滾動到表單
-    document.getElementById('jobForm').scrollIntoView({ behavior: 'smooth' });
+        jobForm.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 // 取消表單
 function cancelJobForm() {
-    document.getElementById('jobForm').style.display = 'none';
+    const jobForm = document.getElementById('jobForm');
+    if (jobForm) {
+        jobForm.style.display = 'none';
+    }
     currentJob = null;
     requirements = [];
 }
@@ -190,8 +285,14 @@ async function handleJobSubmit(e) {
         location: formData.get('location'),
         description: formData.get('description'),
         requirements: requirements,
-        salary: formData.get('salary'),
-        duration: formData.get('duration')
+        salary_min: formData.get('salary_min'),
+        salary_max: formData.get('salary_max'),
+        salary_type: formData.get('salary_type'),
+        benefits: formData.get('benefits'),
+        experience_level: formData.get('experience_level'),
+        education_level: formData.get('education_level'),
+        deadline: formData.get('deadline'),
+        responsibilities: formData.get('responsibilities')
     };
     
     try {
@@ -219,9 +320,18 @@ async function createJob(jobData) {
         title: jobData.title,
         description: jobData.description,
         requirements: (jobData.requirements || []).join(','),
+        responsibilities: jobData.responsibilities,
         job_type: jobData.type,
         location: jobData.location,
         department: jobData.department,
+        salary_min: jobData.salary_min ? parseFloat(jobData.salary_min) : null,
+        salary_max: jobData.salary_max ? parseFloat(jobData.salary_max) : null,
+        salary_type: jobData.salary_type,
+        experience_level: jobData.experience_level,
+        education_level: jobData.education_level,
+        skills_required: (jobData.requirements || []).join(','),
+        benefits: jobData.benefits,
+        deadline: jobData.deadline,
         status: 'active'
     };
     const res = await svc.request('enterprise/jobs.php', {
@@ -244,9 +354,18 @@ async function updateJob(jobId, jobData) {
         title: jobData.title,
         description: jobData.description,
         requirements: (jobData.requirements || []).join(','),
+        responsibilities: jobData.responsibilities,
         job_type: jobData.type,
         location: jobData.location,
-        department: jobData.department
+        department: jobData.department,
+        salary_min: jobData.salary_min ? parseFloat(jobData.salary_min) : null,
+        salary_max: jobData.salary_max ? parseFloat(jobData.salary_max) : null,
+        salary_type: jobData.salary_type,
+        experience_level: jobData.experience_level,
+        education_level: jobData.education_level,
+        skills_required: (jobData.requirements || []).join(','),
+        benefits: jobData.benefits,
+        deadline: jobData.deadline
     };
     const res = await svc.request('enterprise/jobs.php', {
         method: 'POST',
@@ -284,8 +403,10 @@ async function toggleJobStatus(jobId) {
 
 // 查看申請
 function viewApplications(jobId) {
-    window.location.href = `applications.html?job=${jobId}`;
+    // 跳轉到專門的申請管理頁面
+    window.location.href = `job_application.html?job_id=${jobId}`;
 }
+
 
 // 新增技能要求
 function addRequirement() {
@@ -313,7 +434,7 @@ function renderRequirements() {
         <span class="requirement-tag-edit">
             ${req}
             <button type="button" class="remove-requirement" onclick="removeRequirement(${index})">
-                <i class="fas fa-times"></i>
+                <i class="bi bi-x"></i>
             </button>
         </span>
     `).join('');

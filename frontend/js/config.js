@@ -8,10 +8,8 @@ if (typeof window.APP_CONFIG === 'undefined') {
     window.APP_CONFIG = {
     // ==================== 核心設定 ====================
     
-    // 是否使用假資料（不使用）
-    USE_MOCK_DATA: false,
     
-    // API 基礎 URL (當 USE_MOCK_DATA 為 false 時使用)
+    // API 基礎 URL
     API_BASE_URL: '/portfolio/api',
     
     // 應用程式版本
@@ -42,8 +40,6 @@ if (typeof window.APP_CONFIG === 'undefined') {
     // 是否啟用詳細日誌
     VERBOSE_LOGGING: false,
     
-    // 模擬 API 延遲（不使用）
-    MOCK_API_DELAY: 0,
     
     // ==================== UI 設定 ====================
     
@@ -104,10 +100,6 @@ if (typeof window.APP_CONFIG === 'undefined') {
 
 // ==================== 工具函數 ====================
 
-/**
- * 檢查是否使用假資料
- */
-function isUsingMockData() { return false; }
 
 /**
  * 取得 API 基礎 URL
@@ -125,10 +117,6 @@ function getApiUrl(endpoint) {
     return `${baseUrl}/${cleanEndpoint}`;
 }
 
-/**
- * 模擬 API 延遲
- */
-async function mockApiDelay() { /* no-op: mock disabled */ }
 
 /**
  * 記錄除錯訊息
@@ -209,10 +197,6 @@ function setConfig(key, value) {
     }
 }
 
-/**
- * 切換假資料模式
- */
-function toggleMockData() { console.warn('Mock 模式已停用，無法切換'); }
 
 /**
  * 初始化配置
@@ -225,10 +209,8 @@ function initializeConfig() {
     if (savedConfig) {
         try {
             const parsedConfig = JSON.parse(savedConfig);
-            // 強制覆蓋 USE_MOCK_DATA 為 false
-            parsedConfig.USE_MOCK_DATA = false;
             Object.assign(APP_CONFIG, parsedConfig);
-            debugLog('已載入本地儲存的配置（強制使用真實API）');
+            debugLog('已載入本地儲存的配置');
         } catch (error) {
             console.warn('載入本地配置失敗:', error);
         }
@@ -238,11 +220,8 @@ function initializeConfig() {
     if (isProduction()) {
         APP_CONFIG.DEBUG_MODE = false;
         APP_CONFIG.VERBOSE_LOGGING = false;
-        APP_CONFIG.MOCK_API_DELAY = 0;
     }
     
-    // 強制確保使用真實API
-    APP_CONFIG.USE_MOCK_DATA = false;
     // 保持 API Base URL（可在部署時於此調整）
     APP_CONFIG.API_BASE_URL = '/portfolio/api';
     
@@ -254,7 +233,6 @@ function initializeConfig() {
     }
     
     debugLog('配置初始化完成', {
-        useMockData: isUsingMockData(),
         environment: getEnvironment(),
         version: getVersion()
     });
@@ -287,10 +265,8 @@ function resetConfig() {
 
 // 將工具函數暴露到全域
 window.APP_CONFIG = APP_CONFIG;
-window.isUsingMockData = isUsingMockData;
 window.getApiBaseUrl = getApiBaseUrl;
 window.getApiUrl = getApiUrl;
-window.mockApiDelay = mockApiDelay;
 window.debugLog = debugLog;
 window.verboseLog = verboseLog;
 window.getEnvironment = getEnvironment;
@@ -300,7 +276,6 @@ window.getVersion = getVersion;
 window.isFeatureEnabled = isFeatureEnabled;
 window.getConfig = getConfig;
 window.setConfig = setConfig;
-window.toggleMockData = toggleMockData;
 window.initializeConfig = initializeConfig;
 window.saveConfig = saveConfig;
 window.resetConfig = resetConfig;
@@ -318,10 +293,8 @@ document.addEventListener('DOMContentLoaded', function() {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         APP_CONFIG,
-        isUsingMockData,
         getApiBaseUrl,
         getApiUrl,
-        mockApiDelay,
         debugLog,
         verboseLog,
         getEnvironment,
@@ -331,7 +304,6 @@ if (typeof module !== 'undefined' && module.exports) {
         isFeatureEnabled,
         getConfig,
         setConfig,
-        toggleMockData,
         initializeConfig,
         saveConfig,
         resetConfig

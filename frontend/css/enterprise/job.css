@@ -120,6 +120,26 @@
     font-size: var(--text-xs);
 }
 
+.job-details-extended {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.detail-item i {
+    color: var(--primary-color);
+    width: 16px;
+}
+
 .job-stats {
     display: flex;
     gap: var(--spacing-lg);
@@ -289,6 +309,7 @@
         grid-template-columns: 1fr;
     }
 }
+
 
 /* 返回按鈕（與學生端一致） */
 .header-top {

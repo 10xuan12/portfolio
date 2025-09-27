@@ -5,9 +5,6 @@
 
 // 從後端 API 載入學生資料
 let students = [];
-let currentPage = 1;
-let pageSize = 12;
-let hasNextPage = false;
 
 // 當前搜尋條件
 let currentSearch = {
@@ -33,7 +30,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadFilterOptions();
     initEventListeners();
     loadSearchHistory();
-    performSearch(1);
+    // 移除自動搜尋，讓用戶主動搜尋
+    // performSearch(1);
 });
 
 // 初始化事件監聽器
@@ -52,7 +50,7 @@ function initEventListeners() {
     if (deptSel) {
         deptSel.addEventListener('change', function() {
             currentSearch.department = this.value;
-            performSearch(1);
+            performSearch();
         });
     }
     
@@ -60,7 +58,7 @@ function initEventListeners() {
     if (gradeSel) {
         gradeSel.addEventListener('change', function() {
             currentSearch.grade = this.value;
-            performSearch(1);
+            performSearch();
         });
     }
     
@@ -74,14 +72,14 @@ function initEventListeners() {
                 if (val && !currentSearch.skills.includes(val)) {
                     currentSearch.skills.push(val);
                     renderSkillTags();
-                    performSearch(1);
+                    performSearch();
                 }
                 this.value = '';
             } else if (e.key === 'Backspace' && this.value === '') {
                 // 刪除最後一個 tag
                 currentSearch.skills.pop();
                 renderSkillTags();
-                performSearch(1);
+                performSearch();
             }
         });
     }
@@ -90,14 +88,13 @@ function initEventListeners() {
     if (matchSel) {
         matchSel.addEventListener('change', function() {
             currentSearch.minMatch = parseInt(this.value);
-            performSearch(1);
+            performSearch();
         });
     }
 }
 
 // 執行搜尋
-async function performSearch(page = 1) {
-    currentPage = page;
+async function performSearch() {
     const query = document.getElementById('searchInput').value.trim();
     currentSearch.query = query;
 
@@ -112,9 +109,7 @@ async function performSearch(page = 1) {
             skills: currentSearch.skills.join(',') || '',
             department: currentSearch.department || '',
             grade: currentSearch.grade || '',
-            minMatch: String(currentSearch.minMatch || 0),
-            page: String(currentPage),
-            limit: String(pageSize)
+            minMatch: String(currentSearch.minMatch || 0)
         });
 
         const res = await svc.request(`enterprise/search.php?${params.toString()}`);
@@ -132,11 +127,9 @@ async function performSearch(page = 1) {
             matchScore: typeof s.matchScore === 'number' ? s.matchScore : 0
         }));
 
-        hasNextPage = students.length >= pageSize; // 粗略判斷是否還有下一頁
 
         renderSearchResults(students);
         updateResultsCount(students.length);
-        renderPagination();
     } catch (err) {
         console.error('搜尋失敗:', err);
         Utils.showNotification(err.message || '搜尋失敗', 'error');
@@ -148,7 +141,7 @@ function setSearchTerm(term) {
     document.getElementById('searchInput').value = term;
     currentSearch.query = term;
     addToSearchHistory(term);
-    performSearch(1);
+    performSearch();
 }
 
 // 添加到搜尋歷史
@@ -170,7 +163,7 @@ function loadSearchHistory() {
 
 // 應用篩選器
 // 後端已處理篩選與匹配度，此函數改為觸發伺服器端搜尋
-function applyFilters() { performSearch(1); }
+function applyFilters() { performSearch(); }
 
 // 計算匹配度
 // 匹配度已由後端提供
@@ -223,35 +216,6 @@ function renderSearchResults(filteredStudents = null) {
             </div>
         </div>
     `).join('');
-}
-
-// 分頁渲染（上一頁 / 下一頁）
-function renderPagination() {
-    let bar = document.getElementById('paginationBar');
-    if (!bar) {
-        bar = document.createElement('div');
-        bar.id = 'paginationBar';
-        bar.style.display = 'flex';
-        bar.style.justifyContent = 'center';
-        bar.style.gap = '12px';
-        bar.style.margin = '16px 0 24px';
-        const container = document.querySelector('.container') || document.body;
-        container.appendChild(bar);
-    }
-    const prevDisabled = currentPage <= 1;
-    const nextDisabled = !hasNextPage;
-    bar.innerHTML = `
-        <button class="btn btn-outline" ${prevDisabled ? 'disabled' : ''} onclick="goPrevPage()"><i class="fas fa-chevron-left"></i> 上一頁</button>
-        <span style="align-self:center">第 ${currentPage} 頁</span>
-        <button class="btn btn-outline" ${nextDisabled ? 'disabled' : ''} onclick="goNextPage()">下一頁 <i class="fas fa-chevron-right"></i></button>
-    `;
-}
-
-function goPrevPage() {
-    if (currentPage > 1) performSearch(currentPage - 1);
-}
-function goNextPage() {
-    if (hasNextPage) performSearch(currentPage + 1);
 }
 
 // 更新結果數量
@@ -311,7 +275,7 @@ function clearSearch() {
         minMatch: 0
     };
     
-    performSearch(1);
+    performSearch();
     Utils.showNotification('已清除所有搜尋條件', 'info');
 }
 
@@ -343,7 +307,7 @@ function removeSkillTag(index) {
     if (index >= 0 && index < currentSearch.skills.length) {
         currentSearch.skills.splice(index, 1);
         renderSkillTags();
-        performSearch(1);
+        performSearch();
     }
 }
 
@@ -418,7 +382,7 @@ function addSkillTag(name) {
     if (!currentSearch.skills.includes(val)) {
         currentSearch.skills.push(val);
         renderSkillTags();
-        performSearch(1);
+        performSearch();
     }
 }
 

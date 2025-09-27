@@ -17,6 +17,7 @@ if (strpos($requestUri, '/api/') === 0) {
 // 取得請求路徑
 $requestUri = $_SERVER['REQUEST_URI'];
 $path = parse_url($requestUri, PHP_URL_PATH);
+$path = str_replace('/portfolio/api/', '', $path);
 $path = str_replace('/api/', '', $path);
 $path = trim($path, '/');
 
@@ -40,7 +41,16 @@ error_log("API Debug - GET path param: " . (isset($_GET['path']) ? $_GET['path']
 error_log("API Debug - Path Parts: " . print_r($pathParts, true));
 
 // 路由到對應的 API 檔案
-if (empty($pathParts[0])) {
+if (empty($pathParts[0]) || $pathParts[0] === 'index.php' || strpos($pathParts[0], 'index.php') !== false) {
+    // 檢查是否有 action 參數
+    $action = $_GET['action'] ?? '';
+    
+    if ($action === 'random_portfolios') {
+        // 取得隨機作品
+        getRandomPortfolios();
+        exit;
+    }
+    
     // API 根目錄
     sendResponse([
         'message' => 'Portfolio+ API',
@@ -427,6 +437,54 @@ function handleUpload() {
         ], 200, '上傳成功');
     } else {
         sendError('檔案儲存失敗', 500);
+    }
+}
+
+// 取得隨機作品
+function getRandomPortfolios() {
+    try {
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 6;
+        
+        // 查詢隨機作品
+        $stmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                p.id,
+                p.title,
+                p.description,
+                p.cover_image as thumbnail_url,
+                c.name as category,
+                p.tags,
+                p.view_count,
+                p.like_count,
+                p.comment_count,
+                p.created_at,
+                u.username as author_name,
+                sp.display_name as author_display_name
+            FROM portfolios p
+            JOIN users u ON p.user_id = u.id
+            LEFT JOIN student_profiles sp ON u.id = sp.user_id
+            LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.status = 'published'
+            ORDER BY RAND()
+            LIMIT ?
+        ");
+        
+        $stmt->bind_param('i', $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $portfolios = $result->fetch_all(MYSQLI_ASSOC);
+        
+        // 處理標籤（從文字轉為陣列）
+        foreach ($portfolios as &$portfolio) {
+            $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
+            $portfolio['author_name'] = $portfolio['author_display_name'] ?: $portfolio['author_name'];
+        }
+        
+        sendResponse($portfolios, 200, '取得隨機作品成功');
+        
+    } catch (Exception $e) {
+        debugLog("取得隨機作品錯誤: " . $e->getMessage());
+        sendError('取得隨機作品失敗: ' . $e->getMessage(), 500);
     }
 }
 ?>

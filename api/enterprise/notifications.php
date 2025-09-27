@@ -80,12 +80,10 @@ function getNotifications() {
         SELECT 
             n.id, n.type, n.title, n.message, n.data, n.is_read, n.created_at,
             CASE 
-                WHEN n.type = 'job_application' THEN ja.id
                 WHEN n.type = 'enterprise' THEN ec.id
                 ELSE NULL
             END as related_id
         FROM notifications n
-        LEFT JOIN job_applications ja ON n.data LIKE CONCAT('%\"application_id\":', ja.id, '%')
         LEFT JOIN enterprise_contacts ec ON n.data LIKE CONCAT('%\"contact_id\":', ec.id, '%')
         $where
         ORDER BY n.created_at DESC
@@ -145,9 +143,11 @@ function getNotificationCount() {
     $stmt = $GLOBALS['conn']->prepare("
         SELECT 
             COUNT(*) as total_unread,
-            SUM(CASE WHEN type = 'job_application' THEN 1 ELSE 0 END) as job_applications,
             SUM(CASE WHEN type = 'enterprise' THEN 1 ELSE 0 END) as enterprise_contacts,
-            SUM(CASE WHEN type = 'system' THEN 1 ELSE 0 END) as system_notifications
+            SUM(CASE WHEN type = 'system' THEN 1 ELSE 0 END) as system_notifications,
+            SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes,
+            SUM(CASE WHEN type = 'comment' THEN 1 ELSE 0 END) as comments,
+            SUM(CASE WHEN type = 'view' THEN 1 ELSE 0 END) as views
         FROM notifications 
         WHERE user_id = ? AND is_read = 0
     ");
@@ -267,7 +267,6 @@ function getTimeAgo($datetime) {
 // 輔助函數：取得通知圖示
 function getNotificationIcon($type) {
     $iconMap = [
-        'job_application' => 'fas fa-file-alt',
         'enterprise' => 'fas fa-building',
         'system' => 'fas fa-cog',
         'like' => 'fas fa-heart',
@@ -280,7 +279,6 @@ function getNotificationIcon($type) {
 // 輔助函數：取得通知顏色
 function getNotificationColor($type) {
     $colorMap = [
-        'job_application' => '#007bff',
         'enterprise' => '#28a745',
         'system' => '#6c757d',
         'like' => '#dc3545',

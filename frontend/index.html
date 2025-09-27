@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         // 設定主色調主題
-        document.body.classList.add('main-theme');
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('main-theme');
+        });
     </script>
 </head>
 <body>
@@ -207,69 +209,15 @@
     <section id="categories" class="categories">
         <div class="container">
             <div class="section-header">
-                <h2>熱門作品</h2>
+                <h2>學生作品</h2>
                 <p>看看其他學生的精彩作品</p>
             </div>
             
-            <div class="portfolios-grid">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjY3ZWVhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPldlYiBEZXNpZ248L3RleHQ+PC9zdmc+" alt="作品圖片">
-                    </div>
-                    <div class="portfolio-content">
-                        <h3>響應式網站設計</h3>
-                        <p>使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站</p>
-                        <div class="portfolio-tags">
-                            <span class="tag">HTML5</span>
-                            <span class="tag">CSS3</span>
-                            <span class="tag">JavaScript</span>
-                        </div>
-                        <div class="portfolio-stats">
-                            <span><i class="fas fa-eye"></i> 156</span>
-                            <span><i class="fas fa-heart"></i> 23</span>
-                            <span><i class="fas fa-comment"></i> 8</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNzY0YmEyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1vYmlsZSBBcHA8L3RleHQ+PC9zdmc+" alt="作品圖片">
-                    </div>
-                    <div class="portfolio-content">
-                        <h3>行動應用程式</h3>
-                        <p>使用 React Native 開發的跨平台行動應用程式</p>
-                        <div class="portfolio-tags">
-                            <span class="tag">React Native</span>
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">Firebase</span>
-                        </div>
-                        <div class="portfolio-stats">
-                            <span><i class="fas fa-eye"></i> 203</span>
-                            <span><i class="fas fa-heart"></i> 45</span>
-                            <span><i class="fas fa-comment"></i> 12</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjA5M2ZiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRhdGEgVml6PC90ZXh0Pjwvc3ZnPg==" alt="作品圖片">
-                    </div>
-                    <div class="portfolio-content">
-                        <h3>數據視覺化</h3>
-                        <p>使用 D3.js 製作的互動式數據視覺化專案</p>
-                        <div class="portfolio-tags">
-                            <span class="tag">D3.js</span>
-                            <span class="tag">Python</span>
-                            <span class="tag">Pandas</span>
-                        </div>
-                        <div class="portfolio-stats">
-                            <span><i class="fas fa-eye"></i> 89</span>
-                            <span><i class="fas fa-heart"></i> 17</span>
-                            <span><i class="fas fa-comment"></i> 5</span>
-                        </div>
-                    </div>
+            <div class="portfolios-grid" id="portfoliosGrid">
+                <!-- 載入中狀態 -->
+                <div class="loading-state" id="portfoliosLoading">
+                    <div class="loading-spinner"></div>
+                    <p>載入學生作品中...</p>
                 </div>
             </div>
         </div>
@@ -371,7 +319,174 @@
         </div>
     </footer>
 
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=20250927"></script>
+    <script src="js/api-service.js?v=20250927"></script>
+    <script>
+        // 載入隨機作品 (v20250927)
+        async function loadRandomPortfolios() {
+            const portfoliosGrid = document.getElementById('portfoliosGrid');
+            const loadingState = document.getElementById('portfoliosLoading');
+            
+            try {
+                console.log('開始載入隨機作品...');
+                
+                // 顯示載入狀態
+                if (loadingState) {
+                    loadingState.style.display = 'block';
+                }
+                
+                // 發送 API 請求
+                const apiUrl = '/portfolio/api/random-portfolios.php?limit=6&t=' + Date.now();
+                console.log('API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // 先檢查回應內容類型
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    // 如果不是 JSON，先讀取文字內容
+                    const textResponse = await response.text();
+                    console.log('非 JSON 回應內容:', textResponse.substring(0, 500));
+                    throw new Error('API 回傳的不是 JSON 格式');
+                }
+                
+                const result = await response.json();
+                console.log('API 回應:', result);
+                
+                // 隱藏載入狀態
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
+                
+                if (result.status === 200 && result.data && result.data.length > 0) {
+                    // 渲染作品集
+                    renderPortfolios(result.data);
+                } else {
+                    // 顯示空狀態
+                    showEmptyState();
+                }
+                
+            } catch (error) {
+                console.error('載入隨機作品失敗:', error);
+                console.error('錯誤詳情:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
+                showErrorState();
+            }
+        }
+        
+        // 渲染作品集
+        function renderPortfolios(portfolios) {
+            const portfoliosGrid = document.getElementById('portfoliosGrid');
+            
+            portfoliosGrid.innerHTML = portfolios.map(portfolio => `
+                <div class="portfolio-card" onclick="viewPortfolio(${portfolio.id})">
+                    <div class="portfolio-image">
+                        <img src="${portfolio.thumbnail_url || getDefaultThumbnail(portfolio.category)}" 
+                             alt="${portfolio.title}" 
+                             onerror="this.src='${getDefaultThumbnail(portfolio.category)}'">
+                    </div>
+                    <div class="portfolio-content">
+                        <h3>${portfolio.title}</h3>
+                        <p>${portfolio.description || '精彩的作品展示'}</p>
+                        <div class="portfolio-tags">
+                            ${(portfolio.tags || []).slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="portfolio-stats">
+                            <span><i class="fas fa-eye"></i> ${portfolio.view_count || 0}</span>
+                            <span><i class="fas fa-heart"></i> ${portfolio.like_count || 0}</span>
+                            <span><i class="fas fa-comment"></i> ${portfolio.comment_count || 0}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 取得預設縮圖
+        function getDefaultThumbnail(category) {
+            const thumbnails = {
+                'web': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjY3ZWVhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPldlYiBEZXNpZ248L3RleHQ+PC9zdmc+',
+                'mobile': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNzY0YmEyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1vYmlsZSBBcHA8L3RleHQ+PC9zdmc+',
+                'data': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjA5M2ZiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRhdGEgVmlzPC90ZXh0Pjwvc3ZnPg==',
+                'design': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTY0YzQ0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRlc2lnbjwvdGV4dD48L3N2Zz4=',
+                'default': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTk5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBvcnRmb2xpbzwvdGV4dD48L3N2Zz4='
+            };
+            return thumbnails[category] || thumbnails.default;
+        }
+        
+        // 顯示空狀態
+        function showEmptyState() {
+            const portfoliosGrid = document.getElementById('portfoliosGrid');
+            portfoliosGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>暫無學生作品</h3>
+                    <p>目前還沒有學生上傳作品，請稍後再來查看</p>
+                </div>
+            `;
+        }
+        
+        // 顯示錯誤狀態
+        function showErrorState() {
+            const portfoliosGrid = document.getElementById('portfoliosGrid');
+            portfoliosGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>載入失敗</h3>
+                    <p>無法載入學生作品，請稍後再試</p>
+                    <button class="btn btn-primary" onclick="loadRandomPortfolios()">重新載入</button>
+                </div>
+            `;
+        }
+        
+        // 查看作品集
+        function viewPortfolio(portfolioId) {
+            // 跳轉到作品集詳情頁面
+            window.location.href = `student/portfolio-detail.html?id=${portfolioId}`;
+        }
+        
+        // 頁面載入時執行 (v20250927)
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('首頁 DOM 載入完成，開始載入隨機作品...');
+            
+            // 檢查必要的 DOM 元素
+            const portfoliosGrid = document.getElementById('portfoliosGrid');
+            const loadingState = document.getElementById('portfoliosLoading');
+            
+            console.log('portfoliosGrid:', portfoliosGrid);
+            console.log('loadingState:', loadingState);
+            
+            if (!portfoliosGrid) {
+                console.error('找不到 portfoliosGrid 元素');
+                return;
+            }
+            
+            if (!loadingState) {
+                console.error('找不到 loadingState 元素');
+                return;
+            }
+            
+            // 延遲執行，確保其他腳本已載入
+            setTimeout(() => {
+                console.log('開始執行 loadRandomPortfolios...');
+                loadRandomPortfolios();
+            }, 100);
+        });
+    </script>
     <script>
         // 企業入口功能
         async function enterEnterprise() {
@@ -516,6 +631,73 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* 載入狀態樣式 */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-state p {
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        /* 空狀態樣式 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            color: #333;
+        }
+        
+        .empty-state p {
+            margin: 0 0 20px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* 作品集卡片點擊效果 */
+        .portfolio-card {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .portfolio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
     </style>
 </body>

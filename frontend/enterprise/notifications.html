@@ -63,9 +63,11 @@
                         <div class="notifications-filters">
                             <button class="filter-btn active" onclick="filterNotifications('all')">全部</button>
                             <button class="filter-btn" onclick="filterNotifications('unread')">未讀</button>
-                            <button class="filter-btn" onclick="filterNotifications('application')">申請</button>
-                            <button class="filter-btn" onclick="filterNotifications('job')">職缺</button>
+                            <button class="filter-btn" onclick="filterNotifications('contact')">聯絡</button>
                             <button class="filter-btn" onclick="filterNotifications('system')">系統</button>
+                            <button class="filter-btn" onclick="filterNotifications('like')">讚</button>
+                            <button class="filter-btn" onclick="filterNotifications('comment')">評論</button>
+                            <button class="filter-btn" onclick="filterNotifications('view')">瀏覽</button>
                         </div>
                     </div>
                     
@@ -93,28 +95,17 @@
                             <div class="stat-card">
                                 <div class="stat-content-box">
                                     <div class="number">0</div>
-                                    <div class="label">申請</div>
+                                    <div class="label">聯絡</div>
                                 </div>
                             </div>
                             <div class="stat-card">
                                 <div class="stat-content-box">
                                     <div class="number">0</div>
-                                    <div class="label">職缺</div>
+                                    <div class="label">系統</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                            </li>
-                            <li class="type-item">
-                                <div class="type-label">
-                                    <div class="type-icon notification-view"></div>
-                                    瀏覽通知
-                                </div>
-                                <span class="type-count">4</span>
-                            </li>
-                            <li class="type-item">
-                                <div class="type-label">
-
 
                     <!-- 快速操作 -->
                     <div class="sidebar-card">
@@ -139,6 +130,8 @@
         </div>
     </main>
 
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/enterprise/notifications.js"></script>
     <script>

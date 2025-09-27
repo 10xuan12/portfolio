@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： localhost
--- 產生時間： 2025-09-22 12:12:46
+-- 產生時間： 2025-09-27 10:15:33
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -312,6 +312,15 @@ CREATE TABLE `enterprise_contacts` (
   `is_read` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- 傾印資料表的資料 `enterprise_contacts`
+--
+
+INSERT INTO `enterprise_contacts` (`id`, `enterprise_id`, `student_id`, `contact_type`, `subject`, `message`, `contact_date`, `is_read`) VALUES
+(1, 10, 5, 'message', '關於作品 Python 爬蟲程式開發', '您好，我們對您的作品「Python 爬蟲程式開發」很感興趣，方便進一步聯繫嗎？', '2025-09-24 07:44:39', 0),
+(2, 10, 5, 'message', '關於作品 Python 爬蟲程式開發', '您好，我們對您的作品「Python 爬蟲程式開發」很感興趣，方便進一步聯繫嗎？', '2025-09-24 07:44:47', 0),
+(3, 10, 5, 'message', '企業聯絡', '您好，我們對您的背景（Python, JavaScript, HTML/CSS）很感興趣，方便進一步聯繫嗎？', '2025-09-24 08:37:55', 0);
+
 -- --------------------------------------------------------
 
 --
@@ -349,9 +358,10 @@ CREATE TABLE `enterprise_profiles` (
 --
 
 INSERT INTO `enterprise_profiles` (`id`, `user_id`, `company_name`, `company_type`, `industry`, `company_size`, `founded_year`, `employee_count`, `revenue_range`, `description`, `logo_url`, `website`, `address`, `phone`, `contact_person`, `contact_email`, `social_media`, `company_culture`, `benefits_description`, `is_verified`, `verification_date`, `created_at`, `updated_at`) VALUES
-(2, 10, '台灣微軟股份有限公司', '科技', '資訊軟體', '201-500', 1990, 300, 'NT$1B+', '微軟台灣分公司，關注雲服務與企業數位轉型。', NULL, 'https://www.microsoft.com/zh-tw', '台北市信義區', '02-1234-5678', 'HR 團隊', 'hr@microsoft.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/microsoft\", \"website\": \"https://www.microsoft.com\"}', '多元包容、創新為本', '員工旅遊、年終獎金', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(2, 10, '台灣微軟股份有限公司', '科技', '資訊軟體', '201-500', 1990, 300, 'NT$1B+', '微軟台灣分公司，關注雲服務與企業數位轉型。', NULL, 'https://www.microsoft.com/zh-tw', '台北市信義區', '02-1234-5678', 'HR 團隊', 'hr@microsoft.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/microsoft\", \"website\": \"https://www.microsoft.com\"}', '多元包容、創新為本', '員工旅遊、年終獎金', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-27 07:58:53'),
 (3, 11, 'Google 台灣', '科技', '網路服務', '201-500', 2006, 400, 'NT$1B+', 'Google 在台灣的研發與營運據點。', NULL, 'https://about.google', '台北市信義區', '02-5678-1234', 'HR Team', 'hr@google.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/google\", \"website\": \"https://about.google\"}', '創新、使用者至上', '彈性工時、住宿補助', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
-(4, 12, 'Apple 台灣', '科技', '硬體/軟體', '201-500', 2001, 350, 'NT$1B+', 'Apple 在台灣的設計與營運團隊。', NULL, 'https://www.apple.com/tw', '台北市內湖區', '02-9876-5432', 'HR Team', 'hr@apple.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/apple\", \"website\": \"https://www.apple.com\"}', '追求完美、設計導向', '員購福利、健康保險', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56');
+(4, 12, 'Apple 台灣', '科技', '硬體/軟體', '201-500', 2001, 350, 'NT$1B+', 'Apple 在台灣的設計與營運團隊。', NULL, 'https://www.apple.com/tw', '台北市內湖區', '02-9876-5432', 'HR Team', 'hr@apple.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/apple\", \"website\": \"https://www.apple.com\"}', '追求完美、設計導向', '員購福利、健康保險', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(5, 13, 'test123', NULL, '服務業', '', NULL, NULL, NULL, '132', NULL, NULL, '台中市', '0965418312', 'test123', NULL, NULL, NULL, NULL, 0, NULL, '2025-09-24 07:08:57', '2025-09-24 07:09:20');
 
 -- --------------------------------------------------------
 
@@ -375,8 +385,10 @@ CREATE TABLE `enterprise_recommendations` (
 --
 
 INSERT INTO `enterprise_recommendations` (`id`, `enterprise_id`, `student_id`, `score`, `reason`, `meta`, `created_at`, `expires_at`) VALUES
-(1, 10, 5, 88.00, '與近期瀏覽技能相符', '{\"kw\": [\"javascript\", \"react\", \"ui\"]}', '2025-09-22 09:21:56', '2025-09-29 09:21:56'),
-(2, 11, 5, 90.00, '資料分析技能相符', '{\"kw\": [\"python\", \"data\", \"dashboard\"]}', '2025-09-22 09:23:30', '2025-09-29 09:23:30');
+(2, 11, 5, 90.00, '資料分析技能相符', '{\"kw\": [\"python\", \"data\", \"dashboard\"]}', '2025-09-22 09:23:30', '2025-09-29 09:23:30'),
+(3, 13, 5, 57.00, '熱門優質學生', '{\"kw\":[]}', '2025-09-24 07:09:45', '2025-10-01 07:09:45'),
+(10, 10, 5, 59.00, '熱門優質學生', '{\"kw\":[]}', '2025-09-27 07:27:45', '2025-10-04 07:27:44'),
+(11, 10, 9, 41.00, '熱門優質學生', '{\"kw\":[]}', '2025-09-27 07:27:45', '2025-10-04 07:27:44');
 
 -- --------------------------------------------------------
 
@@ -460,8 +472,9 @@ CREATE TABLE `jobs` (
 --
 
 INSERT INTO `jobs` (`id`, `enterprise_id`, `title`, `description`, `requirements`, `responsibilities`, `salary_min`, `salary_max`, `salary_type`, `job_type`, `location`, `department`, `experience_level`, `education_level`, `skills_required`, `benefits`, `status`, `view_count`, `application_count`, `bookmark_count`, `is_featured`, `published_at`, `deadline`, `created_at`, `updated_at`) VALUES
-(1, 10, '前端工程師', '負責前端產品開發與最佳化。', '熟悉 ES6、React、API 串接', '與設計/後端協作、撰寫單元測試', 60000.00, 100000.00, '月薪', '全職', '台北市', '技術部', '1-3年', '大學', 'JavaScript,React,HTML,CSS,Git', '員工旅遊, 年終獎金', 'active', 0, 0, 0, 0, '2025-09-22 09:18:56', '2025-11-21', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
-(2, 11, '資料分析師', '負責數據分析與可視化儀表板。', '熟悉 SQL、Python、BI 工具', '建立數據報表、協助決策', 70000.00, 110000.00, '月薪', '全職', '台北市', '數據部', '1-3年', '大學', 'Python,SQL,PowerBI,Tableau', '年終獎金, 在家工作', 'active', 0, 0, 0, 0, '2025-09-22 09:18:56', '2025-11-06', '2025-09-22 09:18:56', '2025-09-22 09:18:56');
+(1, 10, '前端工程師', '負責前端產品開發與最佳化。', 'JavaScript,React,HTML,CSS,Git,123', '', 60000.00, 100000.00, '月薪', '實習', '台北市', '技術部', '1-3年', '大學', 'JavaScript,React,HTML,CSS,Git,123', '', 'active', 0, 0, 0, 0, '2025-09-27 06:51:37', '2025-11-21', '2025-09-22 09:18:56', '2025-09-27 06:55:54'),
+(2, 11, '資料分析師', '負責數據分析與可視化儀表板。', '熟悉 SQL、Python、BI 工具', '建立數據報表、協助決策', 70000.00, 110000.00, '月薪', '全職', '台北市', '數據部', '1-3年', '大學', 'Python,SQL,PowerBI,Tableau', '年終獎金, 在家工作', 'active', 0, 0, 0, 0, '2025-09-22 09:18:56', '2025-11-06', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(3, 10, 'Test111', '123', 'java', '1123', 0.00, 63333.00, '月薪', '實習', '台北市', '技術部', '1-3年', '博士', 'java', '123', 'active', 0, 0, 0, 0, '2025-09-27 07:25:10', '2025-09-27', '2025-09-27 07:25:10', '2025-09-27 07:25:10');
 
 -- --------------------------------------------------------
 
@@ -486,6 +499,15 @@ CREATE TABLE `job_applications` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `job_applications`
+--
+
+INSERT INTO `job_applications` (`id`, `job_id`, `student_id`, `status`, `cover_letter`, `resume_url`, `portfolio_url`, `expected_salary`, `available_date`, `interview_date`, `interview_location`, `interview_notes`, `enterprise_notes`, `created_at`, `updated_at`) VALUES
+(1, 1, 5, 'pending', '我對前端工程師職位很感興趣...', NULL, NULL, 45000.00, '2025-10-01', NULL, NULL, NULL, NULL, '2025-09-27 07:04:05', '2025-09-27 07:04:05'),
+(2, 1, 9, 'accepted', '我有豐富的程式設計經驗...', NULL, NULL, 50000.00, '2025-10-15', NULL, NULL, NULL, '', '2025-09-27 07:04:05', '2025-09-27 07:22:27'),
+(3, 2, 5, 'pending', '我專精於資料分析...', NULL, NULL, 55000.00, '2025-11-01', NULL, NULL, NULL, NULL, '2025-09-27 07:04:05', '2025-09-27 07:04:05');
 
 -- --------------------------------------------------------
 
@@ -568,10 +590,58 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`
 (7, 5, 'comment', '你的作品收到新的留言', '有人於「資料儀表板設計與視覺化」留下好評。', '{\"portfolio_id\": 20, \"comment_preview\": \"視覺排版清楚...\"}', 0, '2025-09-08 02:35:03'),
 (8, 12, 'system', '歡迎使用企業儀表板', '您已成功加入企業端，開始搜尋合適人才吧！', '{\"level\": \"info\"}', 0, '2025-09-22 09:18:57'),
 (9, 11, 'system', '歡迎使用企業儀表板', '您已成功加入企業端，開始搜尋合適人才吧！', '{\"level\": \"info\"}', 0, '2025-09-22 09:18:57'),
-(10, 10, 'system', '歡迎使用企業儀表板', '您已成功加入企業端，開始搜尋合適人才吧！', '{\"level\": \"info\"}', 0, '2025-09-22 09:18:57'),
+(10, 10, 'system', '歡迎使用企業儀表板', '您已成功加入企業端，開始搜尋合適人才吧！', '{\"level\": \"info\"}', 1, '2025-09-22 09:18:57'),
 (11, 5, 'enterprise', '企業邀請面談', 'Apple HR 邀請你進行面談', '{\"enterprise\": \"Apple\", \"contact\": \"hr@apple.com.tw\"}', 0, '2025-09-17 04:30:00'),
 (12, 5, 'view', '有人瀏覽了你的作品', '你的作品「Python 爬蟲程式開發」被 Apple HR 瀏覽。', '{\"portfolio_id\": 9, \"viewer\": \"Apple HR\"}', 0, '2025-09-17 04:31:00'),
-(13, 5, 'like', '你的作品收到新的讚', 'Google HR 對你的作品「電商網站使用者行為分析」按讚。', '{\"portfolio_id\": 6, \"liker\": \"Google HR\"}', 0, '2025-09-17 04:32:00');
+(13, 5, 'like', '你的作品收到新的讚', 'Google HR 對你的作品「電商網站使用者行為分析」按讚。', '{\"portfolio_id\": 6, \"liker\": \"Google HR\"}', 0, '2025-09-17 04:32:00'),
+(14, 5, 'enterprise', '台灣微軟股份有限公司 聯絡了您', '有企業對您的作品感興趣，請查看聯絡內容。', '{\"contact_id\":0}', 0, '2025-09-24 07:44:40'),
+(15, 5, 'enterprise', '台灣微軟股份有限公司 聯絡了您', '有企業對您的作品感興趣，請查看聯絡內容。', '{\"contact_id\":0}', 0, '2025-09-24 07:44:47'),
+(16, 5, 'enterprise', '台灣微軟股份有限公司 聯絡了您', '有企業對您的作品感興趣，請查看聯絡內容。', '{\"contact_id\":0}', 0, '2025-09-24 08:37:55'),
+(17, 10, 'system', '系統維護通知', '系統將於今晚 23:00-01:00 進行例行維護，期間可能影響服務使用。', '{\"level\": \"warning\", \"maintenance_time\": \"2025-01-15 23:00:00\"}', 1, '2025-01-15 02:30:00'),
+(18, 10, 'system', '新功能上線', '企業端新增「批量聯絡」功能，可一次聯絡多位候選人。', '{\"feature\": \"batch_contact\", \"version\": \"2.1.0\"}', 1, '2025-01-14 07:20:00'),
+(19, 10, 'system', '資料備份完成', '您的企業資料已成功備份至雲端。', '{\"backup_date\": \"2025-01-14\", \"size\": \"2.3MB\"}', 1, '2025-01-13 18:00:00'),
+(20, 11, 'system', '帳戶安全提醒', '偵測到異常登入活動，請檢查您的帳戶安全設定。', '{\"security_level\": \"high\", \"login_location\": \"台北市\"}', 0, '2025-01-15 01:15:00'),
+(21, 11, 'system', 'API 配額更新', '您的 API 使用配額已更新，本月剩餘 95% 配額。', '{\"quota_used\": \"5%\", \"quota_remaining\": \"95%\"}', 0, '2025-01-14 04:00:00'),
+(22, 12, 'system', '服務條款更新', '我們已更新服務條款，請查看最新版本。', '{\"document_version\": \"v3.2\", \"effective_date\": \"2025-01-20\"}', 0, '2025-01-13 08:45:00'),
+(23, 12, 'system', '付款成功', '您的 Premium 方案付款已成功處理。', '{\"amount\": \"2990\", \"currency\": \"TWD\", \"plan\": \"premium\"}', 1, '2025-01-12 02:30:00'),
+(24, 13, 'system', '歡迎使用企業版', '感謝您選擇 Portfolio+ 企業版，開始尋找優秀人才吧！', '{\"welcome_bonus\": \"30天免費試用\"}', 0, '2025-01-15 00:00:00'),
+(25, 10, 'enterprise', '學生主動聯絡', '學生 黃玟瑄 對您的職缺「軟體工程師」感興趣，已發送履歷。', '{\"contact_id\": 1, \"student_name\": \"黃玟瑄\", \"job_title\": \"軟體工程師\", \"resume_sent\": true}', 1, '2025-01-15 06:30:00'),
+(26, 10, 'enterprise', '學生主動聯絡', '學生 王小明 詢問關於「資料分析師」職缺的詳細資訊。', '{\"contact_id\": 2, \"student_name\": \"王小明\", \"job_title\": \"資料分析師\", \"inquiry_type\": \"job_details\"}', 1, '2025-01-15 03:20:00'),
+(27, 10, 'enterprise', '學生主動聯絡', '學生 李美華 對您的公司文化很感興趣，希望了解更多。', '{\"contact_id\": 3, \"student_name\": \"李美華\", \"inquiry_type\": \"company_culture\"}', 1, '2025-01-14 08:45:00'),
+(28, 11, 'enterprise', '學生主動聯絡', '學生 張志強 對您的職缺「前端工程師」感興趣，已發送作品集。', '{\"contact_id\": 4, \"student_name\": \"張志強\", \"job_title\": \"前端工程師\", \"portfolio_sent\": true}', 0, '2025-01-15 05:15:00'),
+(29, 11, 'enterprise', '學生主動聯絡', '學生 陳雅婷 詢問實習機會，對「UI/UX 設計師」職位有興趣。', '{\"contact_id\": 5, \"student_name\": \"陳雅婷\", \"job_title\": \"UI/UX 設計師\", \"position_type\": \"internship\"}', 0, '2025-01-15 02:30:00'),
+(30, 12, 'enterprise', '學生主動聯絡', '學生 林志明 對您的職缺「iOS 開發工程師」感興趣，已發送履歷。', '{\"contact_id\": 6, \"student_name\": \"林志明\", \"job_title\": \"iOS 開發工程師\", \"resume_sent\": true}', 0, '2025-01-15 04:00:00'),
+(31, 12, 'enterprise', '學生主動聯絡', '學生 吳佳玲 詢問關於「產品經理」職缺的面試流程。', '{\"contact_id\": 7, \"student_name\": \"吳佳玲\", \"job_title\": \"產品經理\", \"inquiry_type\": \"interview_process\"}', 1, '2025-01-14 06:20:00'),
+(32, 10, 'view', '職缺被瀏覽', '您的職缺「軟體工程師」被 15 位求職者瀏覽。', '{\"job_id\": 1, \"job_title\": \"軟體工程師\", \"view_count\": 15, \"viewers\": [\"學生A\", \"學生B\", \"學生C\"]}', 1, '2025-01-15 07:30:00'),
+(33, 10, 'view', '職缺被瀏覽', '您的職缺「資料分析師」被 8 位求職者瀏覽。', '{\"job_id\": 2, \"job_title\": \"資料分析師\", \"view_count\": 8, \"viewers\": [\"學生D\", \"學生E\"]}', 1, '2025-01-15 06:15:00'),
+(34, 10, 'view', '職缺被瀏覽', '您的職缺「專案經理」被 12 位求職者瀏覽。', '{\"job_id\": 3, \"job_title\": \"專案經理\", \"view_count\": 12, \"viewers\": [\"學生F\", \"學生G\", \"學生H\"]}', 1, '2025-01-14 10:20:00'),
+(35, 11, 'view', '職缺被瀏覽', '您的職缺「前端工程師」被 22 位求職者瀏覽。', '{\"job_id\": 4, \"job_title\": \"前端工程師\", \"view_count\": 22, \"viewers\": [\"學生I\", \"學生J\", \"學生K\"]}', 0, '2025-01-15 08:45:00'),
+(36, 11, 'view', '職缺被瀏覽', '您的職缺「後端工程師」被 18 位求職者瀏覽。', '{\"job_id\": 5, \"job_title\": \"後端工程師\", \"view_count\": 18, \"viewers\": [\"學生L\", \"學生M\"]}', 0, '2025-01-15 05:30:00'),
+(37, 12, 'view', '職缺被瀏覽', '您的職缺「iOS 開發工程師」被 25 位求職者瀏覽。', '{\"job_id\": 6, \"job_title\": \"iOS 開發工程師\", \"view_count\": 25, \"viewers\": [\"學生N\", \"學生O\", \"學生P\"]}', 0, '2025-01-15 09:00:00'),
+(38, 12, 'view', '職缺被瀏覽', '您的職缺「產品經理」被 10 位求職者瀏覽。', '{\"job_id\": 7, \"job_title\": \"產品經理\", \"view_count\": 10, \"viewers\": [\"學生Q\", \"學生R\"]}', 1, '2025-01-14 11:15:00'),
+(39, 10, 'like', '職缺被按讚', '您的職缺「軟體工程師」收到了新的讚！', '{\"job_id\": 1, \"job_title\": \"軟體工程師\", \"liker_name\": \"學生A\", \"like_count\": 5}', 1, '2025-01-15 08:20:00'),
+(40, 10, 'like', '職缺被按讚', '您的職缺「資料分析師」收到了新的讚！', '{\"job_id\": 2, \"job_title\": \"資料分析師\", \"liker_name\": \"學生B\", \"like_count\": 3}', 1, '2025-01-15 07:10:00'),
+(41, 10, 'like', '職缺被按讚', '您的職缺「專案經理」收到了新的讚！', '{\"job_id\": 3, \"job_title\": \"專案經理\", \"liker_name\": \"學生C\", \"like_count\": 7}', 1, '2025-01-14 09:30:00'),
+(42, 11, 'like', '職缺被按讚', '您的職缺「前端工程師」收到了新的讚！', '{\"job_id\": 4, \"job_title\": \"前端工程師\", \"liker_name\": \"學生D\", \"like_count\": 12}', 0, '2025-01-15 09:45:00'),
+(43, 11, 'like', '職缺被按讚', '您的職缺「後端工程師」收到了新的讚！', '{\"job_id\": 5, \"job_title\": \"後端工程師\", \"liker_name\": \"學生E\", \"like_count\": 8}', 0, '2025-01-15 06:20:00'),
+(44, 12, 'like', '職缺被按讚', '您的職缺「iOS 開發工程師」收到了新的讚！', '{\"job_id\": 6, \"job_title\": \"iOS 開發工程師\", \"liker_name\": \"學生F\", \"like_count\": 15}', 0, '2025-01-15 10:00:00'),
+(45, 12, 'like', '職缺被按讚', '您的職缺「產品經理」收到了新的讚！', '{\"job_id\": 7, \"job_title\": \"產品經理\", \"liker_name\": \"學生G\", \"like_count\": 6}', 1, '2025-01-14 12:10:00'),
+(46, 10, 'comment', '職缺收到評論', '您的職缺「軟體工程師」收到了新的評論。', '{\"job_id\": 1, \"job_title\": \"軟體工程師\", \"commenter_name\": \"學生H\", \"comment_preview\": \"這個職缺看起來很有挑戰性...\"}', 1, '2025-01-15 08:30:00'),
+(47, 10, 'comment', '職缺收到評論', '您的職缺「資料分析師」收到了新的評論。', '{\"job_id\": 2, \"job_title\": \"資料分析師\", \"commenter_name\": \"學生I\", \"comment_preview\": \"薪資待遇很吸引人...\"}', 1, '2025-01-15 07:40:00'),
+(48, 10, 'comment', '職缺收到評論', '您的職缺「專案經理」收到了新的評論。', '{\"job_id\": 3, \"job_title\": \"專案經理\", \"commenter_name\": \"學生J\", \"comment_preview\": \"公司文化很好...\"}', 1, '2025-01-14 10:50:00'),
+(49, 11, 'comment', '職缺收到評論', '您的職缺「前端工程師」收到了新的評論。', '{\"job_id\": 4, \"job_title\": \"前端工程師\", \"commenter_name\": \"學生K\", \"comment_preview\": \"技術棧很新穎...\"}', 0, '2025-01-15 09:50:00'),
+(50, 11, 'comment', '職缺收到評論', '您的職缺「後端工程師」收到了新的評論。', '{\"job_id\": 5, \"job_title\": \"後端工程師\", \"commenter_name\": \"學生L\", \"comment_preview\": \"工作環境很棒...\"}', 0, '2025-01-15 06:50:00'),
+(51, 12, 'comment', '職缺收到評論', '您的職缺「iOS 開發工程師」收到了新的評論。', '{\"job_id\": 6, \"job_title\": \"iOS 開發工程師\", \"commenter_name\": \"學生M\", \"comment_preview\": \"Apple 的技術很先進...\"}', 0, '2025-01-15 10:10:00'),
+(52, 12, 'comment', '職缺收到評論', '您的職缺「產品經理」收到了新的評論。', '{\"job_id\": 7, \"job_title\": \"產品經理\", \"commenter_name\": \"學生N\", \"comment_preview\": \"產品思維很重要...\"}', 1, '2025-01-14 12:30:00'),
+(53, 10, 'system', '月度報告', '您的 1 月份招聘報告已生成，共收到 45 份履歷。', '{\"report_month\": \"2025-01\", \"resume_count\": 45, \"interview_count\": 12}', 1, '2025-01-01 01:00:00'),
+(54, 10, 'enterprise', '學生主動聯絡', '學生 陳小華 對您的職缺「DevOps 工程師」感興趣。', '{\"contact_id\": 8, \"student_name\": \"陳小華\", \"job_title\": \"DevOps 工程師\"}', 1, '2025-01-13 03:30:00'),
+(55, 10, 'view', '職缺被瀏覽', '您的職缺「DevOps 工程師」被 6 位求職者瀏覽。', '{\"job_id\": 8, \"job_title\": \"DevOps 工程師\", \"view_count\": 6}', 1, '2025-01-13 02:15:00'),
+(56, 11, 'system', '帳戶升級', '您的帳戶已升級至 Premium 方案，享受更多功能。', '{\"plan\": \"premium\", \"features\": [\"advanced_search\", \"bulk_contact\"]}', 1, '2025-01-10 06:20:00'),
+(57, 11, 'like', '職缺被按讚', '您的職缺「全端工程師」收到了新的讚！', '{\"job_id\": 9, \"job_title\": \"全端工程師\", \"liker_name\": \"學生O\", \"like_count\": 9}', 1, '2025-01-12 08:40:00'),
+(58, 11, 'comment', '職缺收到評論', '您的職缺「全端工程師」收到了新的評論。', '{\"job_id\": 9, \"job_title\": \"全端工程師\", \"commenter_name\": \"學生P\", \"comment_preview\": \"技術要求很全面...\"}', 1, '2025-01-12 09:20:00'),
+(59, 12, 'system', '面試安排', '您有 3 場面試安排在明天，請確認時間。', '{\"interview_count\": 3, \"date\": \"2025-01-16\", \"candidates\": [\"學生Q\", \"學生R\", \"學生S\"]}', 0, '2025-01-15 10:30:00'),
+(60, 12, 'enterprise', '學生主動聯絡', '學生 黃小明 詢問關於「硬體工程師」職缺的詳細資訊。', '{\"contact_id\": 9, \"student_name\": \"黃小明\", \"job_title\": \"硬體工程師\", \"inquiry_type\": \"job_details\"}', 0, '2025-01-15 09:15:00'),
+(61, 12, 'view', '職缺被瀏覽', '您的職缺「硬體工程師」被 4 位求職者瀏覽。', '{\"job_id\": 10, \"job_title\": \"硬體工程師\", \"view_count\": 4}', 1, '2025-01-14 13:00:00');
 
 -- --------------------------------------------------------
 
@@ -632,10 +702,10 @@ INSERT INTO `portfolios` (`id`, `user_id`, `title`, `description`, `category_id`
 (9, 5, 'Python 爬蟲程式開發', '開發自動化網頁爬蟲程式，用於收集和分析網路數據，支援多種網站格式和反爬蟲機制。', 27, 'Python, 爬蟲, 自動化, 數據收集, Selenium', 'published', '/portfolio/uploads/portfolios/python-scraper.jpg', '## 專案描述\n\n開發一個功能完整的網頁爬蟲系統，能夠自動化收集網路數據，支援多種網站格式和反爬蟲機制。\n\n## 技術特點\n- 使用 Selenium 處理動態內容\n- 支援多線程爬取\n- 自動處理反爬蟲機制\n- 數據清洗和格式化\n\n## 主要功能\n1. 自動化登入\n2. 數據提取\n3. 錯誤處理\n4. 數據導出\n\n## 應用場景\n- 電商價格監控\n- 新聞內容收集\n- 社交媒體分析\n- 市場研究數據', 178, 28, 0, 0, 0, '2024-09-10 08:45:00', '2025-08-29 07:07:41', '2025-09-17 09:23:49'),
 (10, 5, '專案管理系統開發', '使用 React 和 Node.js 開發專案管理系統，包含任務分配、進度追蹤、團隊協作等功能。', 27, 'React, Node.js, 專案管理, 團隊協作, 任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 145, 19, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:07:41', '2025-09-17 09:14:12'),
 (15, 5, '專案管理系統開發', '使用 React 和 Node.js 開發專案管理系統，包含任務分配、進度追蹤、團隊協作等功能。', 15, 'React, Node.js, 專案管理, 團隊協作, 任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 146, 19, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:10:55', '2025-09-15 09:52:49'),
-(16, 5, '我的第一個作品', '這是一個範例作品描述', 34, '範例,Demo', 'published', NULL, '內容...', 13, 2, 1, 0, 0, '2025-08-29 07:59:32', '2025-08-29 07:59:32', '2025-09-17 09:25:25'),
+(16, 5, '我的第一個作品', '這是一個範例作品描述', 34, '範例,Demo', 'published', NULL, '內容...', 16, 2, 1, 0, 0, '2025-08-29 07:59:32', '2025-08-29 07:59:32', '2025-09-24 07:54:29'),
 (18, 5, '資料科學作品範例（測試）', '這是用於測試的作品描述。', 27, 'Python, 數據分析, 測試', 'published', '/portfolio/uploads/portfolios/test-cover.jpg', '## 測試內容', 3, 0, 0, 0, 0, '2025-09-02 09:31:09', '2025-09-02 09:31:09', '2025-09-17 09:24:13'),
-(21, 5, 'JAVA', 'JAVA新增', 27, 'java', 'draft', NULL, NULL, 70, 1, 4, 3, 0, NULL, '2025-09-15 06:05:18', '2025-09-17 09:13:54'),
-(27, 9, 'Python', 'Python計算機', 27, '', 'draft', NULL, NULL, 1, 0, 0, 0, 0, NULL, '2025-09-19 02:47:51', '2025-09-19 02:48:00');
+(21, 5, 'JAVA', 'JAVA新增', 27, 'java', 'published', NULL, NULL, 70, 1, 4, 3, 0, NULL, '2025-09-15 06:05:18', '2025-09-24 07:47:23'),
+(27, 9, 'Python', 'Python計算機', 27, '', 'published', NULL, NULL, 2, 0, 1, 0, 0, NULL, '2025-09-19 02:47:51', '2025-09-24 07:48:10');
 
 -- --------------------------------------------------------
 
@@ -665,7 +735,8 @@ INSERT INTO `portfolio_comments` (`id`, `portfolio_id`, `user_id`, `content`, `l
 (4, 21, 5, '123', 1, 1, '2025-09-15 17:52:30', '2025-09-16 13:23:22'),
 (5, 21, 5, '很讚123', 0, 1, '2025-09-16 14:04:09', '2025-09-16 14:04:09'),
 (6, 16, 5, '讚喔', 0, 1, '2025-09-16 14:07:55', '2025-09-16 14:07:55'),
-(7, 21, 5, '123456', 0, 1, '2025-09-17 16:17:42', '2025-09-17 16:17:42');
+(7, 21, 5, '123456', 0, 1, '2025-09-17 16:17:42', '2025-09-17 16:17:42'),
+(8, 27, 10, '好讚', 0, 1, '2025-09-24 15:48:10', '2025-09-24 15:48:10');
 
 -- --------------------------------------------------------
 
@@ -760,7 +831,7 @@ CREATE TABLE `student_profiles` (
 
 INSERT INTO `student_profiles` (`id`, `user_id`, `first_name`, `last_name`, `display_name`, `gender`, `birth_date`, `phone`, `address`, `bio`, `avatar_url`, `student_id`, `major`, `school`, `grade`, `graduation_year`, `skills`, `interests`, `created_at`, `updated_at`) VALUES
 (1, 5, '玟瑄', '黃', '黃玟瑄', '女', '2000-01-15', '0912-345-678', '台中市西區精誠路123號', '我是靜宜大學資訊管理學系的學生，對數位行銷和資料分析有濃厚興趣。喜歡學習新技術，希望能在畢業後從事相關工作。', 'uploads/avatars/avatar_5_1758098146.jpg', '411146708', '資訊管理學系', '靜宜大學', '碩士生', 2026, 'Python, JavaScript, HTML/CSS, SQL, Excel, PowerBI, 數位行銷, 資料分析', '人工智慧, 大數據分析, 數位行銷, 使用者體驗設計, 專案管理', '2025-08-29 06:34:32', '2025-09-17 08:39:56'),
-(9, 9, '玟瑄', '林', '玟瑄 林', NULL, NULL, '0965418312', '台北市大安區復興南路一段 390 號', NULL, NULL, NULL, '國際企業學系', NULL, '大學三年級', NULL, NULL, NULL, '2025-09-19 02:31:22', '2025-09-19 02:31:22');
+(9, 9, '玟瑄', '林', '林玟瑄', NULL, NULL, '0965418312', '台北市大安區復興南路一段 390 號', NULL, NULL, NULL, '國際企業學系', NULL, '大學三年級', NULL, NULL, NULL, '2025-09-19 02:31:22', '2025-09-24 08:26:25');
 
 -- --------------------------------------------------------
 
@@ -777,6 +848,49 @@ CREATE TABLE `talent_search_logs` (
   `duration_ms` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `talent_search_logs`
+--
+
+INSERT INTO `talent_search_logs` (`id`, `enterprise_id`, `query`, `filters`, `result_count`, `duration_ms`, `created_at`) VALUES
+(1, 10, '', '{\"skills\":\"\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 19, '2025-09-24 07:17:47'),
+(2, 10, '', '{\"skills\":\"\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 7, '2025-09-24 07:17:47'),
+(3, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 28, '2025-09-24 08:02:56'),
+(4, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 84, '2025-09-24 08:04:40'),
+(5, 10, '', '{\"skills\":\"\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 1642, '2025-09-24 08:19:00'),
+(6, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 15, '2025-09-24 08:19:13'),
+(7, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 125, '2025-09-24 08:19:22'),
+(8, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 19, '2025-09-24 08:21:01'),
+(9, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\\u5927\\u5b78\\u4e09\\u5e74\\u7d1a\",\"minMatch\":0}', 1, 39, '2025-09-24 08:31:57'),
+(10, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\\u5927\\u5b78\\u4e09\\u5e74\\u7d1a\",\"minMatch\":0}', 1, 15, '2025-09-24 08:32:06'),
+(11, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\\u5927\\u5b78\\u4e09\\u5e74\\u7d1a\",\"minMatch\":0}', 1, 16, '2025-09-24 08:32:10'),
+(12, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 19, '2025-09-24 08:37:46'),
+(13, 10, '', '{\"skills\":\"\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 17, '2025-09-24 08:39:06'),
+(14, 10, '', '{\"skills\":\"\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 7, '2025-09-24 08:39:06'),
+(15, 10, '', '{\"skills\":\"python\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 14, '2025-09-24 08:39:12'),
+(16, 10, '', '{\"skills\":\"python\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 6, '2025-09-24 08:39:12'),
+(17, 10, '', '{\"skills\":\"excel\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 32, '2025-09-24 08:39:16'),
+(18, 10, '', '{\"skills\":\"excel\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 6, '2025-09-24 08:39:16'),
+(19, 10, '', '{\"skills\":\"excel\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 1, 30, '2025-09-24 08:39:17'),
+(20, 10, '', '{\"skills\":\"excel\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 1, 6, '2025-09-24 08:39:17'),
+(21, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 86, '2025-09-24 08:39:19'),
+(22, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 8, '2025-09-24 08:39:20'),
+(23, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 25, '2025-09-27 06:43:30'),
+(24, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 12, '2025-09-27 06:44:10'),
+(25, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 7, '2025-09-27 06:44:10'),
+(26, 10, '', '{\"skills\":\"html\\/css\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 1, 18, '2025-09-27 06:44:19'),
+(27, 10, '', '{\"skills\":\"html\\/css\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 1, 10, '2025-09-27 06:44:19'),
+(28, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 13, '2025-09-27 07:27:33'),
+(29, 10, '', '{\"skills\":\"\",\"department\":\"\\u8cc7\\u8a0a\\u7ba1\\u7406\\u5b78\\u7cfb\",\"grade\":\"\",\"minMatch\":0}', 1, 17, '2025-09-27 07:27:50'),
+(30, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 16, '2025-09-27 07:31:01'),
+(31, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 18, '2025-09-27 07:32:32'),
+(32, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 12, '2025-09-27 07:32:42'),
+(33, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 14, '2025-09-27 07:33:53'),
+(34, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 16, '2025-09-27 07:33:55'),
+(35, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 141, '2025-09-27 07:36:32'),
+(36, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 17, '2025-09-27 07:40:03'),
+(37, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 2, 15, '2025-09-27 07:40:10');
 
 -- --------------------------------------------------------
 
@@ -804,7 +918,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `status
 (9, 'willykid03@gmail.com', 'willykid03@gmail.com', '$2y$10$xdrhcLdJf6HzWKRiG/siKO/x81fDPFNlOtC3M8HCEbXFDrbXVcuUS', 'student', 'active', '2025-09-19 02:31:22', '2025-09-19 02:31:22'),
 (10, 'microsoft_tw', 'hr@microsoft.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
 (11, 'google_tw', 'hr@google.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
-(12, 'apple_tw', 'hr@apple.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56');
+(12, 'apple_tw', 'hr@apple.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
+(13, 'test123@gmail.com', 'test123@gmail.com', '$2y$10$erBhwmKBeIRFBzuXIjV23ehrKhRbmIpRweoNITGkQMXmUDYQuxfgW', 'enterprise', 'active', '2025-09-24 07:08:57', '2025-09-24 07:08:57');
 
 -- --------------------------------------------------------
 
@@ -1199,19 +1314,19 @@ ALTER TABLE `enterprise_bookmarks`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_contacts`
 --
 ALTER TABLE `enterprise_contacts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_profiles`
 --
 ALTER TABLE `enterprise_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_recommendations`
 --
 ALTER TABLE `enterprise_recommendations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_views`
@@ -1223,13 +1338,13 @@ ALTER TABLE `enterprise_views`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `jobs`
 --
 ALTER TABLE `jobs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `job_applications`
 --
 ALTER TABLE `job_applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `likes`
@@ -1247,7 +1362,7 @@ ALTER TABLE `messages`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolios`
@@ -1259,7 +1374,7 @@ ALTER TABLE `portfolios`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolio_comments`
 --
 ALTER TABLE `portfolio_comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolio_files`
@@ -1283,13 +1398,13 @@ ALTER TABLE `student_profiles`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `talent_search_logs`
 --
 ALTER TABLE `talent_search_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user_activities`

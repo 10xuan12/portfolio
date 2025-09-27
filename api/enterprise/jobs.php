@@ -378,14 +378,17 @@ function toggleJobStatus($data) {
 
 // 取得職缺申請列表
 function getJobApplications() {
-    $userId = checkPermission('enterprise');
-    
-    $jobId = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
-    $status = isset($_GET['status']) ? $_GET['status'] : '';
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-    
-    $offset = ($page - 1) * $limit;
+    try {
+        $userId = checkPermission('enterprise');
+        
+        $jobId = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
+        $status = isset($_GET['status']) ? $_GET['status'] : '';
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+        
+        $offset = ($page - 1) * $limit;
+        
+        debugLog("取得職缺申請列表 - jobId: $jobId, userId: $userId, page: $page, limit: $limit");
     
     // 建立查詢條件
     $where = "WHERE ja.job_id = ? AND j.enterprise_id = ?";
@@ -401,13 +404,13 @@ function getJobApplications() {
     // 查詢申請列表
     $stmt = $GLOBALS['conn']->prepare("
         SELECT 
-            ja.id, ja.status, ja.cover_letter, ja.resume_url, ja.portfolio_url,
+            ja.id, ja.student_id, ja.status, ja.cover_letter, ja.resume_url, ja.portfolio_url,
             ja.expected_salary, ja.available_date, ja.interview_date,
             ja.interview_location, ja.interview_notes, ja.enterprise_notes,
             ja.created_at, ja.updated_at,
             sp.first_name, sp.last_name, sp.display_name, sp.avatar_url,
-            sp.major, sp.school, sp.grade, sp.skills, sp.email as student_email,
-            u.username
+            sp.major, sp.school, sp.grade, sp.skills,
+            u.username, u.email as student_email
         FROM job_applications ja
         JOIN jobs j ON ja.job_id = j.id
         JOIN users u ON ja.student_id = u.id
@@ -426,13 +429,19 @@ function getJobApplications() {
     $result = $stmt->get_result();
     $applications = $result->fetch_all(MYSQLI_ASSOC);
     
-    // 處理技能（從文字轉為陣列）
-    foreach ($applications as &$app) {
-        $app['skills'] = $app['skills'] ? explode(',', $app['skills']) : [];
-        $app['student_name'] = $app['display_name'] ?: ($app['first_name'] . ' ' . $app['last_name']);
+        // 處理技能（從文字轉為陣列）
+        foreach ($applications as &$app) {
+            $app['skills'] = $app['skills'] ? explode(',', $app['skills']) : [];
+            $app['student_name'] = $app['display_name'] ?: ($app['first_name'] . ' ' . $app['last_name']);
+        }
+        
+        debugLog("成功取得 " . count($applications) . " 筆申請資料");
+        sendResponse($applications, 200, '取得申請列表成功');
+        
+    } catch (Exception $e) {
+        debugLog("取得職缺申請列表錯誤: " . $e->getMessage());
+        sendError('取得申請列表失敗: ' . $e->getMessage(), 500);
     }
-    
-    sendResponse($applications, 200, '取得申請列表成功');
 }
 
 // 更新申請狀態
