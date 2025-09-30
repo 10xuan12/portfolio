@@ -104,6 +104,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // 避免重複初始化
     if (window.__portfolioDetailInitialized) return;
     window.__portfolioDetailInitialized = true;
+    
+    // 綁定返回按鈕事件
+    const backButton = document.getElementById('backButton');
+    if (backButton) {
+        backButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('返回按鈕被點擊');
+            goBack();
+        });
+        console.log('返回按鈕事件已綁定');
+    } else {
+        console.error('找不到返回按鈕元素');
+    }
+    
     // 依登入角色設定評論頭像
     try {
         const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -893,3 +907,50 @@ function viewAuthorProfile() {
 
 // 暴露全域供 HTML onclick 使用
 window.viewAuthorProfile = viewAuthorProfile;
+
+// 返回按鈕功能
+function goBack() {
+    console.log('goBack 函數被調用');
+    try {
+        // 從 localStorage 獲取使用者資訊
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const role = user?.role || 'visitor';
+        
+        console.log('用戶角色:', role);
+        console.log('用戶資訊:', user);
+        
+        // 根據用戶角色導向不同的返回頁面
+        if (role === 'student') {
+            // 學生端：返回學生作品集頁面
+            console.log('導向學生作品集頁面');
+            window.location.href = 'portfolio.html';
+        } else if (role === 'enterprise') {
+            // 企業端：返回企業作品瀏覽頁面
+            console.log('導向企業作品瀏覽頁面');
+            window.location.href = '../enterprise/portfolios.html';
+        } else if (role === 'admin') {
+            // 管理員：返回管理員作品管理頁面
+            console.log('導向管理員作品管理頁面');
+            window.location.href = '../admin/portfolios.html';
+        } else {
+            // 訪客：返回首頁或作品瀏覽頁面
+            console.log('導向首頁');
+            window.location.href = '../index.html';
+        }
+    } catch (error) {
+        console.error('返回功能錯誤:', error);
+        // 如果發生錯誤，使用瀏覽器歷史記錄返回
+        if (window.history.length > 1) {
+            console.log('使用瀏覽器歷史記錄返回');
+            window.history.back();
+        } else {
+            // 如果沒有歷史記錄，導向首頁
+            console.log('導向首頁（錯誤處理）');
+            window.location.href = '../index.html';
+        }
+    }
+}
+
+// 立即暴露全域供 HTML onclick 使用
+window.goBack = goBack;
+console.log('goBack 函數已暴露到全域');
