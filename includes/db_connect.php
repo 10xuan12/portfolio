@@ -28,6 +28,12 @@ $connection_configs = [
         'password' => '',
         'database' => 'eportfolio2'
     ],
+    [
+        'host' => '127.0.0.1:3307',
+        'username' => 'root',
+        'password' => '',
+        'database' => 'eportfolio2'
+    ],
 ];
 
 $conn = null;

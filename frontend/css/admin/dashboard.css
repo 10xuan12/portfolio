@@ -226,6 +226,69 @@
     border: 2px dashed var(--gray-300);
 }
 
+/* 待審核內容 - 版面與卡片樣式 */
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    justify-content: center;
+    justify-items: stretch;
+}
+
+.review-item {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.review-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.review-header h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.3;
+}
+
+.review-count {
+    min-width: 36px;
+    padding: 4px 10px;
+    background: var(--primary-color);
+    color: var(--white);
+    font-weight: 700;
+    border-radius: 9999px;
+    text-align: center;
+}
+
+.review-item p {
+    margin: 0 0 var(--spacing-md);
+    color: var(--text-secondary);
+}
+
+.review-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.review-actions .btn {
+    flex: 1;
+}
+
 @media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
@@ -242,5 +305,24 @@
     .admin-table th,
     .admin-table td {
         padding: var(--spacing-sm);
+    }
+}
+
+/* 調整網格欄數，讓三張卡片在桌機寬度呈三欄、更匯整齊 */
+@media (min-width: 1024px) {
+    .reviews-grid {
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+    .reviews-grid {
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .review-actions {
+        flex-direction: column;
     }
 }

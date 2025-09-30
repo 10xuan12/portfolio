@@ -20,7 +20,26 @@
 <body>
     <!-- 導覽列 -->
     <div id="navbar-placeholder"></div>
-    <!-- 導覽列將由 app.js 動態載入 -->
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(function(res){ return res.text(); })
+        .then(function(html){
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        })
+        .catch(function(e){ console.error('載入導航欄失敗', e); });
+    })();
+    </script>
+    <!-- 導覽列將由 app.js 動態載入（已加上保險載入） -->
 
     <!-- 儀表板標題 -->
     <section class="dashboard-header">

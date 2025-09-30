@@ -167,7 +167,8 @@ function initEventListeners() {
             const reviewId = e.target.closest('.review-item').dataset.id;
             const reviewType = e.target.closest('.review-item').dataset.type;
             if (reviewId && reviewType) {
-                window.location.href = `${reviewType}-reviews.html?id=${reviewId}`;
+                // 統一導向對應頁面並帶入待審核篩選
+                navigateToReviewTarget(reviewType, { source: 'dashboard', reviewId });
             }
         }
     });
@@ -269,7 +270,13 @@ function renderPendingReviews() {
     const reviewsGrid = document.querySelector('.reviews-grid');
     if (!reviewsGrid) return;
     
-    reviewsGrid.innerHTML = dashboardData.pendingReviews.map(review => `
+    // 需求：不顯示職缺審核
+    const items = (dashboardData.pendingReviews || []).filter(r => r.type !== 'job');
+    if (!items.length) {
+        reviewsGrid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><h3>目前沒有待審核內容</h3></div>`;
+        return;
+    }
+    reviewsGrid.innerHTML = items.map(review => `
         <div class="review-item" data-id="${review.id}" data-type="${review.type}">
             <div class="review-header">
                 <h3>${review.title}</h3>
@@ -491,13 +498,14 @@ function updateNotificationCount(count) {
 
 // 查看審核項目
 function viewReviews(type) {
-    window.location.href = `${type}-reviews.html`;
+    navigateToReviewTarget(type, { source: 'dashboard' });
 }
 
 // 處理審核項目
 function processReviews(type) {
     // TODO: 實作批量處理審核功能
     Utils.showNotification(`正在處理 ${type} 審核項目...`, 'info');
+    navigateToReviewTarget(type, { source: 'dashboard', action: 'process' });
 }
 
 // 查看使用者資料
@@ -525,6 +533,32 @@ function resolveReport(reportId) {
 function refreshDashboard() {
     loadDashboardData();
     Utils.showNotification('儀表板已重新整理', 'success');
+}
+
+// 導向審核目標頁面（依類型對應現有頁面）
+function navigateToReviewTarget(type, extraParams = {}) {
+    const map = {
+        'user': {
+            path: 'users.html',
+            params: { tab: 'students', status: 'pending' }
+        },
+        'enterprise': {
+            path: 'users.html',
+            params: { tab: 'enterprises', status: 'pending' }
+        },
+        'portfolio': {
+            path: 'content.html',
+            params: { section: 'portfolios', status: 'pending' }
+        },
+        'job': {
+            path: 'content.html',
+            params: { section: 'jobs', status: 'pending' }
+        }
+    };
+    const target = map[type];
+    if (!target) return;
+    const params = new URLSearchParams({ ...target.params, ...extraParams });
+    window.location.href = `${target.path}?${params.toString()}`;
 }
 
 // 匯出儀表板資料
@@ -566,3 +600,4 @@ window.viewUserProfile = viewUserProfile;
 window.manageUser = manageUser;
 window.viewReport = viewReport;
 window.resolveReport = resolveReport; 
+window.navigateToReviewTarget = navigateToReviewTarget;

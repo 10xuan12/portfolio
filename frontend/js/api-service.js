@@ -268,7 +268,7 @@ if (typeof window.ApiService === 'undefined') {
                 ...options.headers
             };
 
-            const response = await fetch(this.getApiUrl(endpoint), {
+            const response = await fetch(url, {
                 headers,
                 signal: controller.signal,
                 ...options
