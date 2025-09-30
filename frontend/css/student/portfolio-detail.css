@@ -1,67 +1,53 @@
 /* 作品詳情頁面樣式 */
 
-/* 返回按鈕樣式 */
-.back-button-container {
-    position: fixed;
-    top: 20px;
-    left: 20px;
+/* 導覽列樣式 - 確保與其他頁面一致 */
+.navbar {
+    background: var(--navbar-bg, var(--primary-color));
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
     z-index: 1000;
+    padding: var(--spacing-md) 0;
 }
 
-.back-button {
+/* 返回按鈕樣式 - 與 portfolio.css 完全一致 */
+.header-top {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin: 0 0 1rem 0;
+    padding: 0;
+}
+
+.btn-back {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-600);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: #3182ce;
-    border: 1px solid #3182ce;
-    border-radius: 12px;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.3);
+    gap: 0.5rem;
+    transition: all 0.3s ease;
 }
 
-.back-button:hover {
-    background: #2c5aa0;
-    border-color: #2c5aa0;
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.4);
+.btn-back:hover {
+    background: var(--primary-600);
+    border-color: var(--primary-700);
+    transform: translateY(-2px);
 }
 
-.back-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.3);
-}
-
-.back-button i {
-    font-size: 16px;
-}
-
-/* 響應式設計 */
-@media (max-width: 768px) {
-    .back-button-container {
-        top: 15px;
-        left: 15px;
-    }
-    
-    .back-button {
-        padding: 10px 16px;
-        font-size: 13px;
-    }
-    
-    .back-button span {
-        display: none; /* 在小螢幕上隱藏文字，只顯示圖標 */
-    }
+.btn-back i {
+    font-size: 0.8rem;
 }
 
 .detail-header {
     background: #eef2ff; /* 改為純色，移除漸層 */
     color: #111;
-    padding: 3rem 0;
+    padding: var(--spacing-2xl) 0; /* 使用CSS變數，與其他頁面保持一致 */
 }
 
 .portfolio-hero {
