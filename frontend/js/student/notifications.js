@@ -1,5 +1,5 @@
 /**
- * 學生通知中心 JavaScript
+ * 學生通知中心 JavaScript - 完全採用企業版設計
  * 包含通知管理、篩選、批量操作等功能
  */
 
@@ -10,21 +10,42 @@
     let notifications = [];
 
     // 當前篩選條件
-    let currentFilters = {
-        type: '',
-        status: '',
-        time: ''
-    };
-
-    // 選中的通知
-    let selectedNotifications = new Set();
+    let currentFilter = 'all';
 
     // 初始化頁面
     document.addEventListener('DOMContentLoaded', function() {
         loadNotifications();
-        initEventListeners();
-        updateStats();
+        // 如果沒有通知資料，載入測試資料
+        setTimeout(() => {
+            if (notifications.length === 0) {
+                loadTestData();
+            }
+        }, 1000);
     });
+
+    // 載入測試資料（用於演示）
+    function loadTestData() {
+        notifications = [
+            { id: 1, type: 'like', status: 'unread', title: '有人讚了您的作品', text: '王小明讚了您的「網頁設計作品」', time: '5分鐘前', portfolioId: 1 },
+            { id: 2, type: 'comment', status: 'unread', title: '新的評論', text: '李小花評論了您的作品', time: '1小時前', commentId: 1, portfolioId: 1 },
+            { id: 3, type: 'view', status: 'read', title: '作品被瀏覽', text: '您的作品「UI設計」被瀏覽了', time: '2小時前', portfolioId: 2 },
+            { id: 4, type: 'system', status: 'unread', title: '系統通知', text: '您的帳戶已成功驗證', time: '3小時前' },
+            { id: 5, type: 'enterprise', status: 'unread', title: '企業聯絡', text: 'ABC公司對您的作品感興趣', time: '1天前', enterpriseId: 1 },
+            { id: 6, type: 'like', status: 'read', title: '有人讚了您的作品', text: '張三讚了您的「APP設計」', time: '2天前', portfolioId: 3 },
+            { id: 7, type: 'system', status: 'read', title: '系統更新', text: '系統將於今晚進行維護', time: '3天前' },
+            { id: 8, type: 'comment', status: 'unread', title: '新的評論', text: '陳小華評論了您的作品', time: '4天前', commentId: 2, portfolioId: 4 },
+            { id: 9, type: 'view', status: 'read', title: '作品被瀏覽', text: '您的作品「品牌設計」被瀏覽了', time: '5天前', portfolioId: 5 },
+            { id: 10, type: 'enterprise', status: 'unread', title: '企業聯絡', text: 'XYZ公司邀請您面試', time: '1週前', enterpriseId: 2 },
+            { id: 11, type: 'like', status: 'unread', title: '有人讚了您的作品', text: '劉小美讚了您的「海報設計」', time: '1週前', portfolioId: 6 },
+            { id: 12, type: 'system', status: 'read', title: '系統通知', text: '您的個人資料已更新', time: '2週前' },
+            { id: 13, type: 'comment', status: 'read', title: '新的評論', text: '王小強評論了您的作品', time: '2週前', commentId: 3, portfolioId: 7 },
+            { id: 14, type: 'view', status: 'unread', title: '作品被瀏覽', text: '您的作品「插畫設計」被瀏覽了', time: '3週前', portfolioId: 8 }
+        ];
+        
+        console.log('載入測試資料:', notifications.length, '個通知');
+        renderNotifications();
+        updateStats();
+    }
 
     // 載入通知
     async function loadNotifications() {
@@ -40,7 +61,9 @@
             
             if (result.success) {
                 notifications = result.data;
+                console.log('載入通知成功:', notifications.length, '個通知');
                 renderNotifications();
+                updateStats();
             } else {
                 throw new Error(result.message || '載入通知失敗');
             }
@@ -51,64 +74,52 @@
             // 如果 API 失敗，顯示空狀態
             notifications = [];
             renderNotifications();
+            updateStats();
         }
-    }
-
-    // 初始化事件監聽器
-    function initEventListeners() {
-        // 篩選器事件
-        document.getElementById('typeFilter').addEventListener('change', function() {
-            currentFilters.type = this.value;
-            applyFilters();
-        });
-        
-        document.getElementById('statusFilter').addEventListener('change', function() {
-            currentFilters.status = this.value;
-            applyFilters();
-        });
-        
-        document.getElementById('timeFilter').addEventListener('change', function() {
-            currentFilters.time = this.value;
-            applyFilters();
-        });
     }
 
     // 渲染通知列表
-    function renderNotifications(filteredNotifications = null) {
+    function renderNotifications() {
         const list = document.getElementById('notificationsList');
-        const emptyState = document.getElementById('emptyState');
+        const countElement = document.getElementById('notificationsCount');
         
-        const notificationsToRender = filteredNotifications || notifications;
+        // 根據當前篩選條件過濾通知
+        let filteredNotifications = notifications;
+        if (currentFilter !== 'all') {
+            filteredNotifications = notifications.filter(n => n.type === currentFilter);
+        }
         
-        if (notificationsToRender.length === 0) {
-            list.style.display = 'none';
-            emptyState.style.display = 'block';
+        countElement.textContent = filteredNotifications.length;
+        
+        if (filteredNotifications.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h3>沒有通知</h3>
+                    <p>當有新的活動時，您會在這裡看到通知</p>
+                </div>
+            `;
             return;
         }
         
-        list.style.display = 'block';
-        emptyState.style.display = 'none';
-        
-        list.innerHTML = notificationsToRender.map(notification => `
+        list.innerHTML = filteredNotifications.map(notification => `
             <div class="notification-item ${notification.status === 'unread' ? 'unread' : ''}" 
                  data-type="${notification.type}" 
                  data-status="${notification.status}"
                  data-id="${notification.id}">
-                <input type="checkbox" class="notification-checkbox" onchange="updateSelection()">
-                <div class="notification-icon ${notification.type}">
-                    <i class="fas fa-${getNotificationIcon(notification.type)}"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-header">
+                <div class="notification-header">
+                    <div class="notification-icon notification-${notification.type}">
+                        <i class="fas fa-${getNotificationIcon(notification.type)}"></i>
+                    </div>
+                    <div class="notification-content">
                         <div class="notification-title">${notification.title}</div>
-                        <div class="notification-time">${notification.time}</div>
-                    </div>
-                    <div class="notification-text">
-                        ${notification.text}
-                    </div>
-                    ${notification.preview ? `<div class="notification-preview">${notification.preview}</div>` : ''}
-                    <div class="notification-actions">
-                        ${getNotificationActions(notification)}
+                        <div class="notification-message">${notification.text}</div>
+                        <div class="notification-meta">
+                            <div class="notification-time">${notification.time}</div>
+                            <div class="notification-actions">
+                                ${getNotificationActions(notification)}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,79 +175,16 @@
         return actions;
     }
 
-    // 應用篩選器
-    function applyFilters() {
-        let filteredNotifications = notifications;
-        
-        // 類型篩選
-        if (currentFilters.type) {
-            filteredNotifications = filteredNotifications.filter(n => n.type === currentFilters.type);
-        }
-        
-        // 狀態篩選
-        if (currentFilters.status) {
-            filteredNotifications = filteredNotifications.filter(n => n.status === currentFilters.status);
-        }
-        
-        // 時間篩選
-        if (currentFilters.time) {
-            filteredNotifications = filteredNotifications.filter(n => {
-                const time = n.time;
-                const now = new Date();
-                
-                switch (currentFilters.time) {
-                    case 'today':
-                        return time.includes('分鐘前') || time.includes('小時前') || time.includes('今天');
-                    case 'week':
-                        return time.includes('天前') && parseInt(time) <= 7;
-                    case 'month':
-                        return time.includes('天前') && parseInt(time) <= 30;
-                    default:
-                        return true;
-                }
-            });
-        }
-        
-        renderNotifications(filteredNotifications);
-    }
-
-    // 更新選中狀態
-    function updateSelection() {
-        const checkboxes = document.querySelectorAll('.notification-checkbox:checked');
-        selectedNotifications.clear();
-        
-        checkboxes.forEach(checkbox => {
-            const notificationItem = checkbox.closest('.notification-item');
-            const notificationId = parseInt(notificationItem.dataset.id);
-            selectedNotifications.add(notificationId);
+    // 篩選通知
+    function filterNotifications(filter) {
+        // 更新篩選按鈕狀態
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
         });
+        event.target.classList.add('active');
         
-        updateBulkActions();
-    }
-
-    // 更新批量操作
-    function updateBulkActions() {
-        const bulkActions = document.getElementById('bulkActions');
-        const selectedCount = document.getElementById('selectedCount');
-        
-        if (selectedNotifications.size > 0) {
-            bulkActions.classList.add('show');
-            selectedCount.textContent = `已選擇 ${selectedNotifications.size} 項`;
-        } else {
-            bulkActions.classList.remove('show');
-        }
-    }
-
-    // 全選
-    function selectAll() {
-        const checkboxes = document.querySelectorAll('.notification-checkbox');
-        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = !allChecked;
-        });
-        
-        updateSelection();
+        currentFilter = filter;
+        renderNotifications();
     }
 
     // 標記已讀
@@ -284,68 +232,10 @@
         }
     }
 
-    // 標記選中的為已讀
-    async function markSelectedRead() {
-        if (selectedNotifications.size === 0) {
-            Utils.showNotification('請先選擇要標記的通知', 'warning');
-            return;
-        }
-        
-        try {
-            // 從 localStorage 獲取使用者資訊
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (!user || !user.id) {
-                throw new Error('無法獲取使用者資訊');
-            }
-            
-            // 發送批量標記已讀請求到後端 API
-            const svc = window.apiService || window.initializeApiService?.();
-            const result = await svc.request('student/notifications.php', {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'mark_multiple_read',
-                    notification_ids: Array.from(selectedNotifications),
-                    user_id: user.id
-                })
-            });
-            
-            if (result.status === 200) {
-                // 更新本地狀態
-                selectedNotifications.forEach(id => {
-                    const notification = notifications.find(n => n.id === id);
-                    if (notification) {
-                        notification.status = 'read';
-                    }
-                    
-                    const notificationItem = document.querySelector(`[data-id="${id}"]`);
-                    if (notificationItem) {
-                        notificationItem.classList.remove('unread');
-                        const markReadBtn = notificationItem.querySelector('.notification-action:last-child');
-                        if (markReadBtn && markReadBtn.textContent.includes('標記已讀')) {
-                            markReadBtn.remove();
-                        }
-                    }
-                });
-                
-                selectedNotifications.clear();
-                updateBulkActions();
-                updateStats();
-                renderNotifications();
-                
-                Utils.showNotification('已標記選中的通知為已讀', 'success');
-            } else {
-                throw new Error(result.message || '批量標記已讀失敗');
-            }
-            
-        } catch (error) {
-            console.error('批量標記已讀失敗:', error);
-            Utils.showNotification('批量標記已讀失敗，請稍後再試', 'error');
-        }
-    }
-
     // 全部標記已讀
-    async function markAllRead() {
-        if (notifications.filter(n => n.status === 'unread').length === 0) {
+    async function markAllAsRead() {
+        const unreadNotifications = notifications.filter(n => n.status === 'unread');
+        if (unreadNotifications.length === 0) {
             Utils.showNotification('沒有未讀通知', 'info');
             return;
         }
@@ -394,14 +284,14 @@
         }
     }
 
-    // 刪除選中的通知
-    async function deleteSelected() {
-        if (selectedNotifications.size === 0) {
-            Utils.showNotification('請先選擇要刪除的通知', 'warning');
+    // 清除通知
+    async function clearNotifications() {
+        if (notifications.length === 0) {
+            Utils.showNotification('沒有通知可清除', 'info');
             return;
         }
         
-        if (!confirm(`確定要刪除選中的 ${selectedNotifications.size} 個通知嗎？`)) {
+        if (!confirm(`確定要清除所有通知嗎？`)) {
             return;
         }
         
@@ -412,43 +302,32 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 發送批量刪除請求到後端 API
+            // 發送清除通知請求到後端 API
             const svc = window.apiService || window.initializeApiService?.();
             const result = await svc.request('student/notifications.php', {
                 method: 'POST',
                 body: JSON.stringify({
-                    action: 'delete_multiple',
-                    notification_ids: Array.from(selectedNotifications),
+                    action: 'clear_all',
                     user_id: user.id
                 })
             });
             
             if (result.status === 200) {
                 // 更新本地狀態
-                selectedNotifications.forEach(id => {
-                    const index = notifications.findIndex(n => n.id === id);
-                    if (index !== -1) {
-                        notifications.splice(index, 1);
-                    }
-                    
-                    const notificationItem = document.querySelector(`[data-id="${id}"]`);
-                    if (notificationItem) {
-                        notificationItem.remove();
-                    }
-                });
+                notifications = [];
                 
-                selectedNotifications.clear();
-                updateBulkActions();
+                // 更新顯示
+                renderNotifications();
                 updateStats();
                 
-                Utils.showNotification('已刪除選中的通知', 'success');
+                Utils.showNotification('已清除所有通知', 'success');
             } else {
-                throw new Error(result.message || '批量刪除失敗');
+                throw new Error(result.message || '清除通知失敗');
             }
             
         } catch (error) {
-            console.error('批量刪除失敗:', error);
-            Utils.showNotification('批量刪除失敗，請稍後再試', 'error');
+            console.error('清除通知失敗:', error);
+            Utils.showNotification('清除通知失敗，請稍後再試', 'error');
         }
     }
 
@@ -456,19 +335,26 @@
     function updateStats() {
         const unreadCount = notifications.filter(n => n.status === 'unread').length;
         const totalCount = notifications.length;
-        const todayCount = notifications.filter(n => {
-            const time = n.time;
-            return time.includes('分鐘前') || time.includes('小時前') || time.includes('今天');
-        }).length;
-        const enterpriseCount = notifications.filter(n => n.type === 'enterprise').length;
+        const contactCount = notifications.filter(n => n.type === 'enterprise' || n.type === 'contact').length;
+        const systemCount = notifications.filter(n => n.type === 'system').length;
+        
+        console.log('統計資料更新:', {
+            total: totalCount,
+            unread: unreadCount,
+            contact: contactCount,
+            system: systemCount
+        });
         
         // 更新統計卡片
-        const statNumbers = document.querySelectorAll('.stat-number');
+        const statNumbers = document.querySelectorAll('.number');
         if (statNumbers.length >= 4) {
-            statNumbers[0].textContent = unreadCount;
-            statNumbers[1].textContent = totalCount;
-            statNumbers[2].textContent = todayCount;
-            statNumbers[3].textContent = enterpriseCount;
+            statNumbers[0].textContent = totalCount;
+            statNumbers[1].textContent = unreadCount;
+            statNumbers[2].textContent = contactCount;
+            statNumbers[3].textContent = systemCount;
+            console.log('統計卡片已更新');
+        } else {
+            console.warn('找不到足夠的統計卡片元素:', statNumbers.length);
         }
     }
 
@@ -517,15 +403,12 @@
     }
 
     // 全域函數供 HTML 使用
-    window.selectAll = selectAll;
-    window.markAllRead = markAllRead;
-    window.deleteSelected = deleteSelected;
-    window.markSelectedRead = markSelectedRead;
-    window.updateSelection = updateSelection;
-    window.applyFilters = applyFilters;
+    window.filterNotifications = filterNotifications;
+    window.markAllAsRead = markAllAsRead;
+    window.clearNotifications = clearNotifications;
     window.viewPortfolio = viewPortfolio;
     window.viewComment = viewComment;
     window.viewEnterprise = viewEnterprise;
     window.markRead = markRead;
 
-})(); 
+})();
