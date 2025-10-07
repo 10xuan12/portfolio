@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企業審核 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin/users.css">
+    <style>
+        .review-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .review-header {
+            margin-bottom: 2rem;
+        }
+
+        .pending-count {
+            display: inline-block;
+            background: #f59e0b;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-left: 1rem;
+        }
+
+        .enterprise-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .enterprise-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .enterprise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .enterprise-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #1f2937;
+        }
+
+        .enterprise-meta {
+            display: flex;
+            gap: 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .enterprise-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .review-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #059669;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #dc2626;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(res => res.text())
+        .then(html => {
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        });
+    })();
+    </script>
+
+    <!-- 主要內容 -->
+    <main class="review-container">
+        <div class="review-header">
+            <h1>企業帳號審核 <span class="pending-count" id="pendingCount">0</span></h1>
+            <p>審核待審核的企業帳號申請</p>
+        </div>
+
+        <!-- 待審核列表 -->
+        <div id="enterpriseList"></div>
+    </main>
+
+    <script src="../js/api-service.js"></script>
+    <script>
+        let apiService = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 初始化 API 服務
+            apiService = new ApiService();
+            await loadPendingEnterprises();
+        });
+
+        async function loadPendingEnterprises() {
+            try {
+                const response = await apiService.request('admin/enterprises.php?action=pending');
+                const enterprises = response.data?.enterprises || response.enterprises || [];
+                
+                document.getElementById('pendingCount').textContent = enterprises.length;
+                renderEnterprises(enterprises);
+            } catch (error) {
+                console.error('載入待審核企業失敗:', error);
+                showNotification('載入失敗：' + error.message, 'error');
+            }
+        }
+
+        function renderEnterprises(enterprises) {
+            const listContainer = document.getElementById('enterpriseList');
+            
+            if (enterprises.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>沒有待審核的企業</h3>
+                        <p>目前沒有需要審核的企業帳號</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = enterprises.map(enterprise => `
+                <div class="enterprise-card">
+                    <div class="enterprise-header">
+                        <div class="enterprise-info">
+                            <h3>${enterprise.company_name || '未提供公司名稱'}</h3>
+                            <div class="enterprise-meta">
+                                <span><i class="fas fa-envelope"></i> ${enterprise.email}</span>
+                                <span><i class="fas fa-user"></i> ${enterprise.contact_person || '未提供'}</span>
+                                <span><i class="fas fa-phone"></i> ${enterprise.phone || '未提供'}</span>
+                            </div>
+                        </div>
+                        <span class="status-badge status-pending">待審核</span>
+                    </div>
+
+                    <div class="enterprise-details">
+                        <div class="detail-item">
+                            <span class="detail-label">產業類別</span>
+                            <span class="detail-value">${enterprise.industry || '未提供'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">公司類型</span>
+                            <span class="detail-value">${enterprise.company_type || '未提供'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">公司地址</span>
+                            <span class="detail-value">${enterprise.address || '未提供'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">公司網站</span>
+                            <span class="detail-value">${enterprise.website ? `<a href="${enterprise.website}" target="_blank">${enterprise.website}</a>` : '未提供'}</span>
+                        </div>
+                    </div>
+
+                    ${enterprise.description ? `
+                        <div style="margin: 1rem 0;">
+                            <span class="detail-label">公司簡介</span>
+                            <p style="margin-top: 0.5rem; color: #4b5563;">${enterprise.description}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="review-actions">
+                        <button class="btn btn-approve" onclick="approveEnterprise(${enterprise.id}, '${enterprise.company_name}')">
+                            <i class="fas fa-check"></i> 審核通過
+                        </button>
+                        <button class="btn btn-reject" onclick="rejectEnterprise(${enterprise.id}, '${enterprise.company_name}')">
+                            <i class="fas fa-times"></i> 拒絕申請
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function approveEnterprise(enterpriseId, companyName) {
+            if (!confirm(`確定要通過 ${companyName} 的申請嗎？`)) {
+                return;
+            }
+
+            try {
+                await apiService.request('admin/enterprises.php', {
+                    method: 'POST',
+                    body: {
+                        action: 'approve',
+                        enterprise_id: enterpriseId
+                    }
+                });
+
+                showNotification('審核通過成功', 'success');
+                await loadPendingEnterprises();
+            } catch (error) {
+                console.error('審核失敗:', error);
+                showNotification('審核失敗：' + error.message, 'error');
+            }
+        }
+
+        async function rejectEnterprise(enterpriseId, companyName) {
+            const reason = prompt(`請輸入拒絕 ${companyName} 申請的原因：`);
+            
+            if (!reason) {
+                return;
+            }
+
+            try {
+                await apiService.request('admin/enterprises.php', {
+                    method: 'POST',
+                    body: {
+                        action: 'reject',
+                        enterprise_id: enterpriseId,
+                        reason: reason
+                    }
+                });
+
+                showNotification('已拒絕申請', 'success');
+                await loadPendingEnterprises();
+            } catch (error) {
+                console.error('操作失敗:', error);
+                showNotification('操作失敗：' + error.message, 'error');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <span>${message}</span>
+                    <button class="notification-close">&times;</button>
+                </div>
+            `;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#667eea'};
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                max-width: 400px;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+            
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                notification.remove();
+            });
+        }
+    </script>
+</body>
+</html>
+

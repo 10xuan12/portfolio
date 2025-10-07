@@ -396,7 +396,7 @@
             portfoliosGrid.innerHTML = portfolios.map(portfolio => `
                 <div class="portfolio-card" onclick="viewPortfolio(${portfolio.id})">
                     <div class="portfolio-image">
-                        <img src="${portfolio.thumbnail_url || getDefaultThumbnail(portfolio.category)}" 
+                        <img src="${portfolio.thumbnail_url && portfolio.thumbnail_url !== 'null' ? '/portfolio/' + portfolio.thumbnail_url : getDefaultThumbnail(portfolio.category)}" 
                              alt="${portfolio.title}" 
                              onerror="this.src='${getDefaultThumbnail(portfolio.category)}'">
                     </div>

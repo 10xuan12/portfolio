@@ -78,12 +78,17 @@ function handleLogin($data) {
         sendError('電子郵件或密碼錯誤', 401);
     }
     
-    if ($user['status'] !== 'active') {
-        sendError('帳號已被停用', 403);
-    }
-    
     if (!password_verify($password, $user['password_hash'])) {
         sendError('電子郵件或密碼錯誤', 401);
+    }
+    
+    // 檢查帳號狀態
+    if ($user['status'] === 'pending') {
+        sendError('您的帳號正在審核中，請等待管理員審核通過', 403);
+    }
+    
+    if ($user['status'] !== 'active') {
+        sendError('帳號已被停用或拒絕', 403);
     }
     
     // 建立 session
@@ -148,11 +153,11 @@ function handleRegister($data) {
     $GLOBALS['conn']->begin_transaction();
     
     try {
-        // 建立使用者帳號
+        // 建立使用者帳號（預設狀態為待審核）
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         $userStmt = $GLOBALS['conn']->prepare("
-            INSERT INTO users (username, email, password_hash, role) 
-            VALUES (?, ?, ?, 'enterprise')
+            INSERT INTO users (username, email, password_hash, role, status) 
+            VALUES (?, ?, ?, 'enterprise', 'pending')
         ");
         $userStmt->bind_param("sss", $username, $email, $passwordHash);
         $userStmt->execute();
@@ -173,23 +178,19 @@ function handleRegister($data) {
         
         $GLOBALS['conn']->commit();
         
-        // 建立 session
-        session_start();
-        $_SESSION['user_id'] = $userId;
-        $_SESSION['username'] = $username;
-        $_SESSION['role'] = 'enterprise';
-        
-        // 準備回應資料
+        // 準備回應資料（註冊後需等待審核，不自動登入）
         $response = [
             'user_id' => $userId,
             'username' => $username,
             'email' => $email,
             'role' => 'enterprise',
             'company_name' => $companyName,
-            'contact_person' => $contactPerson
+            'contact_person' => $contactPerson,
+            'status' => 'pending',
+            'message' => '註冊成功，您的帳號正在審核中，審核通過後將發送通知。'
         ];
         
-        sendResponse($response, 201, '註冊成功');
+        sendResponse($response, 201, '註冊成功，請等待管理員審核');
         
     } catch (Exception $e) {
         $GLOBALS['conn']->rollback();
