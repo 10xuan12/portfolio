@@ -110,9 +110,12 @@ function getStudentProfile() {
         $profile['stats'] = $stats;
     }
     
-    // 若無頭像，提供預設頭像路徑
+    // 若無頭像，使用姓名生成頭像
     if (empty($profile['avatar_url'])) {
-        $profile['avatar_url'] = '/portfolio/uploads/avatars/default-avatar.jpg';
+        // 使用姓名生成頭像（DiceBear API）
+        $name = $profile['display_name'] ?: ($profile['first_name'] . $profile['last_name']) ?: $profile['username'] ?: '學生';
+        $initial = mb_substr($name, 0, 1, 'UTF-8');
+        $profile['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
     } elseif (strpos($profile['avatar_url'], '/portfolio/') !== 0 && strpos($profile['avatar_url'], 'http') !== 0) {
         // 將資料庫中相對路徑統一轉為以 /portfolio 為前綴的絕對路徑
         $profile['avatar_url'] = '/portfolio/' . ltrim($profile['avatar_url'], '/');

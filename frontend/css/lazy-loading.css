@@ -1,0 +1,77 @@
+/**
+ * Portfolio+ 圖片延遲載入樣式
+ */
+
+/* 圖片載入狀態 */
+img[data-src],
+img[data-srcset] {
+    background: #f0f0f0;
+    min-height: 200px;
+}
+
+/* 載入中狀態 */
+img.lazy-loading {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
+}
+
+/* 載入完成狀態 */
+img.lazy-loaded {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* 載入失敗狀態 */
+img.lazy-error {
+    background: #ffebee;
+    border: 1px dashed #f44336;
+    position: relative;
+}
+
+img.lazy-error::after {
+    content: '圖片載入失敗';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #f44336;
+    font-size: 14px;
+}
+
+/* 淡入動畫 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 背景圖片載入狀態 */
+[data-bg],
+[data-bg-set] {
+    background-color: #f0f0f0;
+    transition: background-image 0.3s ease;
+}
+
+/* 載入動畫（骨架屏效果） */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e0e0e0 50%,
+        #f0f0f0 75%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+

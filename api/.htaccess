@@ -1,0 +1,62 @@
+RewriteEngine On
+
+# 啟用 CORS
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-User-ID"
+
+# 處理 OPTIONS 請求
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Admin API 路由
+# Dashboard
+RewriteRule ^admin/dashboard/?$ admin/dashboard.php [L,QSA]
+
+# Users
+RewriteRule ^admin/users/approve/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/users/reject/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/users/suspend/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/users/resume/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/users/bulk-activate/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/users/bulk-deactivate/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/users/bulk-delete/?$ admin/users.php [L,QSA]
+RewriteRule ^admin/users/?$ admin/users.php [L,QSA]
+
+# Portfolios
+RewriteRule ^admin/portfolios/approve/?$ admin/portfolios.php [L,QSA]
+RewriteRule ^admin/portfolios/reject/?$ admin/portfolios.php [L,QSA]
+RewriteRule ^admin/portfolios/?$ admin/portfolios.php [L,QSA]
+
+# Jobs
+RewriteRule ^admin/jobs/approve/?$ admin/jobs.php [L,QSA]
+RewriteRule ^admin/jobs/reject/?$ admin/jobs.php [L,QSA]
+RewriteRule ^admin/jobs/?$ admin/jobs.php [L,QSA]
+
+# Reviews
+RewriteRule ^admin/reviews/?$ admin/reviews.php [L,QSA]
+
+# Reports
+RewriteRule ^admin/reports/resolve/?$ admin/reports.php [L,QSA]
+RewriteRule ^admin/reports/dismiss/?$ admin/reports.php [L,QSA]
+RewriteRule ^admin/reports/reopen/?$ admin/reports.php [L,QSA]
+RewriteRule ^admin/reports/?$ admin/reports.php [L,QSA]
+
+# Settings
+RewriteRule ^admin/settings/update/?$ admin/settings.php [L,QSA]
+RewriteRule ^admin/settings/?$ admin/settings.php [L,QSA]
+
+# Analytics
+RewriteRule ^analytics/(.+)/?$ admin/analytics.php?type=$1 [L,QSA]
+
+# Enterprises
+RewriteRule ^admin/enterprises/?$ admin/enterprises.php [L,QSA]
+
+# Auth
+RewriteRule ^admin/auth/?$ admin/auth.php [L,QSA]
+
+# 其他通用路由
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)$ index.php [L,QSA]
+

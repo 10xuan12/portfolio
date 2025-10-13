@@ -21,9 +21,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 case 'export':
                     exportResume();
                     break;
-                case 'save':
-                    saveResumeData();
-                    break;
                 default:
                     sendError('無效的操作', 400);
             }
@@ -37,6 +34,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
         
         if (isset($input['action'])) {
             switch ($input['action']) {
+                case 'save':
+                    saveResumeData($input);
+                    break;
                 case 'create':
                     createResume($input);
                     break;
@@ -54,6 +54,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                     break;
                 case 'archive':
                     archiveResume($input);
+                    break;
+                case 'generate_pdf':
+                    generateAndSavePDF($input);
                     break;
                 default:
                     sendError('無效的操作', 400);
@@ -182,12 +185,9 @@ function getResumeData() {
     }
 }
 
-// 儲存履歷資料
-function saveResumeData() {
+// 儲存履歷資料（不生成 PDF）
+function saveResumeData($input) {
     $userId = checkPermission('student');
-    
-    // 取得 POST 資料
-    $input = json_decode(file_get_contents('php://input'), true);
     
     if (!$input || !isset($input['resume_data'])) {
         sendError('缺少履歷資料', 400);
@@ -201,35 +201,46 @@ function saveResumeData() {
     $stmt->execute();
     $result = $stmt->get_result();
     
+    $title = $resumeData['basic']['name'] . ' 的履歷';
+    $template = $resumeData['template'] ?? 'modern';
+    $content = json_encode($resumeData, JSON_UNESCAPED_UNICODE);
+    
     if ($result->num_rows > 0) {
-        // 更新現有履歷（建立新版本）
+        // 更新現有履歷
         $existingResume = $result->fetch_assoc();
-        $newVersion = $existingResume['version'] + 1;
         
         $stmt = $GLOBALS['conn']->prepare("
-            INSERT INTO resumes (user_id, title, template, content, is_public, status, version, created_at, updated_at)
-            VALUES (?, ?, ?, ?, 0, 'draft', ?, NOW(), NOW())
+            UPDATE resumes 
+            SET title = ?, template = ?, content = ?, updated_at = NOW()
+            WHERE id = ?
         ");
-        $title = $resumeData['basic']['name'] . ' 的履歷';
-        $template = $resumeData['template'] ?? 'modern';
-        $content = json_encode($resumeData, JSON_UNESCAPED_UNICODE);
-        $stmt->bind_param("isssi", $userId, $title, $template, $content, $newVersion);
+        $stmt->bind_param("sssi", $title, $template, $content, $existingResume['id']);
+        
+        if ($stmt->execute()) {
+            sendResponse([
+                'message' => '履歷草稿已儲存',
+                'resume_id' => $existingResume['id']
+            ], 200, '儲存成功');
+        } else {
+            sendError('儲存失敗：' . $stmt->error, 500);
+        }
     } else {
         // 建立新履歷
         $stmt = $GLOBALS['conn']->prepare("
             INSERT INTO resumes (user_id, title, template, content, is_public, status, version, created_at, updated_at)
             VALUES (?, ?, ?, ?, 0, 'draft', 1, NOW(), NOW())
         ");
-        $title = $resumeData['basic']['name'] . ' 的履歷';
-        $template = $resumeData['template'] ?? 'modern';
-        $content = json_encode($resumeData, JSON_UNESCAPED_UNICODE);
         $stmt->bind_param("isss", $userId, $title, $template, $content);
-    }
-    
-    if ($stmt->execute()) {
-        sendResponse(['message' => '履歷已儲存'], 200, '履歷儲存成功');
-    } else {
-        sendError('儲存失敗：' . $stmt->error, 500);
+        
+        if ($stmt->execute()) {
+            $resumeId = $GLOBALS['conn']->insert_id;
+            sendResponse([
+                'message' => '履歷草稿已儲存',
+                'resume_id' => $resumeId
+            ], 201, '儲存成功');
+        } else {
+            sendError('儲存失敗：' . $stmt->error, 500);
+        }
     }
 }
 
@@ -580,68 +591,311 @@ function exportResume() {
     }
 }
 
-// 生成 PDF 履歷
-function generatePDFResume($resume) {
-    // 這裡需要實作 PDF 生成邏輯
-    // 可以使用 mPDF 或其他 PDF 庫
+// 生成履歷 PDF 文件
+function generateResumePDF($resumeData, $userId) {
+    require_once __DIR__ . '/../../vendor/autoload.php';
     
-    $content = json_decode($resume['content'], true);
-    $template = $resume['template'];
+    try {
+        // 建立 mPDF 實例
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 16,
+            'margin_bottom' => 16,
+            'margin_header' => 9,
+            'margin_footer' => 9
+        ]);
+        
+        // 生成 HTML 內容
+        $html = generateResumeHTML($resumeData);
+        
+        // 寫入 PDF
+        $mpdf->WriteHTML($html);
+        
+        // 確保目錄存在
+        $uploadDir = __DIR__ . '/../../uploads/resumes/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        
+        // 生成檔案名稱
+        $fileName = 'resume_' . $userId . '_' . time() . '.pdf';
+        $filePath = $uploadDir . $fileName;
+        
+        // 儲存 PDF
+        $mpdf->Output($filePath, \Mpdf\Output\Destination::FILE);
+        
+        // 返回相對路徑
+        return 'uploads/resumes/' . $fileName;
+        
+    } catch (Exception $e) {
+        error_log('PDF 生成失敗: ' . $e->getMessage());
+        throw new Exception('PDF 生成失敗: ' . $e->getMessage());
+    }
+}
+
+// 生成履歷 HTML 內容
+function generateResumeHTML($resumeData) {
+    $template = $resumeData['template'] ?? 'modern';
     
-    // 簡單的 HTML 輸出（實際應該生成 PDF）
-    $html = "<!DOCTYPE html>
+    $css = '
+        body { 
+            font-family: "Microsoft YaHei", "微軟正黑體", "Helvetica Neue", Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 20px;
+        }
+        h1 { font-size: 28px; margin: 0 0 10px 0; color: #2d3748; }
+        h2 { font-size: 18px; margin: 20px 0 10px 0; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 5px; }
+        h3 { font-size: 16px; margin: 10px 0 5px 0; color: #2d3748; }
+        p { margin: 5px 0; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #667eea; padding-bottom: 15px; }
+        .subtitle { font-size: 16px; color: #667eea; margin: 5px 0; }
+        .contact-info { font-size: 12px; color: #718096; margin: 10px 0; }
+        .section { margin-bottom: 20px; }
+        .item { margin-bottom: 15px; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .company { color: #667eea; font-weight: 600; }
+        .period { color: #718096; font-size: 12px; }
+        .skill-tag { 
+            display: inline-block;
+            background: #667eea; 
+            color: white; 
+            padding: 3px 10px; 
+            border-radius: 12px; 
+            font-size: 12px;
+            margin: 3px;
+        }
+        .description { color: #4a5568; font-size: 13px; line-height: 1.5; }
+    ';
+    
+    $html = '<!DOCTYPE html>
     <html>
     <head>
-        <meta charset='UTF-8'>
-        <title>{$resume['title']}</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .section { margin-bottom: 20px; }
-            .section-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-        </style>
+        <meta charset="UTF-8">
+        <style>' . $css . '</style>
     </head>
-    <body>
-        <div class='header'>
-            <h1>{$resume['title']}</h1>
-        </div>";
+    <body>';
     
-    if (isset($content['basic_info'])) {
-        $html .= "<div class='section'>
-            <div class='section-title'>基本資料</div>
-            <p>姓名: {$content['basic_info']['name']}</p>
-            <p>職稱: {$content['basic_info']['title']}</p>
-            <p>電子郵件: {$content['basic_info']['email']}</p>
-        </div>";
+    // 基本資料
+    $html .= '<div class="header">';
+    $html .= '<h1>' . htmlspecialchars($resumeData['basic']['name'] ?? '') . '</h1>';
+    $html .= '<div class="subtitle">' . htmlspecialchars($resumeData['basic']['title'] ?? '') . '</div>';
+    $html .= '<div class="contact-info">';
+    if (!empty($resumeData['basic']['email'])) {
+        $html .= '📧 ' . htmlspecialchars($resumeData['basic']['email']) . ' ';
+    }
+    if (!empty($resumeData['basic']['phone'])) {
+        $html .= '📱 ' . htmlspecialchars($resumeData['basic']['phone']) . ' ';
+    }
+    if (!empty($resumeData['basic']['address'])) {
+        $html .= '📍 ' . htmlspecialchars($resumeData['basic']['address']);
+    }
+    $html .= '</div></div>';
+    
+    // 個人簡介
+    if (!empty($resumeData['basic']['summary'])) {
+        $html .= '<div class="section">';
+        $html .= '<h2>個人簡介</h2>';
+        $html .= '<p class="description">' . nl2br(htmlspecialchars($resumeData['basic']['summary'])) . '</p>';
+        $html .= '</div>';
     }
     
-    if (isset($content['education'])) {
-        $html .= "<div class='section'>
-            <div class='section-title'>教育背景</div>";
-        foreach ($content['education'] as $edu) {
-            $html .= "<p>{$edu['degree']} - {$edu['school']} ({$edu['year']})</p>";
+    // 工作經驗
+    if (!empty($resumeData['experience']) && count($resumeData['experience']) > 0) {
+        $html .= '<div class="section">';
+        $html .= '<h2>工作經驗</h2>';
+        foreach ($resumeData['experience'] as $exp) {
+            $html .= '<div class="item">';
+            $html .= '<div class="item-header">';
+            $html .= '<h3>' . htmlspecialchars($exp['position'] ?? '') . '</h3>';
+            $html .= '<span class="period">' . htmlspecialchars($exp['startDate'] ?? '') . ' - ' . htmlspecialchars($exp['endDate'] ?? '') . '</span>';
+            $html .= '</div>';
+            $html .= '<p class="company">' . htmlspecialchars($exp['company'] ?? '') . '</p>';
+            $html .= '<p class="description">' . nl2br(htmlspecialchars($exp['description'] ?? '')) . '</p>';
+            $html .= '</div>';
         }
-        $html .= "</div>";
+        $html .= '</div>';
     }
     
-    if (isset($content['experience'])) {
-        $html .= "<div class='section'>
-            <div class='section-title'>工作經驗</div>";
-        foreach ($content['experience'] as $exp) {
-            $html .= "<p><strong>{$exp['position']}</strong> - {$exp['company']} ({$exp['period']})</p>
-            <p>{$exp['description']}</p>";
+    // 教育背景
+    if (!empty($resumeData['education']) && count($resumeData['education']) > 0) {
+        $html .= '<div class="section">';
+        $html .= '<h2>教育背景</h2>';
+        foreach ($resumeData['education'] as $edu) {
+            $html .= '<div class="item">';
+            $html .= '<div class="item-header">';
+            $html .= '<h3>' . htmlspecialchars($edu['degree'] ?? '') . '</h3>';
+            $html .= '<span class="period">' . htmlspecialchars($edu['year'] ?? '') . '</span>';
+            $html .= '</div>';
+            $html .= '<p class="company">' . htmlspecialchars($edu['school'] ?? '') . '</p>';
+            if (!empty($edu['gpa'])) {
+                $html .= '<p class="description">GPA: ' . htmlspecialchars($edu['gpa']);
+                if (!empty($edu['courses'])) {
+                    $html .= ' | 相關課程: ' . htmlspecialchars($edu['courses']);
+                }
+                $html .= '</p>';
+            }
+            $html .= '</div>';
         }
-        $html .= "</div>";
+        $html .= '</div>';
     }
     
-    $html .= "</body></html>";
+    // 技能專長
+    if (!empty($resumeData['skills'])) {
+        $html .= '<div class="section">';
+        $html .= '<h2>技能專長</h2>';
+        $html .= '<div>';
+        $skills = explode(',', $resumeData['skills']);
+        foreach ($skills as $skill) {
+            $skill = trim($skill);
+            if ($skill) {
+                $html .= '<span class="skill-tag">' . htmlspecialchars($skill) . '</span>';
+            }
+        }
+        $html .= '</div></div>';
+    }
     
-    // 設定標頭
-    header('Content-Type: text/html; charset=utf-8');
-    header('Content-Disposition: inline; filename="' . $resume['title'] . '.html"');
+    // 專案作品
+    if (!empty($resumeData['projects']) && count($resumeData['projects']) > 0) {
+        $html .= '<div class="section">';
+        $html .= '<h2>專案作品</h2>';
+        foreach ($resumeData['projects'] as $project) {
+            $html .= '<div class="item">';
+            $html .= '<h3>' . htmlspecialchars($project['name'] ?? '') . '</h3>';
+            $html .= '<p class="company">' . htmlspecialchars($project['tech'] ?? '') . '</p>';
+            $html .= '<p class="description">' . nl2br(htmlspecialchars($project['description'] ?? '')) . '</p>';
+            if (!empty($project['url']) || !empty($project['github'])) {
+                $html .= '<p class="description" style="font-size: 11px;">';
+                if (!empty($project['url'])) {
+                    $html .= '🌐 ' . htmlspecialchars($project['url']) . ' ';
+                }
+                if (!empty($project['github'])) {
+                    $html .= '📁 ' . htmlspecialchars($project['github']);
+                }
+                $html .= '</p>';
+            }
+            $html .= '</div>';
+        }
+        $html .= '</div>';
+    }
     
-    echo $html;
-    exit();
+    // 證照獎項
+    if (!empty($resumeData['certificates']) && count($resumeData['certificates']) > 0) {
+        $html .= '<div class="section">';
+        $html .= '<h2>證照獎項</h2>';
+        foreach ($resumeData['certificates'] as $cert) {
+            $html .= '<div class="item">';
+            $html .= '<div class="item-header">';
+            $html .= '<h3>' . htmlspecialchars($cert['name'] ?? '') . '</h3>';
+            $html .= '<span class="period">' . htmlspecialchars($cert['date'] ?? '') . '</span>';
+            $html .= '</div>';
+            $html .= '<p class="company">' . htmlspecialchars($cert['issuer'] ?? '') . '</p>';
+            if (!empty($cert['expiry'])) {
+                $html .= '<p class="description">有效期限: ' . htmlspecialchars($cert['expiry']) . '</p>';
+            }
+            $html .= '</div>';
+        }
+        $html .= '</div>';
+    }
+    
+    $html .= '</body></html>';
+    
+    return $html;
+}
+
+// 生成並儲存 PDF（從前端呼叫）
+function generateAndSavePDF($input) {
+    $userId = checkPermission('student');
+    
+    if (!$input || !isset($input['resume_data'])) {
+        sendError('缺少履歷資料', 400);
+    }
+    
+    $resumeData = $input['resume_data'];
+    
+    try {
+        // 生成 PDF 文件
+        $pdfPath = generateResumePDF($resumeData, $userId);
+        
+        // 更新資料庫中的 file_path
+        $stmt = $GLOBALS['conn']->prepare("SELECT id FROM resumes WHERE user_id = ? ORDER BY version DESC LIMIT 1");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $resume = $result->fetch_assoc();
+            
+            $stmt = $GLOBALS['conn']->prepare("
+                UPDATE resumes 
+                SET file_path = ?, status = 'published', updated_at = NOW()
+                WHERE id = ?
+            ");
+            $stmt->bind_param("si", $pdfPath, $resume['id']);
+            $stmt->execute();
+        }
+        
+        // 返回 PDF 完整 URL 供下載
+        $pdfUrl = '/portfolio/' . $pdfPath;
+        
+        sendResponse([
+            'message' => 'PDF 已生成',
+            'pdf_path' => $pdfPath,
+            'pdf_url' => $pdfUrl
+        ], 200, '生成成功');
+        
+    } catch (Exception $e) {
+        sendError('PDF 生成失敗: ' . $e->getMessage(), 500);
+    }
+}
+
+// 生成 PDF 履歷（用於匯出功能）
+function generatePDFResume($resume) {
+    $content = json_decode($resume['content'], true);
+    
+    // 如果已經有 PDF 檔案，直接返回
+    if (!empty($resume['file_path']) && file_exists(__DIR__ . '/../../' . $resume['file_path'])) {
+        $filePath = __DIR__ . '/../../' . $resume['file_path'];
+        
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . basename($resume['file_path']) . '"');
+        header('Content-Length: ' . filesize($filePath));
+        
+        readfile($filePath);
+        exit();
+    }
+    
+    // 如果沒有 PDF 檔案，現場生成
+    try {
+        $userId = $resume['user_id'];
+        $pdfPath = generateResumePDF($content, $userId);
+        
+        // 更新資料庫
+        $stmt = $GLOBALS['conn']->prepare("
+            UPDATE resumes 
+            SET file_path = ?, updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stmt->bind_param("si", $pdfPath, $resume['id']);
+        $stmt->execute();
+        
+        // 返回生成的 PDF
+        $filePath = __DIR__ . '/../../' . $pdfPath;
+        
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . basename($pdfPath) . '"');
+        header('Content-Length: ' . filesize($filePath));
+        
+        readfile($filePath);
+        exit();
+        
+    } catch (Exception $e) {
+        sendError('PDF 生成失敗: ' . $e->getMessage(), 500);
+    }
 }
 
 // 生成 DOCX 履歷

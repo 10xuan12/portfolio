@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： localhost
--- 產生時間： 2025-09-27 10:15:33
+-- 產生時間： 2025-10-08 12:10:14
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -20,6 +20,59 @@ SET time_zone = "+00:00";
 --
 -- 資料庫： `eportfolio2`
 --
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `audit_logs`
+--
+
+CREATE TABLE `audit_logs` (
+  `id` int(11) NOT NULL,
+  `admin_id` int(11) NOT NULL COMMENT '執行審核的管理員 ID',
+  `action_type` enum('approve','reject','suspend','delete','edit','warning') NOT NULL COMMENT '操作類型',
+  `target_type` enum('user','portfolio','job','comment','enterprise','report') NOT NULL COMMENT '審核對象類型',
+  `target_id` int(11) NOT NULL COMMENT '審核對象 ID',
+  `target_user_id` int(11) DEFAULT NULL COMMENT '被審核的用戶 ID',
+  `reason` varchar(500) DEFAULT NULL COMMENT '審核原因',
+  `details` text DEFAULT NULL COMMENT '詳細說明',
+  `before_data` longtext DEFAULT NULL COMMENT '變更前數據（JSON）',
+  `after_data` longtext DEFAULT NULL COMMENT '變更後數據（JSON）',
+  `ip_address` varchar(45) DEFAULT NULL COMMENT '操作 IP 位址',
+  `user_agent` varchar(500) DEFAULT NULL COMMENT '瀏覽器資訊',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='審核歷史記錄表';
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `available_timeslots`
+--
+
+CREATE TABLE `available_timeslots` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT '用戶 ID',
+  `day_of_week` int(11) NOT NULL COMMENT '星期幾（0=日, 1=一, ..., 6=六）',
+  `start_time` time NOT NULL COMMENT '開始時間',
+  `end_time` time NOT NULL COMMENT '結束時間',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否啟用',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='可用時間段表';
+
+--
+-- 傾印資料表的資料 `available_timeslots`
+--
+
+INSERT INTO `available_timeslots` (`id`, `user_id`, `day_of_week`, `start_time`, `end_time`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 5, 1, '09:00:00', '12:00:00', 1, '2025-10-08 09:52:56', '2025-10-08 09:52:56'),
+(2, 5, 1, '14:00:00', '17:00:00', 1, '2025-10-08 09:52:56', '2025-10-08 09:52:56'),
+(3, 5, 3, '09:00:00', '12:00:00', 1, '2025-10-08 09:52:56', '2025-10-08 09:52:56'),
+(4, 5, 5, '14:00:00', '18:00:00', 1, '2025-10-08 09:52:56', '2025-10-08 09:52:56'),
+(5, 5, 1, '09:00:00', '12:00:00', 1, '2025-10-08 10:00:47', '2025-10-08 10:00:47'),
+(6, 5, 1, '14:00:00', '17:00:00', 1, '2025-10-08 10:00:47', '2025-10-08 10:00:47'),
+(7, 5, 3, '09:00:00', '12:00:00', 1, '2025-10-08 10:00:47', '2025-10-08 10:00:47'),
+(8, 5, 5, '14:00:00', '18:00:00', 1, '2025-10-08 10:00:47', '2025-10-08 10:00:47');
 
 -- --------------------------------------------------------
 
@@ -137,6 +190,8 @@ CREATE TABLE `comments` (
   `content` text NOT NULL,
   `rating` int(11) DEFAULT NULL CHECK (`rating` >= 1 and `rating` <= 5),
   `like_count` int(11) NOT NULL DEFAULT 0,
+  `report_count` int(11) NOT NULL DEFAULT 0 COMMENT '被檢舉次數',
+  `is_flagged` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否被標記',
   `is_approved` tinyint(1) DEFAULT 1,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -146,19 +201,55 @@ CREATE TABLE `comments` (
 -- 傾印資料表的資料 `comments`
 --
 
-INSERT INTO `comments` (`id`, `portfolio_id`, `user_id`, `parent_id`, `content`, `rating`, `like_count`, `is_approved`, `created_at`, `updated_at`) VALUES
-(1, 6, 5, NULL, '這份分析報告非常詳細，數據視覺化做得很好！', NULL, 0, 1, '2025-08-29 15:10:55', '2025-08-29 15:10:55'),
-(2, 7, 5, NULL, '策略規劃很實用，對中小企業很有幫助。', NULL, 0, 1, '2025-08-29 15:10:55', '2025-08-29 15:10:55'),
-(3, 18, 5, NULL, '這是一則測試留言，系統檢查通過。', 5, 0, 1, '2025-09-02 17:31:09', '2025-09-02 17:31:09'),
-(4, 18, 5, NULL, '父留言：這是測試父留言內容。', 5, 0, 1, '2025-09-02 17:33:01', '2025-09-02 17:33:01'),
-(5, 18, 5, 4, '子留言一：這是回覆父留言。', 4, 0, 1, '2025-09-02 17:33:02', '2025-09-02 17:33:02'),
-(6, 18, 5, 4, '子留言二：第二則回覆父留言。', 3, 0, 1, '2025-09-02 17:33:02', '2025-09-02 17:33:02'),
-(7, 18, 5, 6, '子留言的回覆：這是更深一層的回覆。', 5, 0, 1, '2025-09-02 17:33:02', '2025-09-02 17:33:02'),
-(11, 21, 5, NULL, '很棒', NULL, 0, 1, '2025-09-15 17:27:10', '2025-09-15 17:27:10'),
-(12, 21, 5, NULL, '讚讚', NULL, 0, 1, '2025-09-15 17:28:21', '2025-09-15 17:28:21'),
-(13, 21, 5, NULL, '123', NULL, 0, 1, '2025-09-15 17:32:14', '2025-09-15 17:32:14'),
-(14, 21, 5, NULL, '1234', NULL, 0, 1, '2025-09-15 17:33:04', '2025-09-15 17:33:04'),
-(15, 21, 5, NULL, '讚讚', NULL, 0, 1, '2025-09-15 17:45:47', '2025-09-15 17:45:47');
+INSERT INTO `comments` (`id`, `portfolio_id`, `user_id`, `parent_id`, `content`, `rating`, `like_count`, `report_count`, `is_flagged`, `is_approved`, `created_at`, `updated_at`) VALUES
+(1, 6, 5, NULL, '這份分析報告非常詳細，數據視覺化做得很好！', NULL, 0, 0, 0, 1, '2025-08-29 15:10:55', '2025-08-29 15:10:55'),
+(2, 7, 5, NULL, '策略規劃很實用，對中小企業很有幫助。', NULL, 0, 0, 0, 1, '2025-08-29 15:10:55', '2025-08-29 15:10:55'),
+(3, 18, 5, NULL, '這是一則測試留言，系統檢查通過。', 5, 0, 0, 0, 1, '2025-09-02 17:31:09', '2025-09-02 17:31:09'),
+(4, 18, 5, NULL, '父留言：這是測試父留言內容。', 5, 0, 0, 0, 1, '2025-09-02 17:33:01', '2025-09-02 17:33:01'),
+(5, 18, 5, 4, '子留言一：這是回覆父留言。', 4, 0, 0, 0, 1, '2025-09-02 17:33:02', '2025-09-02 17:33:02'),
+(6, 18, 5, 4, '子留言二：第二則回覆父留言。', 3, 0, 0, 0, 1, '2025-09-02 17:33:02', '2025-09-02 17:33:02'),
+(7, 18, 5, 6, '子留言的回覆：這是更深一層的回覆。', 5, 0, 0, 0, 1, '2025-09-02 17:33:02', '2025-09-02 17:33:02');
+
+--
+-- 觸發器 `comments`
+--
+DELIMITER $$
+CREATE TRIGGER `update_portfolio_comment_count_delete` AFTER DELETE ON `comments` FOR EACH ROW BEGIN
+    UPDATE portfolios 
+    SET comment_count = GREATEST(comment_count - 1, 0),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = OLD.portfolio_id;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `update_portfolio_comment_count_insert` AFTER INSERT ON `comments` FOR EACH ROW BEGIN
+    UPDATE portfolios 
+    SET comment_count = comment_count + 1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = NEW.portfolio_id;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `content_moderation`
+--
+
+CREATE TABLE `content_moderation` (
+  `id` int(11) NOT NULL,
+  `content_type` enum('portfolio','job','comment') NOT NULL COMMENT '內容類型',
+  `content_id` int(11) NOT NULL COMMENT '內容 ID',
+  `status` enum('pending','approved','rejected','flagged') NOT NULL DEFAULT 'pending' COMMENT '審核狀態',
+  `reviewed_by` int(11) DEFAULT NULL COMMENT '審核人員 ID',
+  `review_notes` text DEFAULT NULL COMMENT '審核備註',
+  `flags` longtext DEFAULT NULL COMMENT '標記原因（JSON）',
+  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '提交時間',
+  `reviewed_at` timestamp NULL DEFAULT NULL COMMENT '審核時間',
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='內容審核狀態表';
 
 -- --------------------------------------------------------
 
@@ -291,9 +382,20 @@ INSERT INTO `enterprise_bookmarks` (`id`, `enterprise_id`, `portfolio_id`, `note
 (4, 11, 7, '熱門作品', '2025-09-22 09:21:56'),
 (5, 11, 8, '熱門作品', '2025-09-22 09:21:56'),
 (6, 11, 10, '熱門作品', '2025-09-22 09:21:56'),
-(7, 12, 21, '候選人追蹤', '2025-09-22 09:21:56'),
-(8, 12, 16, '候選人追蹤', '2025-09-22 09:21:56'),
 (9, 12, 18, '候選人追蹤', '2025-09-22 09:21:56');
+
+--
+-- 觸發器 `enterprise_bookmarks`
+--
+DELIMITER $$
+CREATE TRIGGER `update_enterprise_bookmark_stats` AFTER INSERT ON `enterprise_bookmarks` FOR EACH ROW BEGIN
+    INSERT INTO enterprise_analytics (enterprise_id, date, portfolio_bookmarks)
+    VALUES (NEW.enterprise_id, CURDATE(), 1)
+    ON DUPLICATE KEY UPDATE 
+        portfolio_bookmarks = portfolio_bookmarks + 1;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -320,6 +422,19 @@ INSERT INTO `enterprise_contacts` (`id`, `enterprise_id`, `student_id`, `contact
 (1, 10, 5, 'message', '關於作品 Python 爬蟲程式開發', '您好，我們對您的作品「Python 爬蟲程式開發」很感興趣，方便進一步聯繫嗎？', '2025-09-24 07:44:39', 0),
 (2, 10, 5, 'message', '關於作品 Python 爬蟲程式開發', '您好，我們對您的作品「Python 爬蟲程式開發」很感興趣，方便進一步聯繫嗎？', '2025-09-24 07:44:47', 0),
 (3, 10, 5, 'message', '企業聯絡', '您好，我們對您的背景（Python, JavaScript, HTML/CSS）很感興趣，方便進一步聯繫嗎？', '2025-09-24 08:37:55', 0);
+
+--
+-- 觸發器 `enterprise_contacts`
+--
+DELIMITER $$
+CREATE TRIGGER `update_enterprise_contact_stats` AFTER INSERT ON `enterprise_contacts` FOR EACH ROW BEGIN
+    INSERT INTO enterprise_analytics (enterprise_id, date, student_contacts)
+    VALUES (NEW.enterprise_id, CURDATE(), 1)
+    ON DUPLICATE KEY UPDATE 
+        student_contacts = student_contacts + 1;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -358,10 +473,9 @@ CREATE TABLE `enterprise_profiles` (
 --
 
 INSERT INTO `enterprise_profiles` (`id`, `user_id`, `company_name`, `company_type`, `industry`, `company_size`, `founded_year`, `employee_count`, `revenue_range`, `description`, `logo_url`, `website`, `address`, `phone`, `contact_person`, `contact_email`, `social_media`, `company_culture`, `benefits_description`, `is_verified`, `verification_date`, `created_at`, `updated_at`) VALUES
-(2, 10, '台灣微軟股份有限公司', '科技', '資訊軟體', '201-500', 1990, 300, 'NT$1B+', '微軟台灣分公司，關注雲服務與企業數位轉型。', NULL, 'https://www.microsoft.com/zh-tw', '台北市信義區', '02-1234-5678', 'HR 團隊', 'hr@microsoft.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/microsoft\", \"website\": \"https://www.microsoft.com\"}', '多元包容、創新為本', '員工旅遊、年終獎金', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-27 07:58:53'),
-(3, 11, 'Google 台灣', '科技', '網路服務', '201-500', 2006, 400, 'NT$1B+', 'Google 在台灣的研發與營運據點。', NULL, 'https://about.google', '台北市信義區', '02-5678-1234', 'HR Team', 'hr@google.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/google\", \"website\": \"https://about.google\"}', '創新、使用者至上', '彈性工時、住宿補助', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
-(4, 12, 'Apple 台灣', '科技', '硬體/軟體', '201-500', 2001, 350, 'NT$1B+', 'Apple 在台灣的設計與營運團隊。', NULL, 'https://www.apple.com/tw', '台北市內湖區', '02-9876-5432', 'HR Team', 'hr@apple.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/apple\", \"website\": \"https://www.apple.com\"}', '追求完美、設計導向', '員購福利、健康保險', 1, '2025-09-22 09:18:56', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
-(5, 13, 'test123', NULL, '服務業', '', NULL, NULL, NULL, '132', NULL, NULL, '台中市', '0965418312', 'test123', NULL, NULL, NULL, NULL, 0, NULL, '2025-09-24 07:08:57', '2025-09-24 07:09:20');
+(2, 10, '台灣微軟股份有限公司', '科技', '資訊軟體', '201-500', 1990, 300, 'NT$1B+', '台灣微軟是微軟在台灣的分公司，致力於提供創新的雲端服務與企業數位轉型解決方案，協助企業提升競爭力。', 'uploads/enterprise/logos/microsoft_tw_logo.jpg', 'https://www.microsoft.com/zh-tw', '台北市信義區', '02-1234-5678', 'HR 團隊', 'hr@microsoft.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/microsoft\", \"website\": \"https://www.microsoft.com\"}', '我們重視多元包容、鼓勵創新思維，提供員工充分的成長空間與學習資源。', '完善的員工福利，包括：年終獎金、員工旅遊、彈性工時、遠距工作、教育訓練補助、健康檢查。', 1, '2025-10-07 11:16:40', '2025-09-22 09:18:56', '2025-10-08 08:45:40'),
+(3, 11, 'Google 台灣', '科技', '網路服務', '201-500', 2006, 400, 'NT$1B+', 'Google 台灣是 Google 在台灣的研發與營運據點，專注於創新技術研發與產品開發。', 'uploads/enterprise/logos/google_tw_logo.jpg', 'https://about.google', '台北市信義區', '02-5678-1234', 'HR Team', 'hr@google.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/google\", \"website\": \"https://about.google\"}', '以使用者為中心，鼓勵創新與實驗精神，打造開放友善的工作環境。', '業界領先的薪資福利、彈性工時、免費三餐、健身房、交通補助、股票選擇權。', 1, '2025-10-07 11:16:40', '2025-09-22 09:18:56', '2025-10-08 08:45:40'),
+(4, 12, 'Apple 台灣', '科技', '硬體/軟體', '201-500', 2001, 350, 'NT$1B+', 'Apple 台灣專注於產品設計、軟硬體整合與創新服務開發，追求卓越的產品品質。', 'uploads/enterprise/logos/apple_tw_logo.jpg', 'https://www.apple.com/tw', '台北市內湖區', '02-9876-5432', 'HR Team', 'hr@apple.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/apple\", \"website\": \"https://www.apple.com\"}', '追求完美、注重細節、設計導向的文化，激發團隊創造力與專業能力。', '員工購買優惠、完善的健康保險、教育訓練計畫、年度健康檢查、績效獎金。', 1, '2025-10-07 11:16:40', '2025-09-22 09:18:56', '2025-10-08 08:45:40');
 
 -- --------------------------------------------------------
 
@@ -379,16 +493,6 @@ CREATE TABLE `enterprise_recommendations` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `expires_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- 傾印資料表的資料 `enterprise_recommendations`
---
-
-INSERT INTO `enterprise_recommendations` (`id`, `enterprise_id`, `student_id`, `score`, `reason`, `meta`, `created_at`, `expires_at`) VALUES
-(2, 11, 5, 90.00, '資料分析技能相符', '{\"kw\": [\"python\", \"data\", \"dashboard\"]}', '2025-09-22 09:23:30', '2025-09-29 09:23:30'),
-(3, 13, 5, 57.00, '熱門優質學生', '{\"kw\":[]}', '2025-09-24 07:09:45', '2025-10-01 07:09:45'),
-(10, 10, 5, 59.00, '熱門優質學生', '{\"kw\":[]}', '2025-09-27 07:27:45', '2025-10-04 07:27:44'),
-(11, 10, 9, 41.00, '熱門優質學生', '{\"kw\":[]}', '2025-09-27 07:27:45', '2025-10-04 07:27:44');
 
 -- --------------------------------------------------------
 
@@ -436,6 +540,143 @@ INSERT INTO `grades` (`id`, `name`, `level`, `year`, `description`, `is_active`,
 -- --------------------------------------------------------
 
 --
+-- 資料表結構 `interviews`
+--
+
+CREATE TABLE `interviews` (
+  `id` int(11) NOT NULL,
+  `enterprise_id` int(11) NOT NULL COMMENT '企業 ID',
+  `student_id` int(11) NOT NULL COMMENT '學生 ID',
+  `job_id` int(11) DEFAULT NULL COMMENT '相關職缺 ID',
+  `application_id` int(11) DEFAULT NULL COMMENT '相關應徵 ID',
+  `title` varchar(200) NOT NULL COMMENT '面試標題',
+  `type` enum('phone','video','onsite','other') NOT NULL DEFAULT 'video' COMMENT '面試類型',
+  `status` enum('scheduled','confirmed','rescheduled','completed','cancelled','no_show') NOT NULL DEFAULT 'scheduled' COMMENT '面試狀態',
+  `scheduled_at` datetime NOT NULL COMMENT '預定時間',
+  `duration` int(11) NOT NULL DEFAULT 60 COMMENT '預計時長（分鐘）',
+  `location` varchar(500) DEFAULT NULL COMMENT '面試地點/連結',
+  `video_link` varchar(500) DEFAULT NULL COMMENT '視訊會議連結',
+  `description` text DEFAULT NULL COMMENT '面試說明',
+  `notes` text DEFAULT NULL COMMENT '備註',
+  `reminder_sent` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否已發送提醒',
+  `confirmed_by_student` tinyint(1) NOT NULL DEFAULT 0 COMMENT '學生是否確認',
+  `confirmed_by_enterprise` tinyint(1) NOT NULL DEFAULT 0 COMMENT '企業是否確認',
+  `feedback` text DEFAULT NULL COMMENT '面試回饋',
+  `rating` int(11) DEFAULT NULL COMMENT '評分（1-5）',
+  `created_by` int(11) NOT NULL COMMENT '建立者 ID',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='面試安排表';
+
+--
+-- 傾印資料表的資料 `interviews`
+--
+
+INSERT INTO `interviews` (`id`, `enterprise_id`, `student_id`, `job_id`, `application_id`, `title`, `type`, `status`, `scheduled_at`, `duration`, `location`, `video_link`, `description`, `notes`, `reminder_sent`, `confirmed_by_student`, `confirmed_by_enterprise`, `feedback`, `rating`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 10, 5, 1, NULL, '前端工程師初試', 'video', 'scheduled', '2025-10-15 14:00:00', 60, 'Microsoft Teams', NULL, '技術面試，請準備作品展示', NULL, 0, 0, 0, NULL, NULL, 10, '2025-10-08 09:52:55', '2025-10-08 09:52:55'),
+(2, 11, 5, 2, NULL, '資料分析師面談', 'video', 'confirmed', '2025-10-18 10:00:00', 45, 'Google Meet', NULL, '與團隊主管面談', NULL, 0, 0, 0, NULL, NULL, 11, '2025-10-08 09:52:55', '2025-10-08 09:52:55'),
+(3, 10, 5, 1, NULL, '前端工程師初試', 'video', 'scheduled', '2025-10-15 14:00:00', 60, 'Microsoft Teams', NULL, '技術面試，請準備作品展示', NULL, 0, 0, 0, NULL, NULL, 10, '2025-10-08 10:00:46', '2025-10-08 10:00:46'),
+(4, 11, 5, 2, NULL, '資料分析師面談', 'video', 'confirmed', '2025-10-18 10:00:00', 45, 'Google Meet', NULL, '與團隊主管面談', NULL, 0, 0, 0, NULL, NULL, 11, '2025-10-08 10:00:46', '2025-10-08 10:00:46');
+
+--
+-- 觸發器 `interviews`
+--
+DELIMITER $$
+CREATE TRIGGER `create_notification_on_interview` AFTER INSERT ON `interviews` FOR EACH ROW BEGIN
+    DECLARE company_name VARCHAR(100);
+    DECLARE student_name VARCHAR(100);
+    
+    -- 取得企業名稱
+    SELECT ep.company_name INTO company_name
+    FROM enterprise_profiles ep
+    WHERE ep.user_id = NEW.enterprise_id;
+    
+    -- 取得學生姓名
+    SELECT COALESCE(sp.display_name, u.username) INTO student_name
+    FROM users u
+    LEFT JOIN student_profiles sp ON u.id = sp.user_id
+    WHERE u.id = NEW.student_id;
+    
+    -- 通知學生
+    INSERT INTO notifications (user_id, type, title, message, data, is_read)
+    VALUES (
+        NEW.student_id,
+        'enterprise',
+        '新面試邀請',
+        CONCAT(company_name, ' 邀請您進行面試：', NEW.title, '，時間：', DATE_FORMAT(NEW.scheduled_at, '%Y-%m-%d %H:%i')),
+        JSON_OBJECT(
+            'interview_id', NEW.id,
+            'company_name', company_name,
+            'scheduled_at', NEW.scheduled_at
+        ),
+        0
+    );
+    
+    -- 通知企業
+    INSERT INTO notifications (user_id, type, title, message, data, is_read)
+    VALUES (
+        NEW.enterprise_id,
+        'system',
+        '面試已建立',
+        CONCAT('已建立與 ', student_name, ' 的面試：', NEW.title),
+        JSON_OBJECT(
+            'interview_id', NEW.id,
+            'student_name', student_name,
+            'scheduled_at', NEW.scheduled_at
+        ),
+        0
+    );
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `interview_reminders`
+--
+
+CREATE TABLE `interview_reminders` (
+  `id` int(11) NOT NULL,
+  `interview_id` int(11) NOT NULL COMMENT '面試 ID',
+  `remind_at` datetime NOT NULL COMMENT '提醒時間',
+  `remind_type` enum('email','notification','both') NOT NULL DEFAULT 'both' COMMENT '提醒方式',
+  `is_sent` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否已發送',
+  `sent_at` timestamp NULL DEFAULT NULL COMMENT '發送時間',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='面試提醒表';
+
+--
+-- 傾印資料表的資料 `interview_reminders`
+--
+
+INSERT INTO `interview_reminders` (`id`, `interview_id`, `remind_at`, `remind_type`, `is_sent`, `sent_at`, `created_at`) VALUES
+(1, 1, '2025-10-15 13:00:00', 'both', 0, NULL, '2025-10-08 09:52:56'),
+(2, 1, '2025-10-14 14:00:00', 'notification', 0, NULL, '2025-10-08 09:52:56'),
+(3, 2, '2025-10-18 09:00:00', 'both', 0, NULL, '2025-10-08 09:52:56'),
+(4, 1, '2025-10-15 13:00:00', 'both', 0, NULL, '2025-10-08 10:00:46'),
+(5, 1, '2025-10-14 14:00:00', 'notification', 0, NULL, '2025-10-08 10:00:46'),
+(6, 2, '2025-10-18 09:00:00', 'both', 0, NULL, '2025-10-08 10:00:46');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `interview_reschedules`
+--
+
+CREATE TABLE `interview_reschedules` (
+  `id` int(11) NOT NULL,
+  `interview_id` int(11) NOT NULL COMMENT '面試 ID',
+  `old_scheduled_at` datetime NOT NULL COMMENT '原預定時間',
+  `new_scheduled_at` datetime NOT NULL COMMENT '新預定時間',
+  `reason` varchar(500) DEFAULT NULL COMMENT '改期原因',
+  `requested_by` int(11) NOT NULL COMMENT '請求改期的用戶 ID',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='面試改期記錄';
+
+-- --------------------------------------------------------
+
+--
 -- 資料表結構 `jobs`
 --
 
@@ -461,6 +702,8 @@ CREATE TABLE `jobs` (
   `application_count` int(11) DEFAULT 0,
   `bookmark_count` int(11) DEFAULT 0,
   `is_featured` tinyint(1) DEFAULT 0,
+  `report_count` int(11) NOT NULL DEFAULT 0 COMMENT '被檢舉次數',
+  `is_flagged` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否被標記',
   `published_at` timestamp NULL DEFAULT NULL,
   `deadline` date DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -471,10 +714,9 @@ CREATE TABLE `jobs` (
 -- 傾印資料表的資料 `jobs`
 --
 
-INSERT INTO `jobs` (`id`, `enterprise_id`, `title`, `description`, `requirements`, `responsibilities`, `salary_min`, `salary_max`, `salary_type`, `job_type`, `location`, `department`, `experience_level`, `education_level`, `skills_required`, `benefits`, `status`, `view_count`, `application_count`, `bookmark_count`, `is_featured`, `published_at`, `deadline`, `created_at`, `updated_at`) VALUES
-(1, 10, '前端工程師', '負責前端產品開發與最佳化。', 'JavaScript,React,HTML,CSS,Git,123', '', 60000.00, 100000.00, '月薪', '實習', '台北市', '技術部', '1-3年', '大學', 'JavaScript,React,HTML,CSS,Git,123', '', 'active', 0, 0, 0, 0, '2025-09-27 06:51:37', '2025-11-21', '2025-09-22 09:18:56', '2025-09-27 06:55:54'),
-(2, 11, '資料分析師', '負責數據分析與可視化儀表板。', '熟悉 SQL、Python、BI 工具', '建立數據報表、協助決策', 70000.00, 110000.00, '月薪', '全職', '台北市', '數據部', '1-3年', '大學', 'Python,SQL,PowerBI,Tableau', '年終獎金, 在家工作', 'active', 0, 0, 0, 0, '2025-09-22 09:18:56', '2025-11-06', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
-(3, 10, 'Test111', '123', 'java', '1123', 0.00, 63333.00, '月薪', '實習', '台北市', '技術部', '1-3年', '博士', 'java', '123', 'active', 0, 0, 0, 0, '2025-09-27 07:25:10', '2025-09-27', '2025-09-27 07:25:10', '2025-09-27 07:25:10');
+INSERT INTO `jobs` (`id`, `enterprise_id`, `title`, `description`, `requirements`, `responsibilities`, `salary_min`, `salary_max`, `salary_type`, `job_type`, `location`, `department`, `experience_level`, `education_level`, `skills_required`, `benefits`, `status`, `view_count`, `application_count`, `bookmark_count`, `is_featured`, `report_count`, `is_flagged`, `published_at`, `deadline`, `created_at`, `updated_at`) VALUES
+(1, 10, '軟體工程師', '負責前端產品開發與最佳化，參與系統架構設計，與團隊協作開發高品質的軟體產品。', '熟悉 JavaScript、React、HTML、CSS、Git 等前端技術，具備良好的問題解決能力。', '開發和維護前端應用程式、參與產品設計討論、編寫技術文件、協助團隊成員解決技術問題。', 60000.00, 100000.00, '月薪', '實習', '台北市', '技術部', '1-3年', '大學', 'JavaScript, React, HTML, CSS, Git, TypeScript', '', 'active', 0, 0, 0, 0, 0, 0, '2025-09-27 06:51:37', '2025-11-21', '2025-09-22 09:18:56', '2025-10-07 11:16:37'),
+(2, 11, '資料分析師', '負責數據分析與可視化儀表板。', '熟悉 SQL、Python、BI 工具', '建立數據報表、協助決策', 70000.00, 110000.00, '月薪', '全職', '台北市', '數據部', '1-3年', '大學', 'Python,SQL,PowerBI,Tableau', '年終獎金, 在家工作', 'active', 0, 0, 0, 0, 0, 0, '2025-09-22 09:18:56', '2025-11-06', '2025-09-22 09:18:56', '2025-09-22 09:18:56');
 
 -- --------------------------------------------------------
 
@@ -509,6 +751,28 @@ INSERT INTO `job_applications` (`id`, `job_id`, `student_id`, `status`, `cover_l
 (2, 1, 9, 'accepted', '我有豐富的程式設計經驗...', NULL, NULL, 50000.00, '2025-10-15', NULL, NULL, NULL, '', '2025-09-27 07:04:05', '2025-09-27 07:22:27'),
 (3, 2, 5, 'pending', '我專精於資料分析...', NULL, NULL, 55000.00, '2025-11-01', NULL, NULL, NULL, NULL, '2025-09-27 07:04:05', '2025-09-27 07:04:05');
 
+--
+-- 觸發器 `job_applications`
+--
+DELIMITER $$
+CREATE TRIGGER `update_job_application_count_delete` AFTER DELETE ON `job_applications` FOR EACH ROW BEGIN
+    UPDATE jobs 
+    SET application_count = GREATEST(application_count - 1, 0),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = OLD.job_id;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `update_job_application_count_insert` AFTER INSERT ON `job_applications` FOR EACH ROW BEGIN
+    UPDATE jobs 
+    SET application_count = application_count + 1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = NEW.job_id;
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -528,11 +792,31 @@ CREATE TABLE `likes` (
 
 INSERT INTO `likes` (`id`, `user_id`, `portfolio_id`, `created_at`) VALUES
 (2, 5, 8, '2025-08-29 07:10:55'),
-(18, 5, 16, '2025-09-16 06:08:02'),
-(20, 5, 21, '2025-09-16 06:31:04'),
 (21, 5, 6, '2025-09-17 03:00:00'),
 (22, 5, 9, '2025-09-17 03:05:00'),
 (23, 5, 10, '2025-09-17 03:10:00');
+
+--
+-- 觸發器 `likes`
+--
+DELIMITER $$
+CREATE TRIGGER `update_portfolio_like_count_delete` AFTER DELETE ON `likes` FOR EACH ROW BEGIN
+    UPDATE portfolios 
+    SET like_count = GREATEST(like_count - 1, 0),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = OLD.portfolio_id;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `update_portfolio_like_count_insert` AFTER INSERT ON `likes` FOR EACH ROW BEGIN
+    UPDATE portfolios 
+    SET like_count = like_count + 1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = NEW.portfolio_id;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -583,7 +867,7 @@ CREATE TABLE `notifications` (
 INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`, `is_read`, `created_at`) VALUES
 (1, 5, 'like', '您的作品收到了新的讚', '有人對您的作品「電商網站使用者行為分析」按讚了！', '{\"portfolio_id\": 1, \"liker_name\": \"匿名用戶\"}', 1, '2025-08-29 07:10:55'),
 (2, 5, 'comment', '您的作品收到了新的評論', '有人對您的作品「社群媒體行銷策略規劃」發表了評論。', '{\"portfolio_id\": 2, \"commenter_name\": \"匿名用戶\", \"comment\": \"策略規劃很實用，對中小企業很有幫助。\"}', 1, '2025-08-29 07:10:55'),
-(3, 5, 'system', '系統維護公告', '今晚 23:00 將進行例行維護。', '{\"level\": \"info\"}', 1, '2025-08-29 08:42:39'),
+(3, 5, 'system', '系統維護通知', '系統將於今晚 23:00 至 01:00 進行例行維護作業，期間部分功能可能暫時無法使用，造成不便敬請見諒。', '{\"level\": \"info\"}', 1, '2025-08-29 08:42:39'),
 (4, 5, 'view', '有人瀏覽了你的作品', '你的作品「Python 爬蟲程式開發」被瀏覽。', '{\"portfolio_id\": 9}', 1, '2025-08-29 08:42:39'),
 (5, 5, 'system', '系統更新', 'Portfolio+ 已更新，提升了儀表板載入效能。', '{\"version\": \"2.0.2\"}', 0, '2025-09-07 07:35:03'),
 (6, 5, 'like', '你的作品收到新的讚', '作品「資料儀表板設計與視覺化」新增 1 個讚。', '{\"portfolio_id\": 20}', 0, '2025-09-07 21:35:03'),
@@ -597,14 +881,13 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`
 (14, 5, 'enterprise', '台灣微軟股份有限公司 聯絡了您', '有企業對您的作品感興趣，請查看聯絡內容。', '{\"contact_id\":0}', 0, '2025-09-24 07:44:40'),
 (15, 5, 'enterprise', '台灣微軟股份有限公司 聯絡了您', '有企業對您的作品感興趣，請查看聯絡內容。', '{\"contact_id\":0}', 0, '2025-09-24 07:44:47'),
 (16, 5, 'enterprise', '台灣微軟股份有限公司 聯絡了您', '有企業對您的作品感興趣，請查看聯絡內容。', '{\"contact_id\":0}', 0, '2025-09-24 08:37:55'),
-(17, 10, 'system', '系統維護通知', '系統將於今晚 23:00-01:00 進行例行維護，期間可能影響服務使用。', '{\"level\": \"warning\", \"maintenance_time\": \"2025-01-15 23:00:00\"}', 1, '2025-01-15 02:30:00'),
+(17, 10, 'system', '系統維護通知', '系統將於今晚 23:00 至 01:00 進行例行維護作業，期間部分功能可能暫時無法使用，造成不便敬請見諒。', '{\"level\": \"warning\", \"maintenance_time\": \"2025-01-15 23:00:00\"}', 1, '2025-01-15 02:30:00'),
 (18, 10, 'system', '新功能上線', '企業端新增「批量聯絡」功能，可一次聯絡多位候選人。', '{\"feature\": \"batch_contact\", \"version\": \"2.1.0\"}', 1, '2025-01-14 07:20:00'),
 (19, 10, 'system', '資料備份完成', '您的企業資料已成功備份至雲端。', '{\"backup_date\": \"2025-01-14\", \"size\": \"2.3MB\"}', 1, '2025-01-13 18:00:00'),
 (20, 11, 'system', '帳戶安全提醒', '偵測到異常登入活動，請檢查您的帳戶安全設定。', '{\"security_level\": \"high\", \"login_location\": \"台北市\"}', 0, '2025-01-15 01:15:00'),
 (21, 11, 'system', 'API 配額更新', '您的 API 使用配額已更新，本月剩餘 95% 配額。', '{\"quota_used\": \"5%\", \"quota_remaining\": \"95%\"}', 0, '2025-01-14 04:00:00'),
 (22, 12, 'system', '服務條款更新', '我們已更新服務條款，請查看最新版本。', '{\"document_version\": \"v3.2\", \"effective_date\": \"2025-01-20\"}', 0, '2025-01-13 08:45:00'),
 (23, 12, 'system', '付款成功', '您的 Premium 方案付款已成功處理。', '{\"amount\": \"2990\", \"currency\": \"TWD\", \"plan\": \"premium\"}', 1, '2025-01-12 02:30:00'),
-(24, 13, 'system', '歡迎使用企業版', '感謝您選擇 Portfolio+ 企業版，開始尋找優秀人才吧！', '{\"welcome_bonus\": \"30天免費試用\"}', 0, '2025-01-15 00:00:00'),
 (25, 10, 'enterprise', '學生主動聯絡', '學生 黃玟瑄 對您的職缺「軟體工程師」感興趣，已發送履歷。', '{\"contact_id\": 1, \"student_name\": \"黃玟瑄\", \"job_title\": \"軟體工程師\", \"resume_sent\": true}', 1, '2025-01-15 06:30:00'),
 (26, 10, 'enterprise', '學生主動聯絡', '學生 王小明 詢問關於「資料分析師」職缺的詳細資訊。', '{\"contact_id\": 2, \"student_name\": \"王小明\", \"job_title\": \"資料分析師\", \"inquiry_type\": \"job_details\"}', 1, '2025-01-15 03:20:00'),
 (27, 10, 'enterprise', '學生主動聯絡', '學生 李美華 對您的公司文化很感興趣，希望了解更多。', '{\"contact_id\": 3, \"student_name\": \"李美華\", \"inquiry_type\": \"company_culture\"}', 1, '2025-01-14 08:45:00'),
@@ -641,7 +924,9 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`
 (58, 11, 'comment', '職缺收到評論', '您的職缺「全端工程師」收到了新的評論。', '{\"job_id\": 9, \"job_title\": \"全端工程師\", \"commenter_name\": \"學生P\", \"comment_preview\": \"技術要求很全面...\"}', 1, '2025-01-12 09:20:00'),
 (59, 12, 'system', '面試安排', '您有 3 場面試安排在明天，請確認時間。', '{\"interview_count\": 3, \"date\": \"2025-01-16\", \"candidates\": [\"學生Q\", \"學生R\", \"學生S\"]}', 0, '2025-01-15 10:30:00'),
 (60, 12, 'enterprise', '學生主動聯絡', '學生 黃小明 詢問關於「硬體工程師」職缺的詳細資訊。', '{\"contact_id\": 9, \"student_name\": \"黃小明\", \"job_title\": \"硬體工程師\", \"inquiry_type\": \"job_details\"}', 0, '2025-01-15 09:15:00'),
-(61, 12, 'view', '職缺被瀏覽', '您的職缺「硬體工程師」被 4 位求職者瀏覽。', '{\"job_id\": 10, \"job_title\": \"硬體工程師\", \"view_count\": 4}', 1, '2025-01-14 13:00:00');
+(61, 12, 'view', '職缺被瀏覽', '您的職缺「硬體工程師」被 4 位求職者瀏覽。', '{\"job_id\": 10, \"job_title\": \"硬體工程師\", \"view_count\": 4}', 1, '2025-01-14 13:00:00'),
+(62, 5, 'system', '歡迎使用 Portfolio+ 平台', '感謝您註冊 Portfolio+ 專業作品集平台。在這裡，您可以展示作品、建立個人品牌，並與優秀企業建立聯繫。祝您使用愉快！', '{\"welcome\": true}', 0, '2025-10-07 11:16:40'),
+(63, 9, 'system', '歡迎使用 Portfolio+ 平台', '感謝您註冊 Portfolio+ 專業作品集平台。在這裡，您可以展示作品、建立個人品牌，並與優秀企業建立聯繫。祝您使用愉快！', '{\"welcome\": true}', 0, '2025-10-07 11:16:40');
 
 -- --------------------------------------------------------
 
@@ -657,13 +942,6 @@ CREATE TABLE `password_resets` (
   `used` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- 傾印資料表的資料 `password_resets`
---
-
-INSERT INTO `password_resets` (`id`, `user_id`, `token`, `expires_at`, `used`, `created_at`) VALUES
-(1, 5, 'token123', '2025-09-01 12:00:00', 0, '2025-08-29 02:37:33');
 
 -- --------------------------------------------------------
 
@@ -686,6 +964,8 @@ CREATE TABLE `portfolios` (
   `comment_count` int(11) DEFAULT 0,
   `download_count` int(11) DEFAULT 0,
   `is_featured` tinyint(1) DEFAULT 0,
+  `report_count` int(11) NOT NULL DEFAULT 0 COMMENT '被檢舉次數',
+  `is_flagged` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否被標記',
   `published_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -695,17 +975,14 @@ CREATE TABLE `portfolios` (
 -- 傾印資料表的資料 `portfolios`
 --
 
-INSERT INTO `portfolios` (`id`, `user_id`, `title`, `description`, `category_id`, `tags`, `status`, `cover_image`, `content`, `view_count`, `like_count`, `comment_count`, `download_count`, `is_featured`, `published_at`, `created_at`, `updated_at`) VALUES
-(6, 5, '電商網站使用者行為分析', '使用 Python 和 PowerBI 分析電商網站的用戶行為數據，包括瀏覽路徑、購買轉換率、用戶分群等，為行銷策略提供數據支持。', 27, 'Python, PowerBI, 數據分析, 電商, 用戶行為', 'published', '/portfolio/uploads/portfolios/ecommerce-analysis.jpg', '## 專案概述\n\n本專案旨在分析電商網站的用戶行為數據，透過數據挖掘和視覺化技術，深入了解用戶的瀏覽習慣和購買行為。\n\n## 技術工具\n- Python (pandas, numpy, matplotlib)\n- PowerBI\n- SQL\n- Excel\n\n## 主要發現\n1. 用戶平均瀏覽時間為 8.5 分鐘\n2. 購物車放棄率為 68%\n3. 最受歡迎的產品類別是電子產品\n\n## 改進建議\n1. 優化購物車流程\n2. 增加產品推薦功能\n3. 改善移動端體驗', 159, 23, 0, 0, 1, '2024-12-01 02:00:00', '2025-08-29 07:07:41', '2025-09-17 09:11:15'),
-(7, 5, '社群媒體行銷策略規劃', '為中小企業制定完整的社群媒體行銷策略，包括內容規劃、發布時程、互動策略和成效追蹤。', 42, '社群媒體, 行銷策略, 內容規劃, 品牌推廣', 'published', '/portfolio/uploads/portfolios/social-media-strategy.jpg', '## 專案背景\n\n協助台中地區的中小企業建立有效的社群媒體行銷策略，提升品牌知名度和客戶互動。\n\n## 策略內容\n1. 平台選擇：Facebook、Instagram、Line\n2. 內容主題：產品介紹、客戶故事、產業知識\n3. 發布頻率：每週 3-4 篇\n4. 互動策略：回覆評論、舉辦活動\n\n## 成效指標\n- 粉絲增長率：每月 15%\n- 互動率：平均 8%\n- 網站流量：提升 25%', 89, 15, 0, 0, 0, '2024-11-15 06:30:00', '2025-08-29 07:07:41', '2025-09-17 09:12:39'),
-(8, 5, '學生資訊系統 UI/UX 設計', '重新設計學校資訊系統的使用者介面，提升學生和教師的使用體驗，包括響應式設計和無障礙功能。', 27, 'UI/UX設計, 響應式設計, 無障礙設計, 使用者研究', 'published', '/portfolio/uploads/portfolios/student-system-ui.jpg', '## 設計目標\n\n改善現有學生資訊系統的使用者體驗，讓學生和教師能夠更有效率地使用系統功能。\n\n## 設計原則\n1. 簡潔明瞭的介面\n2. 直觀的操作流程\n3. 響應式設計\n4. 無障礙功能\n\n## 主要改進\n- 重新設計導航結構\n- 優化表單設計\n- 增加搜尋功能\n- 改善移動端體驗\n\n## 使用者測試\n- 測試對象：20 名學生，5 名教師\n- 完成任務成功率：95%\n- 使用者滿意度：4.2/5.0', 235, 31, 0, 0, 1, '2024-10-20 01:15:00', '2025-08-29 07:07:41', '2025-09-17 09:13:19'),
-(9, 5, 'Python 爬蟲程式開發', '開發自動化網頁爬蟲程式，用於收集和分析網路數據，支援多種網站格式和反爬蟲機制。', 27, 'Python, 爬蟲, 自動化, 數據收集, Selenium', 'published', '/portfolio/uploads/portfolios/python-scraper.jpg', '## 專案描述\n\n開發一個功能完整的網頁爬蟲系統，能夠自動化收集網路數據，支援多種網站格式和反爬蟲機制。\n\n## 技術特點\n- 使用 Selenium 處理動態內容\n- 支援多線程爬取\n- 自動處理反爬蟲機制\n- 數據清洗和格式化\n\n## 主要功能\n1. 自動化登入\n2. 數據提取\n3. 錯誤處理\n4. 數據導出\n\n## 應用場景\n- 電商價格監控\n- 新聞內容收集\n- 社交媒體分析\n- 市場研究數據', 178, 28, 0, 0, 0, '2024-09-10 08:45:00', '2025-08-29 07:07:41', '2025-09-17 09:23:49'),
-(10, 5, '專案管理系統開發', '使用 React 和 Node.js 開發專案管理系統，包含任務分配、進度追蹤、團隊協作等功能。', 27, 'React, Node.js, 專案管理, 團隊協作, 任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 145, 19, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:07:41', '2025-09-17 09:14:12'),
-(15, 5, '專案管理系統開發', '使用 React 和 Node.js 開發專案管理系統，包含任務分配、進度追蹤、團隊協作等功能。', 15, 'React, Node.js, 專案管理, 團隊協作, 任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 146, 19, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:10:55', '2025-09-15 09:52:49'),
-(16, 5, '我的第一個作品', '這是一個範例作品描述', 34, '範例,Demo', 'published', NULL, '內容...', 16, 2, 1, 0, 0, '2025-08-29 07:59:32', '2025-08-29 07:59:32', '2025-09-24 07:54:29'),
-(18, 5, '資料科學作品範例（測試）', '這是用於測試的作品描述。', 27, 'Python, 數據分析, 測試', 'published', '/portfolio/uploads/portfolios/test-cover.jpg', '## 測試內容', 3, 0, 0, 0, 0, '2025-09-02 09:31:09', '2025-09-02 09:31:09', '2025-09-17 09:24:13'),
-(21, 5, 'JAVA', 'JAVA新增', 27, 'java', 'published', NULL, NULL, 70, 1, 4, 3, 0, NULL, '2025-09-15 06:05:18', '2025-09-24 07:47:23'),
-(27, 9, 'Python', 'Python計算機', 27, '', 'published', NULL, NULL, 2, 0, 1, 0, 0, NULL, '2025-09-19 02:47:51', '2025-09-24 07:48:10');
+INSERT INTO `portfolios` (`id`, `user_id`, `title`, `description`, `category_id`, `tags`, `status`, `cover_image`, `content`, `view_count`, `like_count`, `comment_count`, `download_count`, `is_featured`, `report_count`, `is_flagged`, `published_at`, `created_at`, `updated_at`) VALUES
+(6, 5, '電商網站使用者行為分析', '使用 Python 和 PowerBI 進行電商網站的用戶行為深度分析，包括瀏覽路徑分析、購買轉換率研究、用戶分群洞察等，為行銷策略提供數據支持，協助企業優化營運決策。', 27, 'Python,PowerBI,數據分析,電商,用戶行為', 'published', '/portfolio/uploads/portfolios/ecommerce-analysis.jpg', '## 專案概述\n\n本專案旨在分析電商網站的用戶行為數據，透過數據挖掘和視覺化技術，深入了解用戶的瀏覽習慣和購買行為。\n\n## 技術工具\n- Python (pandas, numpy, matplotlib)\n- PowerBI\n- SQL\n- Excel\n\n## 主要發現\n1. 用戶平均瀏覽時間為 8.5 分鐘\n2. 購物車放棄率為 68%\n3. 最受歡迎的產品類別是電子產品\n\n## 改進建議\n1. 優化購物車流程\n2. 增加產品推薦功能\n3. 改善移動端體驗', 159, 23, 0, 0, 1, 0, 0, '2024-12-01 02:00:00', '2025-08-29 07:07:41', '2025-10-07 11:16:40'),
+(7, 5, '社群媒體行銷策略規劃', '為中小企業制定完整的社群媒體行銷策略，涵蓋內容規劃、發布時程安排、互動策略設計和成效追蹤分析，有效提升品牌知名度與客戶參與度。', 42, '社群媒體,行銷策略,內容規劃,品牌推廣', 'published', '/portfolio/uploads/portfolios/social-media-strategy.jpg', '## 專案背景\n\n協助台中地區的中小企業建立有效的社群媒體行銷策略，提升品牌知名度和客戶互動。\n\n## 策略內容\n1. 平台選擇：Facebook、Instagram、Line\n2. 內容主題：產品介紹、客戶故事、產業知識\n3. 發布頻率：每週 3-4 篇\n4. 互動策略：回覆評論、舉辦活動\n\n## 成效指標\n- 粉絲增長率：每月 15%\n- 互動率：平均 8%\n- 網站流量：提升 25%', 89, 15, 0, 0, 0, 0, 0, '2024-11-15 06:30:00', '2025-08-29 07:07:41', '2025-10-07 11:16:40'),
+(8, 5, '學生資訊系統 UI/UX 設計', '重新設計學校資訊系統的使用者介面與體驗，大幅提升學生和教師的使用滿意度。包括響應式設計實作、無障礙功能優化，以及完整的使用者測試與迭代。', 27, 'UI/UX設計,響應式設計,無障礙設計,使用者研究', 'published', '/portfolio/uploads/portfolios/student-system-ui.jpg', '## 設計目標\n\n改善現有學生資訊系統的使用者體驗，讓學生和教師能夠更有效率地使用系統功能。\n\n## 設計原則\n1. 簡潔明瞭的介面\n2. 直觀的操作流程\n3. 響應式設計\n4. 無障礙功能\n\n## 主要改進\n- 重新設計導航結構\n- 優化表單設計\n- 增加搜尋功能\n- 改善移動端體驗\n\n## 使用者測試\n- 測試對象：20 名學生，5 名教師\n- 完成任務成功率：95%\n- 使用者滿意度：4.2/5.0', 236, 31, 0, 0, 1, 0, 0, '2024-10-20 01:15:00', '2025-08-29 07:07:41', '2025-10-08 08:53:32'),
+(9, 5, 'Python 爬蟲程式開發', '開發高效能的自動化網頁爬蟲程式，支援多種網站格式與反爬蟲機制，用於數據收集與分析。採用 Selenium 處理動態內容，實作多線程爬取提升效率。', 27, 'Python,爬蟲,自動化,數據收集,Selenium', 'published', '/portfolio/uploads/portfolios/python-scraper.jpg', '## 專案描述\n\n開發一個功能完整的網頁爬蟲系統，能夠自動化收集網路數據，支援多種網站格式和反爬蟲機制。\n\n## 技術特點\n- 使用 Selenium 處理動態內容\n- 支援多線程爬取\n- 自動處理反爬蟲機制\n- 數據清洗和格式化\n\n## 主要功能\n1. 自動化登入\n2. 數據提取\n3. 錯誤處理\n4. 數據導出\n\n## 應用場景\n- 電商價格監控\n- 新聞內容收集\n- 社交媒體分析\n- 市場研究數據', 178, 28, 0, 0, 0, 0, 0, '2024-09-10 08:45:00', '2025-08-29 07:07:41', '2025-10-07 11:16:40'),
+(10, 5, '專案管理系統開發', '使用 React 和 Node.js 技術棧，開發功能完整的專案管理系統。包含任務分配、進度追蹤、團隊協作、即時通訊等核心功能，提供直觀易用的操作介面。', 27, 'React,Node.js,專案管理,團隊協作,任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 146, 19, 0, 0, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:07:41', '2025-10-08 08:52:47'),
+(15, 5, '專案管理系統開發', '使用 React 和 Node.js 技術棧，開發功能完整的專案管理系統。包含任務分配、進度追蹤、團隊協作、即時通訊等核心功能，提供直觀易用的操作介面。', 15, 'React,Node.js,專案管理,團隊協作,任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 146, 19, 0, 0, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:10:55', '2025-10-07 11:16:40'),
+(18, 5, '資料科學作品範例（測試）', '這是用於測試的作品描述。', 27, 'Python,數據分析,測試', 'published', '/portfolio/uploads/portfolios/test-cover.jpg', '## 測試內容', 4, 0, 0, 0, 0, 0, 0, '2025-09-02 09:31:09', '2025-09-02 09:31:09', '2025-10-08 08:53:13');
 
 -- --------------------------------------------------------
 
@@ -731,11 +1008,7 @@ CREATE TABLE `portfolio_comments` (
 INSERT INTO `portfolio_comments` (`id`, `portfolio_id`, `user_id`, `content`, `like_count`, `is_approved`, `created_at`, `updated_at`) VALUES
 (1, 6, 5, '這份分析報告非常詳細，數據視覺化做得很好！', 0, 1, '2025-08-29 15:10:55', '2025-08-29 15:10:55'),
 (2, 7, 5, '策略規劃很實用，對中小企業很有幫助。', 0, 1, '2025-08-29 15:10:55', '2025-08-29 15:10:55'),
-(3, 21, 5, '讚讚', 0, 1, '2025-09-15 17:52:10', '2025-09-15 17:52:10'),
-(4, 21, 5, '123', 1, 1, '2025-09-15 17:52:30', '2025-09-16 13:23:22'),
-(5, 21, 5, '很讚123', 0, 1, '2025-09-16 14:04:09', '2025-09-16 14:04:09'),
 (6, 16, 5, '讚喔', 0, 1, '2025-09-16 14:07:55', '2025-09-16 14:07:55'),
-(7, 21, 5, '123456', 0, 1, '2025-09-17 16:17:42', '2025-09-17 16:17:42'),
 (8, 27, 10, '好讚', 0, 1, '2025-09-24 15:48:10', '2025-09-24 15:48:10');
 
 -- --------------------------------------------------------
@@ -764,8 +1037,40 @@ CREATE TABLE `portfolio_files` (
 INSERT INTO `portfolio_files` (`id`, `portfolio_id`, `file_name`, `file_path`, `file_size`, `file_type`, `file_extension`, `is_primary`, `sort_order`, `created_at`) VALUES
 (1, 6, 'ecommerce-analysis-report.pdf', '/portfolio/uploads/portfolios/files/ecommerce-analysis-report.pdf', 2048576, 'application/pdf', 'pdf', 1, 0, '2025-08-29 07:10:55'),
 (2, 7, 'social-media-strategy.pdf', '/portfolio/uploads/portfolios/files/social-media-strategy.pdf', 1536000, 'application/pdf', 'pdf', 1, 0, '2025-08-29 07:10:55'),
-(3, 8, 'student-system-design.pdf', '/portfolio/uploads/portfolios/files/student-system-design.pdf', 3072000, 'application/pdf', 'pdf', 1, 0, '2025-08-29 07:10:55'),
-(9, 21, 'report.pdf', '/portfolio/uploads/portfolios/files/report.pdf', 123456, 'application/pdf', 'pdf', 1, 0, '2025-09-15 10:20:04');
+(3, 8, 'student-system-design.pdf', '/portfolio/uploads/portfolios/files/student-system-design.pdf', 3072000, 'application/pdf', 'pdf', 1, 0, '2025-08-29 07:10:55');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `reports`
+--
+
+CREATE TABLE `reports` (
+  `id` int(11) NOT NULL,
+  `reporter_id` int(11) NOT NULL COMMENT '檢舉人 ID',
+  `reported_type` enum('portfolio','comment','job','user','message') NOT NULL COMMENT '被檢舉對象類型',
+  `reported_id` int(11) NOT NULL COMMENT '被檢舉對象 ID',
+  `reported_user_id` int(11) DEFAULT NULL COMMENT '被檢舉的用戶 ID',
+  `reason` enum('inappropriate','spam','harassment','copyright','other') NOT NULL COMMENT '檢舉原因',
+  `description` text DEFAULT NULL COMMENT '詳細說明',
+  `evidence_url` varchar(500) DEFAULT NULL COMMENT '證據截圖 URL',
+  `status` enum('pending','reviewing','resolved','rejected') NOT NULL DEFAULT 'pending' COMMENT '處理狀態',
+  `priority` enum('low','medium','high','urgent') DEFAULT 'medium' COMMENT '優先級',
+  `admin_id` int(11) DEFAULT NULL COMMENT '處理的管理員 ID',
+  `admin_notes` text DEFAULT NULL COMMENT '管理員備註',
+  `resolution` enum('warning','content_removed','user_suspended','user_banned','no_action') DEFAULT NULL COMMENT '處置結果',
+  `resolved_at` timestamp NULL DEFAULT NULL COMMENT '處理完成時間',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() COMMENT '檢舉時間',
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='檢舉記錄表';
+
+--
+-- 傾印資料表的資料 `reports`
+--
+
+INSERT INTO `reports` (`id`, `reporter_id`, `reported_type`, `reported_id`, `reported_user_id`, `reason`, `description`, `evidence_url`, `status`, `priority`, `admin_id`, `admin_notes`, `resolution`, `resolved_at`, `created_at`, `updated_at`) VALUES
+(1, 5, 'portfolio', 18, 5, 'spam', '這個作品包含廣告內容', NULL, 'pending', 'medium', NULL, NULL, NULL, NULL, '2025-10-08 10:01:31', '2025-10-08 10:01:31'),
+(2, 9, 'comment', 7, 5, 'inappropriate', '留言內容不當', NULL, 'pending', 'low', NULL, NULL, NULL, NULL, '2025-10-08 10:01:31', '2025-10-08 10:01:31');
 
 -- --------------------------------------------------------
 
@@ -779,6 +1084,7 @@ CREATE TABLE `resumes` (
   `title` varchar(200) NOT NULL,
   `template` varchar(50) NOT NULL,
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`content`)),
+  `file_path` varchar(500) DEFAULT NULL,
   `is_public` tinyint(1) DEFAULT 0,
   `download_count` int(11) DEFAULT 0,
   `view_count` int(11) DEFAULT 0,
@@ -792,9 +1098,26 @@ CREATE TABLE `resumes` (
 -- 傾印資料表的資料 `resumes`
 --
 
-INSERT INTO `resumes` (`id`, `user_id`, `title`, `template`, `content`, `is_public`, `download_count`, `view_count`, `status`, `version`, `created_at`, `updated_at`) VALUES
-(1, 5, '資料分析履歷（一般版）', 'classic', '{\r\n  \"summary\": \"熱愛資料分析與視覺化，熟悉 Python 與 BI 工具\",\r\n  \"skills\": [\"Python\", \"Pandas\", \"SQL\", \"PowerBI\", \"Excel\"],\r\n  \"experience\": [\r\n    {\"title\": \"行銷資料分析專案\", \"details\": \"分析用戶行為並製作儀表板\"}\r\n  ]\r\n}', 1, 3, 12, 'published', 2, '2025-09-01 00:00:00', '2025-09-10 00:00:00'),
-(2, 5, 'UI/UX 履歷（精簡版）', 'modern', '{\r\n  \"summary\": \"具備 UI/UX 設計與使用者研究經驗\",\r\n  \"skills\": [\"Figma\", \"UI/UX\", \"Usability\", \"Responsive Design\"],\r\n  \"projects\": [\r\n    {\"name\": \"學生資訊系統改版\", \"role\": \"UI/UX 設計\"}\r\n  ]\r\n}', 0, 0, 4, 'draft', 1, '2025-09-05 01:30:00', '2025-09-05 01:30:00');
+INSERT INTO `resumes` (`id`, `user_id`, `title`, `template`, `content`, `file_path`, `is_public`, `download_count`, `view_count`, `status`, `version`, `created_at`, `updated_at`) VALUES
+(1, 5, '資料分析履歷（一般版）', 'classic', '{\r\n  \"summary\": \"熱愛資料分析與視覺化，熟悉 Python 與 BI 工具\",\r\n  \"skills\": [\"Python\", \"Pandas\", \"SQL\", \"PowerBI\", \"Excel\"],\r\n  \"experience\": [\r\n    {\"title\": \"行銷資料分析專案\", \"details\": \"分析用戶行為並製作儀表板\"}\r\n  ]\r\n}', NULL, 1, 3, 12, 'published', 2, '2025-09-01 00:00:00', '2025-09-10 00:00:00'),
+(2, 5, 'UI/UX 履歷（精簡版）', 'modern', '{\r\n  \"summary\": \"具備 UI/UX 設計與使用者研究經驗\",\r\n  \"skills\": [\"Figma\", \"UI/UX\", \"Usability\", \"Responsive Design\"],\r\n  \"projects\": [\r\n    {\"name\": \"學生資訊系統改版\", \"role\": \"UI/UX 設計\"}\r\n  ]\r\n}', NULL, 0, 0, 4, 'draft', 1, '2025-09-05 01:30:00', '2025-09-05 01:30:00');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `special_availability`
+--
+
+CREATE TABLE `special_availability` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT '用戶 ID',
+  `date` date NOT NULL COMMENT '日期',
+  `start_time` time NOT NULL COMMENT '開始時間',
+  `end_time` time NOT NULL COMMENT '結束時間',
+  `is_available` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否可用（0=不可用，1=可用）',
+  `note` varchar(200) DEFAULT NULL COMMENT '備註',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='特殊可用時間表';
 
 -- --------------------------------------------------------
 
@@ -830,7 +1153,7 @@ CREATE TABLE `student_profiles` (
 --
 
 INSERT INTO `student_profiles` (`id`, `user_id`, `first_name`, `last_name`, `display_name`, `gender`, `birth_date`, `phone`, `address`, `bio`, `avatar_url`, `student_id`, `major`, `school`, `grade`, `graduation_year`, `skills`, `interests`, `created_at`, `updated_at`) VALUES
-(1, 5, '玟瑄', '黃', '黃玟瑄', '女', '2000-01-15', '0912-345-678', '台中市西區精誠路123號', '我是靜宜大學資訊管理學系的學生，對數位行銷和資料分析有濃厚興趣。喜歡學習新技術，希望能在畢業後從事相關工作。', 'uploads/avatars/avatar_5_1758098146.jpg', '411146708', '資訊管理學系', '靜宜大學', '碩士生', 2026, 'Python, JavaScript, HTML/CSS, SQL, Excel, PowerBI, 數位行銷, 資料分析', '人工智慧, 大數據分析, 數位行銷, 使用者體驗設計, 專案管理', '2025-08-29 06:34:32', '2025-09-17 08:39:56'),
+(1, 5, '玟瑄', '黃', '黃玟瑄', '女', '2000-01-15', '0912-345-678', '台中市西區精誠路123號', '靜宜大學資訊管理學系碩士生，對數位行銷與資料分析充滿熱情。擅長運用資訊科技解決商業問題，具備良好的專案管理與團隊協作能力。積極學習新技術，期望在畢業後能從事資料分析或數位行銷相關工作。', 'uploads/avatars/avatar_5_1758098146.jpg', '411146708', '資訊管理學系', '靜宜大學', '碩士生', 2026, 'Python, JavaScript, HTML/CSS, SQL, Excel, PowerBI, Google Analytics, 數位行銷, 資料分析, 專案管理', '人工智慧應用, 大數據分析, 數位行銷策略, 使用者體驗設計, 敏捷專案管理', '2025-08-29 06:34:32', '2025-10-07 11:16:39'),
 (9, 9, '玟瑄', '林', '林玟瑄', NULL, NULL, '0965418312', '台北市大安區復興南路一段 390 號', NULL, NULL, NULL, '國際企業學系', NULL, '大學三年級', NULL, NULL, NULL, '2025-09-19 02:31:22', '2025-09-24 08:26:25');
 
 -- --------------------------------------------------------
@@ -919,7 +1242,7 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `status
 (10, 'microsoft_tw', 'hr@microsoft.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
 (11, 'google_tw', 'hr@google.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
 (12, 'apple_tw', 'hr@apple.com.tw', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'enterprise', 'active', '2025-09-22 09:18:56', '2025-09-22 09:18:56'),
-(13, 'test123@gmail.com', 'test123@gmail.com', '$2y$10$erBhwmKBeIRFBzuXIjV23ehrKhRbmIpRweoNITGkQMXmUDYQuxfgW', 'enterprise', 'active', '2025-09-24 07:08:57', '2025-09-24 07:08:57');
+(14, 'admin', 'admin@portfolio-plus.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active', '2025-10-08 10:03:44', '2025-10-08 10:03:44');
 
 -- --------------------------------------------------------
 
@@ -1027,9 +1350,47 @@ INSERT INTO `user_social_media` (`id`, `user_id`, `platform`, `url`, `is_public`
 (3, 5, 'instagram', 'wensyuan_huang', 1, '2025-08-28 23:10:55', '2025-08-28 23:10:55'),
 (4, 5, 'facebook', 'wensyuan.huang', 0, '2025-08-28 23:10:55', '2025-08-28 23:10:55');
 
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `user_warnings`
+--
+
+CREATE TABLE `user_warnings` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT '被警告的用戶 ID',
+  `admin_id` int(11) NOT NULL COMMENT '發出警告的管理員 ID',
+  `reason` varchar(500) NOT NULL COMMENT '警告原因',
+  `severity` enum('minor','moderate','severe','final') NOT NULL DEFAULT 'moderate' COMMENT '嚴重程度',
+  `details` text DEFAULT NULL COMMENT '詳細說明',
+  `related_report_id` int(11) DEFAULT NULL COMMENT '相關檢舉 ID',
+  `expires_at` timestamp NULL DEFAULT NULL COMMENT '警告過期時間',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否有效',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用戶警告記錄表';
+
 --
 -- 已傾印資料表的索引
 --
+
+--
+-- 資料表索引 `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_admin_id` (`admin_id`),
+  ADD KEY `idx_target_type_id` (`target_type`,`target_id`),
+  ADD KEY `idx_target_user_id` (`target_user_id`),
+  ADD KEY `idx_action_type` (`action_type`),
+  ADD KEY `idx_created_at` (`created_at`);
+
+--
+-- 資料表索引 `available_timeslots`
+--
+ALTER TABLE `available_timeslots`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_day_of_week` (`day_of_week`);
 
 --
 -- 資料表索引 `badges`
@@ -1062,6 +1423,16 @@ ALTER TABLE `comments`
   ADD KEY `idx_portfolio_id` (`portfolio_id`),
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_parent_id` (`parent_id`);
+
+--
+-- 資料表索引 `content_moderation`
+--
+ALTER TABLE `content_moderation`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_content` (`content_type`,`content_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_reviewed_by` (`reviewed_by`),
+  ADD KEY `idx_submitted_at` (`submitted_at`);
 
 --
 -- 資料表索引 `enterprise_analytics`
@@ -1119,6 +1490,35 @@ ALTER TABLE `enterprise_views`
   ADD KEY `idx_portfolio_id` (`portfolio_id`),
   ADD KEY `idx_view_date` (`view_date`),
   ADD KEY `idx_enterprise_portfolio_date` (`enterprise_id`,`portfolio_id`,`view_date`);
+
+--
+-- 資料表索引 `interviews`
+--
+ALTER TABLE `interviews`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_enterprise_id` (`enterprise_id`),
+  ADD KEY `idx_student_id` (`student_id`),
+  ADD KEY `idx_job_id` (`job_id`),
+  ADD KEY `idx_application_id` (`application_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_scheduled_at` (`scheduled_at`);
+
+--
+-- 資料表索引 `interview_reminders`
+--
+ALTER TABLE `interview_reminders`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_interview_id` (`interview_id`),
+  ADD KEY `idx_remind_at` (`remind_at`),
+  ADD KEY `idx_is_sent` (`is_sent`);
+
+--
+-- 資料表索引 `interview_reschedules`
+--
+ALTER TABLE `interview_reschedules`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_interview_id` (`interview_id`),
+  ADD KEY `idx_requested_by` (`requested_by`);
 
 --
 -- 資料表索引 `jobs`
@@ -1207,6 +1607,18 @@ ALTER TABLE `portfolio_files`
   ADD KEY `idx_portfolio_id` (`portfolio_id`);
 
 --
+-- 資料表索引 `reports`
+--
+ALTER TABLE `reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_reporter_id` (`reporter_id`),
+  ADD KEY `idx_reported_type_id` (`reported_type`,`reported_id`),
+  ADD KEY `idx_reported_user_id` (`reported_user_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_admin_id` (`admin_id`),
+  ADD KEY `idx_created_at` (`created_at`);
+
+--
 -- 資料表索引 `resumes`
 --
 ALTER TABLE `resumes`
@@ -1215,6 +1627,14 @@ ALTER TABLE `resumes`
   ADD KEY `idx_template` (`template`),
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_created_at` (`created_at`);
+
+--
+-- 資料表索引 `special_availability`
+--
+ALTER TABLE `special_availability`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_date` (`date`);
 
 --
 -- 資料表索引 `student_profiles`
@@ -1271,8 +1691,31 @@ ALTER TABLE `user_settings`
   ADD KEY `idx_user_settings_user` (`user_id`);
 
 --
+-- 資料表索引 `user_warnings`
+--
+ALTER TABLE `user_warnings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_admin_id` (`admin_id`),
+  ADD KEY `idx_severity` (`severity`),
+  ADD KEY `idx_is_active` (`is_active`),
+  ADD KEY `idx_related_report` (`related_report_id`);
+
+--
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `available_timeslots`
+--
+ALTER TABLE `available_timeslots`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `badges`
@@ -1297,6 +1740,12 @@ ALTER TABLE `categories`
 --
 ALTER TABLE `comments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `content_moderation`
+--
+ALTER TABLE `content_moderation`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_analytics`
@@ -1335,6 +1784,24 @@ ALTER TABLE `enterprise_views`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `interviews`
+--
+ALTER TABLE `interviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `interview_reminders`
+--
+ALTER TABLE `interview_reminders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `interview_reschedules`
+--
+ALTER TABLE `interview_reschedules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- 使用資料表自動遞增(AUTO_INCREMENT) `jobs`
 --
 ALTER TABLE `jobs`
@@ -1362,7 +1829,7 @@ ALTER TABLE `messages`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolios`
@@ -1383,10 +1850,22 @@ ALTER TABLE `portfolio_files`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `reports`
+--
+ALTER TABLE `reports`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- 使用資料表自動遞增(AUTO_INCREMENT) `resumes`
 --
 ALTER TABLE `resumes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `special_availability`
+--
+ALTER TABLE `special_availability`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `student_profiles`
@@ -1404,7 +1883,7 @@ ALTER TABLE `talent_search_logs`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user_activities`
@@ -1419,8 +1898,27 @@ ALTER TABLE `user_badges`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `user_warnings`
+--
+ALTER TABLE `user_warnings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- 已傾印資料表的限制式
 --
+
+--
+-- 資料表的限制式 `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD CONSTRAINT `fk_audit_logs_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_audit_logs_target_user` FOREIGN KEY (`target_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- 資料表的限制式 `available_timeslots`
+--
+ALTER TABLE `available_timeslots`
+  ADD CONSTRAINT `fk_timeslots_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- 資料表的限制式 `bookmarks`
@@ -1436,6 +1934,12 @@ ALTER TABLE `comments`
   ADD CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`portfolio_id`) REFERENCES `portfolios` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `content_moderation`
+--
+ALTER TABLE `content_moderation`
+  ADD CONSTRAINT `fk_moderation_reviewer` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- 資料表的限制式 `enterprise_analytics`
@@ -1476,6 +1980,28 @@ ALTER TABLE `enterprise_recommendations`
 ALTER TABLE `enterprise_views`
   ADD CONSTRAINT `enterprise_views_ibfk_1` FOREIGN KEY (`enterprise_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `enterprise_views_ibfk_2` FOREIGN KEY (`portfolio_id`) REFERENCES `portfolios` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `interviews`
+--
+ALTER TABLE `interviews`
+  ADD CONSTRAINT `fk_interviews_application` FOREIGN KEY (`application_id`) REFERENCES `job_applications` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_interviews_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_interviews_job` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_interviews_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `interview_reminders`
+--
+ALTER TABLE `interview_reminders`
+  ADD CONSTRAINT `fk_reminders_interview` FOREIGN KEY (`interview_id`) REFERENCES `interviews` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `interview_reschedules`
+--
+ALTER TABLE `interview_reschedules`
+  ADD CONSTRAINT `fk_reschedules_interview` FOREIGN KEY (`interview_id`) REFERENCES `interviews` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_reschedules_user` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- 資料表的限制式 `jobs`
@@ -1530,11 +2056,25 @@ ALTER TABLE `portfolio_files`
   ADD CONSTRAINT `portfolio_files_ibfk_1` FOREIGN KEY (`portfolio_id`) REFERENCES `portfolios` (`id`) ON DELETE CASCADE;
 
 --
+-- 資料表的限制式 `reports`
+--
+ALTER TABLE `reports`
+  ADD CONSTRAINT `fk_reports_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_reports_reported_user` FOREIGN KEY (`reported_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_reports_reporter` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- 資料表的限制式 `resumes`
 --
 ALTER TABLE `resumes`
   ADD CONSTRAINT `fk_resumes_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `resumes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `special_availability`
+--
+ALTER TABLE `special_availability`
+  ADD CONSTRAINT `fk_special_availability_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- 資料表的限制式 `student_profiles`
@@ -1553,6 +2093,14 @@ ALTER TABLE `talent_search_logs`
 --
 ALTER TABLE `user_activities`
   ADD CONSTRAINT `fk_user_activities_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- 資料表的限制式 `user_warnings`
+--
+ALTER TABLE `user_warnings`
+  ADD CONSTRAINT `fk_warnings_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_warnings_report` FOREIGN KEY (`related_report_id`) REFERENCES `reports` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_warnings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

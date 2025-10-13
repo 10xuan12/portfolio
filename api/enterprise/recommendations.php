@@ -46,10 +46,22 @@ function listRecommendations($enterpriseId) {
 
     $list = [];
     foreach ($rows as $r) {
+        $name = $r['display_name'] ?: trim(($r['first_name'] ?? '').' '.($r['last_name'] ?? ''));
+        
+        // 處理頭像路徑
+        $avatarUrl = $r['avatar_url'];
+        if (empty($avatarUrl)) {
+            // 使用姓名生成頭像（DiceBear API）
+            $initial = mb_substr($name ?: '學', 0, 1, 'UTF-8');
+            $avatarUrl = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
+        } elseif (strpos($avatarUrl, '/portfolio/') !== 0 && strpos($avatarUrl, 'http') !== 0) {
+            $avatarUrl = '/portfolio/' . ltrim($avatarUrl, '/');
+        }
+        
         $list[] = [
             'id' => (int)$r['student_id'],
-            'name' => $r['display_name'] ?: trim(($r['first_name'] ?? '').' '.($r['last_name'] ?? '')),
-            'avatar' => $r['avatar_url'],
+            'name' => $name,
+            'avatar' => $avatarUrl,
             'department' => $r['major'],
             'grade' => $r['grade'],
             'skills' => $r['skills'] ? array_map('trim', explode(',', $r['skills'])) : [],

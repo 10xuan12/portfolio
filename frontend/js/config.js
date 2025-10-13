@@ -144,6 +144,13 @@ function verboseLog(message, data = null) {
 }
 
 /**
+ * 檢查是否使用假資料模式
+ */
+function isUsingMockData() {
+    return false; // 此專案使用真實 API，不使用假資料
+}
+
+/**
  * 取得環境設定
  */
 function getEnvironment() {
@@ -269,6 +276,7 @@ window.getApiBaseUrl = getApiBaseUrl;
 window.getApiUrl = getApiUrl;
 window.debugLog = debugLog;
 window.verboseLog = verboseLog;
+window.isUsingMockData = isUsingMockData;
 window.getEnvironment = getEnvironment;
 window.isDevelopment = isDevelopment;
 window.isProduction = isProduction;
@@ -297,6 +305,7 @@ if (typeof module !== 'undefined' && module.exports) {
         getApiUrl,
         debugLog,
         verboseLog,
+        isUsingMockData,
         getEnvironment,
         isDevelopment,
         isProduction,

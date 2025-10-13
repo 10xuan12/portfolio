@@ -110,6 +110,11 @@ function getEnterpriseProfile() {
         // 處理社交媒體資料（從 JSON 轉為陣列）
         $profile['social_media'] = $profile['social_media'] ? json_decode($profile['social_media'], true) : [];
         
+        // 處理 Logo 路徑
+        if (!empty($profile['logo_url']) && strpos($profile['logo_url'], '/portfolio/') !== 0 && strpos($profile['logo_url'], 'http') !== 0) {
+            $profile['logo_url'] = '/portfolio/' . ltrim($profile['logo_url'], '/');
+        }
+        
         // 計算統計資料
         $stats = getEnterpriseStats($userId);
         $profile['stats'] = $stats;
@@ -162,6 +167,17 @@ function getStudentPublicProfile() {
         'total_likes' => (int)($stats['total_likes'] ?? 0)
     ];
 
+    // 處理頭像路徑
+    if (empty($profile['avatar_url'])) {
+        // 使用姓名生成頭像（DiceBear API）
+        $name = $profile['display_name'] ?: ($profile['first_name'] . $profile['last_name']) ?: '學生';
+        $initial = mb_substr($name, 0, 1, 'UTF-8');
+        $profile['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
+    } elseif (strpos($profile['avatar_url'], '/portfolio/') !== 0 && strpos($profile['avatar_url'], 'http') !== 0) {
+        // 將資料庫中相對路徑統一轉為以 /portfolio 為前綴的絕對路徑
+        $profile['avatar_url'] = '/portfolio/' . ltrim($profile['avatar_url'], '/');
+    }
+
     // 公開社群
     $sm = $GLOBALS['conn']->prepare("SELECT platform, url FROM user_social_media WHERE user_id = ? AND is_public = 1 ORDER BY platform");
     $sm->bind_param("i", $studentId);
@@ -193,11 +209,17 @@ function getStudentPublicPortfolios() {
     $res = $stmt->get_result();
     $list = [];
     while ($row = $res->fetch_assoc()) {
+        // 處理封面圖片路徑
+        $coverImage = $row['cover_image'];
+        if (!empty($coverImage) && strpos($coverImage, '/portfolio/') !== 0 && strpos($coverImage, 'http') !== 0) {
+            $coverImage = '/portfolio/' . ltrim($coverImage, '/');
+        }
+        
         $list[] = [
             'id' => (int)$row['id'],
             'title' => $row['title'],
             'description' => $row['description'],
-            'cover_image' => $row['cover_image'],
+            'cover_image' => $coverImage,
             'views' => (int)$row['view_count'],
             'likes' => (int)$row['like_count'],
             'comment_count' => (int)$row['comment_count'],

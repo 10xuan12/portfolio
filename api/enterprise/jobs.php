@@ -429,10 +429,20 @@ function getJobApplications() {
     $result = $stmt->get_result();
     $applications = $result->fetch_all(MYSQLI_ASSOC);
     
-        // 處理技能（從文字轉為陣列）
+        // 處理技能（從文字轉為陣列）和頭像路徑
         foreach ($applications as &$app) {
             $app['skills'] = $app['skills'] ? explode(',', $app['skills']) : [];
             $app['student_name'] = $app['display_name'] ?: ($app['first_name'] . ' ' . $app['last_name']);
+            
+            // 處理頭像路徑
+            if (empty($app['avatar_url'])) {
+                // 使用姓名生成頭像（DiceBear API）
+                $name = $app['student_name'] ?: '學生';
+                $initial = mb_substr($name, 0, 1, 'UTF-8');
+                $app['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
+            } elseif (strpos($app['avatar_url'], '/portfolio/') !== 0 && strpos($app['avatar_url'], 'http') !== 0) {
+                $app['avatar_url'] = '/portfolio/' . ltrim($app['avatar_url'], '/');
+            }
         }
         
         debugLog("成功取得 " . count($applications) . " 筆申請資料");

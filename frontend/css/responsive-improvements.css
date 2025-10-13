@@ -1,0 +1,581 @@
+/**
+ * Portfolio+ 移動端 CSS 優化
+ * 改進響應式設計，提升手機和平板體驗
+ */
+
+/* ========================================
+   全域響應式改進
+======================================== */
+
+/* 平板尺寸 (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .container {
+        max-width: 100%;
+        padding: 0 30px;
+    }
+    
+    /* 調整網格佈局 */
+    .dashboard-grid,
+    .portfolios-grid,
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* 手機尺寸 (小於 768px) */
+@media (max-width: 768px) {
+    /* 容器調整 */
+    .container {
+        max-width: 100%;
+        padding: 0 16px;
+    }
+    
+    /* 導航欄優化 */
+    .navbar {
+        padding: 12px 0;
+    }
+    
+    .navbar-brand {
+        font-size: 18px;
+    }
+    
+    .navbar-menu {
+        display: none; /* 預設隱藏，需要漢堡選單 */
+    }
+    
+    /* 標題字體縮小 */
+    h1 {
+        font-size: 28px;
+        line-height: 1.3;
+    }
+    
+    h2 {
+        font-size: 24px;
+    }
+    
+    h3 {
+        font-size: 20px;
+    }
+    
+    /* 按鈕優化 */
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        width: 100%; /* 全寬按鈕 */
+        text-align: center;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+    }
+    
+    /* 網格改為單欄 */
+    .dashboard-grid,
+    .portfolios-grid,
+    .features-grid,
+    .role-card-grid,
+    .search-results-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+    
+    /* 卡片優化 */
+    .card,
+    .portfolio-card,
+    .job-card {
+        margin-bottom: 16px;
+    }
+    
+    /* 表格優化 - 改為卡片式 */
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 表單優化 */
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+        font-size: 16px; /* 防止 iOS 自動縮放 */
+        width: 100%;
+    }
+    
+    /* 統計卡片 */
+    .stats-grid,
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .stat-card {
+        padding: 16px;
+    }
+    
+    .stat-number {
+        font-size: 24px;
+    }
+    
+    /* 側邊欄改為底部 */
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        order: 2; /* 放到主內容後面 */
+        margin-top: 20px;
+    }
+    
+    /* 模態框優化 */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 20px auto;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 16px;
+    }
+    
+    /* Toast 通知 */
+    .toast-container {
+        top: auto;
+        bottom: 20px;
+        left: 16px;
+        right: 16px;
+    }
+    
+    .toast {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* 小手機尺寸 (小於 480px) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    h2 {
+        font-size: 20px;
+    }
+    
+    h3 {
+        font-size: 18px;
+    }
+    
+    /* 統計卡片單欄 */
+    .stats-grid,
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 更小的間距 */
+    .section {
+        padding: 30px 0;
+    }
+    
+    /* 按鈕字體 */
+    .btn {
+        font-size: 13px;
+        padding: 10px 16px;
+    }
+}
+
+/* ========================================
+   特定元件優化
+======================================== */
+
+/* 搜尋篩選 - 手機版 */
+@media (max-width: 768px) {
+    .search-filters {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        width: 100%;
+        margin-bottom: 12px;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+    }
+}
+
+/* 作品卡片 - 手機版 */
+@media (max-width: 768px) {
+    .portfolio-card {
+        flex-direction: column;
+    }
+    
+    .portfolio-image {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .portfolio-content {
+        padding: 16px;
+    }
+    
+    .portfolio-tags {
+        flex-wrap: wrap;
+    }
+    
+    .tag {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+/* 導覽列 - 手機版 */
+@media (max-width: 768px) {
+    .navbar {
+        position: relative;
+    }
+    
+    .navbar-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 16px;
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .navbar-menu.active {
+        display: flex;
+    }
+    
+    .navbar-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+    }
+    
+    .nav-link {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+}
+
+/* 檔案上傳 - 手機版 */
+@media (max-width: 768px) {
+    .upload-area {
+        padding: 40px 20px;
+    }
+    
+    .upload-icon {
+        font-size: 40px;
+    }
+    
+    .upload-text {
+        font-size: 14px;
+    }
+}
+
+/* 儀表板標題 - 手機版 */
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 20px 0;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+    
+    .dashboard-header p {
+        font-size: 14px;
+    }
+}
+
+/* 快速操作 - 手機版 */
+@media (max-width: 768px) {
+    .quick-actions {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .quick-action {
+        padding: 16px;
+    }
+    
+    .quick-action i {
+        font-size: 24px;
+    }
+    
+    .quick-action span {
+        font-size: 14px;
+    }
+}
+
+/* 分頁 - 手機版 */
+@media (max-width: 768px) {
+    .pagination {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .pagination .page-link {
+        min-width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+    
+    /* 隱藏部分頁碼 */
+    .pagination .page-item:not(.active):not(.prev):not(.next) {
+        display: none;
+    }
+    
+    .pagination .page-item.active,
+    .pagination .page-item.prev,
+    .pagination .page-item.next {
+        display: inline-block;
+    }
+}
+
+/* 頁籤 - 手機版 */
+@media (max-width: 768px) {
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+    
+    .tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+}
+
+/* 圖片輪播 - 手機版 */
+@media (max-width: 768px) {
+    .carousel-item img {
+        height: 250px;
+        object-fit: cover;
+    }
+    
+    .carousel-controls {
+        bottom: 10px;
+    }
+    
+    .carousel-control {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+}
+
+/* ========================================
+   觸控優化
+======================================== */
+
+/* 增大可點擊區域 */
+@media (max-width: 768px) {
+    a,
+    button,
+    .clickable {
+        min-height: 44px; /* iOS 建議最小觸控尺寸 */
+        min-width: 44px;
+    }
+    
+    /* 連結間距 */
+    .nav-link,
+    .menu-item {
+        padding: 12px 16px;
+    }
+    
+    /* 表單元素高度 */
+    input,
+    select,
+    textarea,
+    button {
+        min-height: 44px;
+    }
+}
+
+/* ========================================
+   橫向模式優化
+======================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+    /* 減少上下間距 */
+    .section {
+        padding: 20px 0;
+    }
+    
+    .dashboard-header {
+        padding: 16px 0;
+    }
+    
+    /* 模態框調整 */
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* ========================================
+   無限滾動優化
+======================================== */
+
+@media (max-width: 768px) {
+    .infinite-scroll-trigger {
+        height: 100px;
+        margin: 20px 0;
+    }
+    
+    .loading-more {
+        text-align: center;
+        padding: 20px;
+        color: #999;
+    }
+}
+
+/* ========================================
+   下拉式選單優化
+======================================== */
+
+@media (max-width: 768px) {
+    .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        box-shadow: none;
+        border: none;
+        padding: 0;
+    }
+    
+    .dropdown-item {
+        padding: 14px 16px;
+        border-bottom: 1px solid #eee;
+    }
+}
+
+/* ========================================
+   圖片畫廊優化
+======================================== */
+
+@media (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .gallery-item {
+        height: 150px;
+    }
+}
+
+/* ========================================
+   固定底部導航（手機常見模式）
+======================================== */
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: space-around;
+        padding: 8px 0;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 12px;
+        text-decoration: none;
+        color: #666;
+        font-size: 12px;
+        transition: color 0.3s;
+    }
+    
+    .mobile-nav-item i {
+        font-size: 20px;
+    }
+    
+    .mobile-nav-item.active {
+        color: #007bff;
+    }
+    
+    .mobile-nav-item:hover {
+        color: #007bff;
+    }
+    
+    /* 為底部導航預留空間 */
+    body {
+        padding-bottom: 60px;
+    }
+}
+
+/* ========================================
+   滑動手勢支援
+======================================== */
+
+@media (max-width: 768px) {
+    .swipeable {
+        touch-action: pan-x;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+/* ========================================
+   安全區域（iPhone X 等）
+======================================== */
+
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .navbar,
+        .mobile-bottom-nav {
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
+        }
+        
+        .mobile-bottom-nav {
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+    }
+}
+

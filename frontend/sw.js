@@ -3,21 +3,32 @@
  * 提供離線支援、緩存管理和背景同步功能
  */
 
-const CACHE_NAME = 'portfolio-v1';
-const STATIC_CACHE_NAME = 'portfolio-static-v1';
-const DYNAMIC_CACHE_NAME = 'portfolio-dynamic-v1';
+const CACHE_VERSION = '2.0';
+const CACHE_NAME = `portfolio-v${CACHE_VERSION}`;
+const STATIC_CACHE_NAME = `portfolio-static-v${CACHE_VERSION}`;
+const DYNAMIC_CACHE_NAME = `portfolio-dynamic-v${CACHE_VERSION}`;
+const IMAGE_CACHE_NAME = `portfolio-images-v${CACHE_VERSION}`;
 
 // 需要緩存的靜態資源
 const STATIC_ASSETS = [
-    '/',
     '/portfolio/frontend/index.html',
     '/portfolio/frontend/css/app.css',
+    '/portfolio/frontend/css/themes.css',
+    '/portfolio/frontend/css/social-share.css',
+    '/portfolio/frontend/css/lazy-loading.css',
+    '/portfolio/frontend/css/responsive-improvements.css',
     '/portfolio/frontend/js/config.js',
     '/portfolio/frontend/js/api-service.js',
     '/portfolio/frontend/js/utils.js',
-    '/portfolio/frontend/js/integration-test.js',
-    '/portfolio/frontend/js/realtime-manager.js'
+    '/portfolio/frontend/js/app.js',
+    '/portfolio/frontend/js/theme-manager.js',
+    '/portfolio/frontend/js/social-share.js',
+    '/portfolio/frontend/js/lazy-loading.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
+
+// 圖片緩存時間（7天）
+const IMAGE_CACHE_TIME = 7 * 24 * 60 * 60 * 1000;
 
 // API端點緩存策略
 const API_CACHE_STRATEGIES = {
@@ -30,42 +41,50 @@ const API_CACHE_STRATEGIES = {
 
 // Service Worker安裝事件
 self.addEventListener('install', event => {
-    console.log('Service Worker 安裝中...');
+    console.log('[SW] 安裝中... 版本:', CACHE_VERSION);
     
     event.waitUntil(
         caches.open(STATIC_CACHE_NAME)
             .then(cache => {
-                console.log('緩存靜態資源...');
-                return cache.addAll(STATIC_ASSETS);
+                console.log('[SW] 緩存靜態資源...');
+                // 逐個添加，避免單個失敗導致全部失敗
+                return Promise.allSettled(
+                    STATIC_ASSETS.map(url => {
+                        return cache.add(url).catch(err => {
+                            console.warn('[SW] 緩存失敗:', url, err);
+                        });
+                    })
+                );
             })
             .then(() => {
-                console.log('Service Worker 安裝完成');
+                console.log('[SW] 安裝完成');
                 return self.skipWaiting();
             })
             .catch(error => {
-                console.error('Service Worker 安裝失敗:', error);
+                console.error('[SW] 安裝失敗:', error);
             })
     );
 });
 
 // Service Worker激活事件
 self.addEventListener('activate', event => {
-    console.log('Service Worker 激活中...');
+    console.log('[SW] 激活中... 版本:', CACHE_VERSION);
     
     event.waitUntil(
         caches.keys()
             .then(cacheNames => {
+                // 刪除所有舊版本的緩存
                 return Promise.all(
                     cacheNames.map(cacheName => {
-                        if (cacheName !== STATIC_CACHE_NAME && cacheName !== DYNAMIC_CACHE_NAME) {
-                            console.log('刪除舊緩存:', cacheName);
+                        if (!cacheName.includes(CACHE_VERSION)) {
+                            console.log('[SW] 刪除舊緩存:', cacheName);
                             return caches.delete(cacheName);
                         }
                     })
                 );
             })
             .then(() => {
-                console.log('Service Worker 激活完成');
+                console.log('[SW] 激活完成，接管所有頁面');
                 return self.clients.claim();
             })
     );
@@ -76,8 +95,23 @@ self.addEventListener('fetch', event => {
     const { request } = event;
     const url = new URL(request.url);
     
-    // 只處理同源請求
+    // 只處理 GET 請求
+    if (request.method !== 'GET') {
+        return;
+    }
+    
+    // 處理跨域資源（如 CDN）
     if (url.origin !== location.origin) {
+        // 緩存 CDN 資源（如 Font Awesome）
+        if (url.href.includes('cdnjs.cloudflare.com') || url.href.includes('fonts.')) {
+            event.respondWith(cacheFirstStrategy(request));
+        }
+        return;
+    }
+    
+    // 處理圖片請求
+    if (isImageRequest(request)) {
+        event.respondWith(handleImageRequest(request));
         return;
     }
     
@@ -277,8 +311,70 @@ async function handlePageRequest(request) {
 
 // 檢查是否為靜態資源
 function isStaticAsset(url) {
-    const staticExtensions = ['.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2'];
+    const staticExtensions = ['.css', '.js', '.woff', '.woff2', '.ttf', '.eot'];
     return staticExtensions.some(ext => url.includes(ext));
+}
+
+// 檢查是否為圖片請求
+function isImageRequest(request) {
+    return request.destination === 'image' || 
+           /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(request.url);
+}
+
+// 處理圖片請求（專用緩存策略）
+async function handleImageRequest(request) {
+    const cache = await caches.open(IMAGE_CACHE_NAME);
+    const cachedResponse = await cache.match(request);
+    
+    // 檢查緩存是否過期
+    if (cachedResponse) {
+        const cachedDate = new Date(cachedResponse.headers.get('date'));
+        const now = new Date();
+        
+        // 如果緩存未過期，直接返回
+        if (now - cachedDate < IMAGE_CACHE_TIME) {
+            return cachedResponse;
+        }
+    }
+    
+    try {
+        // 從網路獲取新圖片
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse.ok) {
+            // 克隆回應並緩存
+            cache.put(request, networkResponse.clone());
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        // 網路錯誤，返回緩存（即使過期）
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        // 返回預設圖片
+        return getPlaceholderImage();
+    }
+}
+
+// 獲取預設佔位圖片
+function getPlaceholderImage() {
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+            <rect width="300" height="200" fill="#f0f0f0"/>
+            <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#999" font-size="14">
+                圖片無法載入
+            </text>
+        </svg>
+    `;
+    
+    return new Response(svg, {
+        headers: {
+            'Content-Type': 'image/svg+xml',
+            'Cache-Control': 'no-cache'
+        }
+    });
 }
 
 // 背景同步
@@ -380,4 +476,74 @@ async function cacheUrl(url) {
     }
 }
 
-console.log('Service Worker 已載入');
+// 緩存管理工具
+const CacheManager = {
+    /**
+     * 清理過期緩存
+     */
+    async cleanExpiredCache() {
+        const imageCache = await caches.open(IMAGE_CACHE_NAME);
+        const requests = await imageCache.keys();
+        const now = new Date();
+        
+        for (const request of requests) {
+            const response = await imageCache.match(request);
+            if (response) {
+                const cachedDate = new Date(response.headers.get('date'));
+                if (now - cachedDate > IMAGE_CACHE_TIME) {
+                    await imageCache.delete(request);
+                    console.log('[SW] 清理過期圖片:', request.url);
+                }
+            }
+        }
+    },
+    
+    /**
+     * 限制緩存大小
+     */
+    async limitCacheSize(cacheName, maxItems) {
+        const cache = await caches.open(cacheName);
+        const keys = await cache.keys();
+        
+        if (keys.length > maxItems) {
+            // 刪除最舊的項目
+            const itemsToDelete = keys.length - maxItems;
+            for (let i = 0; i < itemsToDelete; i++) {
+                await cache.delete(keys[i]);
+            }
+            console.log(`[SW] 限制緩存大小，刪除了 ${itemsToDelete} 個項目`);
+        }
+    },
+    
+    /**
+     * 預緩存重要頁面
+     */
+    async precacheImportantPages() {
+        const cache = await caches.open(DYNAMIC_CACHE_NAME);
+        const pages = [
+            '/portfolio/frontend/student/dashboard.html',
+            '/portfolio/frontend/enterprise/dashboard.html',
+            '/portfolio/frontend/login.html'
+        ];
+        
+        for (const page of pages) {
+            try {
+                const response = await fetch(page);
+                if (response.ok) {
+                    await cache.put(page, response);
+                }
+            } catch (err) {
+                console.warn('[SW] 預緩存失敗:', page);
+            }
+        }
+    }
+};
+
+// 定期清理過期緩存（每小時）
+setInterval(() => {
+    CacheManager.cleanExpiredCache();
+    CacheManager.limitCacheSize(IMAGE_CACHE_NAME, 100);
+    CacheManager.limitCacheSize(DYNAMIC_CACHE_NAME, 50);
+}, 60 * 60 * 1000);
+
+console.log('[SW] Service Worker 已載入，版本:', CACHE_VERSION);

@@ -853,10 +853,20 @@
         Utils.showNotification('編輯功能開發中', 'info');
     }
 
-         // 儲存履歷
+         // 儲存履歷草稿（不生成 PDF）
      async function saveResume() {
          try {
              updateResumeData();
+             
+             // 驗證必填欄位
+             if (!resumeData.basic.name || !resumeData.basic.email) {
+                 if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                     Utils.showNotification('請填寫姓名和電子郵件', 'error');
+                 } else {
+                     alert('請填寫姓名和電子郵件');
+                 }
+                 return;
+             }
              
              // 從 localStorage 獲取使用者資訊
              const user = JSON.parse(localStorage.getItem('user'));
@@ -864,40 +874,112 @@
                  throw new Error('無法獲取使用者資訊');
              }
              
-             // 發送儲存請求（統一透過 ApiService）
+             // 顯示載入提示
+             if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                 Utils.showNotification('正在儲存草稿...', 'info');
+             }
+             
+             // 發送儲存請求（使用 POST 方法）
              const svc = window.apiService || window.initializeApiService?.();
-             const result = await svc.request(`student/resume.php?action=save&user_id=${user.id}`, {
+             const result = await svc.request('student/resume.php', {
                  method: 'POST',
                  body: JSON.stringify({
+                     action: 'save',
                      resume_data: resumeData
                  })
              });
              
              if (result.status === 200 || result.status === 201) {
-                 Utils.showNotification('履歷已儲存', 'success');
+                 if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                     Utils.showNotification('履歷草稿已儲存', 'success');
+                 } else {
+                     alert('履歷草稿已儲存');
+                 }
              } else {
                  throw new Error(result.message || '儲存失敗');
              }
              
          } catch (error) {
-             Utils.showNotification('儲存失敗，請稍後再試', 'error');
+             if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                 Utils.showNotification('儲存失敗：' + error.message, 'error');
+             } else {
+                 alert('儲存失敗，請稍後再試');
+             }
              console.error('儲存履歷錯誤:', error);
          }
      }
 
-    // 匯出履歷
-    function exportResume() {
-        Utils.showNotification('匯出功能開發中', 'info');
+    // 匯出履歷（呼叫 exportPDF）
+    async function exportResume() {
+        await exportPDF();
     }
 
-    // 匯出 PDF
-    function exportPDF() {
-        Utils.showNotification('PDF 匯出功能開發中', 'info');
+    // 匯出 PDF（生成並下載）
+    async function exportPDF() {
+        try {
+            updateResumeData();
+            
+            // 驗證必填欄位
+            if (!resumeData.basic.name || !resumeData.basic.email) {
+                if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                    Utils.showNotification('請填寫姓名和電子郵件', 'error');
+                } else {
+                    alert('請填寫姓名和電子郵件');
+                }
+                return;
+            }
+            
+            // 從 localStorage 獲取使用者資訊
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.id) {
+                throw new Error('無法獲取使用者資訊');
+            }
+            
+            // 顯示載入提示
+            if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                Utils.showNotification('正在生成 PDF...', 'info');
+            }
+            
+            // 呼叫 API 生成 PDF
+            const svc = window.apiService || window.initializeApiService?.();
+            const result = await svc.request('student/resume.php', {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'generate_pdf',
+                    resume_data: resumeData
+                })
+            });
+            
+            if (result.status === 200 && result.data && result.data.pdf_url) {
+                // 下載 PDF
+                window.open(result.data.pdf_url, '_blank');
+                
+                if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                    Utils.showNotification('PDF 已生成，正在下載...', 'success');
+                } else {
+                    alert('PDF 已生成，正在下載...');
+                }
+            } else {
+                throw new Error(result.message || '生成失敗');
+            }
+            
+        } catch (error) {
+            console.error('匯出 PDF 錯誤:', error);
+            if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                Utils.showNotification('匯出失敗：' + error.message, 'error');
+            } else {
+                alert('匯出失敗，請稍後再試');
+            }
+        }
     }
 
     // 匯出 Word
     function exportWord() {
-        Utils.showNotification('Word 匯出功能開發中', 'info');
+        if (typeof Utils !== 'undefined' && Utils.showNotification) {
+            Utils.showNotification('Word 匯出功能開發中', 'info');
+        } else {
+            alert('Word 匯出功能開發中');
+        }
     }
 
     // 列印履歷

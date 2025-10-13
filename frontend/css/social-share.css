@@ -1,0 +1,289 @@
+/**
+ * Portfolio+ 社群分享按鈕樣式
+ */
+
+/* 社群分享容器 */
+.social-share-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+/* 分享按鈕基礎樣式 */
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background: #6c757d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.share-btn:active {
+    transform: translateY(0);
+}
+
+.share-btn i {
+    font-size: 16px;
+}
+
+/* Facebook */
+.share-facebook {
+    background: linear-gradient(135deg, #1877f2 0%, #0c5ebd 100%);
+}
+
+.share-facebook:hover {
+    background: linear-gradient(135deg, #166fe5 0%, #0a54a8 100%);
+}
+
+/* Line */
+.share-line {
+    background: linear-gradient(135deg, #06c755 0%, #05a847 100%);
+}
+
+.share-line:hover {
+    background: linear-gradient(135deg, #05b64d 0%, #049840 100%);
+}
+
+/* Twitter */
+.share-twitter {
+    background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%);
+}
+
+.share-twitter:hover {
+    background: linear-gradient(135deg, #0d96e8 0%, #0a7ec4 100%);
+}
+
+/* LinkedIn */
+.share-linkedin {
+    background: linear-gradient(135deg, #0077b5 0%, #005f8e 100%);
+}
+
+.share-linkedin:hover {
+    background: linear-gradient(135deg, #006aa3 0%, #005480 100%);
+}
+
+/* Email */
+.share-email {
+    background: linear-gradient(135deg, #ea4335 0%, #d33426 100%);
+}
+
+.share-email:hover {
+    background: linear-gradient(135deg, #db3a2d 0%, #c22f22 100%);
+}
+
+/* 複製連結 */
+.share-copy {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+}
+
+.share-copy:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #4e555b 100%);
+}
+
+/* Toast 通知容器 */
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* Toast 通知 */
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s ease;
+    pointer-events: auto;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast i {
+    font-size: 20px;
+}
+
+.toast-success {
+    border-left: 4px solid #28a745;
+}
+
+.toast-success i {
+    color: #28a745;
+}
+
+.toast-error {
+    border-left: 4px solid #dc3545;
+}
+
+.toast-error i {
+    color: #dc3545;
+}
+
+.toast span {
+    flex: 1;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .social-share-container {
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .share-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .share-btn span {
+        display: none; /* 手機版只顯示圖示 */
+    }
+    
+    .share-btn i {
+        font-size: 18px;
+    }
+    
+    .toast-container {
+        top: 60px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .toast {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+/* 無障礙設計 */
+.share-btn:focus {
+    outline: 2px solid #4d90fe;
+    outline-offset: 2px;
+}
+
+.share-btn:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.share-btn:focus-visible {
+    outline: 2px solid #4d90fe;
+    outline-offset: 2px;
+}
+
+/* 暗色模式支援 */
+@media (prefers-color-scheme: dark) {
+    .social-share-container {
+        background: #2d3748;
+    }
+    
+    .toast {
+        background: #2d3748;
+        color: #fff;
+    }
+    
+    .toast span {
+        color: #e2e8f0;
+    }
+}
+
+/* 動畫 */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+}
+
+/* 分享按鈕群組樣式（可選） */
+.share-section {
+    margin: 30px 0;
+    padding: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.share-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.share-section p {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* 分享統計（可選功能） */
+.share-stats {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e9ecef;
+}
+
+.share-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.share-stat i {
+    font-size: 14px;
+}
+
+.share-stat span {
+    font-weight: 500;
+}
+
