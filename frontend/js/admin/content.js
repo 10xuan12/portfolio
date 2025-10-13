@@ -3,7 +3,7 @@
  * 包含審核管理、狀態控制、批量操作等功能
  */
 
-// TODO: 從後端 API 載入審核資料
+// 審核資料（可從後端 API 載入：/api/admin/reviews）
 let reviews = {
     portfolios: [
         {

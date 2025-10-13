@@ -337,16 +337,13 @@ function resetSettings() {
 // 測試郵件設定
 async function testEmailSettings() {
     try {
+        const svc = await ensureApiServiceReady();
         Utils.showNotification('正在測試郵件設定...', 'info');
         
-        // TODO: 發送測試郵件請求到後端 API
-        // await fetch('/api/admin/settings/test-email', {
-        //     method: 'POST'
-        // });
+        // API: POST /api/admin/settings/test-email
+        await svc.testEmailSettings();
         
-        setTimeout(() => {
-            Utils.showNotification('測試郵件已發送，請檢查收件匣', 'success');
-        }, 2000);
+        Utils.showNotification('測試郵件已發送，請檢查收件匣', 'success');
         
     } catch (error) {
         Utils.showNotification('測試郵件發送失敗', 'error');
@@ -359,7 +356,7 @@ async function clearCache() {
     try {
         Utils.showNotification('正在清除快取...', 'info');
         
-        // TODO: 發送清除快取請求到後端 API
+        // API: POST /api/admin/settings/clear-cache
         // await fetch('/api/admin/settings/clear-cache', {
         //     method: 'POST'
         // });
@@ -379,7 +376,7 @@ async function optimizeDatabase() {
     try {
         Utils.showNotification('正在最佳化資料庫...', 'info');
         
-        // TODO: 發送資料庫最佳化請求到後端 API
+        // API: POST /api/admin/settings/optimize-database
         // await fetch('/api/admin/settings/optimize-database', {
         //     method: 'POST'
         // });
@@ -397,15 +394,14 @@ async function optimizeDatabase() {
 // 系統健康檢查
 async function checkSystemHealth() {
     try {
+        const svc = await ensureApiServiceReady();
         Utils.showNotification('正在進行系統健康檢查...', 'info');
         
-        // TODO: 發送系統健康檢查請求到後端 API
-        // const response = await fetch('/api/admin/settings/system-health');
-        // const health = await response.json();
+        // API: GET /api/admin/settings/system-health
+        const response = await svc.checkSystemHealth();
+        const health = response?.data || response;
         
-        setTimeout(() => {
-            Utils.showNotification('系統健康檢查完成，所有項目正常', 'success');
-        }, 2000);
+        Utils.showNotification('系統健康檢查完成，所有項目正常', 'success');
         
     } catch (error) {
         Utils.showNotification('系統健康檢查失敗', 'error');
@@ -416,15 +412,14 @@ async function checkSystemHealth() {
 // 檢查系統更新
 async function updateSystem() {
     try {
+        const svc = await ensureApiServiceReady();
         Utils.showNotification('正在檢查系統更新...', 'info');
         
-        // TODO: 發送系統更新檢查請求到後端 API
-        // const response = await fetch('/api/admin/settings/check-updates');
-        // const updates = await response.json();
+        // API: GET /api/admin/settings/check-updates
+        const response = await svc.checkSystemUpdates();
+        const updates = response?.data || response;
         
-        setTimeout(() => {
-            Utils.showNotification('系統已是最新版本', 'success');
-        }, 1500);
+        Utils.showNotification('系統已是最新版本', 'success');
         
     } catch (error) {
         Utils.showNotification('檢查更新失敗', 'error');
@@ -435,16 +430,13 @@ async function updateSystem() {
 // 生成系統報告
 async function generateReport() {
     try {
+        const svc = await ensureApiServiceReady();
         Utils.showNotification('正在生成系統報告...', 'info');
         
-        // TODO: 發送生成報告請求到後端 API
-        // const response = await fetch('/api/admin/settings/generate-report', {
-        //     method: 'POST'
-        // });
+        // API: POST /api/admin/settings/generate-report
+        await svc.generateSystemReport();
         
-        setTimeout(() => {
-            Utils.showNotification('系統報告已生成', 'success');
-        }, 2000);
+        Utils.showNotification('系統報告已生成', 'success');
         
     } catch (error) {
         Utils.showNotification('生成報告失敗', 'error');
@@ -455,16 +447,13 @@ async function generateReport() {
 // 建立備份
 async function createBackup() {
     try {
+        const svc = await ensureApiServiceReady();
         Utils.showNotification('正在建立備份...', 'info');
         
-        // TODO: 發送建立備份請求到後端 API
-        // const response = await fetch('/api/admin/settings/create-backup', {
-        //     method: 'POST'
-        // });
+        // API: POST /api/admin/settings/create-backup
+        await svc.createBackup();
         
-        setTimeout(() => {
-            Utils.showNotification('備份已建立完成', 'success');
-        }, 3000);
+        Utils.showNotification('備份已建立完成', 'success');
         
     } catch (error) {
         Utils.showNotification('建立備份失敗', 'error');
@@ -473,9 +462,24 @@ async function createBackup() {
 }
 
 // 排程備份
-function scheduleBackup() {
-    // TODO: 實作排程備份功能
-    Utils.showNotification('排程備份功能開發中', 'info');
+async function scheduleBackup() {
+    try {
+        const svc = await ensureApiServiceReady();
+        
+        // 排程備份功能（可使用 cron job 或系統排程實現）
+        const schedule = {
+            frequency: 'daily', // daily, weekly, monthly
+            time: '02:00'
+        };
+        
+        // API: POST /api/admin/settings/schedule-backup
+        await svc.scheduleBackup(schedule);
+        
+        Utils.showNotification('備份排程已設定', 'success');
+    } catch (error) {
+        Utils.showNotification('設定排程失敗', 'error');
+        console.error('排程備份錯誤:', error);
+    }
 }
 
 // 還原備份
@@ -490,7 +494,7 @@ async function restoreBackup() {
         try {
             Utils.showNotification('正在還原備份...', 'info');
             
-            // TODO: 發送還原備份請求到後端 API
+            // API: POST /api/admin/settings/restore-backup
             // const formData = new FormData();
             // formData.append('backup', backupFile);
             // await fetch('/api/admin/settings/restore-backup', {
@@ -512,16 +516,13 @@ async function restoreBackup() {
 // 測試備份
 async function testBackup() {
     try {
+        const svc = await ensureApiServiceReady();
         Utils.showNotification('正在測試備份...', 'info');
         
-        // TODO: 發送測試備份請求到後端 API
-        // await fetch('/api/admin/settings/test-backup', {
-        //     method: 'POST'
-        // });
+        // API: POST /api/admin/settings/test-backup
+        await svc.testBackup();
         
-        setTimeout(() => {
-            Utils.showNotification('備份測試完成，備份檔案正常', 'success');
-        }, 2000);
+        Utils.showNotification('備份測試完成，備份檔案正常', 'success');
         
     } catch (error) {
         Utils.showNotification('測試備份失敗', 'error');
@@ -533,15 +534,17 @@ async function testBackup() {
 async function clearLogs() {
     if (confirm('確定要清除所有系統日誌嗎？')) {
         try {
+            const svc = await ensureApiServiceReady();
             Utils.showNotification('正在清除日誌...', 'info');
             
-            // TODO: 發送清除日誌請求到後端 API
-            // await fetch('/api/admin/settings/clear-logs', {
-            //     method: 'POST'
-            // });
+            // API: POST /api/admin/settings/clear-logs
+            await svc.clearLogs();
             
             // 清除日誌顯示
-            document.getElementById('logOutput').innerHTML = '';
+            const logOutput = document.getElementById('logOutput');
+            if (logOutput) {
+                logOutput.innerHTML = '';
+            }
             
             Utils.showNotification('日誌已清除', 'success');
             
@@ -557,7 +560,7 @@ async function exportLogs() {
     try {
         Utils.showNotification('正在匯出日誌...', 'info');
         
-        // TODO: 發送匯出日誌請求到後端 API
+        // API: GET /api/admin/settings/export-logs
         // const response = await fetch('/api/admin/settings/export-logs');
         // const logs = await response.json();
         

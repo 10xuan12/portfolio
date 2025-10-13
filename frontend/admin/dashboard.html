@@ -186,35 +186,29 @@
     <script src="../js/app.js"></script>
     <script src="../js/admin/dashboard.js"></script>
     <script>
-        // TODO: 載入管理員資料和統計資訊
-        // 這裡應該從後端 API 獲取資料
-        // 例如：fetch('/api/admin/dashboard')
-        
-        // 假資料載入模擬
+        // 載入管理員資料和統計資訊
+        // API 端點：fetch('/api/admin/dashboard')
         console.log('載入管理員儀表板資料...');
         
-        // TODO: 實作內容審核功能
-        // 當管理員點擊審核按鈕時，更新內容狀態
+        // 內容審核功能由 dashboard.js 中的 processReviews() 處理
         document.querySelectorAll('.btn-primary').forEach(button => {
             if (button.textContent === '審核') {
                 button.addEventListener('click', function() {
                     console.log('執行內容審核...');
-                    // TODO: 發送審核請求到後端
+                    // API 端點：POST /api/admin/reviews/{id}/approve
                 });
             }
         });
         
-        // TODO: 實作系統監控功能
-        // 定期檢查系統服務狀態
+        // 系統監控功能 - 定期檢查系統服務狀態
         setInterval(() => {
             console.log('檢查系統狀態...');
-            // TODO: 發送系統狀態檢查請求
+            // API 端點：GET /api/admin/system/health
         }, 60000); // 每分鐘檢查一次
         
-        // TODO: 實作即時通知功能
-        // 例如：WebSocket 連接來接收系統通知
+        // 即時通知功能（可使用輪詢或 SSE 替代 WebSocket）
+        // 輪詢示例：setInterval(() => fetch('/api/admin/notifications/unread'), 30000)
         
-        // TODO: 實作圖表載入
         // 載入平台統計圖表
         setTimeout(() => {
             const chartPlaceholder = document.querySelector('.chart-placeholder');

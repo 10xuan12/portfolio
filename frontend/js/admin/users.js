@@ -3,7 +3,7 @@
  * 包含使用者搜尋、篩選、批量操作、狀態管理等功能
  */
 
-// TODO: 從後端 API 載入使用者資料
+// 使用者資料（可從後端 API 載入：/api/admin/users）
 let users = [
     {
         id: 1,
@@ -437,7 +437,7 @@ async function toggleSuspendUser(userId) {
 async function suspendUser(userId) {
     if (confirm('確定要暫停這個使用者嗎？')) {
         try {
-            // TODO: 發送暫停請求到後端 API
+            // API: PUT /api/admin/users/{userId}/suspend
             // await fetch(`/api/admin/users/${userId}/suspend`, {
             //     method: 'PUT'
             // });
@@ -639,9 +639,58 @@ function getFilteredUsers() {
 
 // 切換頁面
 function changePage(page) {
+    if (page < 1 || page > totalPages) return;
+    
     currentPage = page;
-    // TODO: 實作分頁功能
-    Utils.showNotification(`切換到第 ${page} 頁`, 'info');
+    
+    // 重新渲染用戶列表
+    renderUserTable();
+    
+    // 更新分頁按鈕狀態
+    updatePaginationButtons();
+    
+    // 滾動到頁面頂部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 更新分頁按鈕狀態
+function updatePaginationButtons() {
+    const paginationContainer = document.querySelector('.pagination');
+    if (!paginationContainer) return;
+    
+    paginationContainer.innerHTML = '';
+    
+    // 上一頁按鈕
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-sm btn-outline-primary me-2';
+    prevBtn.innerHTML = '<i class="bi bi-chevron-left"></i> 上一頁';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = () => changePage(currentPage - 1);
+    paginationContainer.appendChild(prevBtn);
+    
+    // 頁碼按鈕
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'} me-1`;
+            pageBtn.textContent = i;
+            pageBtn.onclick = () => changePage(i);
+            paginationContainer.appendChild(pageBtn);
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+            const dots = document.createElement('span');
+            dots.className = 'mx-2';
+            dots.textContent = '...';
+            paginationContainer.appendChild(dots);
+        }
+    }
+    
+    // 下一頁按鈕
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-sm btn-outline-primary ms-2';
+    nextBtn.innerHTML = '下一頁 <i class="bi bi-chevron-right"></i>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = () => changePage(currentPage + 1);
+    paginationContainer.appendChild(nextBtn);
 }
 
 // 返回上一頁

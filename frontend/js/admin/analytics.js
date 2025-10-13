@@ -457,21 +457,85 @@ function exportReport(type) {
 }
 
 // 生成 PDF 報告
-function generatePDFReport() {
-    // TODO: 實作 PDF 報告生成功能
-    Utils.showNotification('PDF 報告生成功能開發中', 'info');
+async function generatePDFReport() {
+    try {
+        const svc = await ensureApiServiceReady();
+        Utils.showNotification('正在生成 PDF 報告...', 'info');
+        
+        // API: POST /api/admin/reports/generate-pdf
+        const response = await svc.generatePDFReport();
+        const data = response?.data || response;
+        
+        // 下載 PDF
+        if (data.url) {
+            const link = document.createElement('a');
+            link.href = data.url;
+            link.download = `analytics-report-${new Date().toISOString().split('T')[0]}.pdf`;
+            link.click();
+        }
+        
+        Utils.showNotification('PDF 報告已生成', 'success');
+    } catch (error) {
+        Utils.showNotification('生成 PDF 失敗', 'error');
+        console.error(error);
+    }
 }
 
 // 生成 Excel 報告
-function generateExcelReport() {
-    // TODO: 實作 Excel 報告生成功能
-    Utils.showNotification('Excel 報告生成功能開發中', 'info');
+async function generateExcelReport() {
+    try {
+        const svc = await ensureApiServiceReady();
+        Utils.showNotification('正在生成 Excel 報告...', 'info');
+        
+        // API: POST /api/admin/reports/generate-excel
+        const response = await svc.generateExcelReport();
+        const data = response?.data || response;
+        
+        // 下載 Excel
+        if (data.url) {
+            const link = document.createElement('a');
+            link.href = data.url;
+            link.download = `analytics-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+            link.click();
+        }
+        
+        Utils.showNotification('Excel 報告已生成', 'success');
+    } catch (error) {
+        Utils.showNotification('生成 Excel 失敗', 'error');
+        console.error(error);
+    }
 }
 
 // 分享報告
-function shareReport() {
-    // TODO: 實作報告分享功能
-    Utils.showNotification('報告分享功能開發中', 'info');
+async function shareReport() {
+    try {
+        const svc = await ensureApiServiceReady();
+        
+        // API: POST /api/admin/reports/generate-share-link
+        const response = await svc.generateShareLink();
+        const shareUrl = response?.data?.url || window.location.href;
+        
+        // 使用 Web Share API（現代瀏覽器支援）
+        if (navigator.share) {
+            await navigator.share({
+                title: '平台數據分析報告',
+                text: '查看最新的平台統計數據',
+                url: shareUrl
+            });
+            Utils.showNotification('報告分享成功', 'success');
+        } else {
+            showShareDialog(shareUrl);
+        }
+    } catch (error) {
+        console.error(error);
+        showShareDialog(window.location.href);
+    }
+}
+
+// 顯示分享對話框
+function showShareDialog(shareUrl) {
+    prompt('複製以下連結進行分享：', shareUrl);
+    Utils.showNotification('連結已複製', 'info');
 }
 
 // 全域函數，供 HTML 直接調用

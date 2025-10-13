@@ -1274,6 +1274,150 @@ if (typeof window.ApiService === 'undefined') {
         return this.request(`student/search.php?${qs}`);
     }
 
+    // ==================== 管理員系統設定 API ====================
+    
+    /**
+     * 測試郵件設定
+     */
+    async testEmailSettings() {
+        return this.request('admin/settings/test-email', { method: 'POST' });
+    }
+
+    /**
+     * 清除快取
+     */
+    async clearCache() {
+        return this.request('admin/settings/clear-cache', { method: 'POST' });
+    }
+
+    /**
+     * 最佳化資料庫
+     */
+    async optimizeDatabase() {
+        return this.request('admin/settings/optimize-database', { method: 'POST' });
+    }
+
+    /**
+     * 系統健康檢查
+     */
+    async checkSystemHealth() {
+        return this.request('admin/settings/system-health');
+    }
+
+    /**
+     * 檢查系統更新
+     */
+    async checkSystemUpdates() {
+        return this.request('admin/settings/check-updates');
+    }
+
+    /**
+     * 生成系統報告
+     */
+    async generateSystemReport() {
+        return this.request('admin/settings/generate-report', { method: 'POST' });
+    }
+
+    /**
+     * 建立備份
+     */
+    async createBackup() {
+        return this.request('admin/settings/create-backup', { method: 'POST' });
+    }
+
+    /**
+     * 排程備份
+     */
+    async scheduleBackup(schedule) {
+        return this.request('admin/settings/schedule-backup', { 
+            method: 'POST',
+            body: JSON.stringify(schedule)
+        });
+    }
+
+    /**
+     * 還原備份
+     */
+    async restoreBackup(formData) {
+        return this.request('admin/settings/restore-backup', { 
+            method: 'POST',
+            body: formData,
+            headers: {} // 讓 fetch 自動設定 Content-Type
+        });
+    }
+
+    /**
+     * 測試備份
+     */
+    async testBackup() {
+        return this.request('admin/settings/test-backup', { method: 'POST' });
+    }
+
+    /**
+     * 清除日誌
+     */
+    async clearLogs() {
+        return this.request('admin/settings/clear-logs', { method: 'POST' });
+    }
+
+    /**
+     * 匯出日誌
+     */
+    async exportLogs() {
+        return this.request('admin/settings/export-logs');
+    }
+
+    // ==================== 管理員數據分析 API ====================
+    
+    /**
+     * 取得數據分析
+     */
+    async getAdminAnalytics(type = 'trends') {
+        return this.request(`admin/analytics?type=${type}`);
+    }
+
+    /**
+     * 取得用戶統計
+     */
+    async getUserAnalytics() {
+        return this.request('admin/analytics?type=users');
+    }
+
+    /**
+     * 取得作品統計
+     */
+    async getPortfolioAnalytics() {
+        return this.request('admin/analytics?type=portfolios');
+    }
+
+    /**
+     * 取得職缺統計
+     */
+    async getJobAnalytics() {
+        return this.request('admin/analytics?type=jobs');
+    }
+
+    /**
+     * 生成 PDF 報告
+     */
+    async generatePDFReport() {
+        return this.request('admin/reports/generate-pdf', { method: 'POST' });
+    }
+
+    /**
+     * 生成 Excel 報告
+     */
+    async generateExcelReport() {
+        return this.request('admin/reports/generate-excel', { method: 'POST' });
+    }
+
+    /**
+     * 生成分享連結
+     */
+    async generateShareLink() {
+        return this.request('admin/reports/generate-share-link', { method: 'POST' });
+    }
+
     // 內部：根據 scope 組成 settings.php 可接受的 payload
     #buildSettingsPayload(scope, data, userId) {
         const toBoolInt = (v) => (v ? 1 : 0);

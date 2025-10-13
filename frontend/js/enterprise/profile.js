@@ -3,7 +3,7 @@
  * 包含資料編輯、表單驗證、檔案上傳等功能
  */
 
-// TODO: 從後端 API 載入企業資料
+// 企業資料（可從後端 API 載入：/api/enterprise/profile?action=get）
 let enterpriseData = { id: null, name: '', type: '', size: '', industry: '', email: '', phone: '', website: '', address: '', description: '', hrName: '', hrEmail: '', hrPhone: '', recruitmentProcess: '', benefits: '', logo: '', stats: { jobs: 0, applications: 0, views: 0, contacts: 0 } };
 
 // 初始化頁面
@@ -334,8 +334,10 @@ function resetForm() {
 
 // 預覽企業頁面
 function previewProfile() {
-    // TODO: 在新視窗中開啟企業頁面預覽
-    Utils.showNotification('預覽功能開發中', 'info');
+    // 在新視窗中開啟企業頁面預覽
+    const previewUrl = `/enterprise/public-profile.html?id=${enterpriseData.id}`;
+    window.open(previewUrl, '_blank', 'width=1200,height=800');
+    Utils.showNotification('已開啟預覽視窗', 'success');
 }
 
 // 載入最近活動（企業端）

@@ -130,9 +130,56 @@ function getReviews() {
         $users[] = $row;
     }
     
-    // 取得報告
+    // 取得檢舉報告
     $reports = [];
-    // TODO: 實作報告查詢，需要先建立 reports 表
+    $reportStmt = $GLOBALS['conn']->prepare("
+        SELECT 
+            r.id, r.reported_type as type, r.reported_id, r.reason, r.description,
+            r.status, r.priority, r.created_at as submitted_at,
+            r.evidence_url,
+            u1.username as reporter,
+            u2.username as reported_user
+        FROM reports r
+        LEFT JOIN users u1 ON r.reporter_id = u1.id
+        LEFT JOIN users u2 ON r.reported_user_id = u2.id
+        WHERE r.status = ?
+        ORDER BY 
+            CASE r.priority 
+                WHEN 'urgent' THEN 1
+                WHEN 'high' THEN 2
+                WHEN 'medium' THEN 3
+                WHEN 'low' THEN 4
+            END,
+            r.created_at DESC
+        LIMIT 10
+    ");
+    $reportStmt->bind_param("s", $status);
+    $reportStmt->execute();
+    $result = $reportStmt->get_result();
+    
+    while ($row = $result->fetch_assoc()) {
+        // 格式化檢舉原因
+        $reasonMap = [
+            'inappropriate' => '不當內容',
+            'spam' => '垃圾訊息',
+            'harassment' => '騷擾行為',
+            'copyright' => '版權侵犯',
+            'other' => '其他'
+        ];
+        $row['reason_text'] = $reasonMap[$row['reason']] ?? $row['reason'];
+        
+        // 格式化檢舉類型
+        $typeMap = [
+            'portfolio' => '作品',
+            'comment' => '評論',
+            'job' => '職缺',
+            'user' => '用戶',
+            'message' => '訊息'
+        ];
+        $row['type_text'] = $typeMap[$row['type']] ?? $row['type'];
+        
+        $reports[] = $row;
+    }
     
     $response = [
         'portfolios' => $portfolios,

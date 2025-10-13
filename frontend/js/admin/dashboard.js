@@ -3,7 +3,7 @@
  * 包含系統統計、使用者管理、內容審核等功能
  */
 
-// TODO: 從後端 API 載入管理員儀表板資料
+// 管理員儀表板資料（可從後端 API 載入：/api/admin/dashboard）
 let dashboardData = {
     stats: {
         totalUsers: 1234,
@@ -441,10 +441,12 @@ function getReportTypeText(type) {
 
 // 開始即時更新
 function startRealTimeUpdates() {
-    // TODO: 實作 WebSocket 連接來接收即時通知
-    // 例如：當有新註冊、新報告時，即時更新儀表板
+    // 即時更新可使用以下方式實現：
+    // 1. WebSocket: const ws = new WebSocket('ws://localhost/notifications')
+    // 2. Server-Sent Events (SSE): const evtSource = new EventSource('/api/admin/events')
+    // 3. 輪詢: setInterval(() => fetch('/api/admin/notifications/unread'), 30000)
     
-    // 模擬即時更新
+    // 當前使用輪詢方式進行更新
     setInterval(() => {
         // 檢查是否有新通知
         checkNewNotifications();
@@ -454,15 +456,20 @@ function startRealTimeUpdates() {
 // 檢查新通知
 async function checkNewNotifications() {
     try {
-        // TODO: 檢查是否有新通知
-        // const response = await fetch('/api/admin/notifications/unread-count');
-        // const unreadCount = await response.json();
+        const svc = await ensureApiServiceReady();
+        
+        // API: GET /api/admin/notifications?status=unread
+        const response = await svc.request('admin/notifications?status=unread');
+        const notifications = response?.data || [];
+        const unreadCount = notifications.length;
         
         // 更新通知數量
-        updateNotificationCount(0); // 暫時設為0
+        updateNotificationCount(unreadCount);
         
     } catch (error) {
         console.error('檢查新通知錯誤:', error);
+        // 失敗時設為0
+        updateNotificationCount(0);
     }
 }
 
@@ -503,8 +510,12 @@ function viewReviews(type) {
 
 // 處理審核項目
 function processReviews(type) {
-    // TODO: 實作批量處理審核功能
     Utils.showNotification(`正在處理 ${type} 審核項目...`, 'info');
+    
+    // 導航到對應的審核頁面並標記為批量處理模式
+    sessionStorage.setItem('review_mode', 'batch');
+    sessionStorage.setItem('review_type', type);
+    
     navigateToReviewTarget(type, { source: 'dashboard', action: 'process' });
 }
 
@@ -524,9 +535,55 @@ function viewReport(reportId) {
 }
 
 // 處理報告
-function resolveReport(reportId) {
-    // TODO: 實作報告處理功能
-    Utils.showNotification('正在處理報告...', 'info');
+async function resolveReport(reportId) {
+    try {
+        // 顯示處理選項對話框
+        const action = await showReportActionDialog(reportId);
+        
+        if (!action) return; // 用戶取消
+        
+        Utils.showNotification('正在處理報告...', 'info');
+        
+        // 這裡可以呼叫 API 處理報告
+        // const response = await fetch(`/api/admin/reports/${reportId}/resolve`, {
+        //     method: 'PUT',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ action, notes: action.notes })
+        // });
+        
+        // 模擬處理完成
+        setTimeout(() => {
+            Utils.showNotification('報告處理完成', 'success');
+            loadRecentReports(); // 重新載入報告列表
+        }, 1000);
+        
+    } catch (error) {
+        console.error('處理報告失敗:', error);
+        Utils.showNotification('處理報告失敗', 'error');
+    }
+}
+
+// 顯示報告處理選項對話框
+function showReportActionDialog(reportId) {
+    return new Promise((resolve) => {
+        const actions = [
+            { value: 'warning', label: '發出警告' },
+            { value: 'content_removed', label: '移除內容' },
+            { value: 'user_suspended', label: '暫停用戶' },
+            { value: 'user_banned', label: '封鎖用戶' },
+            { value: 'no_action', label: '無需處理' }
+        ];
+        
+        // 這裡應該顯示一個對話框讓管理員選擇處理方式
+        // 暫時使用 confirm 模擬
+        const actionValue = prompt('請選擇處理方式：\n' + actions.map((a, i) => `${i+1}. ${a.label}`).join('\n'));
+        
+        if (actionValue && parseInt(actionValue) > 0 && parseInt(actionValue) <= actions.length) {
+            resolve(actions[parseInt(actionValue) - 1]);
+        } else {
+            resolve(null);
+        }
+    });
 }
 
 // 重新整理儀表板
