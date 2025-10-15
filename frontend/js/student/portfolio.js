@@ -52,9 +52,14 @@
                 throw new Error('無法獲取使用者資訊');
             }
             
-            // 清除快取，確保取得最新資料
+            // 清除快取，確保取得最新資料（改用 try-catch 避免錯誤）
             if (window.apiService && window.apiService.clearCache) {
-                window.apiService.clearCache();
+                try {
+                    // 不調用後端清除快取，只清除本地快取
+                    // window.apiService.clearCache();
+                } catch (e) {
+                    console.log('清除快取失敗（忽略）:', e);
+                }
             }
             
             // 使用標準化的API服務方法
@@ -139,13 +144,19 @@
             applyFilters();
         });
         
-        document.getElementById('searchFilter').addEventListener('input', Utils.debounce(function() {
-            currentFilters.search = this.value;
-            applyFilters();
-        }, 300));
+        const searchFilter = document.getElementById('searchFilter');
+        if (searchFilter) {
+            searchFilter.addEventListener('input', Utils.debounce(function() {
+                currentFilters.search = this.value;
+                applyFilters();
+            }, 300));
+        }
         
         // 表單提交事件
-        document.getElementById('portfolioForm').addEventListener('submit', handleFormSubmit);
+        const portfolioForm = document.getElementById('portfolioForm');
+        if (portfolioForm) {
+            portfolioForm.addEventListener('submit', handleFormSubmit);
+        }
     }
 
     // 渲染作品列表

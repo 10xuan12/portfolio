@@ -47,15 +47,19 @@ if ($q !== '') {
     $types .= 'ssssss';
 }
 
-// 技能：任一包含
+// 技能：任一包含（改進精確度）
 if ($skills !== '') {
     $skillList = array_filter(array_map('trim', explode(',', $skills)));
     if (!empty($skillList)) {
         $skillConds = [];
         foreach ($skillList as $kw) {
-            $skillConds[] = 'sp.skills LIKE ?';
-            $params[] = '%'.$kw.'%';
-            $types .= 's';
+            // 使用更精確的匹配：技能前後必須是逗號、空格或字串開頭/結尾
+            $skillConds[] = '(sp.skills LIKE ? OR sp.skills LIKE ? OR sp.skills LIKE ? OR sp.skills LIKE ?)';
+            $params[] = $kw.',%';        // 開頭匹配
+            $params[] = '%, '.$kw.'%';   // 中間匹配
+            $params[] = '%,'.$kw;        // 結尾匹配
+            $params[] = $kw;             // 完全匹配
+            $types .= 'ssss';
         }
         $where[] = '('.implode(' OR ', $skillConds).')';
     }
@@ -79,7 +83,7 @@ $sql = "
     WHERE $whereSql
     GROUP BY u.id
     HAVING portfolio_count > 0
-    ORDER BY total_views DESC, total_likes DESC, portfolio_count DESC
+    ORDER BY portfolio_count DESC, total_views DESC, total_likes DESC
     LIMIT ? OFFSET ?
 ";
 
@@ -99,33 +103,59 @@ $rows = $res->fetch_all(MYSQLI_ASSOC);
 $result = [];
 foreach ($rows as $r) {
     $skillsArr = $r['skills'] ? array_map('trim', explode(',', $r['skills'])) : [];
-    $score = 30; // 基礎分
+    
+    // 改進基礎分：如果沒有任何搜尋條件，給予較高的基礎分
+    $hasSearchConditions = ($q !== '' || $skills !== '' || $department !== '' || $grade !== '');
+    $score = $hasSearchConditions ? 40 : 60; // 提高基礎分
 
+    // 關鍵字匹配加分
     if ($q !== '') {
-        if (stripos($r['display_name'] ?? '', $q) !== false
-            || stripos($r['first_name'] ?? '', $q) !== false
-            || stripos($r['last_name'] ?? '', $q) !== false
-            || stripos($r['major'] ?? '', $q) !== false
-            || stripos($r['bio'] ?? '', $q) !== false) {
-            $score += 20;
-        }
+        $queryLower = mb_strtolower($q, 'UTF-8');
+        $matchCount = 0;
+        
+        // 檢查各欄位的匹配
+        if (stripos($r['display_name'] ?? '', $q) !== false) $matchCount++;
+        if (stripos($r['first_name'] ?? '', $q) !== false) $matchCount++;
+        if (stripos($r['last_name'] ?? '', $q) !== false) $matchCount++;
+        if (stripos($r['major'] ?? '', $q) !== false) $matchCount++;
+        if (stripos($r['bio'] ?? '', $q) !== false) $matchCount++;
+        
+        // 根據匹配數量給分
+        $score += min(25, $matchCount * 5);
     }
 
+    // 技能匹配加分
     if (!empty($skillsArr) && $skills !== '') {
         $kwList = array_filter(array_map('trim', explode(',', $skills)));
         $matched = 0;
+        $exactMatched = 0;
+        
         foreach ($kwList as $kw) {
             foreach ($skillsArr as $s) {
-                if (stripos($s, $kw) !== false) { $matched++; break; }
+                $sLower = mb_strtolower($s, 'UTF-8');
+                $kwLower = mb_strtolower($kw, 'UTF-8');
+                
+                // 完全匹配給更高分
+                if ($sLower === $kwLower) {
+                    $exactMatched++;
+                    $matched++;
+                    break;
+                } elseif (stripos($s, $kw) !== false) {
+                    $matched++;
+                    break;
+                }
             }
         }
+        
         if (!empty($kwList)) {
-            $score += min(40, (int)round($matched / max(1, count($kwList)) * 40));
+            // 完全匹配的技能給額外加分
+            $score += min(35, (int)round($matched / max(1, count($kwList)) * 30));
+            $score += min(10, $exactMatched * 5);
         }
     }
 
     // 作品與熱度加分
-    $score += min(20, (int)($r['portfolio_count'] * 2));
+    $score += min(15, (int)($r['portfolio_count'] * 2));
     $score += min(10, (int)floor($r['total_views'] / 100));
     $score = min(100, $score);
 
@@ -158,6 +188,20 @@ foreach ($rows as $r) {
         ];
     }
 }
+
+// 按匹配度排序結果
+usort($result, function($a, $b) {
+    // 先比較匹配度
+    if ($b['matchScore'] !== $a['matchScore']) {
+        return $b['matchScore'] - $a['matchScore'];
+    }
+    // 匹配度相同時，比較作品數量
+    if ($b['stats']['portfolios'] !== $a['stats']['portfolios']) {
+        return $b['stats']['portfolios'] - $a['stats']['portfolios'];
+    }
+    // 作品數量相同時，比較瀏覽次數
+    return $b['stats']['views'] - $a['stats']['views'];
+});
 
 // 搜尋記錄
 $durationMs = (int)round((microtime(true) - $t0) * 1000);

@@ -1,0 +1,296 @@
+/**
+ * 作品熱門度標籤系統
+ * 自動標記「熱門」、「趨勢」、「新作」等標籤
+ */
+
+/* 標籤容器 */
+.popularity-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+/* 基礎標籤樣式 */
+.popularity-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    animation: tagFadeIn 0.5s ease;
+    cursor: default;
+    transition: all 0.3s ease;
+}
+
+.popularity-tag:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes tagFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 標籤圖標 */
+.popularity-tag-icon {
+    font-size: 14px;
+    animation: iconPulse 2s infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+/* 熱門標籤 - 紅色火焰 */
+.popularity-tag.hot {
+    background: #ea4f4f;
+}
+
+.popularity-tag.hot .popularity-tag-icon {
+    animation: flame 1.5s infinite;
+}
+
+@keyframes flame {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+    }
+    25% {
+        transform: scale(1.2) rotate(-10deg);
+    }
+    75% {
+        transform: scale(1.2) rotate(10deg);
+    }
+}
+
+/* 趨勢標籤 - 藍色上升箭頭 */
+.popularity-tag.trending {
+    background: #00AEEF;
+}
+
+.popularity-tag.trending .popularity-tag-icon {
+    animation: arrowUp 1.5s infinite;
+}
+
+@keyframes arrowUp {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+/* 新作標籤 - 綠色閃爍 */
+.popularity-tag.new {
+    background: #5ead73;
+}
+
+.popularity-tag.new .popularity-tag-icon {
+    animation: sparkle 2s infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 1;
+        transform: rotate(0deg);
+    }
+    50% {
+        opacity: 0.6;
+        transform: rotate(180deg);
+    }
+}
+
+/* 精選標籤 - 金色星星 */
+.popularity-tag.featured {
+    background: #ffdd00;
+    color: #1E1E1E;
+}
+
+.popularity-tag.featured .popularity-tag-icon {
+    animation: starRotate 3s infinite linear;
+}
+
+@keyframes starRotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 推薦標籤 - 藍色推薦 */
+.popularity-tag.recommended {
+    background: #273ec3;
+}
+
+/* 熱度指示器 */
+.heat-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    font-size: 11px;
+    margin-left: 5px;
+}
+
+.heat-bar {
+    display: flex;
+    gap: 2px;
+}
+
+.heat-bar span {
+    width: 3px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    animation: heatPulse 1s infinite;
+}
+
+.heat-bar span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.heat-bar span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.heat-bar span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.heat-bar span.active {
+    background: rgba(255, 255, 255, 1);
+}
+
+@keyframes heatPulse {
+    0%, 100% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(1.5);
+    }
+}
+
+/* 標籤組合效果 */
+.popularity-tag-combo {
+    position: relative;
+}
+
+.popularity-tag-combo::after {
+    content: '⚡';
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    font-size: 16px;
+    animation: comboSpin 2s infinite;
+}
+
+@keyframes comboSpin {
+    0%, 100% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(180deg) scale(1.2);
+    }
+}
+
+/* 在作品卡片上的標籤定位 */
+.portfolio-card .popularity-tags {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* 懸浮工具提示 */
+.popularity-tag[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    opacity: 0;
+    z-index: 1000;
+}
+
+.popularity-tag[data-tooltip]::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    border: 4px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.popularity-tag[data-tooltip]:hover::before,
+.popularity-tag[data-tooltip]:hover::after {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .popularity-tag {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+    
+    .popularity-tag-icon {
+        font-size: 12px;
+    }
+}
+
+/* 小尺寸標籤變體 */
+.popularity-tag.small {
+    padding: 3px 8px;
+    font-size: 10px;
+}
+
+.popularity-tag.small .popularity-tag-icon {
+    font-size: 11px;
+}
+
+/* 大尺寸標籤變體 */
+.popularity-tag.large {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.popularity-tag.large .popularity-tag-icon {
+    font-size: 16px;
+}
+

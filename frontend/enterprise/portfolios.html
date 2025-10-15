@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="../css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/enterprise/portfolio.css">
+    
+    <!-- 新功能樣式 -->
+    <link rel="stylesheet" href="../css/popularity-tags.css">
+    <link rel="stylesheet" href="../css/favorites-system.css">
+    <link rel="stylesheet" href="../css/card-3d-flip.css">
 </head>
 <body>
     <!-- 導覽列 -->
@@ -92,7 +97,58 @@
     <script src="../js/config.js"></script>
     <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
+    
+    <!-- 新功能腳本 -->
+    <script src="../js/popularity-tags.js"></script>
+    <script src="../js/favorites-system.js"></script>
+    <script src="../js/card-3d-flip.js"></script>
+    
     <script src="../js/enterprise/portfolios.js"></script>
+    
+    <script>
+        // 監聽作品渲染完成事件，添加熱門度標籤
+        document.addEventListener('DOMContentLoaded', function() {
+            // 監聽作品列表更新
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length > 0) {
+                        addTagsToPortfolios();
+                    }
+                });
+            });
+            
+            const portfoliosGrid = document.getElementById('portfoliosGrid');
+            if (portfoliosGrid) {
+                observer.observe(portfoliosGrid, { childList: true });
+            }
+        });
+        
+        // 為作品添加熱門度標籤
+        function addTagsToPortfolios() {
+            const portfolioCards = document.querySelectorAll('.portfolio-card[data-portfolio-id]');
+            
+            portfolioCards.forEach(card => {
+                // 檢查是否已經添加過標籤
+                if (card.querySelector('.popularity-tags')) {
+                    return;
+                }
+                
+                // 從卡片屬性中獲取作品數據
+                const portfolioData = {
+                    id: card.getAttribute('data-portfolio-id'),
+                    createdAt: card.getAttribute('data-created-at'),
+                    views: parseInt(card.getAttribute('data-views')) || 0,
+                    likes: parseInt(card.getAttribute('data-likes')) || 0,
+                    comments: parseInt(card.getAttribute('data-comments')) || 0,
+                    shares: parseInt(card.getAttribute('data-shares')) || 0,
+                    isFeatured: card.getAttribute('data-featured') === 'true'
+                };
+                
+                // 添加熱門度標籤
+                addPopularityTags(card, portfolioData);
+            });
+        }
+    </script>
     <script>
     if (typeof goBack !== 'function') {
         function goBack() {

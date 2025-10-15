@@ -411,7 +411,7 @@ function renderJobPostings(jobs) {
  * 查看學生資料
  */
 function viewStudentProfile(studentId) {
-    window.location.href = `/portfolio/frontend/enterprise/search.html?student=${studentId}`;
+    window.location.href = `student-profile.html?id=${studentId}`;
 }
 
 /**

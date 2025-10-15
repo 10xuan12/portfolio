@@ -1,0 +1,337 @@
+/**
+ * 作品 3D 卡片翻轉效果
+ * 懸停時翻轉展示背面詳細資訊
+ */
+
+/* 3D 翻轉容器 */
+.portfolio-card-flip {
+    perspective: 1000px;
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+}
+
+.portfolio-card-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform-style: preserve-3d;
+}
+
+.portfolio-card-flip:hover .portfolio-card-flip-inner {
+    transform: rotateY(180deg);
+}
+
+/* 卡片正面和背面 */
+.portfolio-card-front,
+.portfolio-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 正面 */
+.portfolio-card-front {
+    background: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.portfolio-card-front .card-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    background: #f5f7fa;
+}
+
+.portfolio-card-front .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.portfolio-card-flip:hover .portfolio-card-front .card-image img {
+    transform: scale(1.1);
+}
+
+.portfolio-card-front .card-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.portfolio-card-front .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1E1E1E;
+    margin: 0 0 10px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.portfolio-card-front .card-author {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 15px 0;
+}
+
+.portfolio-card-front .card-stats {
+    display: flex;
+    gap: 15px;
+    margin-top: auto;
+    font-size: 13px;
+    color: #999;
+}
+
+.portfolio-card-front .card-stats span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* 背面 */
+.portfolio-card-back {
+    background: #293992;
+    transform: rotateY(180deg);
+    color: white;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.portfolio-card-back-header {
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.portfolio-card-back-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+    animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.portfolio-card-back-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+}
+
+.portfolio-card-back-body {
+    flex: 1;
+}
+
+.portfolio-card-back-description {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: white;
+}
+
+/* 技能標籤 */
+.portfolio-card-back-skills {
+    margin-bottom: 20px;
+}
+
+.portfolio-card-back-skills-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+    color: white;
+}
+
+.portfolio-card-back-skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-tag-small {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    color: white;
+}
+
+/* 統計數據 */
+.portfolio-card-back-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.back-stat-item {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px 10px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.back-stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    display: block;
+    color: white;
+}
+
+.back-stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+}
+
+/* 查看按鈕 */
+.portfolio-card-back-footer {
+    text-align: center;
+}
+
+.portfolio-card-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: white;
+    color: #273ec3;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.portfolio-card-back-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 翻轉提示 */
+.flip-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(39, 62, 195, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    animation: hintFadeIn 2s ease 1s forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes hintFadeIn {
+    0%, 50% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.portfolio-card-flip:hover .flip-hint {
+    opacity: 0;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .portfolio-card-flip {
+        min-height: 300px;
+    }
+    
+    .portfolio-card-front .card-image {
+        height: 150px;
+    }
+    
+    .portfolio-card-back {
+        padding: 20px;
+    }
+    
+    .portfolio-card-back-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .back-stat-item {
+        padding: 10px 5px;
+    }
+    
+    .back-stat-number {
+        font-size: 18px;
+    }
+}
+
+/* 手機版點擊翻轉 */
+@media (hover: none) and (pointer: coarse) {
+    .portfolio-card-flip.active .portfolio-card-flip-inner {
+        transform: rotateY(180deg);
+    }
+    
+    .portfolio-card-flip:hover .portfolio-card-flip-inner {
+        transform: none;
+    }
+}
+
+/* 3D 傾斜效果（進階版） */
+.portfolio-card-flip.tilt-effect {
+    transform-style: preserve-3d;
+}
+
+.portfolio-card-flip.tilt-effect .portfolio-card-flip-inner {
+    transform-style: preserve-3d;
+}
+
+/* 閃光效果 */
+.portfolio-card-front::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.portfolio-card-flip:hover .portfolio-card-front::before {
+    left: 100%;
+    opacity: 1;
+}
+

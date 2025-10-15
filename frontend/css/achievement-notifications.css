@@ -1,0 +1,298 @@
+/**
+ * 即時成就通知動畫系統
+ * 包含徽章獲得、里程碑達成等通知動畫
+ */
+
+/* 通知容器 */
+.achievement-notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* 通知卡片 */
+.achievement-notification {
+    background: #273ec3;
+    color: white;
+    padding: 20px 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(39, 62, 195, 0.3);
+    margin-bottom: 15px;
+    min-width: 320px;
+    max-width: 400px;
+    pointer-events: auto;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transform: translateX(450px);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.achievement-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.achievement-notification.hide {
+    transform: translateX(450px);
+    opacity: 0;
+}
+
+/* 背景動畫效果 */
+.achievement-notification::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* 通知頭部 */
+.achievement-notification-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+/* 圖標容器 */
+.achievement-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    flex-shrink: 0;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0) rotate(0deg);
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+    }
+    100% {
+        transform: scale(1) rotate(360deg);
+    }
+}
+
+/* 通知標題 */
+.achievement-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* 通知內容 */
+.achievement-notification-body {
+    position: relative;
+    z-index: 1;
+}
+
+.achievement-description {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 10px 0;
+    opacity: 0.95;
+}
+
+.achievement-reward {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* 關閉按鈕 */
+.achievement-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.achievement-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* 進度條 */
+.achievement-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.5);
+    width: 100%;
+    transform-origin: left;
+    animation: progress 5s linear;
+}
+
+@keyframes progress {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+/* 不同類型的通知顏色 */
+.achievement-notification.badge {
+    background: #ea4f4f;
+    box-shadow: 0 10px 40px rgba(234, 79, 79, 0.3);
+}
+
+.achievement-notification.milestone {
+    background: #00AEEF;
+    box-shadow: 0 10px 40px rgba(0, 174, 239, 0.3);
+}
+
+.achievement-notification.level-up {
+    background: #5ead73;
+    box-shadow: 0 10px 40px rgba(94, 173, 115, 0.3);
+}
+
+.achievement-notification.trending {
+    background: #ffdd00;
+    color: #1E1E1E;
+    box-shadow: 0 10px 40px rgba(255, 221, 0, 0.3);
+}
+
+/* 慶祝特效容器 */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    overflow: hidden;
+}
+
+/* 紙屑動畫 */
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #f093fb;
+    opacity: 0;
+    animation: confetti-fall 3s linear;
+}
+
+@keyframes confetti-fall {
+    0% {
+        opacity: 1;
+        transform: translateY(-100vh) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(100vh) rotate(720deg);
+    }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .achievement-notification-container {
+        right: 10px;
+        left: 10px;
+        top: 10px;
+    }
+    
+    .achievement-notification {
+        min-width: auto;
+        max-width: 100%;
+        transform: translateY(-150px);
+    }
+    
+    .achievement-notification.show {
+        transform: translateY(0);
+    }
+    
+    .achievement-notification.hide {
+        transform: translateY(-150px);
+    }
+}
+
+/* 脈衝動畫效果 */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.achievement-notification:hover {
+    animation: pulse 1s infinite;
+}
+
+/* 星星閃爍效果 */
+.achievement-stars {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    animation: starBlink 2s infinite;
+    z-index: 0;
+    opacity: 0.1;
+}
+
+@keyframes starBlink {
+    0%, 100% {
+        opacity: 0.1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 0.3;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+

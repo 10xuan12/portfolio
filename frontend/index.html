@@ -7,6 +7,12 @@
     <meta name="description" content="Portfolio+ 是專為學生、企業和管理員設計的作品集展示平台。學生可以上傳作品，企業可以搜尋人才，管理員可以管理平台。">
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 新功能樣式 -->
+    <link rel="stylesheet" href="css/popularity-tags.css">
+    <link rel="stylesheet" href="css/favorites-system.css">
+    <link rel="stylesheet" href="css/card-3d-flip.css">
+    <link rel="stylesheet" href="css/share-card-generator.css">
     <script>
         // 設定主色調主題
         document.addEventListener('DOMContentLoaded', function() {
@@ -237,7 +243,7 @@
                         <i class="fas fa-envelope"></i>
                         <div>
                             <h3>電子郵件</h3>
-                            <p>support@portfolio-plus.com</p>
+                            <p>selina101292@gmail.com</p>
                         </div>
                     </div>
                     
@@ -245,7 +251,7 @@
                         <i class="fas fa-phone"></i>
                         <div>
                             <h3>聯絡電話</h3>
-                            <p>+886 2 1234 5678</p>
+                            <p>+886 965418312</p>
                         </div>
                     </div>
                     
@@ -253,7 +259,7 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
                             <h3>地址</h3>
-                            <p>台北市大安區復興南路一段 390 號</p>
+                            <p>台中市沙鹿區台灣大道200號</p>
                         </div>
                     </div>
                 </div>
@@ -321,6 +327,12 @@
 
     <script src="js/app.js?v=20250927"></script>
     <script src="js/api-service.js?v=20250927"></script>
+    
+    <!-- 新功能腳本 -->
+    <script src="js/popularity-tags.js"></script>
+    <script src="js/favorites-system.js"></script>
+    <script src="js/card-3d-flip.js"></script>
+    <script src="js/share-card-generator.js"></script>
     <script>
         // 載入隨機作品 (v20250927)
         async function loadRandomPortfolios() {
@@ -394,9 +406,9 @@
             const portfoliosGrid = document.getElementById('portfoliosGrid');
             
             portfoliosGrid.innerHTML = portfolios.map(portfolio => `
-                <div class="portfolio-card" onclick="viewPortfolio(${portfolio.id})">
+                <div class="portfolio-card" data-id="${portfolio.id}" onclick="viewPortfolio(${portfolio.id})">
                     <div class="portfolio-image">
-                        <img src="${portfolio.thumbnail_url && portfolio.thumbnail_url !== 'null' ? '/portfolio/' + portfolio.thumbnail_url : getDefaultThumbnail(portfolio.category)}" 
+                        <img src="${portfolio.thumbnail_url && portfolio.thumbnail_url !== 'null' ? getImageUrl(portfolio.thumbnail_url) : getDefaultThumbnail(portfolio.category)}" 
                              alt="${portfolio.title}" 
                              onerror="this.src='${getDefaultThumbnail(portfolio.category)}'">
                     </div>
@@ -414,6 +426,47 @@
                     </div>
                 </div>
             `).join('');
+            
+            // 為每個作品卡片添加熱門度標籤
+            portfolios.forEach((portfolio, index) => {
+                const card = document.querySelector(`.portfolio-card[data-id="${portfolio.id}"]`);
+                if (card) {
+                    const portfolioData = {
+                        id: portfolio.id,
+                        title: portfolio.title,
+                        createdAt: portfolio.created_at,
+                        views: portfolio.view_count || 0,
+                        likes: portfolio.like_count || 0,
+                        comments: portfolio.comment_count || 0,
+                        shares: portfolio.share_count || 0,
+                        isFeatured: portfolio.is_featured || false
+                    };
+                    addPopularityTags(card, portfolioData);
+                }
+            });
+        }
+        
+        // 處理圖片 URL（避免路徑重複）
+        function getImageUrl(url) {
+            if (!url || url === 'null') return '';
+            
+            // 如果已經是完整 URL（http 開頭）
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                return url;
+            }
+            
+            // 如果已經包含 /portfolio/，直接返回
+            if (url.startsWith('/portfolio/')) {
+                return url;
+            }
+            
+            // 如果包含 portfolio/ 但沒有前綴 /
+            if (url.startsWith('portfolio/')) {
+                return '/' + url;
+            }
+            
+            // 其他情況，添加 /portfolio/ 前綴
+            return '/portfolio/' + url;
         }
         
         // 取得預設縮圖

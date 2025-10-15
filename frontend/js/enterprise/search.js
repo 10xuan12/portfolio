@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadFilterOptions();
     initEventListeners();
     loadSearchHistory();
-    // 移除自動搜尋，讓用戶主動搜尋
-    // performSearch(1);
+    // 初始載入：顯示所有有作品的學生
+    performSearch();
 });
 
 // 初始化事件監聽器
@@ -185,21 +185,26 @@ function renderSearchResults(filteredStudents = null) {
     resultsContainer.style.display = 'grid';
     emptyState.style.display = 'none';
     
-    resultsContainer.innerHTML = studentsToRender.map(student => `
-        <div class="student-card">
+    resultsContainer.innerHTML = studentsToRender.map(student => {
+        const score = student.matchScore || 0;
+        const scoreClass = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low';
+        
+        return `
+        <div class="student-card" data-match-score="${score}">
             <div class="student-header">
                 <img src="${student.avatar}" alt="${student.name}" class="student-avatar">
                 <div class="student-info">
                     <div class="student-name">${student.name}</div>
-                    <div class="student-department">${student.department} - ${student.grade}</div>
+                    <div class="student-department">${student.department || '未設定'} ${student.grade ? '- ' + student.grade : ''}</div>
                 </div>
-                <div class="match-score">
-                    <span class="score">${student.matchScore}%</span>
-                    <span class="label">匹配</span>
+                <div class="match-score ${scoreClass}">
+                    <span class="score">${score}%</span>
+                    <span class="label">匹配度</span>
                 </div>
             </div>
             <div class="student-skills">
-                ${student.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                ${(student.skills || []).slice(0, 8).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                ${student.skills && student.skills.length > 8 ? `<span class="skill-tag more">+${student.skills.length - 8}</span>` : ''}
             </div>
             <div class="student-stats">
                 <span><i class="fas fa-folder"></i> ${student.stats.portfolios} 個作品</span>
@@ -215,7 +220,8 @@ function renderSearchResults(filteredStudents = null) {
                 </button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // 更新結果數量

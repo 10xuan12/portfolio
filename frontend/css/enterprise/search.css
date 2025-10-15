@@ -150,7 +150,23 @@
     background: var(--primary-color);
     color: var(--white);
     border-radius: var(--radius-md);
-    min-width: 60px;
+    min-width: 70px;
+    transition: all 0.3s ease;
+}
+
+.match-score.high {
+    background: #10b981;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.match-score.medium {
+    background: #f59e0b;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.match-score.low {
+    background: #6b7280;
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
 }
 
 .match-score .score {
@@ -178,6 +194,13 @@
     border-radius: var(--radius-md);
     font-size: var(--text-xs);
     font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.skill-tag.more {
+    background: var(--primary-color);
+    color: var(--white);
+    cursor: default;
 }
 
 .student-stats {
@@ -312,4 +335,74 @@
 
 .btn-back i {
     font-size: 0.8rem;
+}
+
+/* 技能標籤輸入框樣式 */
+.tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    min-height: 40px;
+    align-items: center;
+}
+
+.tag-input:focus-within {
+    border-color: var(--primary-color);
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    flex: 0 0 auto;
+}
+
+.tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: var(--primary-color);
+    color: var(--white);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: 500;
+}
+
+.tag-text {
+    line-height: 1;
+}
+
+.tag-remove {
+    background: transparent;
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    font-size: var(--text-lg);
+    line-height: 1;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.tag-remove:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#skillTagInput {
+    flex: 1 1 auto;
+    border: none;
+    padding: var(--spacing-xs);
+    min-width: 120px;
+    font-size: var(--text-sm);
+    outline: none;
 }

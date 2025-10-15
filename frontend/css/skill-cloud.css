@@ -1,0 +1,380 @@
+/**
+ * 技能標籤雲視覺化系統
+ * 動態展示用戶技能，字體大小反映熟練度
+ */
+
+/* 標籤雲容器 */
+.skill-cloud-container {
+    width: 100%;
+    min-height: 300px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #e0f1ff;
+}
+
+.skill-cloud-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    animation: cloudRotate 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes cloudRotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 標籤雲 */
+.skill-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* 技能標籤 */
+.skill-tag {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: skillFloat 3s ease-in-out infinite;
+}
+
+/* 浮動動畫 */
+@keyframes skillFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    33% {
+        transform: translateY(-10px) rotate(2deg);
+    }
+    66% {
+        transform: translateY(5px) rotate(-2deg);
+    }
+}
+
+/* 不同大小的技能標籤 */
+.skill-tag.level-1 {
+    font-size: 12px;
+    padding: 6px 12px;
+    opacity: 0.7;
+}
+
+.skill-tag.level-2 {
+    font-size: 14px;
+    padding: 7px 14px;
+    opacity: 0.8;
+}
+
+.skill-tag.level-3 {
+    font-size: 16px;
+    padding: 8px 16px;
+    opacity: 0.9;
+}
+
+.skill-tag.level-4 {
+    font-size: 18px;
+    padding: 10px 20px;
+    opacity: 0.95;
+}
+
+.skill-tag.level-5 {
+    font-size: 22px;
+    padding: 12px 24px;
+    opacity: 1;
+    font-weight: 700;
+}
+
+/* 不同顏色主題 */
+.skill-tag.theme-blue {
+    background: #273ec3;
+}
+
+.skill-tag.theme-pink {
+    background: #ea4f4f;
+}
+
+.skill-tag.theme-cyan {
+    background: #00AEEF;
+}
+
+.skill-tag.theme-green {
+    background: #5ead73;
+}
+
+.skill-tag.theme-orange {
+    background: #ffdd00;
+    color: #1E1E1E;
+}
+
+.skill-tag.theme-purple {
+    background: #273ec3;
+}
+
+/* 懸停效果 */
+.skill-tag:hover {
+    transform: scale(1.2) translateY(-5px) rotate(5deg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+/* 選中狀態 */
+.skill-tag.selected {
+    background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    transform: scale(1.15);
+    box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.3);
+}
+
+/* 技能標籤圖標 */
+.skill-tag-icon {
+    margin-right: 5px;
+    font-size: 1.1em;
+}
+
+/* 技能等級指示器 */
+.skill-level-indicator {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    color: #273ec3;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: levelPulse 2s infinite;
+}
+
+@keyframes levelPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* 互動模式 */
+.skill-cloud.interactive .skill-tag {
+    cursor: pointer;
+}
+
+.skill-cloud.interactive .skill-tag:active {
+    transform: scale(0.95);
+}
+
+/* 3D 效果 */
+.skill-cloud-container.mode-3d {
+    perspective: 1000px;
+}
+
+.skill-cloud-container.mode-3d .skill-tag {
+    transform-style: preserve-3d;
+}
+
+.skill-cloud-container.mode-3d .skill-tag:hover {
+    transform: scale(1.2) translateZ(50px) rotateY(10deg);
+}
+
+/* 標題 */
+.skill-cloud-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #273ec3;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.skill-cloud-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: #273ec3;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+
+/* 統計信息 */
+.skill-cloud-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.skill-stat {
+    text-align: center;
+}
+
+.skill-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #273ec3;
+}
+
+.skill-stat-label {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* 篩選器 */
+.skill-cloud-filter {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.skill-filter-btn {
+    padding: 8px 16px;
+    background: white;
+    border: 2px solid #273ec3;
+    color: #273ec3;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.skill-filter-btn:hover {
+    background: #273ec3;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.skill-filter-btn.active {
+    background: #273ec3;
+    color: white;
+}
+
+/* 空狀態 */
+.skill-cloud-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.skill-cloud-empty-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.skill-cloud-empty-text {
+    font-size: 16px;
+}
+
+/* 載入動畫 */
+.skill-cloud-loading {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.skill-cloud-loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(39, 62, 195, 0.2);
+    border-top-color: #273ec3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .skill-cloud-container {
+        padding: 20px;
+        min-height: 250px;
+    }
+    
+    .skill-cloud {
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .skill-tag.level-5 {
+        font-size: 18px;
+        padding: 10px 20px;
+    }
+    
+    .skill-cloud-title {
+        font-size: 20px;
+    }
+    
+    .skill-cloud-stats {
+        gap: 20px;
+    }
+    
+    .skill-stat-value {
+        font-size: 22px;
+    }
+}
+
+/* 暗色主題 */
+.skill-cloud-container.dark-theme {
+    background: #2d3436;
+}
+
+.skill-cloud-container.dark-theme .skill-cloud-title {
+    color: #f5f7fa;
+}
+
+.skill-cloud-container.dark-theme .skill-stat-label {
+    color: #b2bec3;
+}
+
+/* 動畫延遲 - 創造波浪效果 */
+.skill-tag:nth-child(1) { animation-delay: 0s; }
+.skill-tag:nth-child(2) { animation-delay: 0.1s; }
+.skill-tag:nth-child(3) { animation-delay: 0.2s; }
+.skill-tag:nth-child(4) { animation-delay: 0.3s; }
+.skill-tag:nth-child(5) { animation-delay: 0.4s; }
+.skill-tag:nth-child(6) { animation-delay: 0.5s; }
+.skill-tag:nth-child(7) { animation-delay: 0.6s; }
+.skill-tag:nth-child(8) { animation-delay: 0.7s; }
+.skill-tag:nth-child(9) { animation-delay: 0.8s; }
+.skill-tag:nth-child(10) { animation-delay: 0.9s; }
+
