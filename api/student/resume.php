@@ -102,9 +102,57 @@ function getResumeData() {
             sendError('資料庫連接失敗', 500);
         }
         
-        // 取得使用者的個人資料
+        // 先嘗試從 resumes 表取得已儲存的履歷
         $stmt = $GLOBALS['conn']->prepare("
-            SELECT sp.first_name, sp.last_name, u.email, sp.phone, sp.address, sp.bio
+            SELECT content, template
+            FROM resumes 
+            WHERE user_id = ?
+            ORDER BY updated_at DESC
+            LIMIT 1
+        ");
+        
+        if ($stmt) {
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows > 0) {
+                $resume = $result->fetch_assoc();
+                $savedData = json_decode($resume['content'], true);
+                
+                // 檢查是否有基本資料，如果基本資料是空的，則不使用已儲存的履歷
+                if ($savedData && is_array($savedData)) {
+                    $hasBasicData = !empty($savedData['basic']['name']) || 
+                                   !empty($savedData['basic']['email']) || 
+                                   !empty($savedData['basic']['phone']);
+                    
+                    if ($hasBasicData) {
+                        // 有已儲存的履歷且有基本資料，直接返回
+                        sendResponse($savedData, 200);
+                        return;
+                    }
+                    // 已儲存的履歷沒有基本資料，繼續從個人資料載入
+                }
+            }
+        }
+        
+        // 沒有已儲存的履歷，從個人資料建立基本履歷
+        $stmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                sp.first_name, 
+                sp.last_name, 
+                sp.display_name,
+                u.email, 
+                sp.phone, 
+                sp.address, 
+                sp.birth_date,
+                sp.bio, 
+                sp.school, 
+                sp.major, 
+                sp.grade,
+                sp.graduation_year,
+                sp.skills,
+                sp.student_id
             FROM student_profiles sp
             LEFT JOIN users u ON sp.user_id = u.id
             WHERE sp.user_id = ?
@@ -118,68 +166,136 @@ function getResumeData() {
         $stmt->execute();
         $result = $stmt->get_result();
         $profile = $result->fetch_assoc();
-    
-    // 取得使用者的作品集
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT id, title, description, category, tags, image_url, created_at
-        FROM portfolios 
-        WHERE user_id = ? AND is_public = 1
-        ORDER BY created_at DESC
-        LIMIT 10
-    ");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    $portfolios = [];
-    while ($row = $result->fetch_assoc()) {
-        $portfolios[] = $row;
-    }
-    
-    // 取得使用者的技能標籤（從作品集的 tags 欄位）
-    $stmt = $GLOBALS['conn']->prepare("
-        SELECT tags
-        FROM portfolios 
-        WHERE user_id = ? AND tags IS NOT NULL AND tags != ''
-        ORDER BY created_at DESC
-        LIMIT 10
-    ");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    $skills = [];
-    while ($row = $result->fetch_assoc()) {
-        if ($row['tags']) {
-            $tags = explode(',', $row['tags']);
-            foreach ($tags as $tag) {
-                $tag = trim($tag);
-                if ($tag && !in_array($tag, $skills)) {
-                    $skills[] = $tag;
+        
+        if (!$profile) {
+            // 如果找不到 student_profiles 記錄，返回空白履歷
+            $resumeData = [
+                'template' => 'executive',
+                'colorScheme' => 'blue',
+                'font' => 'modern',
+                'basic' => [
+                    'name' => '',
+                    'birthDate' => '',
+                    'email' => '',
+                    'phone' => '',
+                    'address' => '',
+                    'summary' => ''
+                ],
+                'skills' => '',
+                'experience' => [],
+                'education' => [],
+                'projects' => [],
+                'certificates' => []
+            ];
+            sendResponse($resumeData, 200);
+            return;
+        }
+        
+        // 取得使用者的作品集
+        $stmt = $GLOBALS['conn']->prepare("
+            SELECT id, title, description, tags, cover_image, created_at, status
+            FROM portfolios 
+            WHERE user_id = ? AND status = 'published'
+            ORDER BY created_at DESC
+            LIMIT 10
+        ");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $portfolios = [];
+        while ($row = $result->fetch_assoc()) {
+            $portfolios[] = [
+                'name' => $row['title'],
+                'tech' => $row['tags'] ?: '', // 使用 tags 作為技術
+                'url' => '', // portfolios 表沒有此欄位
+                'github' => '', // portfolios 表沒有此欄位
+                'description' => $row['description']
+            ];
+        }
+        
+        // 取得技能（優先使用個人資料中的 skills，如果沒有則從作品集提取）
+        $skills = [];
+        
+        // 優先使用 student_profiles 的 skills 欄位
+        if (!empty($profile['skills'])) {
+            $profileSkills = explode(',', $profile['skills']);
+            foreach ($profileSkills as $skill) {
+                $skill = trim($skill);
+                if ($skill && !in_array($skill, $skills)) {
+                    $skills[] = $skill;
                 }
             }
         }
-    }
-    
-    // 組合履歷資料
-    $resumeData = [
-        'basic' => [
-            'name' => ($profile['first_name'] ?? '') . ' ' . ($profile['last_name'] ?? ''),
-            'title' => $profile['bio'] ?? '',
-            'email' => $profile['email'] ?? '',
-            'phone' => $profile['phone'] ?? '',
-            'address' => $profile['address'] ?? '',
-            'website' => '', // 暫時設為空字串
-            'summary' => $profile['bio'] ?? ''
-        ],
-        'skills' => implode(', ', $skills),
-        'experience' => [], // 可以從其他表取得工作經驗
-        'education' => [], // 可以從其他表取得教育背景
-        'projects' => $portfolios,
-        'certificates' => [] // 可以從其他表取得證書
-    ];
-    
-    sendResponse($resumeData, 200);
+        
+        // 如果個人資料沒有技能，從作品集提取
+        if (empty($skills)) {
+            $stmt = $GLOBALS['conn']->prepare("
+                SELECT tags
+                FROM portfolios 
+                WHERE user_id = ? AND tags IS NOT NULL AND tags != ''
+                ORDER BY created_at DESC
+            ");
+            $stmt->bind_param("i", $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            while ($row = $result->fetch_assoc()) {
+                if ($row['tags']) {
+                    $tags = explode(',', $row['tags']);
+                    foreach ($tags as $tag) {
+                        $tag = trim($tag);
+                        if ($tag && !in_array($tag, $skills)) {
+                            $skills[] = $tag;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 從個人資料建立教育背景
+        $education = [];
+        if ($profile && $profile['school']) {
+            $education[] = [
+                'school' => $profile['school'],
+                'degree' => $profile['major'] ?: '',
+                'type' => '學士',
+                'year' => $profile['graduation_year'] ?: '',
+                'gpa' => '',
+                'courses' => ''
+            ];
+        }
+        
+        // 組合姓名（優先使用 display_name）
+        $fullName = '';
+        if (!empty($profile['display_name'])) {
+            $fullName = $profile['display_name'];
+        } else {
+            $fullName = trim(($profile['first_name'] ?? '') . ' ' . ($profile['last_name'] ?? ''));
+        }
+        
+        // 組合履歷資料
+        $resumeData = [
+            'template' => 'executive',
+            'colorScheme' => 'blue',
+            'font' => 'modern',
+            'basic' => [
+                'name' => $fullName ?: '',
+                'birthDate' => $profile['birth_date'] ?? '',
+                'email' => $profile['email'] ?? '',
+                'phone' => $profile['phone'] ?? '',
+                'address' => $profile['address'] ?? '',
+                'summary' => $profile['bio'] ?? ''
+            ],
+            'skills' => !empty($skills) ? implode(', ', $skills) : '',
+            'experience' => [], // 工作經驗需要使用者自己填寫
+            'education' => $education,
+            'projects' => $portfolios,
+            'certificates' => [] // 證照需要使用者自己填寫
+        ];
+        
+        sendResponse($resumeData, 200);
+        
     } catch (Exception $e) {
         sendError('取得履歷資料失敗: ' . $e->getMessage(), 500);
     }
@@ -596,6 +712,11 @@ function generateResumePDF($resumeData, $userId) {
     require_once __DIR__ . '/../../vendor/autoload.php';
     
     try {
+        // 檢查 MPDF 是否可用
+        if (!class_exists('\Mpdf\Mpdf')) {
+            throw new Exception('MPDF 類別未找到，請檢查 Composer 安裝');
+        }
+        
         // 建立 mPDF 實例
         $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
@@ -605,8 +726,19 @@ function generateResumePDF($resumeData, $userId) {
             'margin_top' => 16,
             'margin_bottom' => 16,
             'margin_header' => 9,
-            'margin_footer' => 9
+            'margin_footer' => 9,
+            'default_font' => 'dejavusans',
+            'tempDir' => sys_get_temp_dir(),
+            'allow_charset_conversion' => true,
+            'charset_in' => 'UTF-8'
         ]);
+        
+        // 設定中文字體支援
+        $mpdf->autoScriptToLang = true;
+        $mpdf->autoLangToFont = true;
+        
+        // 設定字體
+        $mpdf->SetDefaultFont('dejavusans');
         
         // 生成 HTML 內容
         $html = generateResumeHTML($resumeData);
@@ -638,38 +770,71 @@ function generateResumePDF($resumeData, $userId) {
 
 // 生成履歷 HTML 內容
 function generateResumeHTML($resumeData) {
-    $template = $resumeData['template'] ?? 'modern';
+    $template = $resumeData['template'] ?? 'executive';
+    $colorScheme = $resumeData['colorScheme'] ?? 'blue';
+    $font = $resumeData['font'] ?? 'modern';
+    
+    // 配色方案
+    $colors = [
+        'blue' => ['primary' => '#2563eb', 'secondary' => '#1e40af', 'text' => '#1e293b'],
+        'slate' => ['primary' => '#334155', 'secondary' => '#1e293b', 'text' => '#0f172a'],
+        'emerald' => ['primary' => '#059669', 'secondary' => '#047857', 'text' => '#064e3b'],
+        'purple' => ['primary' => '#7c3aed', 'secondary' => '#6d28d9', 'text' => '#4c1d95']
+    ];
+    
+    $currentColor = $colors[$colorScheme] ?? $colors['blue'];
+    
+    // 字型 - 使用 MPDF 支援的字體
+    $fonts = [
+        'traditional' => 'dejavuserif',
+        'modern' => 'dejavusans',
+        'elegant' => 'dejavuserif',
+        'tech' => 'dejavusans'
+    ];
+    
+    $currentFont = $fonts[$font] ?? $fonts['modern'];
     
     $css = '
         body { 
-            font-family: "Microsoft YaHei", "微軟正黑體", "Helvetica Neue", Arial, sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
+            font-family: ' . $currentFont . ', "DejaVu Sans", sans-serif; 
+            line-height: 1.7; 
+            color: ' . $currentColor['text'] . '; 
             margin: 0; 
             padding: 20px;
         }
-        h1 { font-size: 28px; margin: 0 0 10px 0; color: #2d3748; }
-        h2 { font-size: 18px; margin: 20px 0 10px 0; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 5px; }
-        h3 { font-size: 16px; margin: 10px 0 5px 0; color: #2d3748; }
+        h1 { font-size: 28px; margin: 0 0 10px 0; color: ' . $currentColor['text'] . '; font-weight: 700; }
+        h2 { 
+            font-size: 16px; 
+            margin: 20px 0 10px 0; 
+            color: ' . $currentColor['primary'] . '; 
+            border-left: 4px solid ' . $currentColor['primary'] . '; 
+            padding-left: 10px; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        h3 { font-size: 15px; margin: 10px 0 5px 0; color: ' . $currentColor['text'] . '; font-weight: 600; }
         p { margin: 5px 0; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #667eea; padding-bottom: 15px; }
-        .subtitle { font-size: 16px; color: #667eea; margin: 5px 0; }
-        .contact-info { font-size: 12px; color: #718096; margin: 10px 0; }
+        .header { border-bottom: 3px solid ' . $currentColor['primary'] . '; padding-bottom: 15px; margin-bottom: 25px; }
+        .subtitle { font-size: 15px; color: ' . $currentColor['primary'] . '; margin: 5px 0; font-weight: 500; }
+        .contact-info { font-size: 11px; color: #64748b; margin: 10px 0 0 0; }
         .section { margin-bottom: 20px; }
-        .item { margin-bottom: 15px; }
-        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .company { color: #667eea; font-weight: 600; }
-        .period { color: #718096; font-size: 12px; }
+        .item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; }
+        .item-header { margin-bottom: 5px; }
+        .item-title { font-size: 15px; font-weight: 600; color: ' . $currentColor['text'] . '; }
+        .item-period { color: #64748b; font-size: 11px; margin-left: 10px; }
+        .company { color: ' . $currentColor['secondary'] . '; font-weight: 500; font-size: 13px; }
         .skill-tag { 
             display: inline-block;
-            background: #667eea; 
+            background: ' . $currentColor['primary'] . '; 
             color: white; 
-            padding: 3px 10px; 
-            border-radius: 12px; 
-            font-size: 12px;
+            padding: 4px 12px; 
+            border-radius: 4px; 
+            font-size: 11px;
             margin: 3px;
+            font-weight: 500;
         }
-        .description { color: #4a5568; font-size: 13px; line-height: 1.5; }
+        .description { color: #475569; font-size: 12px; line-height: 1.7; text-align: justify; }
     ';
     
     $html = '<!DOCTYPE html>
@@ -682,18 +847,22 @@ function generateResumeHTML($resumeData) {
     
     // 基本資料
     $html .= '<div class="header">';
-    $html .= '<h1>' . htmlspecialchars($resumeData['basic']['name'] ?? '') . '</h1>';
-    $html .= '<div class="subtitle">' . htmlspecialchars($resumeData['basic']['title'] ?? '') . '</div>';
+    $html .= '<h1>' . htmlspecialchars($resumeData['basic']['name'] ?? '您的姓名') . '</h1>';
     $html .= '<div class="contact-info">';
+    $contactParts = [];
     if (!empty($resumeData['basic']['email'])) {
-        $html .= '📧 ' . htmlspecialchars($resumeData['basic']['email']) . ' ';
+        $contactParts[] = '<strong>Email:</strong> ' . htmlspecialchars($resumeData['basic']['email']);
     }
     if (!empty($resumeData['basic']['phone'])) {
-        $html .= '📱 ' . htmlspecialchars($resumeData['basic']['phone']) . ' ';
+        $contactParts[] = '<strong>電話:</strong> ' . htmlspecialchars($resumeData['basic']['phone']);
+    }
+    if (!empty($resumeData['basic']['birthDate'])) {
+        $contactParts[] = '<strong>生日:</strong> ' . htmlspecialchars($resumeData['basic']['birthDate']);
     }
     if (!empty($resumeData['basic']['address'])) {
-        $html .= '📍 ' . htmlspecialchars($resumeData['basic']['address']);
+        $contactParts[] = '<strong>地址:</strong> ' . htmlspecialchars($resumeData['basic']['address']);
     }
+    $html .= implode(' &nbsp;|&nbsp; ', $contactParts);
     $html .= '</div></div>';
     
     // 個人簡介
@@ -707,14 +876,14 @@ function generateResumeHTML($resumeData) {
     // 工作經驗
     if (!empty($resumeData['experience']) && count($resumeData['experience']) > 0) {
         $html .= '<div class="section">';
-        $html .= '<h2>工作經驗</h2>';
+        $html .= '<h2>專業經驗</h2>';
         foreach ($resumeData['experience'] as $exp) {
             $html .= '<div class="item">';
             $html .= '<div class="item-header">';
-            $html .= '<h3>' . htmlspecialchars($exp['position'] ?? '') . '</h3>';
-            $html .= '<span class="period">' . htmlspecialchars($exp['startDate'] ?? '') . ' - ' . htmlspecialchars($exp['endDate'] ?? '') . '</span>';
+            $html .= '<span class="item-title">' . htmlspecialchars($exp['position'] ?? '職位名稱') . '</span>';
+            $html .= '<span class="item-period">' . htmlspecialchars($exp['startDate'] ?? '') . ' - ' . htmlspecialchars($exp['endDate'] ?? '') . '</span>';
             $html .= '</div>';
-            $html .= '<p class="company">' . htmlspecialchars($exp['company'] ?? '') . '</p>';
+            $html .= '<p class="company">' . htmlspecialchars($exp['company'] ?? '公司名稱') . '</p>';
             $html .= '<p class="description">' . nl2br(htmlspecialchars($exp['description'] ?? '')) . '</p>';
             $html .= '</div>';
         }
@@ -728,16 +897,15 @@ function generateResumeHTML($resumeData) {
         foreach ($resumeData['education'] as $edu) {
             $html .= '<div class="item">';
             $html .= '<div class="item-header">';
-            $html .= '<h3>' . htmlspecialchars($edu['degree'] ?? '') . '</h3>';
-            $html .= '<span class="period">' . htmlspecialchars($edu['year'] ?? '') . '</span>';
+            $html .= '<span class="item-title">' . htmlspecialchars($edu['degree'] ?? '學位') . ' - ' . htmlspecialchars($edu['type'] ?? '') . '</span>';
+            $html .= '<span class="item-period">' . htmlspecialchars($edu['year'] ?? '') . '</span>';
             $html .= '</div>';
-            $html .= '<p class="company">' . htmlspecialchars($edu['school'] ?? '') . '</p>';
+            $html .= '<p class="company">' . htmlspecialchars($edu['school'] ?? '學校名稱') . '</p>';
             if (!empty($edu['gpa'])) {
-                $html .= '<p class="description">GPA: ' . htmlspecialchars($edu['gpa']);
-                if (!empty($edu['courses'])) {
-                    $html .= ' | 相關課程: ' . htmlspecialchars($edu['courses']);
-                }
-                $html .= '</p>';
+                $html .= '<p class="description">GPA: ' . htmlspecialchars($edu['gpa']) . '</p>';
+            }
+            if (!empty($edu['courses'])) {
+                $html .= '<p class="description"><strong>主要課程:</strong> ' . htmlspecialchars($edu['courses']) . '</p>';
             }
             $html .= '</div>';
         }
@@ -762,19 +930,23 @@ function generateResumeHTML($resumeData) {
     // 專案作品
     if (!empty($resumeData['projects']) && count($resumeData['projects']) > 0) {
         $html .= '<div class="section">';
-        $html .= '<h2>專案作品</h2>';
+        $html .= '<h2>專案經歷</h2>';
         foreach ($resumeData['projects'] as $project) {
             $html .= '<div class="item">';
-            $html .= '<h3>' . htmlspecialchars($project['name'] ?? '') . '</h3>';
-            $html .= '<p class="company">' . htmlspecialchars($project['tech'] ?? '') . '</p>';
+            $html .= '<div class="item-header">';
+            $html .= '<span class="item-title">' . htmlspecialchars($project['name'] ?? '專案名稱') . '</span>';
+            $html .= '</div>';
+            if (!empty($project['tech'])) {
+                $html .= '<p class="company"><strong>技術:</strong> ' . htmlspecialchars($project['tech']) . '</p>';
+            }
             $html .= '<p class="description">' . nl2br(htmlspecialchars($project['description'] ?? '')) . '</p>';
             if (!empty($project['url']) || !empty($project['github'])) {
-                $html .= '<p class="description" style="font-size: 11px;">';
+                $html .= '<p class="description" style="font-size: 10px; color: #64748b;">';
                 if (!empty($project['url'])) {
-                    $html .= '🌐 ' . htmlspecialchars($project['url']) . ' ';
+                    $html .= '🔗 專案連結: ' . htmlspecialchars($project['url']) . ' &nbsp;&nbsp;';
                 }
                 if (!empty($project['github'])) {
-                    $html .= '📁 ' . htmlspecialchars($project['github']);
+                    $html .= '💻 GitHub: ' . htmlspecialchars($project['github']);
                 }
                 $html .= '</p>';
             }
@@ -786,14 +958,14 @@ function generateResumeHTML($resumeData) {
     // 證照獎項
     if (!empty($resumeData['certificates']) && count($resumeData['certificates']) > 0) {
         $html .= '<div class="section">';
-        $html .= '<h2>證照獎項</h2>';
+        $html .= '<h2>證照與獎項</h2>';
         foreach ($resumeData['certificates'] as $cert) {
             $html .= '<div class="item">';
             $html .= '<div class="item-header">';
-            $html .= '<h3>' . htmlspecialchars($cert['name'] ?? '') . '</h3>';
-            $html .= '<span class="period">' . htmlspecialchars($cert['date'] ?? '') . '</span>';
+            $html .= '<span class="item-title">' . htmlspecialchars($cert['name'] ?? '證照名稱') . '</span>';
+            $html .= '<span class="item-period">' . htmlspecialchars($cert['date'] ?? '') . '</span>';
             $html .= '</div>';
-            $html .= '<p class="company">' . htmlspecialchars($cert['issuer'] ?? '') . '</p>';
+            $html .= '<p class="company">' . htmlspecialchars($cert['issuer'] ?? '發證機構') . '</p>';
             if (!empty($cert['expiry'])) {
                 $html .= '<p class="description">有效期限: ' . htmlspecialchars($cert['expiry']) . '</p>';
             }

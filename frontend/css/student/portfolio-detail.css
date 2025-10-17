@@ -20,29 +20,7 @@
     padding: 0;
 }
 
-.btn-back {
-    background: var(--primary-color);
-    border: 1px solid var(--primary-600);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.btn-back:hover {
-    background: var(--primary-600);
-    border-color: var(--primary-700);
-    transform: translateY(-2px);
-}
-
-.btn-back i {
-    font-size: 0.8rem;
-}
+/* 返回按鈕樣式已統一定義於 app.css */
 
 .detail-header {
     background: #eef2ff; /* 改為純色，移除漸層 */

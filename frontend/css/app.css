@@ -1277,3 +1277,31 @@ input[type="date"]:focus {
         font-size: 10px;
     }
 }
+
+/* ==================== 全局返回按鈕樣式 ==================== */
+/* 統一設計：白色背景、淡灰邊框、懸停效果、向左平移動畫 */
+.btn-back {
+    background: white !important;
+    border: 2px solid #e2e8f0 !important;
+    color: #475569 !important;
+    padding: 0.625rem 1.25rem !important;
+    border-radius: 10px !important;
+    cursor: pointer;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-back:hover {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+    transform: translateX(-2px) !important;
+}
+
+.btn-back i {
+    font-size: 0.85rem !important;
+}

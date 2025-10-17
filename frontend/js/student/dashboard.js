@@ -48,6 +48,14 @@ async function loadDashboardData() {
         // 從 localStorage 獲取使用者資訊
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!user || !user.id) {
+            throw new Error('使用者未登入');
+        }
+        
+        // 載入履歷狀態
+        await loadResumeStatus(user.id);
+        
+        // 載入其他資料
+        if (!user || !user.id) {
             throw new Error('無法獲取使用者資訊，請重新登入');
         }
         const userId = user.id;
@@ -448,4 +456,4 @@ function getNotificationIcon(type) {
 }
 
 // 全域函數，供 HTML 呼叫
-window.loadDashboardData = loadDashboardData; 
+window.loadDashboardData = loadDashboardData;
