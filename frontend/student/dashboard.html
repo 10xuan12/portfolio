@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="../css/favorites-system.css">
     <link rel="stylesheet" href="../css/card-3d-flip.css">
     <link rel="stylesheet" href="../css/share-card-generator.css">
+    <link rel="stylesheet" href="../css/skill-radar.css">
+    <link rel="stylesheet" href="../css/portfolio-timeline.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // 設定學生端主題
         document.addEventListener('DOMContentLoaded', function() {
@@ -126,6 +130,32 @@
                     <h2>我的技能</h2>
                     <div id="studentSkillCloud"></div>
                     
+                    <!-- 技能雷達圖 -->
+                    <div class="skill-radar-section" style="margin-top: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h2 style="margin: 0;">技能分析</h2>
+                            <a href="skill-radar-demo.html" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-chart-radar"></i> 查看詳細分析
+                            </a>
+                        </div>
+                        <div id="skillRadarPreview" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <!-- 技能雷達圖預覽將在這裡載入 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 作品時光機 -->
+                    <div class="portfolio-timeline-section" style="margin-top: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h2 style="margin: 0;">學習成長歷程</h2>
+                            <a href="portfolio-timeline-demo.html" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-history"></i> 查看完整時光機
+                            </a>
+                        </div>
+                        <div id="portfolioTimelinePreview" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <!-- 作品時光機預覽將在這裡載入 -->
+                        </div>
+                    </div>
+
                     <h2 style="margin-top: 30px;">我的作品</h2>
                     <div class="portfolio-grid" id="portfolio-grid">
                         <!-- 作品將由 JavaScript 動態載入 -->
@@ -183,6 +213,9 @@
     <script src="../js/favorites-system.js"></script>
     <script src="../js/card-3d-flip.js"></script>
     <script src="../js/share-card-generator.js"></script>
+    <!-- 新功能腳本 -->
+    <script src="../js/skill-radar-generator.js"></script>
+    <script src="../js/portfolio-timeline.js"></script>
 
     <script src="../js/config.js?v=20250829-1"></script>
     <script>
@@ -205,7 +238,7 @@
         
         function loadRemainingScripts() {
             // 動態載入其他腳本
-            const v = '20250908-2';
+            const v = '20251020-1';
             const scripts = [
                 `../js/api-service.js?v=${v}`,
                 `../js/app.js?v=${v}`,
@@ -280,6 +313,12 @@
         function initializeNewFeatures() {
             // 初始化技能標籤雲
             initStudentSkillCloud();
+            
+            // 初始化技能雷達圖預覽
+            initSkillRadarPreview();
+            
+            // 初始化作品時光機預覽
+            initPortfolioTimelinePreview();
             
             // 顯示歡迎通知
             setTimeout(() => {
@@ -585,6 +624,125 @@
             const month = String(time.getMonth() + 1).padStart(2, '0');
             const day = String(time.getDate()).padStart(2, '0');
             return `${year}/${month}/${day}`;
+        }
+        
+        // 初始化技能雷達圖預覽
+        async function initSkillRadarPreview() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const studentId = user.id || 5; // 預設使用學生ID 5
+                
+                const response = await fetch(`/portfolio/api/student/skill-analysis.php?action=get_skill_analysis&student_id=${studentId}`);
+                const data = await response.json();
+                
+                if (data.success && data.data.radarChartData) {
+                    const previewContainer = document.getElementById('skillRadarPreview');
+                    previewContainer.innerHTML = `
+                        <div style="text-align: center;">
+                            <canvas id="skillRadarPreviewChart" width="300" height="200"></canvas>
+                            <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                                基於您的作品分析技能分佈
+                            </p>
+                        </div>
+                    `;
+                    
+                    const ctx = document.getElementById('skillRadarPreviewChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'radar',
+                        data: data.data.radarChartData,
+                        options: {
+                            responsive: false,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                r: {
+                                    suggestedMin: 0,
+                                    suggestedMax: 100,
+                                    pointLabels: { font: { size: 10 } }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    document.getElementById('skillRadarPreview').innerHTML = `
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            <i class="fas fa-chart-radar" style="font-size: 48px; margin-bottom: 10px; opacity: 0.3;"></i>
+                            <p>暫無技能分析資料</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('載入技能雷達圖預覽失敗:', error);
+                document.getElementById('skillRadarPreview').innerHTML = `
+                    <div style="text-align: center; color: #999; padding: 20px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <p>載入技能分析中...</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 初始化作品時光機預覽
+        async function initPortfolioTimelinePreview() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const studentId = user.id || 5; // 預設使用學生ID 5
+                
+                const response = await fetch(`/portfolio/api/student/portfolio.php?action=list&user_id=${studentId}`);
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    const portfolios = data.data.slice(0, 3); // 只顯示最近3個作品
+                    const previewContainer = document.getElementById('portfolioTimelinePreview');
+                    
+                    let timelineHtml = '<div class="timeline-preview">';
+                    portfolios.forEach((portfolio, index) => {
+                        const date = new Date(portfolio.published_at);
+                        const year = date.getFullYear();
+                        const month = date.getMonth() + 1;
+                        const day = date.getDate();
+                        
+                        timelineHtml += `
+                            <div class="timeline-item-preview" style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                                <div class="timeline-dot-preview" style="width: 12px; height: 12px; background: #007bff; border-radius: 50%; margin-right: 15px; flex-shrink: 0;"></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 12px; color: #666; margin-bottom: 2px;">${year}/${month}/${day}</div>
+                                    <div style="font-weight: 500; font-size: 14px; margin-bottom: 2px;">${portfolio.title}</div>
+                                    <div style="font-size: 12px; color: #888;">${portfolio.description.substring(0, 50)}...</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    timelineHtml += '</div>';
+                    
+                    if (data.data.length > 3) {
+                        timelineHtml += `
+                            <div style="text-align: center; margin-top: 10px;">
+                                <small style="color: #666;">還有 ${data.data.length - 3} 個作品...</small>
+                            </div>
+                        `;
+                    }
+                    
+                    previewContainer.innerHTML = timelineHtml;
+                } else {
+                    document.getElementById('portfolioTimelinePreview').innerHTML = `
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            <i class="fas fa-history" style="font-size: 48px; margin-bottom: 10px; opacity: 0.3;"></i>
+                            <p>暫無作品歷程</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('載入作品時光機預覽失敗:', error);
+                document.getElementById('portfolioTimelinePreview').innerHTML = `
+                    <div style="text-align: center; color: #999; padding: 20px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <p>載入作品歷程中...</p>
+                    </div>
+                `;
+            }
         }
     </script>
     

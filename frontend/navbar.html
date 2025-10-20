@@ -2,19 +2,34 @@
 <template id="navbar-student">
 <nav class="navbar">
     <div class="container">
-        <div class="navbar-brand">
-            <a href="../index.html" class="navbar-logo">
-                <i class="fas fa-briefcase"></i>
-                <span>Portfolio+</span>
-            </a>
-        </div>
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
         <div class="navbar-menu">
             <a href="dashboard.html" class="nav-link">個人主頁</a>
             <a href="portfolio.html" class="nav-link">作品集</a>
             <a href="resume.html" class="nav-link">履歷</a>
             <a href="upload.html" class="nav-link">上傳作品</a>
+            
             <a href="messages.html" class="nav-link">訊息中心</a>
             <a href="profile.html" class="nav-link">個人資料</a>
+            <div class="nav-dropdown">
+                <a href="#" class="nav-link dropdown-toggle">
+                    <i class="fas fa-chart-radar"></i> 分析工具
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="skill-radar-demo.html" class="dropdown-item">
+                        <i class="fas fa-chart-radar"></i> 技能雷達圖
+                    </a>
+                    <a href="portfolio-timeline-demo.html" class="dropdown-item">
+                        <i class="fas fa-history"></i> 作品時光機
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="navbar-actions">
             <a href="../index.html" class="btn btn-outline">返回首頁</a>
@@ -36,6 +51,8 @@
         <div class="navbar-menu">
             <a href="dashboard.html" class="nav-link">企業主頁</a>
             <a href="portfolios.html" class="nav-link">瀏覽作品</a>
+            <a href="portfolio-comparison-demo.html" class="nav-link">作品對比</a>
+            </a>
             <a href="jobs.html" class="nav-link">職缺管理</a>
             <a href="profile.html" class="nav-link">企業資料</a>
         </div>
@@ -73,12 +90,12 @@
 <template id="navbar-visitor">
 <nav class="navbar">
     <div class="container">
-        <div class="navbar-brand">
-            <a href="../index.html" class="navbar-logo">
-                <i class="fas fa-briefcase"></i>
-                <span>Portfolio+</span>
-            </a>
-        </div>
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
         <div class="navbar-menu">
             <a href="#features" class="nav-link">特色</a>
             <a href="#how-it-works" class="nav-link">如何使用</a>

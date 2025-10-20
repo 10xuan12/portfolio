@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技能雷達圖分析 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="../css/skill-radar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="../index.html" class="nav-link">首頁</a>
+                <a href="dashboard.html" class="nav-link">儀表板</a>
+                <a href="portfolio.html" class="nav-link">作品集</a>
+                <a href="profile.html" class="nav-link">個人資料</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="settings.html" class="btn btn-outline">設定</a>
+                <a href="../login.html" class="btn btn-primary">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="skill-radar-main">
+        <div class="container">
+            <!-- 頁面標題 -->
+            <div class="page-header">
+                <div class="header-content">
+                    <div class="title-section">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-radar"></i>
+                            技能雷達圖分析
+                        </h1>
+                        <p class="page-subtitle">基於您的作品自動生成技能分析雷達圖，幫助您了解自己的技能分布</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="refreshAnalysis()">
+                            <i class="fas fa-sync-alt"></i>
+                            重新分析
+                        </button>
+                        <button class="btn btn-primary" onclick="exportRadarChart()">
+                            <i class="fas fa-download"></i>
+                            匯出圖表
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能雷達圖容器 -->
+            <div class="skill-radar-grid">
+                <div class="radar-chart-section">
+                    <div class="section-header">
+                        <h2>技能分析雷達圖</h2>
+                        <p>基於您的作品內容自動分析技能強度</p>
+                    </div>
+                    <div class="chart-container">
+                        <div class="skill-radar-loading" id="loadingState">
+                            <div class="loading-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
+                            <p>正在分析您的技能...</p>
+                        </div>
+                        <div id="skillRadarChart"></div>
+                    </div>
+                </div>
+                
+                <div class="skill-details-section">
+                    <div class="section-header">
+                        <h2>技能詳細分析</h2>
+                        <p>各項技能的具體表現與建議</p>
+                    </div>
+                    <div class="skill-breakdown" id="skillBreakdown">
+                        <!-- 技能詳細分析將在這裡渲染 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul>
+                        <li><a href="../index.html">首頁</a></li>
+                        <li><a href="dashboard.html">儀表板</a></li>
+                        <li><a href="portfolio.html">作品集</a></li>
+                        <li><a href="profile.html">個人資料</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>功能</h4>
+                    <ul>
+                        <li><a href="skill-radar-demo.html">技能雷達圖</a></li>
+                        <li><a href="portfolio-timeline-demo.html">作品時光機</a></li>
+                        <li><a href="resume.html">履歷生成</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/skill-radar-generator.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化技能雷達圖
+            new SkillRadarGenerator('skillRadarChart', 5);
+        });
+
+        function refreshAnalysis() {
+            // 重新載入分析
+            location.reload();
+        }
+
+        function exportRadarChart() {
+            // 匯出圖表功能
+            const canvas = document.querySelector('#skillRadarChart canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = 'skill-radar-chart.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        }
+    </script>
+</body>
+</html>

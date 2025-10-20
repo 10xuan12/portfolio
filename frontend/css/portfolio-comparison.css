@@ -1,0 +1,911 @@
+/* 作品對比工具樣式 - 履歷風格 */
+
+/* 主要容器 */
+.comparison-main {
+    padding: 2rem 0;
+    background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+/* 頁面標題 */
+.page-header {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.title-section {
+    flex: 1;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.title-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.comparison-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    position: relative;
+}
+
+.comparison-icon::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 4px;
+    top: 6px;
+    left: 6px;
+}
+
+.comparison-icon::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 4px;
+    bottom: 6px;
+    right: 6px;
+}
+
+.page-subtitle {
+    color: #64748b;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* 按鈕樣式 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.btn-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.clear-icon {
+    background: linear-gradient(45deg, #ef4444, #dc2626);
+    position: relative;
+}
+
+.clear-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 2px;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.clear-icon::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 2px;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.export-icon {
+    background: linear-gradient(45deg, #f59e0b, #d97706);
+    position: relative;
+}
+
+.export-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 2px;
+    top: 2px;
+    left: 2px;
+}
+
+.export-icon::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid white;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* 對比容器 */
+.comparison-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* 作品選擇區域 */
+.portfolio-selection {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+}
+
+.selection-header {
+    margin-bottom: 2rem;
+}
+
+.selection-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.selection-header p {
+    color: #64748b;
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* 篩選器 */
+.selection-filters {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.filter-group select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #374151;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* 作品網格 */
+.portfolio-grid,
+.student-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.5rem !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+}
+
+.portfolio-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 2px solid #f0f0f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: auto !important;
+}
+
+.portfolio-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #7c3aed, #4A90E2);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.portfolio-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: #7c3aed;
+}
+
+.portfolio-card:hover::before {
+    transform: scaleX(1);
+}
+
+.portfolio-card.selected {
+    border-color: #7c3aed;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.portfolio-card.selected::before {
+    transform: scaleX(1);
+}
+
+.portfolio-card.selected::after {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portfolio-card.selected::after {
+    content: '✓';
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.portfolio-thumbnail {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.portfolio-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.portfolio-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.portfolio-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.portfolio-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.portfolio-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.category-icon {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 2px;
+    position: relative;
+}
+
+.category-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(45deg, #7c3aed, #4A90E2);
+    border-radius: 1px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.portfolio-stats {
+    display: flex;
+    gap: 1rem;
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+.portfolio-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat-icon {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: linear-gradient(45deg, #7c3aed, #4A90E2);
+}
+
+/* 對比結果區域 */
+.comparison-results {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.results-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.selected-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* 標籤頁 */
+.comparison-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: #7c3aed;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.tab-btn.active {
+    color: #7c3aed;
+    border-bottom-color: #7c3aed;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.tab-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: linear-gradient(45deg, #7c3aed, #4A90E2);
+}
+
+.overview-icon {
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+}
+
+.skills-icon {
+    background: linear-gradient(45deg, #10b981, #059669);
+}
+
+.portfolio-icon {
+    background: linear-gradient(45deg, #f59e0b, #d97706);
+}
+
+/* 標籤內容 */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 圖表容器 */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    border: 2px dashed #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comparison-chart .chart-container {
+    height: 250px;
+    max-width: 500px;
+}
+
+/* 對比摘要 */
+.comparison-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.summary-card p {
+    color: #64748b;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* 技能對比 */
+.skills-comparison {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.skills-radar-container {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.skills-breakdown {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.skills-table {
+    overflow-x: auto;
+}
+
+.skills-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.skills-table th,
+.skills-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.skills-table th {
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    color: white;
+    font-weight: 600;
+}
+
+.skills-table tr:hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+/* 額外的圖標樣式 */
+.view-icon {
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+}
+
+.like-icon {
+    background: linear-gradient(45deg, #ef4444, #dc2626);
+}
+
+/* 無資料狀態 */
+.no-data-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #64748b;
+}
+
+.no-data-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    position: relative;
+}
+
+.no-data-icon::before {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #94a3b8;
+    border-radius: 50%;
+    border-top-color: transparent;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 2s linear infinite;
+}
+
+.no-data-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.no-data-state p {
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+}
+
+/* 作品詳情卡片 */
+.portfolios-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.portfolio-detail-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.portfolio-detail-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.detail-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.detail-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.detail-content p {
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+}
+
+.detail-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.detail-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+    }
+    
+    .header-actions {
+        justify-content: flex-start;
+    }
+    
+    .portfolio-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .selection-filters {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .comparison-tabs {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 1.5rem;
+    }
+    
+    .portfolio-selection,
+    .comparison-results {
+        padding: 1.5rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .title-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .portfolio-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+    .portfolio-grid,
+    .student-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .portfolio-grid,
+    .student-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+    
+    .portfolio-card {
+        padding: 1rem;
+    }
+    
+    .portfolio-thumbnail {
+        height: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .comparison-main {
+        padding: 1rem 0;
+    }
+    
+    .page-header {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .portfolio-selection,
+    .comparison-results {
+        padding: 1rem;
+    }
+    
+    .portfolio-grid,
+    .student-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+    
+    .portfolio-card {
+        padding: 1rem;
+        aspect-ratio: 1.2;
+    }
+    
+    .portfolio-thumbnail {
+        height: 100px;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .comparison-chart .chart-container {
+        height: 200px;
+    }
+}

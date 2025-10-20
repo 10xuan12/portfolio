@@ -21,6 +21,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 case 'bookmarks':
                     getBookmarks();
                     break;
+                case 'get_all_published_portfolios':
+                    getAllPublishedPortfolios();
+                    break;
                 default:
                     sendError('無效的操作', 400);
             }
@@ -618,4 +621,70 @@ function calculateMatchScore($portfolio, $query, $skills, $department, $grade) {
     $score += min($portfolio['like_count'] / 10, 10);
     
     return min($score, 100);
+}
+
+// 取得所有已發布的作品（用於對比功能）
+function getAllPublishedPortfolios() {
+    $userId = checkPermission('enterprise');
+    
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
+    $category = isset($_GET['category']) ? $_GET['category'] : '';
+    $skillLevel = isset($_GET['skill_level']) ? $_GET['skill_level'] : '';
+    
+    // 建立查詢條件
+    $where = "WHERE p.status = 'published'";
+    $params = [];
+    $types = '';
+    
+    if ($category) {
+        $where .= " AND (c.slug = ? OR c.name = ?)";
+        $params[] = $category;
+        $params[] = $category;
+        $types .= "ss";
+    }
+    
+    // 查詢作品列表
+    $stmt = $GLOBALS['conn']->prepare("
+        SELECT 
+            p.id, p.title, p.description, p.cover_image, p.status,
+            p.view_count, p.like_count, p.comment_count, p.download_count,
+            p.is_featured, p.published_at, p.created_at, p.tags,
+            c.name as category_name, c.slug as category_slug, c.color as category_color,
+            sp.first_name, sp.last_name, sp.display_name, sp.avatar_url,
+            sp.major, sp.school, sp.grade, sp.skills,
+            u.username, u.id AS student_id
+        FROM portfolios p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN student_profiles sp ON u.id = sp.user_id
+        $where
+        ORDER BY p.is_featured DESC, p.view_count DESC, p.published_at DESC
+        LIMIT ?
+    ");
+    
+    $params[] = $limit;
+    $types .= "i";
+    
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $portfolios = $result->fetch_all(MYSQLI_ASSOC);
+    
+    // 處理資料
+    foreach ($portfolios as &$portfolio) {
+        $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
+        $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
+        $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
+        
+        // 處理封面圖片路徑
+        $coverImage = $portfolio['cover_image'];
+        if (!empty($coverImage) && strpos($coverImage, '/portfolio/') !== 0 && strpos($coverImage, 'http') !== 0) {
+            $coverImage = '/portfolio/' . ltrim($coverImage, '/');
+        }
+        $portfolio['cover_image'] = $coverImage;
+    }
+    
+    sendResponse($portfolios, 200, '取得所有已發布作品成功');
 }

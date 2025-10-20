@@ -455,5 +455,27 @@ function getNotificationIcon(type) {
     return iconMap[type] || 'fa-bell';
 }
 
+/**
+ * 載入履歷狀態
+ */
+async function loadResumeStatus(userId) {
+    try {
+        // 檢查履歷狀態的 API 呼叫
+        if (typeof apiService !== 'undefined' && apiService.getResumeStatus) {
+            const resumeStatus = await apiService.getResumeStatus(userId);
+            console.log('履歷狀態:', resumeStatus);
+            return resumeStatus;
+        } else {
+            // 如果沒有 API 服務，返回預設狀態
+            console.log('履歷狀態: 未初始化');
+            return { hasResume: false, status: 'not_created' };
+        }
+    } catch (error) {
+        console.warn('載入履歷狀態失敗:', error);
+        return { hasResume: false, status: 'error' };
+    }
+}
+
 // 全域函數，供 HTML 呼叫
 window.loadDashboardData = loadDashboardData;
+window.loadResumeStatus = loadResumeStatus;

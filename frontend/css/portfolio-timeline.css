@@ -1,0 +1,825 @@
+/* 作品時光機樣式 - 履歷風格 */
+
+/* 主要容器 */
+.timeline-main {
+    padding: 2rem 0;
+    background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+/* 頁面標題 */
+.page-header {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.title-section {
+    flex: 1;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.title-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.timeline-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    position: relative;
+}
+
+.timeline-icon::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 3px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    animation: spin 3s linear infinite;
+}
+
+.timeline-icon::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    top: 8px;
+    left: 8px;
+}
+
+.page-subtitle {
+    color: #64748b;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* 按鈕樣式 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.btn-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.refresh-icon {
+    background: linear-gradient(45deg, #10b981, #059669);
+    position: relative;
+}
+
+.refresh-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 1s linear infinite;
+}
+
+.export-icon {
+    background: linear-gradient(45deg, #f59e0b, #d97706);
+    position: relative;
+}
+
+.export-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 2px;
+    top: 2px;
+    left: 2px;
+}
+
+.export-icon::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid white;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* 時光機容器 */
+.timeline-container {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+}
+
+/* 時光機統計 */
+.timeline-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.growth-icon {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    position: relative;
+}
+
+.growth-icon::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 4px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.growth-icon::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+    border-radius: 2px;
+    top: 6px;
+    left: 6px;
+}
+
+.time-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    position: relative;
+}
+
+.time-icon::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.time-icon::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 8px;
+    background: white;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.progress-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    position: relative;
+}
+
+.progress-icon::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 4px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.progress-icon::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(45deg, #10b981, #059669);
+    border-radius: 2px;
+    top: 6px;
+    left: 6px;
+}
+
+.stat-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+}
+
+.stat-content p {
+    color: #64748b;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* 時光機內容 */
+.timeline-content {
+    margin-top: 2rem;
+}
+
+/* 篩選器 */
+.timeline-filters {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.filter-group select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #374151;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* 時光機包裝器 */
+.timeline-wrapper {
+    position: relative;
+    min-height: 400px;
+}
+
+/* 載入狀態 */
+.timeline-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    color: #64748b;
+}
+
+.loading-spinner {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+}
+
+.spinner-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+}
+
+.spinner-ring:nth-child(1) {
+    border-top-color: #7c3aed;
+    animation-delay: 0s;
+}
+
+.spinner-ring:nth-child(2) {
+    border-right-color: #4A90E2;
+    animation-delay: -0.5s;
+    width: 45px;
+    height: 45px;
+    top: 7.5px;
+    left: 7.5px;
+}
+
+.spinner-ring:nth-child(3) {
+    border-bottom-color: #10b981;
+    animation-delay: -1s;
+    width: 30px;
+    height: 30px;
+    top: 15px;
+    left: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 時間軸 */
+.timeline {
+    position: relative;
+    padding: 2rem 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 2rem;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #7c3aed, #4A90E2, #10b981);
+    border-radius: 2px;
+}
+
+/* 時間軸項目 */
+.timeline-item {
+    position: relative;
+    margin-bottom: 3rem;
+    padding-left: 5rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 1.25rem;
+    top: 1rem;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border: 3px solid #7c3aed;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.timeline-item:nth-child(even)::before {
+    border-color: #4A90E2;
+}
+
+.timeline-item:nth-child(3n)::before {
+    border-color: #10b981;
+}
+
+.timeline-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.timeline-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #7c3aed, #4A90E2);
+}
+
+.timeline-item:nth-child(even) .timeline-card::before {
+    background: linear-gradient(90deg, #4A90E2, #10b981);
+}
+
+.timeline-item:nth-child(3n) .timeline-card::before {
+    background: linear-gradient(90deg, #10b981, #f59e0b);
+}
+
+.timeline-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.timeline-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    min-width: 80px;
+}
+
+.timeline-date .day {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.timeline-date .month {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.timeline-date .year {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+}
+
+.timeline-meta {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.timeline-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.timeline-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-description {
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+}
+
+.timeline-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.timeline-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.timeline-stat-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: linear-gradient(45deg, #7c3aed, #4A90E2);
+}
+
+/* 無資料狀態 */
+.no-data-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #64748b;
+}
+
+.no-data-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    position: relative;
+}
+
+.no-data-icon::before {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #94a3b8;
+    border-radius: 50%;
+    border-top-color: transparent;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 2s linear infinite;
+}
+
+.no-data-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
+
+.no-data-state p {
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+}
+
+/* 額外的圖標樣式 */
+.category-icon {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 2px;
+    position: relative;
+}
+
+.category-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(45deg, #7c3aed, #4A90E2);
+    border-radius: 1px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.view-icon {
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+}
+
+.like-icon {
+    background: linear-gradient(45deg, #ef4444, #dc2626);
+}
+
+.comment-icon {
+    background: linear-gradient(45deg, #10b981, #059669);
+}
+
+.add-icon {
+    background: linear-gradient(45deg, #10b981, #059669);
+    position: relative;
+}
+
+.add-icon::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 2px;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.add-icon::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 8px;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+    }
+    
+    .header-actions {
+        justify-content: flex-start;
+    }
+    
+    .timeline-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline-filters {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 1.5rem;
+    }
+    
+    .timeline-container {
+        padding: 1.5rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .title-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .timeline::before {
+        left: 1.5rem;
+    }
+    
+    .timeline-item {
+        padding-left: 3.5rem;
+    }
+    
+    .timeline-item::before {
+        left: 0.75rem;
+    }
+    
+    .timeline-card {
+        padding: 1.5rem;
+    }
+    
+    .timeline-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .timeline-meta {
+        margin-left: 0;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .timeline-main {
+        padding: 1rem 0;
+    }
+    
+    .page-header {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-container {
+        padding: 1rem;
+    }
+    
+    .timeline-stats {
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .timeline-card {
+        padding: 1rem;
+    }
+    
+    .timeline-date {
+        min-width: 60px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .timeline-date .day {
+        font-size: 1.25rem;
+    }
+}

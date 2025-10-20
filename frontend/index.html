@@ -144,6 +144,41 @@
                     <p>抓作品簡介裡的關鍵字比對，主動推薦作品給企業，提高媒合效率。</p>
                 </div>
             </div>
+            
+            <!-- 新功能展示區塊 -->
+            <div class="section-header" style="margin-top: 60px;">
+                <h2>創新功能</h2>
+                <p>讓作品集展示更智能、更直觀</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card new-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-radar"></i>
+                    </div>
+                    <h3>技能雷達圖</h3>
+                    <p>AI 自動分析學生作品，生成技能雷達圖，直觀展示技能分佈與強弱項，幫助學生了解自身優勢。</p>
+                    <div class="feature-badge">新功能</div>
+                </div>
+                
+                <div class="feature-card new-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>作品時光機</h3>
+                    <p>追蹤學習成長歷程，以時間軸方式展示作品演進，讓企業看到學生的進步軌跡。</p>
+                    <div class="feature-badge">新功能</div>
+                </div>
+                
+                <div class="feature-card new-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h3>作品對比工具</h3>
+                    <p>企業可同時對比多個學生作品，快速比較技能、風格與品質，提升人才篩選效率。</p>
+                    <div class="feature-badge">新功能</div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -319,7 +354,7 @@
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 Portfolio+. 版權所有。</p>
+                <p>&copy; 2025 Portfolio+. 版權所有。</p>
             </div>
         </div>
     </footer>
@@ -702,6 +737,49 @@
         .portfolio-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        /* 新功能卡片樣式 */
+        .new-feature-card {
+            position: relative;
+            border: 2px solid #e3f2fd;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .new-feature-card:hover {
+            border-color: #2196f3;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(33, 150, 243, 0.15);
+        }
+        
+        .feature-badge {
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .new-feature-card .feature-icon {
+            background: linear-gradient(135deg, #2196f3, #21cbf3);
+            color: white;
+        }
+        
+        .new-feature-card h3 {
+            color: #1976d2;
         }
     </style>
 </body>

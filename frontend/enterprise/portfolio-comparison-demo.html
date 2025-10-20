@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品對比工具 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="../css/portfolio-comparison.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="../index.html" class="navbar-logo">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio+</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="../index.html" class="nav-link">首頁</a>
+                <a href="dashboard.html" class="nav-link">企業主頁</a>
+                <a href="portfolios.html" class="nav-link">瀏覽作品</a>
+                <a href="jobs.html" class="nav-link">職缺管理</a>
+                <a href="profile.html" class="nav-link">企業資料</a>
+            </div>
+            
+            <div class="navbar-actions">
+                <a href="settings.html" class="btn btn-outline">設定</a>
+                <a href="../login.html" class="btn btn-primary">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="comparison-main">
+        <div class="container">
+            <!-- 頁面標題 -->
+            <div class="page-header">
+                <div class="header-content">
+                    <div class="title-section">
+                        <h1 class="page-title">
+                            <i class="fas fa-balance-scale"></i>
+                            作品對比工具
+                        </h1>
+                        <p class="page-subtitle">同時對比多個學生作品，快速比較技能、風格與品質，提升人才篩選效率</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="reloadRealData()">
+                            <i class="fas fa-sync-alt"></i>
+                            重新載入
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearAllSelections()">
+                            <i class="fas fa-times"></i>
+                            清空選擇
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 對比工具容器 -->
+            <div class="comparison-container">
+                <!-- 學生選擇區域 -->
+                <div class="student-selection">
+                    <div class="selection-header">
+                        <h2>選擇要對比的學生</h2>
+                        <p>最多可同時對比 4 個學生</p>
+                    </div>
+                    
+                    <div class="selection-filters">
+                        <div class="filter-group">
+                            <label>作品類型</label>
+                            <select id="categoryFilter" onchange="filterStudents()">
+                                <option value="">全部類型</option>
+                                <!-- 動態載入分類選項 -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>學校科系</label>
+                            <select id="departmentFilter" onchange="filterStudents()">
+                                <option value="">全部科系</option>
+                                <!-- 動態載入科系選項 -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="student-grid" id="studentGrid">
+                        <!-- 學生卡片將在這裡渲染 -->
+                    </div>
+                </div>
+
+                <!-- 已選擇學生區域 -->
+                <div class="selected-students" id="selectedStudents" style="display: none;">
+                    <div class="selected-header">
+                        <h3>已選擇的學生</h3>
+                        <div class="selected-count">
+                            <span id="selectedCount">0</span> / 4 個學生
+                        </div>
+                    </div>
+                    <div class="selected-grid" id="selectedGrid">
+                        <!-- 已選擇的學生卡片將在這裡顯示 -->
+                    </div>
+                    <div class="compare-actions">
+                        <button class="btn btn-primary" onclick="startComparison()">
+                            <i class="fas fa-chart-line"></i>
+                            開始對比分析
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 對比結果區域 -->
+                <div class="comparison-results" id="comparisonResults" style="display: none;">
+                    <div class="results-header">
+                        <h2>智能對比分析</h2>
+                    </div>
+
+                    <div class="comparison-tabs">
+                        <button class="tab-btn active" data-tab="overview">
+                            <i class="fas fa-chart-pie"></i>
+                            總覽對比
+                        </button>
+                        <button class="tab-btn" data-tab="skills">
+                            <i class="fas fa-chart-radar"></i>
+                            技能雷達
+                        </button>
+                        <button class="tab-btn" data-tab="portfolios">
+                            <i class="fas fa-images"></i>
+                            作品展示
+                        </button>
+                        <button class="tab-btn" data-tab="recommendation">
+                            <i class="fas fa-star"></i>
+                            推薦建議
+                        </button>
+                    </div>
+
+                    <div class="tab-content active" id="overview-tab">
+                        <div class="overview-comparison" id="overviewComparison">
+                            <!-- 總覽對比內容將在這裡渲染 -->
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="skills-tab">
+                        <div class="skills-comparison" id="skillsComparison">
+                            <!-- 技能雷達圖將在這裡渲染 -->
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="portfolios-tab">
+                        <div class="portfolios-comparison" id="portfoliosComparison">
+                            <!-- 作品展示將在這裡渲染 -->
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="recommendation-tab">
+                        <div class="recommendation-comparison" id="recommendationComparison">
+                            <!-- AI 推薦建議將在這裡渲染 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Portfolio+</h3>
+                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速連結</h4>
+                    <ul>
+                        <li><a href="../index.html">首頁</a></li>
+                        <li><a href="dashboard.html">企業主頁</a></li>
+                        <li><a href="portfolios.html">瀏覽作品</a></li>
+                        <li><a href="profile.html">企業資料</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>功能</h4>
+                    <ul>
+                        <li><a href="portfolio-comparison-demo.html">作品對比</a></li>
+                        <li><a href="jobs.html">職缺管理</a></li>
+                        <li><a href="candidates.html">候選人管理</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Portfolio+. 版權所有。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/portfolio-comparison.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化作品對比工具
+            window.portfolioComparison = new PortfolioComparison('studentGrid', 'comparisonResults');
+        });
+
+        function clearAllSelections() {
+            if (window.portfolioComparison) {
+                window.portfolioComparison.clearSelection();
+            }
+        }
+
+        function exportComparison() {
+            if (window.portfolioComparison) {
+                window.portfolioComparison.exportComparison();
+            }
+        }
+
+        function filterPortfolios() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const skillFilter = document.getElementById('skillFilter').value;
+            
+            if (window.portfolioComparison) {
+                window.portfolioComparison.filterPortfolios(categoryFilter, skillFilter);
+            }
+        }
+    </script>
+</body>
+</html>

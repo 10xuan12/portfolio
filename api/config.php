@@ -230,6 +230,8 @@ function downgradeToV1($data) {
 $db_path = dirname(__DIR__) . '/includes/db_connect.php';
 if (file_exists($db_path)) {
     require_once $db_path;
+    // 設定全域資料庫連接
+    $GLOBALS['conn'] = $conn;
 } else {
     // 如果找不到檔案，嘗試其他路徑
     $alternative_paths = [
@@ -243,6 +245,8 @@ if (file_exists($db_path)) {
     foreach ($alternative_paths as $path) {
         if (file_exists($path)) {
             require_once $path;
+            // 設定全域資料庫連接
+            $GLOBALS['conn'] = $conn;
             $found = true;
             break;
         }
