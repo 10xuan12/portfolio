@@ -63,18 +63,43 @@ class SkillRadarGenerator {
             return;
         }
 
+        // 生成唯一的 canvas ID
+        const canvasId = `skillRadarChart_${this.studentId}_${Date.now()}`;
+        
         this.container.innerHTML = `
             <div class="radar-chart-wrapper">
-                <canvas id="skillRadarChart"></canvas>
+                <canvas id="${canvasId}"></canvas>
             </div>
         `;
 
         this.hideLoading();
-        this.createChart();
+        
+        // 確保 DOM 元素已經創建並渲染
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                this.createChart(canvasId);
+            });
+        });
     }
 
-    createChart() {
-        const ctx = document.getElementById('skillRadarChart').getContext('2d');
+    createChart(canvasId) {
+        console.log('Creating chart with canvas ID:', canvasId);
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            console.error('Canvas element not found:', canvasId);
+            console.log('Available elements with similar IDs:', 
+                Array.from(document.querySelectorAll('[id*="skillRadar"]')).map(el => el.id));
+            return;
+        }
+        
+        if (typeof canvas.getContext !== 'function') {
+            console.error('Canvas element does not have getContext method:', canvas);
+            console.log('Canvas element type:', typeof canvas);
+            console.log('Canvas element constructor:', canvas.constructor.name);
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
         
         this.chart = new Chart(ctx, {
             type: 'radar',
@@ -162,17 +187,20 @@ class SkillRadarGenerator {
                 }
             }
         });
+        
+        // 創建雷達圖後渲染技能詳細分析
+        this.renderSkillBreakdown();
     }
 
     renderSkillBreakdown() {
-        if (!this.skillsData || !this.skillsData.categoryScores) {
+        if (!this.skillsData || !this.skillsData.skill_analysis) {
             return;
         }
 
         const breakdownContainer = document.getElementById('skillBreakdown');
         if (!breakdownContainer) return;
 
-        const categories = this.skillsData.categoryScores;
+        const categories = this.skillsData.skill_analysis;
         const categoryNames = {
             '前端開發': 'frontend',
             '後端開發': 'backend', 
@@ -186,10 +214,13 @@ class SkillRadarGenerator {
 
         let breakdownHtml = '';
         
-        Object.entries(categories).forEach(([category, score]) => {
+        Object.entries(categories).forEach(([category, data]) => {
+            const score = data.score || 0;
             if (score > 0) {
                 const categoryClass = categoryNames[category] || 'other';
                 const level = this.getSkillLevel(score);
+                const portfolioCount = data.portfolio_count || 0;
+                const keywords = data.keywords_matched || [];
                 
                 breakdownHtml += `
                     <div class="skill-item skill-${categoryClass}">
@@ -199,6 +230,8 @@ class SkillRadarGenerator {
                         <div class="skill-info">
                             <h4 class="skill-name">${category}</h4>
                             <p class="skill-score">技能強度: ${score}%</p>
+                            <p class="skill-details">相關作品: ${portfolioCount} 個</p>
+                            ${keywords.length > 0 ? `<p class="skill-keywords">關鍵詞: ${keywords.slice(0, 3).join(', ')}</p>` : ''}
                         </div>
                         <div class="skill-level">
                             <div class="level-bar">

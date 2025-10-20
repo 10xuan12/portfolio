@@ -15,9 +15,9 @@ header('Pragma: no-cache');
 try {
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 6;
     
-    // 查詢隨機作品
+    // 查詢隨機作品（使用 DISTINCT 避免重複）
     $stmt = $GLOBALS['conn']->prepare("
-        SELECT 
+        SELECT DISTINCT
             p.id,
             p.title,
             p.description,

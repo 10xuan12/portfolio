@@ -45,6 +45,14 @@
 
     // 載入作品資料
     async function loadPortfolios() {
+        // 防止重複載入
+        if (window.isLoadingPortfolios) {
+            console.log('正在載入作品，跳過重複請求');
+            return;
+        }
+        
+        window.isLoadingPortfolios = true;
+        
         try {
             // 從 localStorage 獲取使用者資訊
             const user = JSON.parse(localStorage.getItem('user'));
@@ -65,15 +73,26 @@
             // 使用標準化的API服務方法
             const result = await apiService.getUserPortfolios(user.id);
             
+            let rawPortfolios = [];
             if (Array.isArray(result)) {
-                portfolios = result;
+                rawPortfolios = result;
             } else if (result && Array.isArray(result.data)) {
-                portfolios = result.data;
-            } else {
-                portfolios = [];
+                rawPortfolios = result.data;
             }
             
-            console.log('載入的作品資料:', portfolios);
+            // 使用 Set 去重，避免重複作品
+            const uniquePortfolios = [];
+            const seenIds = new Set();
+            
+            for (const portfolio of rawPortfolios) {
+                if (!seenIds.has(portfolio.id)) {
+                    seenIds.add(portfolio.id);
+                    uniquePortfolios.push(portfolio);
+                }
+            }
+            
+            portfolios = uniquePortfolios;
+            console.log(`載入 ${portfolios.length} 個作品（已去重）:`, portfolios);
             renderPortfolios();
             
         } catch (error) {
@@ -84,6 +103,8 @@
             // 如果 API 失敗，顯示空狀態
             portfolios = [];
             renderPortfolios();
+        } finally {
+            window.isLoadingPortfolios = false;
         }
     }
 

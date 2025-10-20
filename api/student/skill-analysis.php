@@ -141,6 +141,9 @@ function getSkillAnalysis() {
     // 獲取互動統計
     $interactionStats = getInteractionStats($studentId, $db);
     
+    // 生成雷達圖數據
+    $radarChartData = generateRadarChartData($skillAnalysis);
+    
     echo json_encode([
         'status' => 200,
         'message' => '技能分析成功',
@@ -150,6 +153,7 @@ function getSkillAnalysis() {
             'skill_analysis' => $skillAnalysis,
             'skill_trends' => $skillTrends,
             'interaction_stats' => $interactionStats,
+            'radarChartData' => $radarChartData,
             'generated_at' => date('Y-m-d H:i:s')
         ]
     ]);
@@ -844,6 +848,53 @@ function getDepartments() {
             'data' => null
         ]);
     }
+}
+
+/**
+ * 生成雷達圖數據
+ */
+function generateRadarChartData($skillAnalysis) {
+    $labels = [];
+    $data = [];
+    $backgroundColor = 'rgba(124, 58, 237, 0.2)';
+    $borderColor = 'rgba(124, 58, 237, 1)';
+    $pointBackgroundColor = 'rgba(124, 58, 237, 1)';
+    $pointBorderColor = '#fff';
+    $pointHoverBackgroundColor = '#fff';
+    $pointHoverBorderColor = 'rgba(124, 58, 237, 1)';
+    
+    // 只包含有分數的技能類別
+    foreach ($skillAnalysis as $category => $analysis) {
+        if ($analysis['score'] > 0) {
+            $labels[] = $category;
+            $data[] = $analysis['score'];
+        }
+    }
+    
+    // 如果沒有技能數據，提供預設數據
+    if (empty($labels)) {
+        $labels = ['前端開發', '後端開發', 'UI/UX設計', '資料分析', '行動開發', '專案管理'];
+        $data = [20, 15, 25, 10, 5, 15];
+    }
+    
+    return [
+        'labels' => $labels,
+        'datasets' => [
+            [
+                'label' => '技能分數',
+                'data' => $data,
+                'backgroundColor' => $backgroundColor,
+                'borderColor' => $borderColor,
+                'pointBackgroundColor' => $pointBackgroundColor,
+                'pointBorderColor' => $pointBorderColor,
+                'pointHoverBackgroundColor' => $pointHoverBackgroundColor,
+                'pointHoverBorderColor' => $pointHoverBorderColor,
+                'pointRadius' => 4,
+                'pointHoverRadius' => 6,
+                'borderWidth' => 2
+            ]
+        ]
+    ];
 }
 
 /**

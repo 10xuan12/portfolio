@@ -1,0 +1,95 @@
+-- 將 student_profiles 表中的 skills 欄位更新為中文
+-- 執行前請先備份資料庫
+
+-- 更新技能為中文對照表
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Python', 'Python程式設計') WHERE `skills` LIKE '%Python%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'JavaScript', 'JavaScript程式設計') WHERE `skills` LIKE '%JavaScript%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'HTML/CSS', '網頁設計') WHERE `skills` LIKE '%HTML/CSS%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'SQL', '資料庫管理') WHERE `skills` LIKE '%SQL%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Excel', 'Excel試算表') WHERE `skills` LIKE '%Excel%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'PowerBI', 'PowerBI商業智慧') WHERE `skills` LIKE '%PowerBI%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Google Analytics', 'Google Analytics分析') WHERE `skills` LIKE '%Google Analytics%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Project Management', '專案管理') WHERE `skills` LIKE '%Project Management%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Data Analysis', '資料分析') WHERE `skills` LIKE '%Data Analysis%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Cybersecurity', '網路安全') WHERE `skills` LIKE '%Cybersecurity%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Penetration Testing', '滲透測試') WHERE `skills` LIKE '%Penetration Testing%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Network Security', '網路安全') WHERE `skills` LIKE '%Network Security%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'CISSP', 'CISSP資安認證') WHERE `skills` LIKE '%CISSP%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'CEH', 'CEH道德駭客認證') WHERE `skills` LIKE '%CEH%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'PLC Programming', 'PLC程式設計') WHERE `skills` LIKE '%PLC Programming%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Industrial Automation', '工業自動化') WHERE `skills` LIKE '%Industrial Automation%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Power Systems', '電力系統') WHERE `skills` LIKE '%Power Systems%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'SCADA', 'SCADA監控系統') WHERE `skills` LIKE '%SCADA%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'SolidWorks', 'SolidWorks 3D建模') WHERE `skills` LIKE '%SolidWorks%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'AutoCAD', 'AutoCAD繪圖') WHERE `skills` LIKE '%AutoCAD%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Mechanical Design', '機械設計') WHERE `skills` LIKE '%Mechanical Design%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Manufacturing', '製造工程') WHERE `skills` LIKE '%Manufacturing%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'CAD/CAM', 'CAD/CAM設計製造') WHERE `skills` LIKE '%CAD/CAM%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Finite Element Analysis', '有限元素分析') WHERE `skills` LIKE '%Finite Element Analysis%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'BIM', 'BIM建築資訊模型') WHERE `skills` LIKE '%BIM%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Structural Analysis', '結構分析') WHERE `skills` LIKE '%Structural Analysis%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Construction Management', '營建管理') WHERE `skills` LIKE '%Construction Management%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Mathematical Modeling', '數學建模') WHERE `skills` LIKE '%Mathematical Modeling%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Statistical Analysis', '統計分析') WHERE `skills` LIKE '%Statistical Analysis%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'R', 'R統計軟體') WHERE `skills` LIKE '%R%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'MATLAB', 'MATLAB數值計算') WHERE `skills` LIKE '%MATLAB%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Numerical Analysis', '數值分析') WHERE `skills` LIKE '%Numerical Analysis%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Optimization', '最佳化理論') WHERE `skills` LIKE '%Optimization%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Experimental Physics', '實驗物理') WHERE `skills` LIKE '%Experimental Physics%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Measurement Techniques', '量測技術') WHERE `skills` LIKE '%Measurement Techniques%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Statistical Physics', '統計物理') WHERE `skills` LIKE '%Statistical Physics%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Statistics', '統計學') WHERE `skills` LIKE '%Statistics%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Clinical Nursing', '臨床護理') WHERE `skills` LIKE '%Clinical Nursing%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Patient Care', '病患照護') WHERE `skills` LIKE '%Patient Care%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Health Assessment', '健康評估') WHERE `skills` LIKE '%Health Assessment%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Health Promotion', '健康促進') WHERE `skills` LIKE '%Health Promotion%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Health Statistics', '健康統計') WHERE `skills` LIKE '%Health Statistics%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Healthcare Management', '醫療管理') WHERE `skills` LIKE '%Healthcare Management%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Medical Terminology', '醫學術語') WHERE `skills` LIKE '%Medical Terminology%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Epidemiology', '流行病學') WHERE `skills` LIKE '%Epidemiology%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Public Health Policy', '公共衛生政策') WHERE `skills` LIKE '%Public Health Policy%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Research Methods', '研究方法') WHERE `skills` LIKE '%Research Methods%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Risk Assessment', '風險評估') WHERE `skills` LIKE '%Risk Assessment%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Molecular Biology', '分子生物學') WHERE `skills` LIKE '%Molecular Biology%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Biotechnology', '生物技術') WHERE `skills` LIKE '%Biotechnology%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'PCR', 'PCR聚合酶連鎖反應') WHERE `skills` LIKE '%PCR%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Cell Culture', '細胞培養') WHERE `skills` LIKE '%Cell Culture%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Protein Analysis', '蛋白質分析') WHERE `skills` LIKE '%Protein Analysis%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Bioinformatics', '生物資訊') WHERE `skills` LIKE '%Bioinformatics%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Architectural Design', '建築設計') WHERE `skills` LIKE '%Architectural Design%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Urban Planning', '都市規劃') WHERE `skills` LIKE '%Urban Planning%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'SketchUp', 'SketchUp 3D建模') WHERE `skills` LIKE '%SketchUp%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Revit', 'Revit建築設計') WHERE `skills` LIKE '%Revit%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Sustainable Architecture', '永續建築') WHERE `skills` LIKE '%Sustainable Architecture%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Graphic Design', '平面設計') WHERE `skills` LIKE '%Graphic Design%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Brand Identity', '品牌識別') WHERE `skills` LIKE '%Brand Identity%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Adobe Creative Suite', 'Adobe創意套件') WHERE `skills` LIKE '%Adobe Creative Suite%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Adobe Premiere', 'Adobe Premiere影片剪輯') WHERE `skills` LIKE '%Adobe Premiere%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'After Effects', 'After Effects動畫製作') WHERE `skills` LIKE '%After Effects%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Illustration', '插畫設計') WHERE `skills` LIKE '%Illustration%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Typography', '字體設計') WHERE `skills` LIKE '%Typography%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'UI/UX Design', 'UI/UX設計') WHERE `skills` LIKE '%UI/UX Design%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Cognitive Psychology', '認知心理學') WHERE `skills` LIKE '%Cognitive Psychology%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Psychological Testing', '心理測驗') WHERE `skills` LIKE '%Psychological Testing%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Counseling', '心理諮商') WHERE `skills` LIKE '%Counseling%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Digital Media', '數位媒體') WHERE `skills` LIKE '%Digital Media%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Content Creation', '內容製作') WHERE `skills` LIKE '%Content Creation%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Video Production', '影音製作') WHERE `skills` LIKE '%Video Production%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Social Media Marketing', '社群媒體行銷') WHERE `skills` LIKE '%Social Media Marketing%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'English Teaching', '英語教學') WHERE `skills` LIKE '%English Teaching%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Cross-cultural Communication', '跨文化溝通') WHERE `skills` LIKE '%Cross-cultural Communication%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Translation', '翻譯') WHERE `skills` LIKE '%Translation%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Language Assessment', '語言評估') WHERE `skills` LIKE '%Language Assessment%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'TESOL', 'TESOL英語教學認證') WHERE `skills` LIKE '%TESOL%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'SPSS', 'SPSS統計軟體') WHERE `skills` LIKE '%SPSS%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'LabVIEW', 'LabVIEW程式設計') WHERE `skills` LIKE '%LabVIEW%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Control Systems', '控制系統') WHERE `skills` LIKE '%Control Systems%';
+UPDATE `student_profiles` SET `skills` = REPLACE(`skills`, 'Industry 4.0', '工業4.0') WHERE `skills` LIKE '%Industry 4.0%';
+
+-- 清理多餘的逗號和空格
+UPDATE `student_profiles` SET `skills` = TRIM(REPLACE(REPLACE(`skills`, ', ,', ','), ',,', ',')) WHERE `skills` LIKE '%,,%' OR `skills` LIKE '%, ,%';
+UPDATE `student_profiles` SET `skills` = TRIM(REPLACE(`skills`, ', ', ',')) WHERE `skills` LIKE '%, %';
+UPDATE `student_profiles` SET `skills` = TRIM(REPLACE(`skills`, ' ,', ',')) WHERE `skills` LIKE '% ,%';
+
+-- 顯示更新結果
+SELECT id, display_name, major, skills FROM `student_profiles` WHERE skills IS NOT NULL AND skills != '' ORDER BY id;

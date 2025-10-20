@@ -13,6 +13,12 @@ class PortfolioTimeline {
     }
 
     async init() {
+        // 防止重複初始化
+        if (this.initialized) {
+            console.log('作品時光機已經初始化，跳過重複初始化');
+            return;
+        }
+        
         this.renderLoading();
         
         // 載入篩選器選項
@@ -20,7 +26,7 @@ class PortfolioTimeline {
         
         // 嘗試載入真實數據
         try {
-        await this.fetchPortfolios();
+            await this.fetchPortfolios();
             if (this.portfolios.length === 0) {
                 console.log('API返回空數據，嘗試使用示例數據');
                 this.loadSampleData();
@@ -35,6 +41,9 @@ class PortfolioTimeline {
         this.renderTimeline();
         this.updateStats();
         this.hideLoading();
+        
+        // 標記為已初始化
+        this.initialized = true;
     }
 
     renderLoading() {
@@ -52,6 +61,14 @@ class PortfolioTimeline {
     }
 
     async fetchPortfolios() {
+        // 防止重複請求
+        if (this.isLoading) {
+            console.log('正在載入中，跳過重複請求');
+            return;
+        }
+        
+        this.isLoading = true;
+        
         try {
             console.log('正在從API載入作品數據...');
             const response = await fetch(`/portfolio/api/student/portfolio.php?action=list&user_id=${this.studentId}`);
@@ -64,14 +81,35 @@ class PortfolioTimeline {
             console.log('API響應:', data);
 
             if (data.status === 200 && data.data) {
-                this.portfolios = data.data.sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at));
+                // 使用 Set 去重，避免重複作品
+                const uniquePortfolios = [];
+                const seenIds = new Set();
+                
+                for (const portfolio of data.data) {
+                    if (!seenIds.has(portfolio.id)) {
+                        seenIds.add(portfolio.id);
+                        uniquePortfolios.push(portfolio);
+                    }
+                }
+                
+                this.portfolios = uniquePortfolios.sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at));
                 this.filteredPortfolios = [...this.portfolios];
-                console.log(`成功載入 ${this.portfolios.length} 個作品`);
+                console.log(`成功載入 ${this.portfolios.length} 個作品（已去重）`);
             } else if (data.success && data.data) {
                 // 兼容不同的API響應格式
-                this.portfolios = data.data.sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at));
+                const uniquePortfolios = [];
+                const seenIds = new Set();
+                
+                for (const portfolio of data.data) {
+                    if (!seenIds.has(portfolio.id)) {
+                        seenIds.add(portfolio.id);
+                        uniquePortfolios.push(portfolio);
+                    }
+                }
+                
+                this.portfolios = uniquePortfolios.sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at));
                 this.filteredPortfolios = [...this.portfolios];
-                console.log(`成功載入 ${this.portfolios.length} 個作品 (兼容格式)`);
+                console.log(`成功載入 ${this.portfolios.length} 個作品 (兼容格式，已去重)`);
             } else {
                 console.warn('API返回空數據或錯誤:', data.message || '未知錯誤');
                 this.portfolios = [];
@@ -82,6 +120,8 @@ class PortfolioTimeline {
             this.portfolios = [];
             this.filteredPortfolios = [];
             throw error; // 重新拋出錯誤，讓上層處理
+        } finally {
+            this.isLoading = false;
         }
     }
 
@@ -108,10 +148,17 @@ class PortfolioTimeline {
                 return;
             }
 
+            console.log('正在從API載入分類數據...');
             const response = await fetch('/portfolio/api/student/portfolio.php?action=categories');
-            const data = await response.json();
             
-            if (data.status === 200 && data.data) {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('分類API響應:', data);
+            
+            if (data.status === 200 && data.data && data.data.length > 0) {
                 // 清空現有選項（保留"全部類型"）
                 categorySelect.innerHTML = '<option value="">全部類型</option>';
                 
@@ -122,6 +169,18 @@ class PortfolioTimeline {
                     option.textContent = category.name;
                     categorySelect.appendChild(option);
                 });
+                console.log(`成功載入 ${data.data.length} 個分類選項`);
+            } else if (data.success && data.data && data.data.length > 0) {
+                // 兼容不同的API響應格式
+                categorySelect.innerHTML = '<option value="">全部類型</option>';
+                
+                data.data.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.slug || category.name;
+                    option.textContent = category.name;
+                    categorySelect.appendChild(option);
+                });
+                console.log(`成功載入 ${data.data.length} 個分類選項 (兼容格式)`);
             } else {
                 console.warn('API返回空分類數據，使用示例數據');
                 this.loadSampleCategories();
@@ -321,7 +380,7 @@ class PortfolioTimeline {
                     <h3>暫無作品歷程</h3>
                     <p>您還沒有上傳任何作品，開始創建您的第一個作品吧！</p>
                     <button class="btn btn-primary" onclick="window.location.href='upload.html'">
-                        <div class="btn-icon add-icon"></div>
+                        <i class="fas fa-plus"></i>
                         上傳作品
                     </button>
                 </div>
@@ -348,26 +407,26 @@ class PortfolioTimeline {
                             </div>
                             <div class="timeline-meta">
                                 <h3 class="timeline-title">${portfolio.title}</h3>
-                                <div class="timeline-category">
-                                    <div class="category-icon"></div>
-                                    ${portfolio.category || '其他'}
-                                </div>
+                            <div class="timeline-category">
+                                <i class="fas fa-tag"></i>
+                                ${portfolio.category || '其他'}
+                            </div>
                                 <p class="timeline-description">${portfolio.description || '暫無描述'}</p>
                             </div>
                         </div>
                         
                         <div class="timeline-stats">
                             <div class="timeline-stat">
-                                <div class="timeline-stat-icon view-icon"></div>
-                                <span>${portfolio.view_count || 0} 次瀏覽</span>
+                                <i class="fas fa-eye timeline-stat-icon"></i>
+                                <span>${portfolio.view_count || portfolio.views || 0} 次瀏覽</span>
                             </div>
                             <div class="timeline-stat">
-                                <div class="timeline-stat-icon like-icon"></div>
-                                <span>${portfolio.like_count || 0} 個讚</span>
+                                <i class="fas fa-heart timeline-stat-icon"></i>
+                                <span>${portfolio.like_count || portfolio.likes || 0} 個讚</span>
                             </div>
                             <div class="timeline-stat">
-                                <div class="timeline-stat-icon comment-icon"></div>
-                                <span>${portfolio.comment_count || 0} 則評論</span>
+                                <i class="fas fa-comment timeline-stat-icon"></i>
+                                <span>${portfolio.comment_count || portfolio.comments || 0} 則評論</span>
                             </div>
                         </div>
                     </div>
@@ -464,7 +523,7 @@ class PortfolioTimeline {
                 <h3>載入失敗</h3>
                 <p>${message}</p>
                 <button class="btn btn-secondary" onclick="location.reload()">
-                    <div class="btn-icon refresh-icon"></div>
+                    <i class="fas fa-sync-alt"></i>
                     重新載入
                 </button>
             </div>

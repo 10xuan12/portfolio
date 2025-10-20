@@ -287,42 +287,84 @@ body .dashboard-header {
     padding: var(--spacing-2xl) 0;
 }
 
+/* 學生主頁專業化排版 - 參考企業主頁設計 */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: var(--spacing-xl);
+    grid-template-columns: 1fr 320px; /* 增加右側欄位寬度 */
+    gap: 40px; /* 增加間距 */
+    align-items: start;
+    max-width: 1400px; /* 限制最大寬度 */
+    margin: 0 auto; /* 置中對齊 */
 }
 
 .main-content {
-    background: var(--white);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
-    box-shadow: var(--shadow-md);
+    margin-right: 0;
+    background: transparent; /* 移除背景，讓內容更透氣 */
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
 }
 
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
+    width: 320px; /* 增加寬度 */
+    position: sticky;
+    top: 30px; /* 增加頂部間距 */
 }
 
 .sidebar-card {
-    background: var(--white);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-md);
+    background: white;
+    border-radius: 16px;
+    padding: 24px; /* 增加內邊距 */
+    margin-bottom: 24px; /* 增加間距 */
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06); /* 更柔和的陰影 */
+    border: 1px solid #f5f5f5; /* 更淡的邊框 */
+    min-height: auto; /* 移除固定高度 */
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease; /* 添加過渡效果 */
 }
 
+.sidebar-card:hover {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* 側邊欄標題樣式 */
+.sidebar-card h3 {
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 12px;
+    position: relative;
+}
+
+.sidebar-card h3::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background: var(--primary-color);
+    border-radius: 1px;
+}
+
+/* 最近活動區塊 */
 .recent-activity {
     list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
 }
 
 .recent-activity li {
-    padding: var(--spacing-sm) 0;
-    border-bottom: 1px solid var(--gray-200);
+    padding: 12px 0;
+    border-bottom: 1px solid #f5f5f5;
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 12px;
 }
 
 .recent-activity li:last-child {
@@ -332,11 +374,26 @@ body .dashboard-header {
 .activity-icon {
     width: 32px;
     height: 32px;
+    background: var(--primary-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--text-sm);
+    color: white;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.activity-time {
+    color: #666;
+    font-size: 12px;
+    margin-top: 2px;
 }
 
 .activity-upload { background: var(--success-color); color: var(--white); }
@@ -507,42 +564,120 @@ body .dashboard-header {
     color: var(--gray-600);
 }
 
+/* 主內容區域優化 */
+.main-content h2 {
+    color: #1a1a1a;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    margin-top: 0;
+    position: relative;
+    padding-bottom: 12px;
+}
+
+.main-content h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
 .quick-actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-xl);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
 }
 
 .quick-action {
-    background: var(--white);
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 20px;
     text-align: center;
     text-decoration: none;
-    color: var(--gray-700);
-    transition: all 0.2s ease;
+    color: #4a4a4a;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .quick-action:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(39, 62, 195, 0.15);
 }
 
 .quick-action i {
-    font-size: var(--text-2xl);
-    margin-bottom: var(--spacing-sm);
+    font-size: 24px;
+    margin-bottom: 12px;
     display: block;
+}
+
+.quick-action span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* 區塊間距優化 */
+.main-content > * + * {
+    margin-top: 48px;
+}
+
+/* 響應式調整 */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 300px;
+        gap: 32px;
+    }
+    
+    .sidebar {
+        width: 300px;
+    }
+}
+
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .sidebar {
+        width: 100%;
+        position: static;
+    }
+    
+    .sidebar-card {
+        min-height: auto;
+    }
 }
 
 @media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
+    
     .dashboard-stats {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .main-content h2 {
+        font-size: 20px;
+    }
+    
+    .sidebar-card {
+        padding: 16px;
+        margin-bottom: 16px;
     }
 }
 

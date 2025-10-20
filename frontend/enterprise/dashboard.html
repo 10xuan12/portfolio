@@ -67,39 +67,39 @@
         .dashboard-header::before { display: none !important; }
 
         .search-filters {
-            background: transparent;
-            border-radius: 0;
-            padding: 0;
-            box-shadow: none;
-            border: none;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f5f5f5;
             display: flex;
             align-items: stretch;
-            gap: var(--spacing-sm);
-            flex-wrap: wrap;            /* 允許換行：第二行放關鍵字/排序/按鈕 */
+            gap: 16px;
+            flex-wrap: wrap;
             overflow-x: visible;
             -webkit-overflow-scrolling: touch;
         }
 
         .search-filters .filter-row {
-            display: flex;              /* 每個 row 自成一行 */
+            display: flex;
             width: 100%;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-sm);
-            align-items: flex-end;      /* 底線對齊 */
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: flex-end;
         }
 
         /* 統一欄位內距與堆疊 */
         .search-filters .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            min-width: 200px;
+            gap: 6px;
+            min-width: 180px;
         }
 
         .search-filters .filter-group select,
         .search-filters .filter-group input[type="text"] {
-            height: 36px;
-            line-height: 36px;
+            height: 40px;
+            line-height: 40px;
         }
 
         /* 第一行三欄等寬 */
@@ -147,14 +147,14 @@
         .search-filters .filter-group select,
         .search-filters .filter-group input[type="text"] {
             width: 100%;
-            padding: 6px 10px;
-            border: 1px solid var(--gray-200);
-            border-radius: 9999px; /* 膠囊形狀 */
-            background: var(--white);
-            font-size: var(--text-sm);
-            color: var(--text-main);
+            padding: 8px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            color: #333;
             outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.2s ease;
         }
 
         .search-filters .filter-group select:focus,
@@ -164,16 +164,17 @@
         }
 
         .search-filters .btn.btn-primary {
-            border-radius: 9999px;
-            padding: 0 12px;
+            border-radius: 8px;
+            padding: 0 20px;
             width: auto;
             white-space: nowrap;
-            box-shadow: none !important; /* 移除背景陰影 */
-            transition: none;
-            height: 36px;               /* 與輸入高度一致 */
+            box-shadow: none !important;
+            transition: all 0.2s ease;
+            height: 40px;
             background: var(--primary-color) !important;
             color: #fff !important;
             border: 1px solid var(--primary-color) !important;
+            font-weight: 500;
         }
 
         .search-filters .btn.btn-primary:hover {
@@ -198,27 +199,29 @@
         .candidate-grid {
             display: flex !important;
             flex-direction: column !important;
-            gap: 12px !important;
+            gap: 16px !important;
         }
 
         .candidate-grid .student-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-            transition: all 0.2s ease;
+            gap: 16px;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
             margin-bottom: 0 !important;
             border-bottom: none !important;
-            padding-bottom: 12px !important;
+            padding-bottom: 16px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
 
         .candidate-grid .student-item:hover {
-            background: #e9ecef;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border-color: #e0e0e0;
         }
 
         .candidate-grid .student-item:last-child {
@@ -229,11 +232,12 @@
 
         /* 縮小頭像尺寸 */
         .candidate-grid .student-avatar {
-            width: 40px !important;
-            height: 40px !important;
+            width: 48px !important;
+            height: 48px !important;
             border-radius: 50%;
             overflow: hidden;
             flex-shrink: 0;
+            border: 2px solid #f0f0f0;
         }
 
         .candidate-grid .student-avatar img {
@@ -249,16 +253,16 @@
         }
 
         .candidate-grid .student-info h4 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
+            margin: 0 0 6px 0;
+            font-size: 15px;
             font-weight: 600;
-            color: #333;
+            color: #1a1a1a;
             line-height: 1.2;
         }
 
         .candidate-grid .student-info p {
             margin: 0;
-            font-size: 12px;
+            font-size: 13px;
             color: #666;
             line-height: 1.3;
         }
@@ -287,43 +291,67 @@
             white-space: nowrap;
         }
 
-        /* 企業主頁版面調整 - 讓右側區塊變成方形 */
+        /* 企業主頁專業化排版 */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr 280px; /* 調整為更寬的右側欄位 */
-            gap: 30px;
+            grid-template-columns: 1fr 320px; /* 增加右側欄位寬度 */
+            gap: 40px; /* 增加間距 */
             align-items: start;
+            max-width: 1400px; /* 限制最大寬度 */
+            margin: 0 auto; /* 置中對齊 */
         }
 
         .main-content {
-            margin-right: 0; /* 移除右邊距，讓主內容往左移 */
+            margin-right: 0;
+            background: transparent; /* 移除背景，讓內容更透氣 */
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
         }
 
         .sidebar {
-            width: 280px; /* 固定寬度 */
+            width: 320px; /* 增加寬度 */
             position: sticky;
-            top: 20px;
+            top: 30px; /* 增加頂部間距 */
         }
 
         .sidebar-card {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #f0f0f0;
-            min-height: 280px; /* 設定最小高度讓區塊更接近方形 */
+            border-radius: 16px;
+            padding: 24px; /* 增加內邊距 */
+            margin-bottom: 24px; /* 增加間距 */
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06); /* 更柔和的陰影 */
+            border: 1px solid #f5f5f5; /* 更淡的邊框 */
+            min-height: auto; /* 移除固定高度 */
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease; /* 添加過渡效果 */
+        }
+
+        .sidebar-card:hover {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
         }
 
         .sidebar-card h3 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
+            color: #1a1a1a;
+            margin-bottom: 20px;
             font-size: 18px;
             font-weight: 600;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
+            border-bottom: 1px solid #e8e8e8;
+            padding-bottom: 12px;
+            position: relative;
+        }
+
+        .sidebar-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 1px;
         }
 
         /* 最近活動區塊 */
@@ -448,19 +476,79 @@
             color: var(--primary-color);
         }
 
+        /* 主內容區域優化 */
+        .main-content h2 {
+            color: #1a1a1a;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            margin-top: 0;
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .main-content h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .quick-action {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #4a4a4a;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .quick-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(39, 62, 195, 0.15);
+        }
+
+        .quick-action i {
+            font-size: 24px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .quick-action span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 區塊間距優化 */
+        .main-content > * + * {
+            margin-top: 48px;
+        }
+
         /* 響應式調整 */
         @media (max-width: 1200px) {
             .dashboard-grid {
-                grid-template-columns: 1fr 260px;
-                gap: 25px;
+                grid-template-columns: 1fr 300px;
+                gap: 32px;
             }
             
             .sidebar {
-                width: 260px;
-            }
-            
-            .sidebar-card {
-                min-height: 260px;
+                width: 300px;
             }
         }
 
@@ -578,7 +666,6 @@
                     </div>
 
                     <!-- 每日精選推薦 -->
-                    <h2 style="margin-top: 30px;">每日精選作品</h2>
                     <div id="enterpriseFeaturedDaily"></div>
 
                     <h2>搜尋篩選</h2>
@@ -587,29 +674,19 @@
                             <div class="filter-group">
                                 <label>技能</label>
                                 <select id="dash-skill-select">
-                                    <option>全部技能</option>
-                                    <option>JavaScript</option>
-                                    <option>React</option>
-                                    <option>Python</option>
-                                    <option>UI/UX 設計</option>
+                                    <option value="">載入中...</option>
                                 </select>
                             </div>
                             <div class="filter-group">
                                 <label>科系</label>
                                 <select id="dash-dept-select">
-                                    <option>全部科系</option>
-                                    <option>資訊管理學系</option>
-                                    <option>財務金融學系</option>
-                                    <option>國際企業學系</option>
+                                    <option value="">載入中...</option>
                                 </select>
                             </div>
                             <div class="filter-group">
                                 <label>年級</label>
                                 <select id="dash-grade-select">
-                                    <option>全部年級</option>
-                                    <option>大學三年級</option>
-                                    <option>大學四年級</option>
-                                    <option>碩士生</option>
+                                    <option value="">載入中...</option>
                                 </select>
                             </div>
                         </div>
@@ -617,10 +694,10 @@
                             <div class="filter-group">
                                 <label>排序方式</label>
                                 <select id="dash-sort-select">
-                                    <option>最新上傳</option>
-                                    <option>最多瀏覽</option>
-                                    <option>最多讚數</option>
-                                    <option>最多評論</option>
+                                    <option value="created_at">最新上傳</option>
+                                    <option value="view_count">最多瀏覽</option>
+                                    <option value="like_count">最多讚數</option>
+                                    <option value="comment_count">最多評論</option>
                                 </select>
                             </div>
                             <div class="filter-group">
@@ -631,19 +708,6 @@
                                 <label>&nbsp;</label>
                                 <button id="dash-search-btn" class="btn btn-primary" style="width: auto;">搜尋</button>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- 作品對比功能 -->
-                    <div class="portfolio-comparison-section" style="margin-top: 30px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h2 style="margin: 0;">作品對比工具</h2>
-                            <a href="portfolio-comparison-demo.html" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-balance-scale"></i> 開啟對比工具
-                            </a>
-                        </div>
-                        <div id="portfolioComparisonPreview" style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                            <!-- 作品對比預覽將在這裡載入 -->
                         </div>
                     </div>
 
@@ -695,8 +759,6 @@
     <script src="../js/popularity-tags.js"></script>
     <script src="../js/favorites-system.js"></script>
     <script src="../js/card-3d-flip.js"></script>
-    <!-- 作品對比功能腳本 -->
-    <script src="../js/portfolio-comparison.js"></script>
     
     <script src="../js/enterprise/dashboard.js"></script>
     
@@ -704,7 +766,7 @@
         // 初始化企業端新功能
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(initEnterpriseFeaturedDaily, 1000);
-            setTimeout(initPortfolioComparisonPreview, 1500);
+            setTimeout(loadFilterOptions, 500); // 載入篩選選項
         });
         
         // 初始化每日精選作品
@@ -750,6 +812,105 @@
             }
         }
         
+        // 載入篩選選項
+        async function loadFilterOptions() {
+            try {
+                const response = await fetch('/portfolio/api/enterprise/filter-options.php');
+                const result = await response.json();
+                
+                if (result.status === 200 && result.data) {
+                    const { skills, departments, grades, universities } = result.data;
+                    
+                    // 載入技能選項
+                    const skillSelect = document.getElementById('dash-skill-select');
+                    if (skillSelect) {
+                        skillSelect.innerHTML = '<option value="">全部技能</option>';
+                        skills.forEach(skill => {
+                            const option = document.createElement('option');
+                            option.value = skill;
+                            option.textContent = skill;
+                            skillSelect.appendChild(option);
+                        });
+                    }
+                    
+                    // 載入科系選項
+                    const deptSelect = document.getElementById('dash-dept-select');
+                    if (deptSelect) {
+                        deptSelect.innerHTML = '<option value="">全部科系</option>';
+                        departments.forEach(dept => {
+                            const option = document.createElement('option');
+                            option.value = dept;
+                            option.textContent = dept;
+                            deptSelect.appendChild(option);
+                        });
+                    }
+                    
+                    // 載入年級選項
+                    const gradeSelect = document.getElementById('dash-grade-select');
+                    if (gradeSelect) {
+                        gradeSelect.innerHTML = '<option value="">全部年級</option>';
+                        grades.forEach(grade => {
+                            const option = document.createElement('option');
+                            option.value = grade;
+                            option.textContent = grade;
+                            gradeSelect.appendChild(option);
+                        });
+                    }
+                } else {
+                    console.error('載入篩選選項失敗:', result.message);
+                    // 載入失敗時顯示預設選項
+                    loadDefaultFilterOptions();
+                }
+            } catch (error) {
+                console.error('載入篩選選項錯誤:', error);
+                // 載入失敗時顯示預設選項
+                loadDefaultFilterOptions();
+            }
+        }
+        
+        // 載入預設篩選選項（當 API 失敗時使用）
+        function loadDefaultFilterOptions() {
+            const skillSelect = document.getElementById('dash-skill-select');
+            if (skillSelect) {
+                skillSelect.innerHTML = `
+                    <option value="">全部技能</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="React">React</option>
+                    <option value="Python">Python</option>
+                    <option value="UI/UX 設計">UI/UX 設計</option>
+                    <option value="Vue.js">Vue.js</option>
+                    <option value="Node.js">Node.js</option>
+                    <option value="PHP">PHP</option>
+                    <option value="MySQL">MySQL</option>
+                `;
+            }
+            
+            const deptSelect = document.getElementById('dash-dept-select');
+            if (deptSelect) {
+                deptSelect.innerHTML = `
+                    <option value="">全部科系</option>
+                    <option value="資訊管理學系">資訊管理學系</option>
+                    <option value="財務金融學系">財務金融學系</option>
+                    <option value="國際企業學系">國際企業學系</option>
+                    <option value="會計學系">會計學系</option>
+                    <option value="企業管理學系">企業管理學系</option>
+                `;
+            }
+            
+            const gradeSelect = document.getElementById('dash-grade-select');
+            if (gradeSelect) {
+                gradeSelect.innerHTML = `
+                    <option value="">全部年級</option>
+                    <option value="大學一年級">大學一年級</option>
+                    <option value="大學二年級">大學二年級</option>
+                    <option value="大學三年級">大學三年級</option>
+                    <option value="大學四年級">大學四年級</option>
+                    <option value="碩士生">碩士生</option>
+                    <option value="博士生">博士生</option>
+                `;
+            }
+        }
+        
         // 處理圖片 URL（避免路徑重複）
         function getImageUrl(url) {
             if (!url || url === 'null') return '';
@@ -780,76 +941,10 @@
             };
             return thumbnails[category] || thumbnails.default;
         }
-        
-        // 初始化作品對比預覽
-        async function initPortfolioComparisonPreview() {
-            try {
-                const response = await fetch('/portfolio/api/enterprise/portfolios.php?action=get_all_published_portfolios&limit=4');
-                const data = await response.json();
-                
-                if (data.success && data.data && data.data.length >= 2) {
-                    const portfolios = data.data.slice(0, 4); // 取前4個作品作為預覽
-                    const previewContainer = document.getElementById('portfolioComparisonPreview');
-                    
-                    let previewHtml = `
-                        <div style="text-align: center; margin-bottom: 15px;">
-                            <h4 style="margin: 0; color: #333;">快速對比預覽</h4>
-                            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">選擇作品進行詳細對比</p>
-                        </div>
-                        <div class="comparison-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    `;
-                    
-                    portfolios.forEach((portfolio, index) => {
-                        previewHtml += `
-                            <div class="comparison-preview-item" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; background: #f8f9fa; cursor: pointer; transition: all 0.2s ease;" 
-                                 onclick="window.location.href='portfolio-comparison-demo.html'">
-                                <div style="text-align: center; margin-bottom: 10px;">
-                                    <img src="${portfolio.cover_image || getDefaultThumbnail(portfolio.category)}" 
-                                         style="width: 100%; height: 80px; object-fit: cover; border-radius: 6px; background: #ddd;" 
-                                         alt="${portfolio.title}">
-                                </div>
-                                <h5 style="margin: 0 0 5px 0; font-size: 14px; color: #333; line-height: 1.3;">${portfolio.title}</h5>
-                                <p style="margin: 0; font-size: 12px; color: #666; line-height: 1.3;">by ${portfolio.student_name || '學生'}</p>
-                                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #888;">
-                                    <span><i class="fas fa-eye"></i> ${portfolio.view_count || 0}</span>
-                                    <span><i class="fas fa-heart"></i> ${portfolio.like_count || 0}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    previewHtml += `
-                        </div>
-                        <div style="text-align: center; margin-top: 15px;">
-                            <button class="btn btn-primary btn-sm" onclick="window.location.href='portfolio-comparison-demo.html'">
-                                <i class="fas fa-balance-scale"></i> 開始對比
-                            </button>
-                        </div>
-                    `;
-                    
-                    previewContainer.innerHTML = previewHtml;
-                } else {
-                    document.getElementById('portfolioComparisonPreview').innerHTML = `
-                        <div style="text-align: center; color: #666; padding: 20px;">
-                            <i class="fas fa-balance-scale" style="font-size: 48px; margin-bottom: 10px; opacity: 0.3;"></i>
-                            <p>暫無可對比的作品</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('載入作品對比預覽失敗:', error);
-                document.getElementById('portfolioComparisonPreview').innerHTML = `
-                    <div style="text-align: center; color: #999; padding: 20px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                        <p>載入對比工具中...</p>
-                    </div>
-                `;
-            }
-        }
     </script>
     <script>
         // 檢查配置狀態
-        console.log('當前模式:', isUsingMockData() ? '假資料' : '真實API');
+        
         console.log('環境:', getEnvironment());
         console.log('版本:', getVersion());
 

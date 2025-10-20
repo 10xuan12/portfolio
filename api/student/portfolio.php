@@ -42,8 +42,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
         // 同時支援 JSON 與 multipart/form-data 的 action 解析
         $contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
         $isMultipart = stripos($contentType, 'multipart/form-data') !== false;
-        $input = $isMultipart ? [] : json_decode(file_get_contents('php://input'), true);
-        if (!is_array($input)) { $input = []; }
+        
+        // 解析 JSON 輸入並儲存到全域變數
+        global $parsedJsonInput;
+        if (!$isMultipart) {
+            $parsedJsonInput = json_decode(file_get_contents('php://input'), true);
+            if (!is_array($parsedJsonInput)) { $parsedJsonInput = []; }
+        } else {
+            $parsedJsonInput = [];
+        }
+        
+        $input = $parsedJsonInput;
         $action = $input['action'] ?? ($_POST['action'] ?? '');
         
         switch ($action) {
@@ -131,9 +140,9 @@ function getPortfolioList() {
     }
     
     try {
-        // 查詢作品列表
+        // 查詢作品列表（使用 DISTINCT 避免重複）
         $stmt = $GLOBALS['conn']->prepare("
-            SELECT 
+            SELECT DISTINCT
                 p.id, p.title, p.description, p.status,
                 c.slug AS category, p.tags,
                 p.cover_image, p.view_count, p.like_count, p.comment_count, 
@@ -305,7 +314,15 @@ function getRelatedPortfolios() {
 
 // 建立作品
 function createPortfolio($data) {
+    // 臨時調試信息
+    error_log('createPortfolio - 接收到的資料: ' . json_encode($data));
+    error_log('createPortfolio - Content-Type: ' . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+    error_log('createPortfolio - GET user_id: ' . ($_GET['user_id'] ?? 'not set'));
+    error_log('createPortfolio - POST user_id: ' . ($_POST['user_id'] ?? 'not set'));
+    
     $userId = getUserId();
+    error_log('createPortfolio - getUserId() 返回: ' . ($userId ?? 'null'));
+    
     if (!$userId) {
         sendError('無法獲取使用者資訊', 401);
         return;
@@ -927,6 +944,19 @@ function getUserId() {
     // 從 POST 參數獲取
     if (isset($_POST['user_id']) && !empty($_POST['user_id'])) {
         return (int)$_POST['user_id'];
+    }
+    
+    // 從 JSON 請求體獲取（針對 Content-Type: application/json）
+    $contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
+    if (stripos($contentType, 'application/json') !== false) {
+        // 檢查是否已經有解析過的 JSON 資料
+        global $parsedJsonInput;
+        if (!isset($parsedJsonInput)) {
+            $parsedJsonInput = json_decode(file_get_contents('php://input'), true);
+        }
+        if (is_array($parsedJsonInput) && isset($parsedJsonInput['user_id']) && !empty($parsedJsonInput['user_id'])) {
+            return (int)$parsedJsonInput['user_id'];
+        }
     }
     
     // 從請求頭獲取

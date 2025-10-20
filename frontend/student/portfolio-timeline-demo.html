@@ -9,29 +9,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- 導航欄 -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-brand">
-                <a href="../index.html" class="navbar-logo">
-                    <i class="fas fa-briefcase"></i>
-                    <span>Portfolio+</span>
-                </a>
-            </div>
-            
-            <div class="navbar-menu">
-                <a href="../index.html" class="nav-link">首頁</a>
-                <a href="dashboard.html" class="nav-link">儀表板</a>
-                <a href="portfolio.html" class="nav-link">作品集</a>
-                <a href="profile.html" class="nav-link">個人資料</a>
-            </div>
-            
-            <div class="navbar-actions">
-                <a href="settings.html" class="btn btn-outline">設定</a>
-                <a href="../login.html" class="btn btn-primary">登出</a>
-            </div>
-        </div>
-    </nav>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(function(res){ return res.text(); })
+        .then(function(html){
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        })
+        .catch(function(e){ console.error('載入導航欄失敗', e); });
+    })();
+    </script>
 
     <!-- 主要內容 -->
     <main class="timeline-main">
@@ -47,6 +45,10 @@
                         <p class="page-subtitle">追蹤您的學習成長歷程，以時間軸方式展示作品演進軌跡</p>
                     </div>
                     <div class="header-actions">
+                        <button class="btn btn-outline" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i>
+                            返回
+                        </button>
                         <button class="btn btn-secondary" onclick="refreshTimeline()">
                             <i class="fas fa-sync-alt"></i>
                             重新載入
@@ -89,11 +91,7 @@
                             <label>作品類型</label>
                             <select id="categoryFilter" onchange="filterTimeline()">
                                 <option value="">全部類型</option>
-                                <option value="前端開發">前端開發</option>
-                                <option value="後端開發">後端開發</option>
-                                <option value="UI/UX設計">UI/UX設計</option>
-                                <option value="資料分析">資料分析</option>
-                                <option value="行動開發">行動開發</option>
+                                <!-- 動態載入的分類選項將在這裡生成 -->
                             </select>
                         </div>
                         <div class="filter-group">
@@ -164,7 +162,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化作品時光機
-            new PortfolioTimeline('timelineContainer', 5);
+            window.portfolioTimeline = new PortfolioTimeline('timelineContainer', 5);
         });
 
         function refreshTimeline() {
@@ -186,6 +184,17 @@
             
             if (window.portfolioTimeline) {
                 window.portfolioTimeline.filterTimeline(categoryFilter, timeFilter);
+            }
+        }
+
+        // 返回按鈕功能
+        function goBack() {
+            // 檢查是否有上一頁歷史記錄
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // 如果沒有歷史記錄，返回學生儀表板
+                window.location.href = 'dashboard.html';
             }
         }
     </script>

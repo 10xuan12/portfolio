@@ -267,6 +267,10 @@ if (typeof window.ApiService === 'undefined') {
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                 ...options.headers
             };
+            
+            // 調試信息
+            console.log('API 請求頭:', headers);
+            console.log('用戶資訊:', user);
 
             const response = await fetch(url, {
                 headers,
@@ -474,12 +478,13 @@ if (typeof window.ApiService === 'undefined') {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
 
             // 解析資料
-            let title, description, category, tags, status, files = [];
+            let title, description, category, tags, status, files = [], userId = null;
             if (data instanceof FormData) {
                 title = data.get('title') || '';
                 description = data.get('description') || '';
                 category = data.get('category') || '';
                 status = data.get('status') || 'draft';
+                userId = data.get('user_id') || user?.id; // 優先使用 FormData 中的 user_id
                 try {
                     const tagsRaw = data.get('tags');
                     tags = Array.isArray(tagsRaw) ? tagsRaw : JSON.parse(tagsRaw || '[]');
@@ -496,9 +501,17 @@ if (typeof window.ApiService === 'undefined') {
                     }
                 });
             } else {
-                ({ title = '', description = '', category = '', tags = [], status = 'draft' } = data || {});
+                ({ title = '', description = '', category = '', tags = [], status = 'draft', user_id: userId } = data || {});
+                userId = userId || user?.id;
             }
 
+            // 檢查用戶ID
+            console.log('createPortfolio - userId:', userId);
+            console.log('createPortfolio - user:', user);
+            if (!userId) {
+                throw new Error('無法獲取用戶ID，請重新登入');
+            }
+            
             // 第一步：建立作品（JSON）
             const createResp = await this.request('student/portfolio.php', {
                 method: 'POST',
@@ -509,7 +522,7 @@ if (typeof window.ApiService === 'undefined') {
                     category,
                     tags: Array.isArray(tags) ? tags.join(',') : String(tags || ''),
                     status,
-                    user_id: user?.id
+                    user_id: userId
                 })
             });
 
@@ -528,6 +541,7 @@ if (typeof window.ApiService === 'undefined') {
             const uploadForm = new FormData();
             uploadForm.append('action', 'upload_files');
             uploadForm.append('portfolio_id', portfolioId);
+            uploadForm.append('user_id', userId); // 添加用戶ID
             files.forEach((f) => uploadForm.append('files[]', f));
 
             const uploadUrl = this.getApiUrl('student/portfolio.php');

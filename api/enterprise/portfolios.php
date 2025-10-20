@@ -119,9 +119,9 @@ function getPortfolioList() {
             break;
     }
     
-    // 查詢作品列表
+    // 查詢作品列表（使用 DISTINCT 避免重複）
     $stmt = $GLOBALS['conn']->prepare("
-        SELECT 
+        SELECT DISTINCT
             p.id, p.title, p.description, p.cover_image, p.status,
             p.view_count, p.like_count, p.comment_count, p.download_count,
             p.is_featured, p.published_at, p.created_at, p.tags,
@@ -148,9 +148,9 @@ function getPortfolioList() {
     $result = $stmt->get_result();
     $portfolios = $result->fetch_all(MYSQLI_ASSOC);
     
-    // 查詢總數
+    // 查詢總數（使用 DISTINCT 避免重複計算）
     $countStmt = $GLOBALS['conn']->prepare("
-        SELECT COUNT(*) as total
+        SELECT COUNT(DISTINCT p.id) as total
         FROM portfolios p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN users u ON p.user_id = u.id
@@ -317,9 +317,9 @@ function searchPortfolios() {
         $types .= "s";
     }
     
-    // 查詢作品
+    // 查詢作品（使用 DISTINCT 避免重複）
     $stmt = $GLOBALS['conn']->prepare("
-        SELECT 
+        SELECT DISTINCT
             p.id, p.title, p.description, p.cover_image, p.status,
             p.view_count, p.like_count, p.comment_count, p.download_count,
             p.is_featured, p.published_at, p.created_at, p.tags,
@@ -643,9 +643,9 @@ function getAllPublishedPortfolios() {
         $types .= "ss";
     }
     
-    // 查詢作品列表
+    // 查詢作品列表（使用 DISTINCT 避免重複）
     $stmt = $GLOBALS['conn']->prepare("
-        SELECT 
+        SELECT DISTINCT
             p.id, p.title, p.description, p.cover_image, p.status,
             p.view_count, p.like_count, p.comment_count, p.download_count,
             p.is_featured, p.published_at, p.created_at, p.tags,

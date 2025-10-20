@@ -754,8 +754,16 @@ function hideGithubIntegration() {
 }
 
 async function fetchGithubInfo() {
-    const url = document.getElementById('githubUrl').value;
-    const branch = document.getElementById('githubBranch').value;
+    const urlElement = document.getElementById('githubUrl');
+    const branchElement = document.getElementById('githubBranch');
+    
+    if (!urlElement || !branchElement) {
+        console.warn('GitHub 相關元素未找到');
+        return;
+    }
+    
+    const url = urlElement.value;
+    const branch = branchElement.value;
     
     if (!url) {
         showNotification('請輸入GitHub專案URL', 'error');
@@ -920,6 +928,12 @@ async function handleFormSubmit(e) {
     }
     
     try {
+        // 檢查用戶登入狀態
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user || !user.id) {
+            throw new Error('請先登入後再上傳作品');
+        }
+        
         // 顯示上傳中狀態
         showUploadProgress(true);
         showNotification('正在上傳作品...', 'info');
@@ -934,6 +948,7 @@ async function handleFormSubmit(e) {
         formData.append('status', portfolioData.status);
         formData.append('url', portfolioData.url);
         formData.append('github', portfolioData.github);
+        formData.append('user_id', user.id); // 明確添加用戶ID
         
         // 添加檔案
         if (uploadedFiles && uploadedFiles.length > 0) {
@@ -955,13 +970,16 @@ async function handleFormSubmit(e) {
             showNotification('作品上傳成功！', 'success');
             
             // 添加成功動畫
-            document.querySelector('.upload-content').classList.add('success-animation');
-            
-            // 重置表單
-            setTimeout(() => {
-                resetForm();
-                document.querySelector('.upload-content').classList.remove('success-animation');
-            }, 2000);
+            const uploadContent = document.querySelector('.upload-content');
+            if (uploadContent) {
+                uploadContent.classList.add('success-animation');
+                
+                // 重置表單
+                setTimeout(() => {
+                    resetForm();
+                    uploadContent.classList.remove('success-animation');
+                }, 2000);
+            }
             
             // 跳轉到作品集頁面
             setTimeout(() => {
@@ -977,17 +995,26 @@ async function handleFormSubmit(e) {
         console.error('上傳作品錯誤:', error);
         
         // 添加錯誤動畫
-        document.querySelector('.upload-content').classList.add('error-shake');
-        setTimeout(() => {
-            document.querySelector('.upload-content').classList.remove('error-shake');
-        }, 500);
+        const uploadContent = document.querySelector('.upload-content');
+        if (uploadContent) {
+            uploadContent.classList.add('error-shake');
+            setTimeout(() => {
+                uploadContent.classList.remove('error-shake');
+            }, 500);
+        }
     }
 }
 
 // 顯示/隱藏上傳進度
 function showUploadProgress(show) {
-    const progressBar = document.getElementById('progressBar');
+    const progressBar = document.getElementById('uploadProgress');
     const progressFill = document.getElementById('progressFill');
+    
+    // 檢查元素是否存在
+    if (!progressBar || !progressFill) {
+        console.warn('進度條元素未找到:', { progressBar, progressFill });
+        return;
+    }
     
     if (show) {
         progressBar.style.display = 'block';
@@ -1052,9 +1079,9 @@ function resetForm() {
 
 // 上傳進度處理
 function handleUploadProgress(progress) {
-    const progressBar = document.querySelector('.progress-fill');
-    if (progressBar) {
-        progressBar.style.width = `${progress}%`;
+    const progressFill = document.getElementById('progressFill');
+    if (progressFill) {
+        progressFill.style.width = `${progress}%`;
     }
 }
 

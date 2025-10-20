@@ -10,29 +10,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- 導航欄 -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-brand">
-                <a href="../index.html" class="navbar-logo">
-                    <i class="fas fa-briefcase"></i>
-                    <span>Portfolio+</span>
-                </a>
-            </div>
-            
-            <div class="navbar-menu">
-                <a href="../index.html" class="nav-link">首頁</a>
-                <a href="dashboard.html" class="nav-link">儀表板</a>
-                <a href="portfolio.html" class="nav-link">作品集</a>
-                <a href="profile.html" class="nav-link">個人資料</a>
-            </div>
-            
-            <div class="navbar-actions">
-                <a href="settings.html" class="btn btn-outline">設定</a>
-                <a href="../login.html" class="btn btn-primary">登出</a>
-            </div>
-        </div>
-    </nav>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(function(res){ return res.text(); })
+        .then(function(html){
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        })
+        .catch(function(e){ console.error('載入導航欄失敗', e); });
+    })();
+    </script>
 
     <!-- 主要內容 -->
     <main class="skill-radar-main">
@@ -48,13 +46,13 @@
                         <p class="page-subtitle">基於您的作品自動生成技能分析雷達圖，幫助您了解自己的技能分布</p>
                     </div>
                     <div class="header-actions">
+                        <button class="btn btn-outline" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i>
+                            返回
+                        </button>
                         <button class="btn btn-secondary" onclick="refreshAnalysis()">
                             <i class="fas fa-sync-alt"></i>
                             重新分析
-                        </button>
-                        <button class="btn btn-primary" onclick="exportRadarChart()">
-                            <i class="fas fa-download"></i>
-                            匯出圖表
                         </button>
                     </div>
                 </div>
@@ -94,41 +92,22 @@
     </main>
 
     <!-- 頁腳 -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Portfolio+</h3>
-                    <p>專業的作品集展示平台，連接學生與企業的橋樑。</p>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>快速連結</h4>
-                    <ul>
-                        <li><a href="../index.html">首頁</a></li>
-                        <li><a href="dashboard.html">儀表板</a></li>
-                        <li><a href="portfolio.html">作品集</a></li>
-                        <li><a href="profile.html">個人資料</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>功能</h4>
-                    <ul>
-                        <li><a href="skill-radar-demo.html">技能雷達圖</a></li>
-                        <li><a href="portfolio-timeline-demo.html">作品時光機</a></li>
-                        <li><a href="resume.html">履歷生成</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2025 Portfolio+. 版權所有。</p>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-placeholder"></div>
 
-    <script src="../js/skill-radar-generator.js"></script>
+    <script src="../js/skill-radar-generator.js?v=2"></script>
+    <script>
+        // 載入頁腳
+        (function() {
+            fetch('../footer.html')
+                .then(function(res) { return res.text(); })
+                .then(function(html) {
+                    document.getElementById('footer-placeholder').innerHTML = html;
+                })
+                .catch(function(e) { 
+                    console.error('載入頁腳失敗', e); 
+                });
+        })();
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化技能雷達圖
@@ -138,6 +117,17 @@
         function refreshAnalysis() {
             // 重新載入分析
             location.reload();
+        }
+
+        // 返回按鈕功能
+        function goBack() {
+            // 檢查是否有上一頁歷史記錄
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // 如果沒有歷史記錄，返回學生儀表板
+                window.location.href = 'dashboard.html';
+            }
         }
 
         function exportRadarChart() {

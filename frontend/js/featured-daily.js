@@ -45,7 +45,9 @@ class FeaturedDailySystem {
         this.currentIndex = 0;
         this.render();
         
-        if (this.options.autoPlay && this.portfolios.length > 1) {
+        // 只在手機版啟用自動播放
+        const isDesktop = window.innerWidth >= 768;
+        if (!isDesktop && this.options.autoPlay && this.portfolios.length > 1) {
             this.startAutoPlay();
         }
     }
@@ -168,14 +170,17 @@ class FeaturedDailySystem {
         
         carousel.appendChild(wrapper);
         
-        // 添加導航按鈕
-        if (this.options.showNavigation && this.portfolios.length > 1) {
+        // 檢查是否為桌面版（螢幕寬度 >= 768px）
+        const isDesktop = window.innerWidth >= 768;
+        
+        // 只在手機版添加導航按鈕
+        if (!isDesktop && this.options.showNavigation && this.portfolios.length > 1) {
             carousel.appendChild(this.createNavButton('prev'));
             carousel.appendChild(this.createNavButton('next'));
         }
         
-        // 添加進度條
-        if (this.options.showProgress && this.options.autoPlay) {
+        // 只在手機版添加進度條
+        if (!isDesktop && this.options.showProgress && this.options.autoPlay) {
             const progress = document.createElement('div');
             progress.className = 'featured-progress';
             progress.innerHTML = '<div class="featured-progress-bar"></div>';
@@ -184,8 +189,8 @@ class FeaturedDailySystem {
         
         this.container.appendChild(carousel);
         
-        // 添加指示器
-        if (this.options.showIndicators && this.portfolios.length > 1) {
+        // 只在手機版添加指示器
+        if (!isDesktop && this.options.showIndicators && this.portfolios.length > 1) {
             this.renderIndicators();
         }
     }
@@ -386,7 +391,9 @@ class FeaturedDailySystem {
      */
     resetAutoPlay() {
         this.stopAutoPlay();
-        if (this.options.autoPlay && this.portfolios.length > 1) {
+        // 只在手機版啟用自動播放
+        const isDesktop = window.innerWidth >= 768;
+        if (!isDesktop && this.options.autoPlay && this.portfolios.length > 1) {
             this.startAutoPlay();
         }
     }
