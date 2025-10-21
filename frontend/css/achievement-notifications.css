@@ -104,6 +104,7 @@
     font-size: 18px;
     font-weight: 700;
     margin: 0;
+    color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -111,6 +112,7 @@
     font-size: 12px;
     opacity: 0.9;
     margin: 0;
+    color: white;
 }
 
 /* 通知內容 */
@@ -124,6 +126,7 @@
     line-height: 1.6;
     margin: 0 0 10px 0;
     opacity: 0.95;
+    color: white;
 }
 
 .achievement-reward {
@@ -133,6 +136,7 @@
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
+    color: white;
 }
 
 /* 關閉按鈕 */
@@ -199,7 +203,7 @@
 
 .achievement-notification.trending {
     background: #ffdd00;
-    color: #1E1E1E;
+    color: white;
     box-shadow: 0 10px 40px rgba(255, 221, 0, 0.3);
 }
 

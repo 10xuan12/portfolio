@@ -195,7 +195,20 @@ async function performSearch() {
         
         if (result && (result.status === 200 || result.success)) {
             const data = result.data || result;
-            searchResults = Array.isArray(data) ? data : (data.data || []);
+            let rawResults = Array.isArray(data) ? data : (data.data || []);
+            
+            // 去重處理：根據作品 ID 去除重複
+            const uniqueResults = [];
+            const seenIds = new Set();
+            
+            for (const item of rawResults) {
+                if (item.id && !seenIds.has(item.id)) {
+                    seenIds.add(item.id);
+                    uniqueResults.push(item);
+                }
+            }
+            
+            searchResults = uniqueResults;
             renderSearchResults(searchResults);
             updateResultsCount(searchResults.length);
             

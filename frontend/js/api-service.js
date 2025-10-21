@@ -526,9 +526,12 @@ if (typeof window.ApiService === 'undefined') {
                 })
             });
 
+            console.log('createPortfolio - createResp:', createResp);
+            
             const createdOk = createResp && (createResp.status === 201 || createResp.status === 200);
             const portfolioId = createResp?.data?.portfolio_id || createResp?.portfolio_id;
             if (!createdOk || !portfolioId) {
+                console.error('建立作品失敗:', createResp);
                 return { success: false, message: createResp?.message || '建立作品失敗' };
             }
 
@@ -544,12 +547,22 @@ if (typeof window.ApiService === 'undefined') {
             uploadForm.append('user_id', userId); // 添加用戶ID
             files.forEach((f) => uploadForm.append('files[]', f));
 
+            console.log('準備上傳檔案，數量:', files.length);
+            
             const uploadUrl = this.getApiUrl('student/portfolio.php');
             const uploadResp = await fetch(uploadUrl, { method: 'POST', body: uploadForm });
+            
+            console.log('檔案上傳回應狀態:', uploadResp.status);
+            
             if (!uploadResp.ok) {
-                return { success: false, message: `檔案上傳失敗: ${uploadResp.status}` };
+                const errorText = await uploadResp.text();
+                console.error('檔案上傳失敗:', errorText);
+                return { success: false, message: `檔案上傳失敗: ${uploadResp.status} - ${errorText}` };
             }
+            
             const uploadJson = await uploadResp.json();
+            console.log('檔案上傳回應:', uploadJson);
+            
             const uploadOk = uploadJson && (uploadJson.status === 200);
             if (!uploadOk) {
                 return { success: false, message: uploadJson?.message || '檔案上傳失敗' };

@@ -57,6 +57,41 @@ window.Utils = window.Utils || {
             animation: slideIn 0.3s ease;
         `;
         
+        // 設定關閉按鈕樣式
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.style.cssText = `
+            background: white;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            opacity: 0.9;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            line-height: 1;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        `;
+        
+        // 添加懸停效果
+        closeBtn.addEventListener('mouseenter', function() {
+            this.style.background = '#f8f9fa';
+            this.style.transform = 'scale(1.1)';
+            this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+        });
+        
+        closeBtn.addEventListener('mouseleave', function() {
+            this.style.background = 'white';
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+        });
+        
         document.body.appendChild(notification);
         
         // 自動移除
@@ -65,7 +100,7 @@ window.Utils = window.Utils || {
         }, 5000);
         
         // 手動關閉
-        notification.querySelector('.notification-close').addEventListener('click', () => {
+        closeBtn.addEventListener('click', () => {
             notification.remove();
         });
     },

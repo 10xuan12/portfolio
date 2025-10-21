@@ -336,6 +336,7 @@ function createPortfolio($data) {
     
     if (empty($title) || empty($description)) {
         sendError('標題和描述不能為空', 400);
+        return;
     }
     
     try {
@@ -404,6 +405,7 @@ function updatePortfolio($data) {
     
     if (!$portfolioId || empty($title) || empty($description)) {
         sendError('缺少必要參數', 400);
+        return;
     }
     
     try {
@@ -453,6 +455,7 @@ function deletePortfolio($data) {
     $portfolioId = (int)($data['portfolio_id'] ?? 0);
     if (!$portfolioId) {
         sendError('缺少作品 ID', 400);
+        return;
     }
     
     try {
@@ -480,6 +483,7 @@ function togglePortfolioLike($data) {
     $portfolioId = (int)($data['portfolio_id'] ?? 0);
     if (!$portfolioId) {
         sendError('缺少作品 ID', 400);
+        return;
     }
     
     try {
@@ -554,6 +558,7 @@ function addPortfolioComment($data) {
     
     if (!$portfolioId || empty($commentText)) {
         sendError('缺少必要參數', 400);
+        return;
     }
     
     try {
@@ -588,7 +593,7 @@ function likePortfolioComment($data) {
     }
     $portfolioId = (int)($data['portfolio_id'] ?? 0);
     $commentId = (int)($data['comment_id'] ?? 0);
-    if (!$portfolioId || !$commentId) { sendError('缺少必要參數', 400); }
+    if (!$portfolioId || !$commentId) { sendError('缺少必要參數', 400); return; }
     try {
         $stmt = $GLOBALS['conn']->prepare("UPDATE portfolio_comments SET like_count = like_count + 1 WHERE id = ? AND portfolio_id = ?");
         $stmt->bind_param("ii", $commentId, $portfolioId);
@@ -620,6 +625,7 @@ function downloadPortfolioFile($data) {
     
     if (!$portfolioId || empty($filename)) {
         sendError('缺少必要參數', 400);
+        return;
     }
     
     try {
@@ -664,6 +670,7 @@ function recordPortfolioView($data) {
     $portfolioId = (int)($data['portfolio_id'] ?? 0);
     if (!$portfolioId) {
         sendError('缺少作品 ID', 400);
+        return;
     }
     
     try {
@@ -718,12 +725,14 @@ function uploadPortfolioFiles() {
     
     if (!isset($_FILES['files']) || !is_array($_FILES['files']['name'])) {
         sendError('沒有上傳檔案', 400);
+        return;
     }
     
     $portfolioId = isset($_POST['portfolio_id']) ? (int)$_POST['portfolio_id'] : 0;
     
     if (!$portfolioId) {
         sendError('缺少作品 ID', 400);
+        return;
     }
     
     $uploadedFiles = [];
@@ -797,11 +806,13 @@ function togglePortfolioStatus($data) {
     
     if (!$portfolioId || empty($status)) {
         sendError('缺少必要參數', 400);
+        return;
     }
     
     $validStatuses = ['draft', 'published', 'archived'];
     if (!in_array($status, $validStatuses)) {
         sendError('無效的狀態', 400);
+        return;
     }
     
     try {

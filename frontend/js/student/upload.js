@@ -923,13 +923,26 @@ async function handleFormSubmit(e) {
         e.preventDefault();
     }
     
+    console.log('handleFormSubmit 被調用');
+    console.log('當前步驟:', currentStep);
+    console.log('portfolioData:', portfolioData);
+    console.log('uploadedFiles:', uploadedFiles);
+    
+    // 確保所有步驟都已完成驗證
+    if (currentStep < 3) {
+        showNotification('請完成所有步驟', 'error');
+        return;
+    }
+    
     if (!validateCurrentStep()) {
+        console.log('步驟驗證失敗');
         return;
     }
     
     try {
         // 檢查用戶登入狀態
         const user = JSON.parse(localStorage.getItem('user') || '{}');
+        console.log('用戶資訊:', user);
         if (!user || !user.id) {
             throw new Error('請先登入後再上傳作品');
         }
@@ -946,14 +959,24 @@ async function handleFormSubmit(e) {
         formData.append('description', portfolioData.description);
         formData.append('tags', JSON.stringify(portfolioData.tags));
         formData.append('status', portfolioData.status);
-        formData.append('url', portfolioData.url);
-        formData.append('github', portfolioData.github);
+        formData.append('url', portfolioData.url || '');
+        formData.append('github', portfolioData.github || '');
         formData.append('user_id', user.id); // 明確添加用戶ID
+        
+        console.log('準備上傳的資料:');
+        console.log('- 標題:', portfolioData.title);
+        console.log('- 分類:', portfolioData.category);
+        console.log('- 描述:', portfolioData.description);
+        console.log('- 標籤:', portfolioData.tags);
+        console.log('- 狀態:', portfolioData.status);
+        console.log('- 用戶ID:', user.id);
+        console.log('- 檔案數量:', uploadedFiles.length);
         
         // 添加檔案
         if (uploadedFiles && uploadedFiles.length > 0) {
-            uploadedFiles.forEach((file) => {
+            uploadedFiles.forEach((file, index) => {
                 formData.append('files[]', file);
+                console.log(`檔案 ${index + 1}:`, file.name, file.size);
             });
         }
         
@@ -963,7 +986,9 @@ async function handleFormSubmit(e) {
             throw new Error('API服務未初始化');
         }
         
+        console.log('開始調用 API 服務...');
         const response = await apiService.createPortfolio(formData);
+        console.log('API 回應:', response);
         
         if (response.success) {
             showUploadProgress(false);
@@ -991,7 +1016,7 @@ async function handleFormSubmit(e) {
         
     } catch (error) {
         showUploadProgress(false);
-        showNotification('上傳失敗，請稍後再試', 'error');
+        showNotification(`上傳失敗: ${error.message}`, 'error');
         console.error('上傳作品錯誤:', error);
         
         // 添加錯誤動畫

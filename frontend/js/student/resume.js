@@ -574,10 +574,10 @@
             <div style="line-height: 1.8; color: ${colors.text}; max-width: 100%;">
                 <!-- 頁首 -->
                 <div style="border-bottom: 4px solid ${colors.primary}; padding-bottom: 1.75rem; margin-bottom: 2.5rem;">
-                    <h1 style="font-size: 2.5rem; font-weight: 700; color: ${colors.text}; margin: 0 0 0.75rem 0; letter-spacing: -0.5px; line-height: 1.2;">
+                    <h1 style="font-size: 3.25rem; font-weight: 700; color: ${colors.text}; margin: 0 0 0.75rem 0; letter-spacing: -0.5px; line-height: 1.2;">
                         ${resumeData.basic.name || '您的姓名'}
                     </h1>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; font-size: 0.95rem; color: #475569; line-height: 1.6; margin-top: 1rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; font-size: 1.235rem; color: #475569; line-height: 1.6; margin-top: 1rem;">
                         ${resumeData.basic.email ? `<div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: ${colors.primary};">📧</span><span>${resumeData.basic.email}</span></div>` : ''}
                         ${resumeData.basic.phone ? `<div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: ${colors.primary};">📱</span><span>${resumeData.basic.phone}</span></div>` : ''}
                         ${resumeData.basic.birthDate ? `<div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: ${colors.primary};">🎂</span><span>${resumeData.basic.birthDate}</span></div>` : ''}

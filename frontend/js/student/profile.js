@@ -28,12 +28,6 @@
         interests: '',
         avatar: '',
         social_media: {},
-        stats: {
-            portfolios: 0,
-            views: 0,
-            likes: 0,
-            badges: 0
-        },
         badges: [],
         activities: [],
         settings: {}
@@ -234,18 +228,17 @@
                         interests: profileResult.data.interests || '',
                         avatar: (() => {
                             const url = profileResult.data.avatar_url;
-                            if (!url) return '/portfolio/uploads/avatars/default-avatar.jpg';
-                            // 若為相對路徑，補上前綴，避免被前端路徑誤導
+                            if (!url || url.trim() === '') return '';
+                            // 外部 URL（如 DiceBear API），直接使用
                             if (/^https?:\/\//i.test(url)) return url;
-                            return url.startsWith('/') ? `/portfolio${url}` : `/portfolio/${url}`;
+                            // 本地檔案路徑，轉換為相對路徑
+                            if (url.startsWith('/portfolio/')) {
+                                return url.replace('/portfolio/', '../');
+                            }
+                            // 其他情況，直接使用
+                            return url;
                         })(),
                         social_media: profileResult.data.social_media || {},
-                        stats: {
-                            portfolios: profileResult.data.stats?.portfolio_count || 0,
-                            views: profileResult.data.stats?.total_views || 0,
-                            likes: profileResult.data.stats?.total_likes || 0,
-                            badges: profileResult.data.stats?.badge_count || 0
-                        },
                         badges: [],
                         activities: []
                     };
@@ -304,19 +297,41 @@
         fillFormData();
         
         // 更新頭像
-        if (studentData.avatar) {
-            const imgEl = document.getElementById('avatarImage');
-            if (imgEl) {
-                imgEl.onerror = function() {
-                    this.onerror = null;
-                    this.src = '/portfolio/uploads/avatars/default-avatar.jpg';
-                };
-                imgEl.src = studentData.avatar;
-            }
-        }
+        updateAvatarDisplay();
         
-        // 更新統計資料
-        updateStats();
+    }
+
+    // 更新頭像顯示
+    function updateAvatarDisplay() {
+        const imgEl = document.getElementById('avatarImage');
+        const placeholderEl = document.getElementById('avatarPlaceholder');
+        
+        if (!imgEl || !placeholderEl) return;
+        
+        if (studentData.avatar && studentData.avatar.trim() !== '') {
+            // 有頭貼，顯示圖片
+            imgEl.style.display = 'block';
+            placeholderEl.style.display = 'none';
+            
+            imgEl.onload = function() {
+                // 圖片載入成功
+                imgEl.style.display = 'block';
+                placeholderEl.style.display = 'none';
+            };
+            
+            imgEl.onerror = function() {
+                // 圖片載入失敗，顯示預設頭像
+                console.warn('頭貼載入失敗:', studentData.avatar);
+                imgEl.style.display = 'none';
+                placeholderEl.style.display = 'flex';
+            };
+            
+            imgEl.src = studentData.avatar;
+        } else {
+            // 沒有頭貼，顯示預設圖示
+            imgEl.style.display = 'none';
+            placeholderEl.style.display = 'flex';
+        }
     }
 
     // 填充表單資料
@@ -603,8 +618,10 @@
             if (result.status === 200) {
                 // 更新頭像顯示
                 const avatarUrl = result.data.avatar_url;
-                document.getElementById('avatarImage').src = avatarUrl;
                 studentData.avatar = avatarUrl;
+                
+                // 更新頭像顯示
+                updateAvatarDisplay();
                 
                 // 更新 localStorage 中的使用者資訊
                 const currentUser = JSON.parse(localStorage.getItem('user'));
@@ -630,37 +647,6 @@
         }
     }
 
-    // 更新統計資料
-    function updateStats() {
-        const stats = studentData.stats || {};
-        
-        // 格式化數字
-        const formatNumber = (num) => {
-            if (typeof Utils !== 'undefined' && Utils.formatNumber) {
-                return Utils.formatNumber(num || 0);
-            }
-            return new Intl.NumberFormat('zh-TW').format(num || 0);
-        };
-        
-        // 更新頁面中的統計數字
-        const statPortfolios = document.getElementById('stat-portfolios');
-        const statViews = document.getElementById('stat-views');
-        const statLikes = document.getElementById('stat-likes');
-        const statBadges = document.getElementById('stat-badges');
-        
-        if (statPortfolios) {
-            statPortfolios.textContent = stats.portfolios || 0;
-        }
-        if (statViews) {
-            statViews.textContent = formatNumber(stats.views);
-        }
-        if (statLikes) {
-            statLikes.textContent = stats.likes || 0;
-        }
-        if (statBadges) {
-            statBadges.textContent = stats.badges || 0;
-        }
-    }
 
     // 更新頁面顯示
     function updatePageDisplay() {
@@ -686,13 +672,9 @@
             profileStudentId.textContent = `學生編號: ${studentData.student_id || '未設定'}`;
         }
         
-        // 更新統計資料
-        updateStats();
         
         // 更新頭像
-        if (studentData.avatar && document.getElementById('avatarImage')) {
-            document.getElementById('avatarImage').src = studentData.avatar;
-        }
+        updateAvatarDisplay();
     }
 
     // 渲染徽章

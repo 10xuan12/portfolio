@@ -85,7 +85,7 @@ try {
     }
 
     $sql = "
-        SELECT 
+        SELECT DISTINCT
             p.id, p.title, p.description, p.category_id, c.slug AS category, p.tags, p.cover_image,
             p.view_count, p.like_count, p.created_at,
             COALESCE(sp.display_name, u.username) AS author_name

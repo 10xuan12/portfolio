@@ -94,10 +94,6 @@ function getStudentProfile() {
         $profile['graduation_year'] = '';
         $profile['skills'] = '';
         $profile['interests'] = '';
-        $profile['portfolio_count'] = 0;
-        $profile['view_count'] = 0;
-        $profile['like_count'] = 0;
-        $profile['badge_count'] = 0;
     } else {
         $profile['is_first_login'] = false;
         
@@ -105,20 +101,23 @@ function getStudentProfile() {
         $profile['skills'] = $profile['skills'] ? explode(',', $profile['skills']) : [];
         $profile['interests'] = $profile['interests'] ? explode(',', $profile['interests']) : [];
         
-        // 計算統計資料
-        $stats = getStudentStats($userId);
-        $profile['stats'] = $stats;
     }
     
-    // 若無頭像，使用姓名生成頭像
+    // 處理頭像路徑
     if (empty($profile['avatar_url'])) {
-        // 使用姓名生成頭像（DiceBear API）
-        $name = $profile['display_name'] ?: ($profile['first_name'] . $profile['last_name']) ?: $profile['username'] ?: '學生';
-        $initial = mb_substr($name, 0, 1, 'UTF-8');
-        $profile['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
-    } elseif (strpos($profile['avatar_url'], '/portfolio/') !== 0 && strpos($profile['avatar_url'], 'http') !== 0) {
-        // 將資料庫中相對路徑統一轉為以 /portfolio 為前綴的絕對路徑
-        $profile['avatar_url'] = '/portfolio/' . ltrim($profile['avatar_url'], '/');
+        // 沒有頭像，設為空字串，讓前端顯示預設圖示
+        $profile['avatar_url'] = '';
+    } elseif (strpos($profile['avatar_url'], 'http') === 0) {
+        // 外部 URL（如 DiceBear API），直接使用
+        // 保持原樣
+    } else {
+        // 本地檔案，轉換為正確的路徑
+        if (strpos($profile['avatar_url'], '/portfolio/') === 0) {
+            // 已經是完整路徑，保持原樣
+        } else {
+            // 相對路徑，轉換為完整路徑
+            $profile['avatar_url'] = '/portfolio/' . ltrim($profile['avatar_url'], '/');
+        }
     }
     
     // 取得社群媒體連結
@@ -378,49 +377,6 @@ function uploadAvatar() {
     }
 }
 
-// 取得學生統計資料
-function getStudentStats($userId) {
-    // 作品數量
-    $stmt = $GLOBALS['conn']->prepare(
-        "SELECT COUNT(*) as count FROM portfolios WHERE user_id = ? AND status = 'published'"
-    );
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $portfolioCount = $stmt->get_result()->fetch_assoc()['count'];
-    
-    // 總瀏覽次數
-    $stmt = $GLOBALS['conn']->prepare(
-        "SELECT SUM(view_count) as total FROM portfolios WHERE user_id = ?"
-    );
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $totalViews = $stmt->get_result()->fetch_assoc()['total'] ?: 0;
-    
-    // 總讚數
-    $stmt = $GLOBALS['conn']->prepare(
-        "SELECT SUM(like_count) as total FROM portfolios WHERE user_id = ?"
-    );
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $totalLikes = $stmt->get_result()->fetch_assoc()['total'] ?: 0;
-    
-    // 評論數量
-    $stmt = $GLOBALS['conn']->prepare(
-        "SELECT COUNT(*) as count FROM comments c
-        JOIN portfolios p ON c.portfolio_id = p.id
-        WHERE p.user_id = ? AND c.is_approved = 1"
-    );
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $commentCount = $stmt->get_result()->fetch_assoc()['count'];
-    
-    return [
-        'portfolio_count' => (int)$portfolioCount,
-        'total_views' => (int)$totalViews,
-        'total_likes' => (int)$totalLikes,
-        'comment_count' => (int)$commentCount
-    ];
-}
 
 // 取得使用者 ID（統一邏輯）
 function getUserId() {

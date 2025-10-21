@@ -17,7 +17,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 26px;
     transition: all 0.3s ease;
     z-index: 10;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -90,7 +90,7 @@
 
 .favorites-header h2 {
     margin: 0;
-    font-size: 20px;
+    font-size: 26px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -100,7 +100,7 @@
     background: none;
     border: none;
     color: white;
-    font-size: 24px;
+    font-size: 31.2px;
     cursor: pointer;
     width: 32px;
     height: 32px;
@@ -130,7 +130,7 @@
     background: none;
     border: none;
     color: #666;
-    font-size: 14px;
+    font-size: 18.2px;
     font-weight: 600;
     cursor: pointer;
     border-bottom: 3px solid transparent;
@@ -154,7 +154,7 @@
     border: 1px dashed #273ec3;
     border-radius: 8px;
     color: #273ec3;
-    font-size: 13px;
+    font-size: 16.9px;
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
@@ -206,7 +206,7 @@
 }
 
 .favorite-item-title {
-    font-size: 16px;
+    font-size: 20.8px;
     font-weight: 600;
     color: #1E1E1E;
     margin: 0 0 5px 0;
@@ -216,7 +216,7 @@
 }
 
 .favorite-item-author {
-    font-size: 13px;
+    font-size: 16.9px;
     color: #666;
     margin: 0 0 8px 0;
 }
@@ -224,7 +224,7 @@
 .favorite-item-stats {
     display: flex;
     gap: 15px;
-    font-size: 12px;
+    font-size: 15.6px;
     color: #999;
 }
 
@@ -245,7 +245,7 @@
     border: none;
     border-radius: 50%;
     color: white;
-    font-size: 14px;
+    font-size: 18.2px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -271,13 +271,13 @@
 }
 
 .favorites-empty-icon {
-    font-size: 60px;
+    font-size: 78px;
     margin-bottom: 15px;
     opacity: 0.5;
 }
 
 .favorites-empty-text {
-    font-size: 16px;
+    font-size: 20.8px;
     margin: 0;
 }
 
@@ -289,7 +289,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 14px;
+    font-size: 18.2px;
     color: #666;
     flex-shrink: 0;
 }
@@ -315,7 +315,7 @@
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 18.2px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -348,7 +348,7 @@
     color: white;
     border: none;
     border-radius: 50%;
-    font-size: 24px;
+    font-size: 31.2px;
     cursor: pointer;
     box-shadow: 0 4px 20px rgba(39, 62, 195, 0.4);
     display: flex;
@@ -372,7 +372,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    font-size: 12px;
+    font-size: 15.6px;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -392,7 +392,7 @@
         right: 20px;
         width: 50px;
         height: 50px;
-        font-size: 20px;
+        font-size: 26px;
     }
 }
 
