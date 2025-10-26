@@ -117,6 +117,18 @@ function getApiUrl(endpoint) {
     return `${baseUrl}/${cleanEndpoint}`;
 }
 
+/**
+ * 處理圖片載入錯誤
+ * @param {HTMLImageElement} img - 圖片元素
+ * @param {string} defaultUrl - 預設圖片 URL
+ */
+function handleImageError(img, defaultUrl = 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio') {
+    if (img && img.src !== defaultUrl) {
+        img.onerror = null; // 防止無限循環
+        img.src = defaultUrl;
+    }
+}
+
 
 /**
  * 記錄除錯訊息

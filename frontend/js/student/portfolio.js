@@ -199,7 +199,9 @@
         grid.innerHTML = portfoliosToRender.map(portfolio => `
             <div class="portfolio-item" data-status="${portfolio.status}" data-category="${portfolio.category}">
                 <div class="portfolio-image">
-                    <img src="${portfolio.cover_image || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio'}" alt="${portfolio.title}">
+                    <img src="${portfolio.cover_image || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio'}" 
+                         alt="${portfolio.title}"
+                         onerror="handleImageError(this)">
                     <div class="portfolio-overlay">
                         <button class="overlay-btn" onclick="viewPortfolio(${portfolio.id})">
                             <i class="fas fa-eye"></i> 查看
