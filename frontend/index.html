@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio+ - 專業的作品集展示平台</title>
     <meta name="description" content="Portfolio+ 是專為學生、企業和管理員設計的作品集展示平台。學生可以上傳作品，企業可以搜尋人才，管理員可以管理平台。">
-    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="frontend/css/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- 新功能樣式 -->
-    <link rel="stylesheet" href="css/popularity-tags.css">
-    <link rel="stylesheet" href="css/favorites-system.css">
-    <link rel="stylesheet" href="css/card-3d-flip.css">
-    <link rel="stylesheet" href="css/share-card-generator.css">
+    <link rel="stylesheet" href="frontend/css/popularity-tags.css">
+    <link rel="stylesheet" href="frontend/css/favorites-system.css">
+    <link rel="stylesheet" href="frontend/css/card-3d-flip.css">
+    <link rel="stylesheet" href="frontend/css/share-card-generator.css">
     <script>
         // 設定主色調主題
         document.addEventListener('DOMContentLoaded', function() {
@@ -25,7 +25,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="navbar-brand">
-                <a href="index.html" class="navbar-logo">
+                <a href="frontend/index.html" class="navbar-logo">
                     <i class="fas fa-briefcase"></i>
                     <span>Portfolio+</span>
                 </a>
@@ -39,8 +39,8 @@
             </div>
             
             <div class="navbar-actions">
-                <a href="login.html" class="btn btn-outline">登入</a>
-                <a href="register.html" class="btn btn-primary">註冊</a>
+                <a href="frontend/login.html" class="btn btn-outline">登入</a>
+                <a href="frontend/register.html" class="btn btn-primary">註冊</a>
             </div>
         </div>
     </nav>
@@ -58,7 +58,7 @@
                     特別適合設計、數位、實作類學生。企業可以透過作品直接評估人才能力。
                 </p>
                 <div class="hero-actions">
-                    <a href="register.html" class="btn btn-primary btn-lg">
+                    <a href="frontend/register.html" class="btn btn-primary btn-lg">
                         <i class="fas fa-rocket"></i>
                         立即開始
                     </a>
@@ -213,7 +213,7 @@
                         <li><i class="fas fa-check"></i> 獲得徽章</li>
                         <li><i class="fas fa-check"></i> 與企業互動</li>
                     </ul>
-                    <a href="student/dashboard.html" class="btn btn-primary">學生入口</a>
+                    <a href="frontend/student/dashboard.html" class="btn btn-primary">學生入口</a>
                 </div>
                 
                 <div class="role-card">
@@ -230,7 +230,7 @@
                         <li><i class="fas fa-check"></i> 管理職缺</li>
                         <li><i class="fas fa-check"></i> 查看統計</li>
                     </ul>
-                                         <a href="enterprise/dashboard.html" class="btn btn-primary">企業入口</a>
+                                         <a href="frontend/enterprise/dashboard.html" class="btn btn-primary">企業入口</a>
                 </div>
                 
                 <div class="role-card">
@@ -247,7 +247,7 @@
                         <li><i class="fas fa-check"></i> 查看統計</li>
                         <li><i class="fas fa-check"></i> 維護平台</li>
                     </ul>
-                    <a href="admin/dashboard.html" class="btn btn-primary">管理員入口</a>
+                    <a href="frontend/admin/dashboard.html" class="btn btn-primary">管理員入口</a>
                 </div>
             </div>
         </div>
@@ -350,9 +350,9 @@
                 <div class="footer-section">
                     <h4>使用者</h4>
                     <ul>
-                        <li><a href="student/dashboard.html">學生入口</a></li>
-                                                 <li><a href="enterprise/dashboard.html">企業入口</a></li>
-                        <li><a href="admin/dashboard.html">管理員入口</a></li>
+                        <li><a href="frontend/student/dashboard.html">學生入口</a></li>
+                                                 <li><a href="frontend/enterprise/dashboard.html">企業入口</a></li>
+                        <li><a href="frontend/admin/dashboard.html">管理員入口</a></li>
                     </ul>
                 </div>
                 
@@ -373,14 +373,14 @@
         </div>
     </footer>
 
-    <script src="js/app.js?v=20250927"></script>
-    <script src="js/api-service.js?v=20250927"></script>
+    <script src="frontend/js/app.js?v=20250927"></script>
+    <script src="frontend/js/api-service.js?v=20250927"></script>
     
     <!-- 新功能腳本 -->
-    <script src="js/popularity-tags.js"></script>
-    <script src="js/favorites-system.js"></script>
-    <script src="js/card-3d-flip.js"></script>
-    <script src="js/share-card-generator.js"></script>
+    <script src="frontend/js/popularity-tags.js"></script>
+    <script src="frontend/js/favorites-system.js"></script>
+    <script src="frontend/js/card-3d-flip.js"></script>
+    <script src="frontend/js/share-card-generator.js"></script>
     <script>
         // 載入隨機作品 (v20250927)
         async function loadRandomPortfolios() {
@@ -396,7 +396,7 @@
                 }
                 
                 // 發送 API 請求
-                const apiUrl = '/portfolio/api/random-portfolios.php?limit=6&t=' + Date.now();
+                const apiUrl = '/api/random-portfolios.php?limit=6&t=' + Date.now();
                 console.log('API URL:', apiUrl);
                 
                 const response = await fetch(apiUrl);
@@ -503,18 +503,13 @@
                 return url;
             }
             
-            // 如果已經包含 /portfolio/，直接返回
-            if (url.startsWith('/portfolio/')) {
+            // 如果已經是相對路徑，直接返回
+            if (url.startsWith('/')) {
                 return url;
             }
             
-            // 如果包含 portfolio/ 但沒有前綴 /
-            if (url.startsWith('portfolio/')) {
-                return '/' + url;
-            }
-            
-            // 其他情況，添加 /portfolio/ 前綴
-            return '/portfolio/' + url;
+            // 其他情況，添加 / 前綴
+            return '/' + url;
         }
         
         // 取得預設縮圖
@@ -563,7 +558,7 @@
         // 載入統計數據
         async function loadStatistics() {
             try {
-                const response = await fetch('/portfolio/api/public-stats.php?t=' + Date.now());
+                const response = await fetch('/api/public-stats.php?t=' + Date.now());
                 
                 if (!response.ok) {
                     throw new Error('無法載入統計數據');
@@ -647,7 +642,7 @@
             messageDiv.style.display = 'none';
             
             try {
-                const response = await fetch('/portfolio/api/contact.php', {
+                const response = await fetch('/api/contact.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -776,7 +771,7 @@
                 document.body.appendChild(loadingMsg);
                 
                 // 發送登入請求
-                const response = await fetch('/portfolio/api/enterprise/auth.php', {
+                const response = await fetch('/api/enterprise/auth.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
