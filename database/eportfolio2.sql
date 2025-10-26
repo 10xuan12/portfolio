@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： localhost
--- 產生時間： 2025-10-20 13:15:15
+-- 產生時間： 2025-10-26 08:15:23
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -397,7 +397,9 @@ INSERT INTO `enterprise_analytics` (`id`, `enterprise_id`, `date`, `portfolio_vi
 (21, 12, '2025-09-16', 0, 0, 0, 0, 0, '2025-09-22 09:18:57'),
 (22, 31, '2025-10-20', 0, 2, 1, 0, 0, '2025-10-20 07:48:23'),
 (24, 32, '2025-10-20', 0, 2, 1, 0, 0, '2025-10-20 07:48:23'),
-(26, 33, '2025-10-20', 0, 2, 1, 0, 0, '2025-10-20 07:48:23');
+(26, 33, '2025-10-20', 0, 2, 1, 0, 0, '2025-10-20 07:48:23'),
+(31, 10, '2025-10-22', 0, 0, 1, 0, 0, '2025-10-22 05:31:54'),
+(32, 10, '2025-10-26', 0, 1, 0, 0, 0, '2025-10-26 04:56:45');
 
 -- --------------------------------------------------------
 
@@ -418,8 +420,6 @@ CREATE TABLE `enterprise_bookmarks` (
 --
 
 INSERT INTO `enterprise_bookmarks` (`id`, `enterprise_id`, `portfolio_id`, `notes`, `created_at`) VALUES
-(1, 10, 6, '初始收藏', '2025-09-22 09:21:55'),
-(2, 10, 8, '初始收藏', '2025-09-22 09:21:55'),
 (3, 10, 9, '初始收藏', '2025-09-22 09:21:55'),
 (4, 11, 7, '熱門作品', '2025-09-22 09:21:56'),
 (5, 11, 8, '熱門作品', '2025-09-22 09:21:56'),
@@ -465,7 +465,8 @@ INSERT INTO `enterprise_contacts` (`id`, `enterprise_id`, `student_id`, `contact
 (1, 10, 5, 'message', '關於作品 Python 爬蟲程式開發', '您好，我們對您的作品「Python 爬蟲程式開發」很感興趣，方便進一步聯繫嗎？', '2025-09-24 07:44:39', 0),
 (2, 10, 5, 'message', '關於作品 Python 爬蟲程式開發', '您好，我們對您的作品「Python 爬蟲程式開發」很感興趣，方便進一步聯繫嗎？', '2025-09-24 07:44:47', 0),
 (3, 10, 5, 'message', '企業聯絡', '您好，我們對您的背景（Python, JavaScript, HTML/CSS）很感興趣，方便進一步聯繫嗎？', '2025-09-24 08:37:55', 0),
-(6, 33, 17, 'message', 'IC設計工程師職位邀請', '您好，我們對您的網路安全技術很感興趣，想邀請您面試IC設計工程師職位。', '2025-01-15 07:00:00', 0);
+(6, 33, 17, 'message', 'IC設計工程師職位邀請', '您好，我們對您的網路安全技術很感興趣，想邀請您面試IC設計工程師職位。', '2025-01-15 07:00:00', 0),
+(7, 10, 5, 'message', '企業聯絡', '您好，我們對您的背景（Python程式設計, JavaScript程式設計, 網頁設計）很感興趣，方便進一步聯繫嗎？', '2025-10-22 05:31:54', 0);
 
 --
 -- 觸發器 `enterprise_contacts`
@@ -517,7 +518,7 @@ CREATE TABLE `enterprise_profiles` (
 --
 
 INSERT INTO `enterprise_profiles` (`id`, `user_id`, `company_name`, `company_type`, `industry`, `company_size`, `founded_year`, `employee_count`, `revenue_range`, `description`, `logo_url`, `website`, `address`, `phone`, `contact_person`, `contact_email`, `social_media`, `company_culture`, `benefits_description`, `is_verified`, `verification_date`, `created_at`, `updated_at`) VALUES
-(2, 10, '台灣微軟股份有限公司', '科技公司', '資訊軟體', '', 1990, 300, 'NT$1B+', '台灣微軟是微軟在台灣的分公司，致力於提供創新的雲端服務與企業數位轉型解決方案，協助企業提升競爭力。', 'uploads/enterprise/logos/microsoft_tw_logo.jpg', 'https://www.microsoft.com/zh-tw', '台北市信義區', '02-1234-5678', 'HR 團隊', 'hr@microsoft.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/microsoft\", \"website\": \"https://www.microsoft.com\"}', '我們重視多元包容、鼓勵創新思維，提供員工充分的成長空間與學習資源。', '完善的員工福利，包括：年終獎金、員工旅遊、彈性工時、遠距工作、教育訓練補助、健康檢查。', 1, '2025-10-07 11:16:40', '2025-09-22 09:18:56', '2025-10-20 08:45:37'),
+(2, 10, '台灣微軟股份有限公司', '科技公司', '資訊軟體', '', 1990, 300, 'NT$1B+', '台灣微軟是微軟在台灣的分公司，致力於提供創新的雲端服務與企業數位轉型解決方案，協助企業提升競爭力。', 'uploads/enterprise/logos/microsoft_tw_logo.jpg', 'https://www.microsoft.com/zh-tw', '台北市信義區', '02-1234-5678', 'HR 團隊123', 'hr@microsoft.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/microsoft\", \"website\": \"https://www.microsoft.com\"}', '我們重視多元包容、鼓勵創新思維，提供員工充分的成長空間與學習資源。', '完善的員工福利，包括：年終獎金、員工旅遊、彈性工時、遠距工作、教育訓練補助、健康檢查。', 1, '2025-10-07 11:16:40', '2025-09-22 09:18:56', '2025-10-26 06:15:19'),
 (3, 11, 'Google 台灣', '科技', '網路服務', '201-500', 2006, 400, 'NT$1B+', 'Google 台灣是 Google 在台灣的研發與營運據點，專注於創新技術研發與產品開發。', 'uploads/enterprise/logos/google_tw_logo.jpg', 'https://about.google', '台北市信義區', '02-5678-1234', 'HR Team', 'hr@google.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/google\", \"website\": \"https://about.google\"}', '以使用者為中心，鼓勵創新與實驗精神，打造開放友善的工作環境。', '業界領先的薪資福利、彈性工時、免費三餐、健身房、交通補助、股票選擇權。', 1, '2025-10-07 11:16:40', '2025-09-22 09:18:56', '2025-10-08 08:45:40'),
 (4, 12, 'Apple 台灣', '科技', '硬體/軟體', '201-500', 2001, 350, 'NT$1B+', 'Apple 台灣專注於產品設計、軟硬體整合與創新服務開發，追求卓越的產品品質。', 'uploads/enterprise/logos/apple_tw_logo.jpg', 'https://www.apple.com/tw', '台北市內湖區', '02-9876-5432', 'HR Team', 'hr@apple.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/apple\", \"website\": \"https://www.apple.com\"}', '追求完美、注重細節、設計導向的文化，激發團隊創造力與專業能力。', '員工購買優惠、完善的健康保險、教育訓練計畫、年度健康檢查、績效獎金。', 1, '2025-10-07 11:16:40', '2025-09-22 09:18:56', '2025-10-08 08:45:40'),
 (5, 31, '華碩電腦股份有限公司', '科技', '電腦硬體', '201-500', 1989, 450, 'NT$100B+', '華碩是全球領先的3C解決方案提供商，專注於創新科技與優質產品，致力於為消費者提供最佳的數位生活體驗。', 'uploads/enterprise/logos/asus_logo.jpg', 'https://www.asus.com.tw', '台北市北投區立德路150號', '02-2894-3447', 'HR 團隊', 'hr@asus.com.tw', '{\"linkedin\": \"https://www.linkedin.com/company/asus\", \"website\": \"https://www.asus.com.tw\"}', '我們重視創新、品質與團隊合作，提供員工充分的學習與成長機會，打造開放友善的工作環境。', '完善的員工福利，包括：年終獎金、員工認股、彈性工時、教育訓練補助、健康檢查、員工旅遊。', 1, '2025-01-15 00:00:00', '2025-01-15 00:00:00', '2025-01-15 00:00:00'),
@@ -925,7 +926,8 @@ INSERT INTO `likes` (`id`, `user_id`, `portfolio_id`, `created_at`) VALUES
 (30, 21, 25, '2025-01-15 15:30:00'),
 (31, 22, 26, '2025-01-15 16:00:00'),
 (32, 23, 27, '2025-01-15 16:30:00'),
-(33, 24, 28, '2025-01-15 17:00:00');
+(33, 24, 28, '2025-01-15 17:00:00'),
+(36, 10, 6, '2025-10-26 04:57:55');
 
 --
 -- 觸發器 `likes`
@@ -1068,7 +1070,8 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`
 (92, 18, 'view', '有人瀏覽了你的作品', '你的作品「智慧工廠自動化系統」被瀏覽。', '{\"portfolio_id\": 22}', 0, '2025-01-15 10:30:00'),
 (93, 31, 'system', '新人才加入', '有新的AI技術人才加入平台，建議查看其作品。', '{\"student_id\": 15, \"skills\": [\"AI\", \"Machine Learning\", \"Deep Learning\"]}', 0, '2025-01-15 11:00:00'),
 (94, 32, 'system', '新人才加入', '有新的工程技術人才加入平台，建議查看其作品。', '{\"student_id\": 18, \"skills\": [\"Industrial Automation\", \"PLC\", \"SCADA\"]}', 0, '2025-01-15 11:30:00'),
-(95, 33, 'system', '新人才加入', '有新的資訊安全人才加入平台，建議查看其作品。', '{\"student_id\": 17, \"skills\": [\"Cybersecurity\", \"Penetration Testing\", \"Network Security\"]}', 0, '2025-01-15 12:00:00');
+(95, 33, 'system', '新人才加入', '有新的資訊安全人才加入平台，建議查看其作品。', '{\"student_id\": 17, \"skills\": [\"Cybersecurity\", \"Penetration Testing\", \"Network Security\"]}', 0, '2025-01-15 12:00:00'),
+(96, 5, 'enterprise', '台灣微軟股份有限公司 聯絡了您', '有企業對您的作品感興趣，請查看聯絡內容。', '{\"contact_id\":0}', 0, '2025-10-22 05:31:55');
 
 -- --------------------------------------------------------
 
@@ -1118,17 +1121,17 @@ CREATE TABLE `portfolios` (
 --
 
 INSERT INTO `portfolios` (`id`, `user_id`, `title`, `description`, `category_id`, `tags`, `status`, `cover_image`, `content`, `view_count`, `like_count`, `comment_count`, `download_count`, `is_featured`, `report_count`, `is_flagged`, `published_at`, `created_at`, `updated_at`) VALUES
-(6, 5, '電商網站使用者行為分析', '使用 Python 和 PowerBI 進行電商網站的用戶行為深度分析，包括瀏覽路徑分析、購買轉換率研究、用戶分群洞察等，為行銷策略提供數據支持，協助企業優化營運決策。', 27, 'Python,PowerBI,數據分析,電商,用戶行為', 'published', '/portfolio/uploads/portfolios/ecommerce-analysis.jpg', '## 專案概述\n\n本專案旨在分析電商網站的用戶行為數據，透過數據挖掘和視覺化技術，深入了解用戶的瀏覽習慣和購買行為。\n\n## 技術工具\n- Python (pandas, numpy, matplotlib)\n- PowerBI\n- SQL\n- Excel\n\n## 主要發現\n1. 用戶平均瀏覽時間為 8.5 分鐘\n2. 購物車放棄率為 68%\n3. 最受歡迎的產品類別是電子產品\n\n## 改進建議\n1. 優化購物車流程\n2. 增加產品推薦功能\n3. 改善移動端體驗', 161, 23, 0, 0, 1, 0, 0, '2024-12-01 02:00:00', '2025-08-29 07:07:41', '2025-10-15 07:51:38'),
+(6, 5, '電商網站使用者行為分析', '使用 Python 和 PowerBI 進行電商網站的用戶行為深度分析，包括瀏覽路徑分析、購買轉換率研究、用戶分群洞察等，為行銷策略提供數據支持，協助企業優化營運決策。', 27, 'Python,PowerBI,數據分析,電商,用戶行為', 'published', '/portfolio/uploads/portfolios/ecommerce-analysis.jpg', '## 專案概述\n\n本專案旨在分析電商網站的用戶行為數據，透過數據挖掘和視覺化技術，深入了解用戶的瀏覽習慣和購買行為。\n\n## 技術工具\n- Python (pandas, numpy, matplotlib)\n- PowerBI\n- SQL\n- Excel\n\n## 主要發現\n1. 用戶平均瀏覽時間為 8.5 分鐘\n2. 購物車放棄率為 68%\n3. 最受歡迎的產品類別是電子產品\n\n## 改進建議\n1. 優化購物車流程\n2. 增加產品推薦功能\n3. 改善移動端體驗', 163, 2, 0, 0, 1, 0, 0, '2024-12-01 02:00:00', '2025-08-29 07:07:41', '2025-10-26 04:57:55'),
 (7, 5, '社群媒體行銷策略規劃', '為中小企業制定完整的社群媒體行銷策略，涵蓋內容規劃、發布時程安排、互動策略設計和成效追蹤分析，有效提升品牌知名度與客戶參與度。', 42, '社群媒體,行銷策略,內容規劃,品牌推廣', 'published', '/portfolio/uploads/portfolios/social-media-strategy.jpg', '## 專案背景\n\n協助台中地區的中小企業建立有效的社群媒體行銷策略，提升品牌知名度和客戶互動。\n\n## 策略內容\n1. 平台選擇：Facebook、Instagram、Line\n2. 內容主題：產品介紹、客戶故事、產業知識\n3. 發布頻率：每週 3-4 篇\n4. 互動策略：回覆評論、舉辦活動\n\n## 成效指標\n- 粉絲增長率：每月 15%\n- 互動率：平均 8%\n- 網站流量：提升 25%', 92, 15, 0, 0, 0, 0, 0, '2024-11-15 06:30:00', '2025-08-29 07:07:41', '2025-10-15 07:55:59'),
 (8, 5, '學生資訊系統 UI/UX 設計', '重新設計學校資訊系統的使用者介面與體驗，大幅提升學生和教師的使用滿意度。包括響應式設計實作、無障礙功能優化，以及完整的使用者測試與迭代。', 27, 'UI/UX設計,響應式設計,無障礙設計,使用者研究', 'published', '/portfolio/uploads/portfolios/student-system-ui.jpg', '## 設計目標\n\n改善現有學生資訊系統的使用者體驗，讓學生和教師能夠更有效率地使用系統功能。\n\n## 設計原則\n1. 簡潔明瞭的介面\n2. 直觀的操作流程\n3. 響應式設計\n4. 無障礙功能\n\n## 主要改進\n- 重新設計導航結構\n- 優化表單設計\n- 增加搜尋功能\n- 改善移動端體驗\n\n## 使用者測試\n- 測試對象：20 名學生，5 名教師\n- 完成任務成功率：95%\n- 使用者滿意度：4.2/5.0', 237, 31, 0, 0, 1, 0, 0, '2024-10-20 01:15:00', '2025-08-29 07:07:41', '2025-10-15 07:31:14'),
-(9, 5, 'Python 爬蟲程式開發', '開發高效能的自動化網頁爬蟲程式，支援多種網站格式與反爬蟲機制，用於數據收集與分析。採用 Selenium 處理動態內容，實作多線程爬取提升效率。', 27, 'Python,爬蟲,自動化,數據收集,Selenium', 'published', '/portfolio/uploads/portfolios/python-scraper.jpg', '## 專案描述\n\n開發一個功能完整的網頁爬蟲系統，能夠自動化收集網路數據，支援多種網站格式和反爬蟲機制。\n\n## 技術特點\n- 使用 Selenium 處理動態內容\n- 支援多線程爬取\n- 自動處理反爬蟲機制\n- 數據清洗和格式化\n\n## 主要功能\n1. 自動化登入\n2. 數據提取\n3. 錯誤處理\n4. 數據導出\n\n## 應用場景\n- 電商價格監控\n- 新聞內容收集\n- 社交媒體分析\n- 市場研究數據', 180, 28, 0, 0, 0, 0, 0, '2024-09-10 08:45:00', '2025-08-29 07:07:41', '2025-10-15 07:49:57'),
+(9, 5, 'Python 爬蟲程式開發', '開發高效能的自動化網頁爬蟲程式，支援多種網站格式與反爬蟲機制，用於數據收集與分析。採用 Selenium 處理動態內容，實作多線程爬取提升效率。', 27, 'Python,爬蟲,自動化,數據收集,Selenium', 'published', '/portfolio/uploads/portfolios/python-scraper.jpg', '## 專案描述\n\n開發一個功能完整的網頁爬蟲系統，能夠自動化收集網路數據，支援多種網站格式和反爬蟲機制。\n\n## 技術特點\n- 使用 Selenium 處理動態內容\n- 支援多線程爬取\n- 自動處理反爬蟲機制\n- 數據清洗和格式化\n\n## 主要功能\n1. 自動化登入\n2. 數據提取\n3. 錯誤處理\n4. 數據導出\n\n## 應用場景\n- 電商價格監控\n- 新聞內容收集\n- 社交媒體分析\n- 市場研究數據', 181, 28, 0, 0, 0, 0, 0, '2024-09-10 08:45:00', '2025-08-29 07:07:41', '2025-10-26 04:55:25'),
 (10, 5, '專案管理系統開發', '使用 React 和 Node.js 技術棧，開發功能完整的專案管理系統。包含任務分配、進度追蹤、團隊協作、即時通訊等核心功能，提供直觀易用的操作介面。', 27, 'React,Node.js,專案管理,團隊協作,任務追蹤', 'published', '/portfolio/uploads/portfolios/project-management-system.jpg', '## 系統功能\n\n開發一個完整的專案管理系統，幫助團隊更有效率地協作和追蹤專案進度。\n\n## 核心功能\n1. 專案建立和管理\n2. 任務分配和追蹤\n3. 團隊成員管理\n4. 進度報告\n5. 檔案共享\n\n## 技術架構\n- 前端：React + TypeScript\n- 後端：Node.js + Express\n- 資料庫：MySQL\n- 即時通訊：Socket.io\n\n## 專案成果\n- 開發週期：3 個月\n- 團隊規模：5 人\n- 使用者反饋：4.5/5.0', 147, 19, 0, 0, 0, 0, 0, '2024-08-25 03:20:00', '2025-08-29 07:07:41', '2025-10-15 07:31:40'),
 (21, 17, '網路安全滲透測試工具', '開發的網路安全滲透測試工具，能夠自動化執行漏洞掃描、弱點評估與安全測試。支援多種攻擊向量檢測，提供詳細的安全報告與修復建議。', 27, '網路安全, 滲透測試, Python, 網路安全, 弱點評估', 'published', '/portfolio/uploads/portfolios/penetration-testing-tool.jpg', '## 專案概述\n\n開發自動化網路安全滲透測試工具，提升安全測試效率與準確性。\n\n## 技術架構\n- 程式語言：Python\n- 網路庫：Scapy, Requests\n- 資料庫：SQLite\n- 報告生成：Jinja2\n\n## 主要功能\n1. 自動化漏洞掃描\n2. 弱點評估與分級\n3. 攻擊模擬測試\n4. 安全報告生成\n\n## 測試結果\n- 檢測準確率：92%\n- 掃描速度：1000個目標/小時\n- 支援協議：HTTP, HTTPS, FTP, SSH', 156, 25, 1, 0, 0, 0, 0, '2024-10-25 08:45:00', '2025-01-15 00:00:00', '2025-10-20 09:32:33'),
 (22, 18, '智慧工廠自動化系統', '設計的智慧工廠自動化系統，整合PLC控制、感測器監控與數據分析功能。實現生產線自動化控制、設備狀態監控與預測性維護，提升生產效率30%。', 28, 'PLC, 工業自動化, SCADA, 物聯網, 製造業', 'published', '/portfolio/uploads/portfolios/smart-factory-system.jpg', '## 專案背景\n\n為製造業設計的智慧工廠自動化系統，實現生產線數位化轉型。\n\n## 技術架構\n- 控制系統：Siemens S7-1200 PLC\n- 監控軟體：WinCC SCADA\n- 通訊協定：Modbus TCP/IP\n- 數據分析：Python\n\n## 主要功能\n1. 生產線自動化控制\n2. 設備狀態即時監控\n3. 預測性維護系統\n4. 生產數據分析\n\n## 專案成果\n- 生產效率提升30%\n- 設備故障率降低25%\n- 能源消耗減少15%', 178, 27, 1, 0, 1, 0, 0, '2024-09-18 03:20:00', '2025-01-15 00:00:00', '2025-10-20 09:32:33'),
 (23, 19, '機械手臂控制系統', '開發的機械手臂控制系統，具備精確定位、路徑規劃與碰撞檢測功能。採用PID控制演算法，實現高精度運動控制，適用於工業自動化應用。', 28, '機器人學, 控制系統, PID控制, 路徑規劃, 碰撞檢測', 'published', '/portfolio/uploads/portfolios/robotic-arm-control.jpg', '## 專案概述\n\n開發高精度機械手臂控制系統，實現精確的運動控制與路徑規劃。\n\n## 技術架構\n- 控制演算法：PID控制\n- 程式語言：C++\n- 硬體平台：Arduino + 步進馬達\n- 模擬軟體：MATLAB Simulink\n\n## 主要功能\n1. 精確位置控制\n2. 路徑規劃與優化\n3. 碰撞檢測與避免\n4. 即時監控介面\n\n## 技術指標\n- 定位精度：±0.1mm\n- 重複精度：±0.05mm\n- 最大負載：5kg', 134, 20, 1, 0, 0, 0, 0, '2024-08-30 05:10:00', '2025-01-15 00:00:00', '2025-10-20 09:32:33'),
 (24, 20, 'BIM建築資訊模型專案', '使用Revit設計的BIM建築資訊模型，包含完整的建築結構、機電系統與管線配置。實現3D建模、碰撞檢測與施工模擬，提升建築設計效率與品質。', 34, 'BIM, Revit, 建築學, 營建, 3D建模', 'published', '/portfolio/uploads/portfolios/bim-architecture-project.jpg', '## 專案背景\n\n為商業大樓設計的BIM建築資訊模型，實現數位化建築設計與管理。\n\n## 技術工具\n- BIM軟體：Autodesk Revit\n- 結構分析：ETABS\n- 機電設計：MEP\n- 視覺化：3ds Max\n\n## 主要功能\n1. 3D建築建模\n2. 結構分析與設計\n3. 機電系統整合\n4. 碰撞檢測與修正\n\n## 專案成果\n- 設計效率提升40%\n- 施工錯誤減少60%\n- 成本控制精確度95%', 167, 24, 0, 0, 1, 0, 0, '2024-07-22 01:35:00', '2025-01-15 00:00:00', '2025-10-20 09:32:33'),
 (25, 21, '數學建模與優化分析', '運用數學建模方法解決實際問題，包括線性規劃、非線性優化與統計分析。專案涵蓋供應鏈優化、資源配置與風險評估等應用領域。', 29, '數學建模, 最佳化, 線性規劃, 統計學, R', 'published', '/portfolio/uploads/portfolios/mathematical-modeling.jpg', '## 專案概述\n\n運用數學建模方法解決實際商業問題，提供科學的決策支援。\n\n## 技術方法\n- 優化理論：線性規劃、非線性優化\n- 統計分析：迴歸分析、時間序列\n- 程式語言：R, MATLAB\n- 求解器：Gurobi, CPLEX\n\n## 應用案例\n1. 供應鏈網路優化\n2. 投資組合風險評估\n3. 生產排程優化\n4. 資源配置最佳化\n\n## 專案成果\n- 成本降低15-25%\n- 效率提升20-30%\n- 決策準確度95%以上', 98, 16, 0, 0, 0, 0, 0, '2024-06-15 07:50:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
-(26, 22, '物理實驗數據分析系統', '開發的物理實驗數據分析系統，能夠自動化處理實驗數據、進行統計分析與結果視覺化。支援多種實驗類型，提供精確的測量結果與不確定度分析。', 29, '物理學, 數據分析, 統計學, MATLAB, LabVIEW', 'published', '/portfolio/uploads/portfolios/physics-data-analysis.jpg', '## 專案背景\n\n為物理實驗室開發的數據分析系統，提升實驗數據處理效率與準確性。\n\n## 技術架構\n- 數據處理：MATLAB\n- 儀器控制：LabVIEW\n- 統計分析：R\n- 視覺化：Python matplotlib\n\n## 主要功能\n1. 自動化數據採集\n2. 統計分析與處理\n3. 不確定度計算\n4. 結果視覺化\n\n## 技術指標\n- 數據處理速度：1000點/秒\n- 分析準確度：99.5%\n- 支援實驗類型：20+種', 87, 13, 0, 0, 0, 0, 0, '2024-05-28 04:25:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
+(26, 22, '物理實驗數據分析系統', '開發的物理實驗數據分析系統，能夠自動化處理實驗數據、進行統計分析與結果視覺化。支援多種實驗類型，提供精確的測量結果與不確定度分析。', 29, '物理學, 數據分析, 統計學, MATLAB, LabVIEW', 'published', '/portfolio/uploads/portfolios/physics-data-analysis.jpg', '## 專案背景\n\n為物理實驗室開發的數據分析系統，提升實驗數據處理效率與準確性。\n\n## 技術架構\n- 數據處理：MATLAB\n- 儀器控制：LabVIEW\n- 統計分析：R\n- 視覺化：Python matplotlib\n\n## 主要功能\n1. 自動化數據採集\n2. 統計分析與處理\n3. 不確定度計算\n4. 結果視覺化\n\n## 技術指標\n- 數據處理速度：1000點/秒\n- 分析準確度：99.5%\n- 支援實驗類型：20+種', 89, 13, 0, 0, 0, 0, 0, '2024-05-28 04:25:00', '2025-01-15 00:00:00', '2025-10-22 05:33:39'),
 (27, 23, '護理資訊系統設計', '設計的護理資訊系統，整合病患資料管理、護理計畫制定與醫療記錄追蹤功能。提升護理工作效率，改善病患照護品質。', 30, '醫療資訊, 護理資訊學, 資料庫設計, 病患照護', 'published', '/portfolio/uploads/portfolios/nursing-information-system.jpg', '## 專案概述\n\n為醫院護理部門設計的資訊系統，提升護理工作效率與病患照護品質。\n\n## 系統功能\n- 病患資料管理\n- 護理計畫制定\n- 醫療記錄追蹤\n- 護理品質監控\n\n## 技術架構\n- 資料庫：MySQL\n- 前端：HTML/CSS/JavaScript\n- 後端：PHP\n- 報表：Crystal Reports\n\n## 專案成果\n- 護理工作效率提升25%\n- 病患滿意度提升30%\n- 醫療錯誤減少40%', 112, 19, 0, 0, 0, 0, 0, '2024-04-20 06:40:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
 (28, 24, '公共衛生數據分析平台', '開發的公共衛生數據分析平台，整合多個數據源，提供疫情監控、健康統計與政策分析功能。協助公共衛生部門進行科學決策。', 30, '公共衛生, 數據分析, 流行病學, 健康統計, Python', 'published', '/portfolio/uploads/portfolios/public-health-platform.jpg', '## 專案背景\n\n為公共衛生部門開發的數據分析平台，提供科學的決策支援。\n\n## 技術架構\n- 數據處理：Python (pandas, numpy)\n- 視覺化：D3.js, Plotly\n- 資料庫：PostgreSQL\n- 地圖服務：Leaflet\n\n## 主要功能\n1. 疫情監控與預警\n2. 健康統計分析\n3. 政策效果評估\n4. 地理資訊分析\n\n## 應用成果\n- 疫情預警準確率90%\n- 政策評估效率提升50%\n- 數據處理速度提升3倍', 145, 22, 0, 0, 1, 0, 0, '2024-03-12 08:15:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
 (29, 25, '生物資訊分析工具', '開發的生物資訊分析工具，支援基因序列分析、蛋白質結構預測與生物路徑分析。整合多個生物資料庫，提供完整的生物資訊分析流程。', 31, '生物資訊學, 基因組學, 蛋白質分析, Python, R', 'published', '/portfolio/uploads/portfolios/bioinformatics-tool.jpg', '## 專案概述\n\n開發綜合性生物資訊分析工具，支援基因組學與蛋白質組學研究。\n\n## 技術架構\n- 程式語言：Python, R\n- 生物資料庫：NCBI, UniProt\n- 分析工具：BLAST, HMMER\n- 視覺化：Biopython, ggplot2\n\n## 主要功能\n1. 基因序列分析\n2. 蛋白質結構預測\n3. 生物路徑分析\n4. 進化樹建構\n\n## 技術指標\n- 序列比對速度：1000序列/分鐘\n- 結構預測準確率：85%\n- 支援格式：FASTA, GenBank, PDB', 123, 17, 0, 0, 0, 0, 0, '2024-02-18 02:30:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
@@ -1136,13 +1139,7 @@ INSERT INTO `portfolios` (`id`, `user_id`, `title`, `description`, `category_id`
 (31, 27, '品牌識別設計系統', '為新創公司設計的完整品牌識別系統，包含Logo設計、視覺規範、應用範例與品牌指南。建立一致的品牌形象與視覺識別。', 35, '品牌識別, Logo設計, 視覺識別, Adobe創意套件', 'published', '/portfolio/uploads/portfolios/brand-identity-system.jpg', '## 專案概述\n\n為新創科技公司設計的完整品牌識別系統，建立專業的品牌形象。\n\n## 設計內容\n- Logo設計與變體\n- 色彩系統定義\n- 字體選擇與應用\n- 視覺元素設計\n\n## 應用範圍\n- 名片與信紙\n- 網站與APP介面\n- 包裝與宣傳品\n- 環境識別\n\n## 設計成果\n- 品牌識別度提升80%\n- 客戶滿意度95%\n- 設計一致性100%', 156, 24, 0, 0, 1, 0, 0, '2023-12-10 03:20:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
 (32, 28, '心理測驗評估系統', '開發的心理測驗評估系統，支援多種心理測驗的線上施測、自動計分與結果分析。提供標準化的心理評估工具與報告生成功能。', 36, '心理測驗, 評估, 統計學, 網頁開發', 'published', '/portfolio/uploads/portfolios/psychological-assessment.jpg', '## 專案概述\n\n開發線上心理測驗評估系統，提供標準化的心理評估工具。\n\n## 系統功能\n- 線上測驗施測\n- 自動計分與分析\n- 結果報告生成\n- 數據統計分析\n\n## 技術架構\n- 前端：React.js\n- 後端：Node.js\n- 資料庫：MongoDB\n- 統計分析：R\n\n## 測驗類型\n- 人格測驗\n- 智力測驗\n- 情緒評估\n- 職業興趣測驗\n\n## 技術指標\n- 測驗準確度：95%\n- 施測效率：提升50%\n- 支援測驗：20+種', 134, 19, 0, 0, 0, 0, 0, '2023-11-15 07:10:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
 (33, 29, '數位媒體內容製作', '製作的數位媒體內容專案，包含短影片製作、社群媒體行銷與品牌推廣。運用創意策略與視覺設計，提升品牌知名度與用戶參與度。', 37, '數位媒體, 內容創作, 影片製作, 社群媒體行銷', 'published', '/portfolio/uploads/portfolios/digital-media-content.jpg', '## 專案概述\n\n為品牌客戶製作的數位媒體內容，提升品牌知名度與用戶參與度。\n\n## 製作內容\n- 品牌宣傳短影片\n- 社群媒體圖文\n- 互動式內容\n- 直播節目企劃\n\n## 技術工具\n- 影片剪輯：Adobe Premiere Pro\n- 動畫製作：After Effects\n- 平面設計：Photoshop, Illustrator\n- 社群管理：Hootsuite\n\n## 專案成果\n- 觀看次數：100萬+\n- 互動率：8.5%\n- 品牌知名度提升：60%\n- 轉換率：12%', 167, 26, 0, 0, 1, 0, 0, '2023-10-20 04:35:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
-(34, 30, '跨文化溝通培訓課程', '設計的跨文化溝通培訓課程，針對企業國際化需求，提供語言學習、文化理解與溝通技巧訓練。結合線上學習平台與實體工作坊。', 38, '跨文化溝通, 語言教學, 培訓設計, 線上學習', 'published', '/portfolio/uploads/portfolios/cross-cultural-training.jpg', '## 專案概述\n\n為企業設計的跨文化溝通培訓課程，提升員工的國際溝通能力。\n\n## 課程內容\n- 語言能力提升\n- 文化差異理解\n- 溝通技巧訓練\n- 國際商務禮儀\n\n## 教學方法\n- 線上學習平台\n- 實體工作坊\n- 情境模擬練習\n- 個別指導\n\n## 學習成果\n- 語言能力提升：40%\n- 溝通效率提升：35%\n- 學員滿意度：95%\n- 課程完成率：90%', 98, 14, 0, 0, 0, 0, 0, '2023-09-25 06:50:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34'),
-(35, 5, '123', '123', 45, '123', 'published', NULL, NULL, 0, 0, 0, 0, 0, 0, 0, '2025-10-20 10:55:17', '2025-10-20 10:55:17', '2025-10-20 10:55:17'),
-(36, 5, '123', '工程', 28, 'java', 'published', NULL, NULL, 0, 0, 0, 0, 0, 0, 0, '2025-10-20 10:58:38', '2025-10-20 10:58:38', '2025-10-20 10:58:38'),
-(37, 5, '123', '213', 28, 'ca', 'published', NULL, NULL, 0, 0, 0, 0, 0, 0, 0, '2025-10-20 11:02:04', '2025-10-20 11:02:04', '2025-10-20 11:02:04'),
-(38, 5, '123', '參考', 28, 'java', 'published', NULL, NULL, 0, 0, 0, 0, 0, 0, 0, '2025-10-20 11:03:31', '2025-10-20 11:03:31', '2025-10-20 11:03:31'),
-(39, 5, '123', '123', 28, 'java', 'published', NULL, NULL, 0, 0, 0, 0, 0, 0, 0, '2025-10-20 11:09:26', '2025-10-20 11:09:26', '2025-10-20 11:09:26'),
-(40, 5, '123', '132', 42, '工程', 'published', NULL, NULL, 0, 0, 0, 0, 0, 0, 0, '2025-10-20 11:10:55', '2025-10-20 11:10:55', '2025-10-20 11:10:55');
+(34, 30, '跨文化溝通培訓課程', '設計的跨文化溝通培訓課程，針對企業國際化需求，提供語言學習、文化理解與溝通技巧訓練。結合線上學習平台與實體工作坊。', 38, '跨文化溝通, 語言教學, 培訓設計, 線上學習', 'published', '/portfolio/uploads/portfolios/cross-cultural-training.jpg', '## 專案概述\n\n為企業設計的跨文化溝通培訓課程，提升員工的國際溝通能力。\n\n## 課程內容\n- 語言能力提升\n- 文化差異理解\n- 溝通技巧訓練\n- 國際商務禮儀\n\n## 教學方法\n- 線上學習平台\n- 實體工作坊\n- 情境模擬練習\n- 個別指導\n\n## 學習成果\n- 語言能力提升：40%\n- 溝通效率提升：35%\n- 學員滿意度：95%\n- 課程完成率：90%', 98, 14, 0, 0, 0, 0, 0, '2023-09-25 06:50:00', '2025-01-15 00:00:00', '2025-10-20 09:32:34');
 
 -- --------------------------------------------------------
 
@@ -1277,7 +1274,7 @@ CREATE TABLE `resumes` (
 --
 
 INSERT INTO `resumes` (`id`, `user_id`, `title`, `template`, `content`, `file_path`, `is_public`, `download_count`, `view_count`, `status`, `version`, `created_at`, `updated_at`) VALUES
-(1, 5, '黃玟瑄 的履歷', 'executive', '{\"template\":\"executive\",\"colorScheme\":\"blue\",\"font\":\"modern\",\"basic\":{\"name\":\"黃玟瑄\",\"birthDate\":\"2000-01-15\",\"email\":\"selina101292@gmail.com\",\"phone\":\"0912-345-678\",\"address\":\"台中市西區精誠路123號\",\"summary\":\"靜宜大學資訊管理學系碩士生，對數位行銷與資料分析充滿熱情。擅長運用資訊科技解決商業問題，具備良好的專案管理與團隊協作能力。積極學習新技術，期望在畢業後能從事資料分析或數位行銷相關工作。\"},\"experience\":[],\"education\":[{\"school\":\"靜宜大學\",\"degree\":\"資訊管理學系\",\"type\":\"學士\",\"year\":2026,\"gpa\":\"\",\"courses\":\"\"},{\"school\":\"市大里高中\",\"degree\":\"普通科\",\"type\":\"\",\"year\":2022,\"gpa\":\"\",\"courses\":\"\"}],\"skills\":\"Python, JavaScript, HTML\\/CSS, SQL, Excel, PowerBI, Google Analytics, 數位行銷, 資料分析, 專案管理\",\"projects\":[{\"name\":\"資料科學作品範例（測試）\",\"tech\":\"Python,數據分析,測試\",\"url\":\"\",\"github\":\"\",\"description\":\"這是用於測試的作品描述。\"},{\"name\":\"專案管理系統開發\",\"tech\":\"React,Node.js,專案管理,團隊協作,任務追蹤\",\"url\":\"\",\"github\":\"\",\"description\":\"使用 React 和 Node.js 技術棧，開發功能完整的專案管理系統。包含任務分配、進度追蹤、團隊協作、即時通訊等核心功能，提供直觀易用的操作介面。\"},{\"name\":\"電商網站使用者行為分析\",\"tech\":\"Python,PowerBI,數據分析,電商,用戶行為\",\"url\":\"\",\"github\":\"\",\"description\":\"使用 Python 和 PowerBI 進行電商網站的用戶行為深度分析，包括瀏覽路徑分析、購買轉換率研究、用戶分群洞察等，為行銷策略提供數據支持，協助企業優化營運決策。\"},{\"name\":\"社群媒體行銷策略規劃\",\"tech\":\"社群媒體,行銷策略,內容規劃,品牌推廣\",\"url\":\"\",\"github\":\"\",\"description\":\"為中小企業制定完整的社群媒體行銷策略，涵蓋內容規劃、發布時程安排、互動策略設計和成效追蹤分析，有效提升品牌知名度與客戶參與度。\"},{\"name\":\"學生資訊系統 UI\\/UX 設計\",\"tech\":\"UI\\/UX設計,響應式設計,無障礙設計,使用者研究\",\"url\":\"\",\"github\":\"\",\"description\":\"重新設計學校資訊系統的使用者介面與體驗，大幅提升學生和教師的使用滿意度。包括響應式設計實作、無障礙功能優化，以及完整的使用者測試與迭代。\"},{\"name\":\"Python 爬蟲程式開發\",\"tech\":\"Python,爬蟲,自動化,數據收集,Selenium\",\"url\":\"\",\"github\":\"\",\"description\":\"開發高效能的自動化網頁爬蟲程式，支援多種網站格式與反爬蟲機制，用於數據收集與分析。採用 Selenium 處理動態內容，實作多線程爬取提升效率。\"},{\"name\":\"專案管理系統開發\",\"tech\":\"React,Node.js,專案管理,團隊協作,任務追蹤\",\"url\":\"\",\"github\":\"\",\"description\":\"使用 React 和 Node.js 技術棧，開發功能完整的專案管理系統。包含任務分配、進度追蹤、團隊協作、即時通訊等核心功能，提供直觀易用的操作介面。\"}],\"certificates\":[]}', 'uploads/resumes/resume_5_1760672733.pdf', 1, 3, 12, 'published', 2, '2025-09-01 00:00:00', '2025-10-17 03:45:33');
+(1, 5, '黃玟瑄 的履歷', 'executive', '{\"template\":\"executive\",\"colorScheme\":\"blue\",\"font\":\"modern\",\"basic\":{\"name\":\"黃玟瑄\",\"birthDate\":\"2000-01-15\",\"email\":\"selina101292@gmail.com\",\"phone\":\"0912-345-678\",\"address\":\"台中市西區精誠路123號\",\"summary\":\"靜宜大學資訊管理學系碩士生，對數位行銷與資料分析充滿熱情。擅長運用資訊科技解決商業問題，具備良好的專案管理與團隊協作能力。積極學習新技術，期望在畢業後能從事資料分析或數位行銷相關工作。\"},\"experience\":[],\"education\":[{\"school\":\"靜宜大學\",\"degree\":\"資訊管理學系\",\"type\":\"學士\",\"year\":2026,\"gpa\":\"\",\"courses\":\"\"},{\"school\":\"市大里高中\",\"degree\":\"普通科\",\"type\":\"\",\"year\":2022,\"gpa\":\"\",\"courses\":\"\"}],\"skills\":\"Python, JavaScript, HTML\\/CSS, SQL, Excel, PowerBI, Google Analytics, 數位行銷, 資料分析, 專案管理\",\"projects\":[{\"name\":\"資料科學作品範例（測試）\",\"tech\":\"Python,數據分析,測試\",\"url\":\"\",\"github\":\"\",\"description\":\"這是用於測試的作品描述。\"},{\"name\":\"專案管理系統開發\",\"tech\":\"React,Node.js,專案管理,團隊協作,任務追蹤\",\"url\":\"\",\"github\":\"\",\"description\":\"使用 React 和 Node.js 技術棧，開發功能完整的專案管理系統。包含任務分配、進度追蹤、團隊協作、即時通訊等核心功能，提供直觀易用的操作介面。\"},{\"name\":\"電商網站使用者行為分析\",\"tech\":\"Python,PowerBI,數據分析,電商,用戶行為\",\"url\":\"\",\"github\":\"\",\"description\":\"使用 Python 和 PowerBI 進行電商網站的用戶行為深度分析，包括瀏覽路徑分析、購買轉換率研究、用戶分群洞察等，為行銷策略提供數據支持，協助企業優化營運決策。\"},{\"name\":\"社群媒體行銷策略規劃\",\"tech\":\"社群媒體,行銷策略,內容規劃,品牌推廣\",\"url\":\"\",\"github\":\"\",\"description\":\"為中小企業制定完整的社群媒體行銷策略，涵蓋內容規劃、發布時程安排、互動策略設計和成效追蹤分析，有效提升品牌知名度與客戶參與度。\"},{\"name\":\"學生資訊系統 UI\\/UX 設計\",\"tech\":\"UI\\/UX設計,響應式設計,無障礙設計,使用者研究\",\"url\":\"\",\"github\":\"\",\"description\":\"重新設計學校資訊系統的使用者介面與體驗，大幅提升學生和教師的使用滿意度。包括響應式設計實作、無障礙功能優化，以及完整的使用者測試與迭代。\"},{\"name\":\"Python 爬蟲程式開發\",\"tech\":\"Python,爬蟲,自動化,數據收集,Selenium\",\"url\":\"\",\"github\":\"\",\"description\":\"開發高效能的自動化網頁爬蟲程式，支援多種網站格式與反爬蟲機制，用於數據收集與分析。採用 Selenium 處理動態內容，實作多線程爬取提升效率。\"},{\"name\":\"專案管理系統開發\",\"tech\":\"React,Node.js,專案管理,團隊協作,任務追蹤\",\"url\":\"\",\"github\":\"\",\"description\":\"使用 React 和 Node.js 技術棧，開發功能完整的專案管理系統。包含任務分配、進度追蹤、團隊協作、即時通訊等核心功能，提供直觀易用的操作介面。\"}],\"certificates\":[]}', 'uploads/resumes/resume_5_1761110267.pdf', 1, 3, 12, 'published', 2, '2025-09-01 00:00:00', '2025-10-22 05:17:48');
 
 -- --------------------------------------------------------
 
@@ -1529,7 +1526,10 @@ INSERT INTO `talent_search_logs` (`id`, `enterprise_id`, `query`, `filters`, `re
 (123, 10, '', '{\"skills\":\"\",\"department\":\"\\u5916\\u570b\\u8a9e\\u6587\\u5b78\\u7cfb\",\"grade\":\"\\u5927\\u5b78\\u56db\\u5e74\\u7d1a\",\"minMatch\":0}', 1, 31, '2025-10-20 10:06:25'),
 (124, 10, '', '{\"skills\":\"\",\"department\":\"\\u5916\\u570b\\u8a9e\\u6587\\u5b78\\u7cfb\",\"grade\":\"\\u5927\\u5b78\\u56db\\u5e74\\u7d1a\",\"minMatch\":0}', 1, 7, '2025-10-20 10:06:25'),
 (125, 10, '', '{\"skills\":\"\",\"department\":\"\\u5916\\u570b\\u8a9e\\u6587\\u5b78\\u7cfb\",\"grade\":\"\\u5927\\u5b78\\u4e09\\u5e74\\u7d1a\",\"minMatch\":0}', 0, 17, '2025-10-20 10:06:26'),
-(126, 10, '', '{\"skills\":\"\",\"department\":\"\\u5916\\u570b\\u8a9e\\u6587\\u5b78\\u7cfb\",\"grade\":\"\\u5927\\u5b78\\u4e09\\u5e74\\u7d1a\",\"minMatch\":0}', 0, 16, '2025-10-20 10:06:27');
+(126, 10, '', '{\"skills\":\"\",\"department\":\"\\u5916\\u570b\\u8a9e\\u6587\\u5b78\\u7cfb\",\"grade\":\"\\u5927\\u5b78\\u4e09\\u5e74\\u7d1a\",\"minMatch\":0}', 0, 16, '2025-10-20 10:06:27'),
+(127, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 12, 27, '2025-10-22 05:31:20'),
+(128, 10, '黃玟瑄', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 1, 128, '2025-10-22 05:31:49'),
+(129, 10, '', '{\"skills\":\"\",\"department\":\"\",\"grade\":\"\",\"minMatch\":0}', 12, 28, '2025-10-22 05:32:09');
 
 -- --------------------------------------------------------
 
@@ -2198,19 +2198,19 @@ ALTER TABLE `content_moderation`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_analytics`
 --
 ALTER TABLE `enterprise_analytics`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_bookmarks`
 --
 ALTER TABLE `enterprise_bookmarks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_contacts`
 --
 ALTER TABLE `enterprise_contacts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `enterprise_profiles`
@@ -2264,7 +2264,7 @@ ALTER TABLE `job_applications`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `messages`
@@ -2276,13 +2276,13 @@ ALTER TABLE `messages`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolios`
 --
 ALTER TABLE `portfolios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolio_comments`
@@ -2294,7 +2294,7 @@ ALTER TABLE `portfolio_comments`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `portfolio_files`
 --
 ALTER TABLE `portfolio_files`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `reports`
@@ -2324,7 +2324,7 @@ ALTER TABLE `student_profiles`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `talent_search_logs`
 --
 ALTER TABLE `talent_search_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=130;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
