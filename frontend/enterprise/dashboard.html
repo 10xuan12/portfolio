@@ -925,7 +925,7 @@
             }
         }
         
-        // 處理圖片 URL（避免路徑重複）
+        // 處理圖片 URL（自動檢測環境）
         function getImageUrl(url) {
             if (!url || url === 'null') return '';
             
@@ -934,18 +934,23 @@
                 return url;
             }
             
-            // 如果已經包含 /portfolio/，直接返回
-            if (url.startsWith('/portfolio/')) {
+            // 如果已經是絕對路徑（/uploads/ 或 /portfolio/uploads/）
+            if (url.startsWith('/uploads/') || url.startsWith('/portfolio/uploads/')) {
+                // Railway 環境：移除 /portfolio/ 前綴
+                if (window.location.hostname.includes('railway.app')) {
+                    return url.replace('/portfolio/uploads/', '/uploads/');
+                }
+                // 本地環境：確保有 /portfolio/ 前綴
+                if (!url.startsWith('/portfolio/')) {
+                    return '/portfolio' + url;
+                }
                 return url;
             }
             
-            // 如果包含 portfolio/ 但沒有前綴 /
-            if (url.startsWith('portfolio/')) {
-                return '/' + url;
-            }
-            
-            // 其他情況，添加 /portfolio/ 前綴
-            return '/portfolio/' + url;
+            // 相對路徑：根據環境添加前綴
+            const isRailway = window.location.hostname.includes('railway.app');
+            const prefix = isRailway ? '' : '/portfolio';
+            return prefix + (url.startsWith('/') ? url : '/' + url);
         }
         
         function getDefaultThumbnail(category) {
