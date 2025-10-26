@@ -3,6 +3,9 @@
  * 包含報告處理、狀態管理、篩選功能等
  */
 
+// 初始化 API 服務
+let apiService = null;
+
 // 檢舉報告資料（可從後端 API 載入：/api/admin/reviews）
 let reports = [
     {
@@ -64,7 +67,12 @@ let currentPage = 1;
 const itemsPerPage = 10;
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // 初始化 API 服務
+    if (typeof ApiService !== 'undefined') {
+        apiService = new ApiService();
+    }
+    
     initEventListeners();
     const grid = document.getElementById('reportsGrid');
     if (grid) grid.innerHTML = `<div style="display:flex;justify-content:center;padding:20px;color:var(--text-secondary);"><i class=\"fas fa-spinner fa-spin\" style=\"margin-right:8px;\"></i>載入中...</div>`;

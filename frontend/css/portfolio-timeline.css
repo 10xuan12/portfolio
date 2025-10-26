@@ -3,7 +3,7 @@
 /* 主要容器 */
 .timeline-main {
     padding: 2rem 0;
-    background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+    background: #f8fafc;
     min-height: 100vh;
 }
 
@@ -34,12 +34,8 @@
     gap: 1rem;
     font-size: 3.12rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #273ec3;
     margin: 0 0 0.5rem 0;
-    background: linear-gradient(135deg, #7c3aed, #4A90E2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .title-icon {
@@ -53,7 +49,7 @@
 }
 
 .timeline-icon {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: #5ead73;
     position: relative;
 }
 
@@ -109,14 +105,15 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    background: #273ec3;
     color: white;
-    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 15px rgba(39, 62, 195, 0.3);
 }
 
 .btn-primary:hover {
+    background: #1e2e8f;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 6px 20px rgba(39, 62, 195, 0.4);
 }
 
 .btn-secondary {
@@ -139,7 +136,7 @@
 }
 
 .refresh-icon {
-    background: linear-gradient(45deg, #10b981, #059669);
+    background: #5ead73;
     position: relative;
 }
 
@@ -158,7 +155,7 @@
 }
 
 .export-icon {
-    background: linear-gradient(45deg, #f59e0b, #d97706);
+    background: #f59e0b;
     position: relative;
 }
 
@@ -208,7 +205,7 @@
     align-items: center;
     gap: 1rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     transition: all 0.2s ease;
@@ -230,7 +227,7 @@
 }
 
 .growth-icon {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: #273ec3;
     position: relative;
 }
 
@@ -251,14 +248,14 @@
     position: absolute;
     width: 12px;
     height: 12px;
-    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+    background: #273ec3;
     border-radius: 2px;
     top: 6px;
     left: 6px;
 }
 
 .time-icon {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: #f59e0b;
     position: relative;
 }
 
@@ -286,7 +283,7 @@
 }
 
 .progress-icon {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: #5ead73;
     position: relative;
 }
 
@@ -307,7 +304,7 @@
     position: absolute;
     width: 12px;
     height: 12px;
-    background: linear-gradient(45deg, #10b981, #059669);
+    background: #5ead73;
     border-radius: 2px;
     top: 6px;
     left: 6px;
@@ -337,7 +334,7 @@
     gap: 2rem;
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
 }
@@ -367,8 +364,8 @@
 
 .filter-group select:focus {
     outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    border-color: #273ec3;
+    box-shadow: 0 0 0 3px rgba(39, 62, 195, 0.1);
 }
 
 /* 時光機包裝器 */
@@ -406,12 +403,12 @@
 }
 
 .spinner-ring:nth-child(1) {
-    border-top-color: #7c3aed;
+    border-top-color: #273ec3;
     animation-delay: 0s;
 }
 
 .spinner-ring:nth-child(2) {
-    border-right-color: #4A90E2;
+    border-right-color: #00AEEF;
     animation-delay: -0.5s;
     width: 45px;
     height: 45px;
@@ -420,7 +417,7 @@
 }
 
 .spinner-ring:nth-child(3) {
-    border-bottom-color: #10b981;
+    border-bottom-color: #5ead73;
     animation-delay: -1s;
     width: 30px;
     height: 30px;
@@ -446,7 +443,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(to bottom, #7c3aed, #4A90E2, #10b981);
+    background: #273ec3;
     border-radius: 2px;
 }
 
@@ -465,17 +462,17 @@
     width: 16px;
     height: 16px;
     background: white;
-    border: 3px solid #7c3aed;
+    border: 3px solid #273ec3;
     border-radius: 50%;
     z-index: 2;
 }
 
 .timeline-item:nth-child(even)::before {
-    border-color: #4A90E2;
+    border-color: #00AEEF;
 }
 
 .timeline-item:nth-child(3n)::before {
-    border-color: #10b981;
+    border-color: #5ead73;
 }
 
 .timeline-card {
@@ -496,15 +493,15 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #7c3aed, #4A90E2);
+    background: #273ec3;
 }
 
 .timeline-item:nth-child(even) .timeline-card::before {
-    background: linear-gradient(90deg, #4A90E2, #10b981);
+    background: #00AEEF;
 }
 
 .timeline-item:nth-child(3n) .timeline-card::before {
-    background: linear-gradient(90deg, #10b981, #f59e0b);
+    background: #5ead73;
 }
 
 .timeline-card:hover {
@@ -523,7 +520,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #f8fafc;
     padding: 0.75rem 1rem;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
@@ -568,7 +565,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.25rem 0.75rem;
-    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    background: #273ec3;
     color: white;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -611,15 +608,15 @@
 }
 
 .timeline-stat .fas.fa-eye {
-    color: #3b82f6 !important;
+    color: #273ec3 !important;
 }
 
 .timeline-stat .fas.fa-heart {
-    color: #ef4444 !important;
+    color: #ea4f4f !important;
 }
 
 .timeline-stat .fas.fa-comment {
-    color: #10b981 !important;
+    color: #5ead73 !important;
 }
 
 /* 無資料狀態 */
@@ -638,7 +635,7 @@
     height: 80px;
     border-radius: 50%;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    background: #e2e8f0;
     position: relative;
 }
 

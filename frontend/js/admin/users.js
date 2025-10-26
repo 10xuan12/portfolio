@@ -3,6 +3,9 @@
  * 包含使用者搜尋、篩選、批量操作、狀態管理等功能
  */
 
+// 初始化 API 服務
+let apiService = null;
+
 // 使用者資料（可從後端 API 載入：/api/admin/users）
 let users = [
     {
@@ -83,7 +86,12 @@ const itemsPerPage = 10;
 let selectedUsers = new Set();
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // 初始化 API 服務
+    if (typeof ApiService !== 'undefined') {
+        apiService = new ApiService();
+    }
+    
     initEventListeners();
     const tbody = document.getElementById('usersTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="8"><div style=\"display:flex;justify-content:center;padding:20px;color:var(--text-secondary);\"><i class=\"fas fa-spinner fa-spin\" style=\"margin-right:8px;\"></i>載入中...</div></td></tr>`;

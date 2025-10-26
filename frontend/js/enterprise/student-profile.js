@@ -87,11 +87,57 @@
             const works = p2.data || p2;
             renderProfile(profile);
             renderWorks(Array.isArray(works) ? works : []);
+            setupBookmarkButton(id);
         } catch (e) {
             console.error('載入學生公開資料失敗', e);
             alert('無法載入學生資料');
         }
     });
+
+    // 設定收藏按鈕
+    function setupBookmarkButton(studentId) {
+        const btnBookmark = document.getElementById('btnBookmark');
+        if (!btnBookmark) return;
+        
+        btnBookmark.addEventListener('click', async function() {
+            // 注意：這裡收藏的是學生，不是作品
+            // 如果系統有學生收藏功能，可以在這裡實現
+            // 暫時顯示通知
+            showNotification('學生收藏功能開發中，請先收藏學生的作品', 'info');
+        });
+        
+        const btnContact = document.getElementById('btnContact');
+        if (btnContact) {
+            btnContact.addEventListener('click', function() {
+                showNotification('聯絡功能開發中', 'info');
+            });
+        }
+    }
+    
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#2ecc71' : '#3498db'};
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
 })();
 
 

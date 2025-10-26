@@ -101,9 +101,13 @@
 /* 圖表區域 */
 .charts-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-2xl);
+}
+
+.chart-card-wide {
+    grid-column: 1 / -1;
 }
 
 .chart-card {
@@ -144,7 +148,8 @@
     min-height: 300px;
 }
 
-.chart-placeholder {
+.chart-placeholder,
+.loading-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -155,10 +160,37 @@
     color: var(--text-secondary);
 }
 
-.chart-placeholder i {
+.chart-placeholder i,
+.loading-placeholder i {
     font-size: var(--text-3xl);
     margin-bottom: var(--spacing-md);
     color: var(--gray-400);
+}
+
+.loading-placeholder p {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2xl);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--gray-400);
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: var(--text-sm);
 }
 
 /* 技能圖表 */

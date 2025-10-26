@@ -49,20 +49,28 @@ if (typeof window.ApiService === 'undefined') {
      * 取得完整的 API URL（支援版本控制）
      */
     getApiUrl(endpoint) {
-        if (typeof getApiUrl === 'function') {
-            return getApiUrl(endpoint);
+        // 優先使用全域配置的 getApiUrl 函數
+        if (typeof window.getApiUrl === 'function') {
+            const url = window.getApiUrl(endpoint);
+            // 確保 PHP 檔案有 .php 後綴
+            if (!url.endsWith('.php') && !url.includes('?') && !url.includes('.')) {
+                return url + '.php';
+            }
+            return url;
         }
         
         const baseUrl = this.baseUrl;
         const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
         
-        // 如果endpoint已經包含版本，直接使用
-        if (cleanEndpoint.includes('/v1/') || cleanEndpoint.includes('/v2/')) {
-            return `${baseUrl}/${cleanEndpoint}`;
+        // 直接組合 URL，不添加版本前綴（因為 PHP 後端不使用版本路由）
+        let fullUrl = `${baseUrl}/${cleanEndpoint}`;
+        
+        // 確保 PHP 檔案有 .php 後綴
+        if (!fullUrl.endsWith('.php') && !fullUrl.includes('?') && !fullUrl.includes('.')) {
+            fullUrl += '.php';
         }
         
-        // 否則添加版本前綴
-        return `${baseUrl}/${this.apiVersion}/${cleanEndpoint}`;
+        return fullUrl;
     }
     
     /**

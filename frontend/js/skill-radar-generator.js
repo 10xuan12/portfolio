@@ -33,20 +33,53 @@ class SkillRadarGenerator {
         }
     }
 
+    updatePageSubtitle(student, portfolioCount) {
+        const subtitleElement = document.getElementById('pageSubtitle');
+        if (subtitleElement && student) {
+            const studentName = student.display_name || student.first_name || student.username || '您';
+            const portfolioText = portfolioCount > 0 ? `，已分析 ${portfolioCount} 個作品` : '';
+            subtitleElement.textContent = `${studentName} 的技能分析雷達圖${portfolioText}`;
+        }
+    }
+
     async fetchSkillAnalysis() {
         try {
+            console.log('正在為學生 ID', this.studentId, '獲取技能分析數據...');
             const response = await fetch(`/portfolio/api/student/skill-analysis.php?action=get_skill_analysis&student_id=${this.studentId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
+            console.log('技能分析 API 回應:', data);
 
             if (data.status === 200 || data.success) {
                 this.skillsData = data.data;
+                
+                // 驗證返回的數據是否為當前請求的學生
+                const returnedStudentId = data.data.student_id || data.data.student?.id;
+                if (returnedStudentId && returnedStudentId != this.studentId) {
+                    console.warn('警告：返回的學生ID與請求的不符！', {
+                        requested: this.studentId,
+                        returned: returnedStudentId
+                    });
+                }
+                
+                console.log('成功載入學生', this.studentId, '的技能數據', {
+                    studentName: data.data.student?.display_name || data.data.student?.username,
+                    portfolioCount: data.data.portfolio_count || data.data.portfolios?.length || 0
+                });
+                
+                // 更新頁面副標題顯示學生姓名
+                this.updatePageSubtitle(data.data.student, data.data.portfolio_count || data.data.portfolios?.length || 0);
             } else {
-                this.showErrorState('技能分析失敗：' + data.message);
+                this.showErrorState('技能分析失敗：' + (data.message || '未知錯誤'));
                 console.error("Skill analysis API error:", data.message);
             }
         } catch (error) {
-            this.showErrorState('載入技能分析時發生錯誤。');
-            console.error("Error fetching skill analysis:", error);
+            this.showErrorState('載入技能分析時發生錯誤：' + error.message);
+            console.error("Error fetching skill analysis for student", this.studentId, ":", error);
         }
     }
 

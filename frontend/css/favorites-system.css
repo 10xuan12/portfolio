@@ -414,3 +414,25 @@
     background: #999;
 }
 
+/* 查看完整頁面按鈕 */
+.view-all-btn {
+    padding: 8px 16px;
+    background: #4A90E2;
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.view-all-btn:hover {
+    background: #357ABD;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}

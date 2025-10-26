@@ -1,5 +1,5 @@
 <?php
-require_once '../config.php';
+require_once __DIR__ . '/../config.php';
 
 // 管理員儀表板 API
 switch ($_SERVER['REQUEST_METHOD']) {
@@ -12,7 +12,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
 // 取得儀表板統計資料
 function getDashboardStats() {
-    checkPermission('admin');
+    // 檢查管理員 session（簡化版權限檢查）
+    session_start();
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        sendError('需要管理員權限', 403);
+    }
     
     try {
         // 基本統計
@@ -35,12 +39,17 @@ function getDashboardStats() {
         $stats['totalPortfolios'] = (int)$stmt->fetch_assoc()['total'];
         
         // 總職缺數
-        $stmt = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM jobs");
-        $stats['totalJobs'] = (int)$stmt->fetch_assoc()['total'];
+        $result = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM jobs");
+        $stats['totalJobs'] = $result ? (int)$result->fetch_assoc()['total'] : 0;
         
-        // 總申請數
-        $stmt = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM applications");
-        $stats['totalApplications'] = (int)$stmt->fetch_assoc()['total'];
+        // 總申請數（如果表存在）
+        $result = $GLOBALS['conn']->query("SHOW TABLES LIKE 'applications'");
+        if ($result && $result->num_rows > 0) {
+            $stmt = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM applications");
+            $stats['totalApplications'] = (int)$stmt->fetch_assoc()['total'];
+        } else {
+            $stats['totalApplications'] = 0;
+        }
         
         // 本月新增使用者
         $stmt = $GLOBALS['conn']->query("
@@ -59,79 +68,86 @@ function getDashboardStats() {
         $stats['thisMonthPortfolios'] = (int)$stmt->fetch_assoc()['total'];
         
         // 本月新增職缺
-        $stmt = $GLOBALS['conn']->query("
+        $result = $GLOBALS['conn']->query("
             SELECT COUNT(*) as total FROM jobs 
             WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) 
             AND YEAR(created_at) = YEAR(CURRENT_DATE())
         ");
-        $stats['thisMonthJobs'] = (int)$stmt->fetch_assoc()['total'];
+        $stats['thisMonthJobs'] = $result ? (int)$result->fetch_assoc()['total'] : 0;
         
-        // 本月新增申請
-        $stmt = $GLOBALS['conn']->query("
-            SELECT COUNT(*) as total FROM applications 
-            WHERE MONTH(applied_at) = MONTH(CURRENT_DATE()) 
-            AND YEAR(applied_at) = YEAR(CURRENT_DATE())
-        ");
-        $stats['thisMonthApplications'] = (int)$stmt->fetch_assoc()['total'];
+        // 本月新增申請（如果表存在）
+        $result = $GLOBALS['conn']->query("SHOW TABLES LIKE 'applications'");
+        if ($result && $result->num_rows > 0) {
+            $stmt = $GLOBALS['conn']->query("
+                SELECT COUNT(*) as total FROM applications 
+                WHERE MONTH(applied_at) = MONTH(CURRENT_DATE()) 
+                AND YEAR(applied_at) = YEAR(CURRENT_DATE())
+            ");
+            $stats['thisMonthApplications'] = (int)$stmt->fetch_assoc()['total'];
+        } else {
+            $stats['thisMonthApplications'] = 0;
+        }
         
         // 最近活動
         $recentActivities = [];
-        $stmt = $GLOBALS['conn']->query("
+        $result = $GLOBALS['conn']->query("
             SELECT 
                 'user' as type,
                 CONCAT('新學生註冊：', u.username) as text,
                 u.created_at as time,
                 'pending' as status
             FROM users u
-            WHERE u.role = 'student' AND u.status = 'pending'
+            WHERE u.role = 'student'
             ORDER BY u.created_at DESC
             LIMIT 5
         ");
-        while ($row = $stmt->fetch_assoc()) {
-            $row['time'] = getTimeAgo($row['time']);
-            $recentActivities[] = $row;
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $row['time'] = getTimeAgo($row['time']);
+                $recentActivities[] = $row;
+            }
         }
         
         // 待審核項目
         $pendingReviews = [];
         
         // 待審核學生
-        $stmt = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM users WHERE role = 'student' AND status = 'pending'");
+        $result = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM users WHERE role = 'student' AND status = 'pending'");
         $pendingReviews[] = [
             'id' => 1,
             'type' => 'user',
             'title' => '學生註冊審核',
-            'count' => (int)$stmt->fetch_assoc()['total'],
+            'count' => $result ? (int)$result->fetch_assoc()['total'] : 0,
             'description' => '等待審核的學生註冊申請'
         ];
         
         // 待審核企業
-        $stmt = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM users WHERE role = 'enterprise' AND status = 'pending'");
+        $result = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM users WHERE role = 'enterprise' AND status = 'pending'");
         $pendingReviews[] = [
             'id' => 2,
             'type' => 'enterprise',
             'title' => '企業註冊審核',
-            'count' => (int)$stmt->fetch_assoc()['total'],
+            'count' => $result ? (int)$result->fetch_assoc()['total'] : 0,
             'description' => '等待審核的企業註冊申請'
         ];
         
         // 待審核作品
-        $stmt = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM portfolios WHERE status = 'pending'");
+        $result = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM portfolios WHERE status = 'pending'");
         $pendingReviews[] = [
             'id' => 3,
             'type' => 'portfolio',
             'title' => '作品審核',
-            'count' => (int)$stmt->fetch_assoc()['total'],
+            'count' => $result ? (int)$result->fetch_assoc()['total'] : 0,
             'description' => '等待審核的作品上傳'
         ];
         
         // 待審核職缺
-        $stmt = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM jobs WHERE status = 'pending'");
+        $result = $GLOBALS['conn']->query("SELECT COUNT(*) as total FROM jobs WHERE status = 'pending'");
         $pendingReviews[] = [
             'id' => 4,
             'type' => 'job',
             'title' => '職缺審核',
-            'count' => (int)$stmt->fetch_assoc()['total'],
+            'count' => $result ? (int)$result->fetch_assoc()['total'] : 0,
             'description' => '等待審核的職缺發布'
         ];
         

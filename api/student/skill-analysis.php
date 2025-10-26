@@ -67,6 +67,9 @@ function getSkillAnalysis() {
         throw new Exception('缺少學生ID參數');
     }
     
+    // 記錄請求的學生ID，方便調試
+    error_log("獲取學生技能分析 - Student ID: " . $studentId);
+    
     global $conn;
     $db = $conn;
     
@@ -144,12 +147,17 @@ function getSkillAnalysis() {
     // 生成雷達圖數據
     $radarChartData = generateRadarChartData($skillAnalysis);
     
+    // 記錄分析結果
+    error_log("學生 ID " . $studentId . " 的技能分析完成 - 作品數: " . count($portfolios));
+    
     echo json_encode([
         'status' => 200,
         'message' => '技能分析成功',
         'data' => [
             'student' => $student,
+            'student_id' => (int)$studentId, // 明確返回請求的學生ID
             'portfolios' => $portfolios,
+            'portfolio_count' => count($portfolios),
             'skill_analysis' => $skillAnalysis,
             'skill_trends' => $skillTrends,
             'interaction_stats' => $interactionStats,

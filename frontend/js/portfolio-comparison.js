@@ -323,7 +323,7 @@ class PortfolioComparison {
         const departments = [
             '資訊工程', '資訊管理', '資訊科學', '電腦科學',
             '軟體工程', '網路工程', '多媒體設計', '數位媒體',
-            '商業管理', '企業管理', '行銷管理', '其他'
+            '商業管理', '企業管理', '行銷管理', '其他科系'
         ];
         
         departments.forEach(department => {
@@ -379,7 +379,20 @@ class PortfolioComparison {
         
         this.allPortfolios.forEach((portfolio, index) => {
             const isSelected = this.selectedPortfolios.some(p => p.id === portfolio.id);
-            const thumbnail = portfolio.cover_image || this.getDefaultThumbnail(portfolio.category);
+            // 使用作品標題進行智能分類檢測
+            const categoryData = this.getCategoryData(portfolio.category_name || portfolio.category, portfolio.title);
+            const thumbnail = portfolio.cover_image || this.getDefaultThumbnail(categoryData.name);
+            
+            // 調試輸出
+            if (index < 3) {
+                console.log(`作品 ${index + 1}:`, {
+                    title: portfolio.title,
+                    originalCategory: portfolio.category_name || portfolio.category,
+                    detectedCategory: categoryData.name,
+                    icon: categoryData.icon,
+                    color: categoryData.color
+                });
+            }
             
             gridHtml += `
                 <div class="portfolio-card ${isSelected ? 'selected' : ''}" 
@@ -391,18 +404,18 @@ class PortfolioComparison {
                     <div class="portfolio-info">
                         <h3>${portfolio.title}</h3>
                         <div class="portfolio-meta">
-                            <div class="portfolio-category">
-                                <div class="category-icon"></div>
-                                ${portfolio.category || '其他'}
+                            <div class="portfolio-category" style="background: ${categoryData.color}">
+                                <i class="${categoryData.icon}"></i>
+                                ${categoryData.name}
                             </div>
                         </div>
                         <div class="portfolio-stats">
                             <div class="portfolio-stat">
-                                <div class="stat-icon view-icon"></div>
+                                <i class="fas fa-eye view-icon"></i>
                                 <span>${portfolio.view_count || 0}</span>
                             </div>
                             <div class="portfolio-stat">
-                                <div class="stat-icon like-icon"></div>
+                                <i class="fas fa-heart like-icon"></i>
                                 <span>${portfolio.like_count || 0}</span>
                             </div>
                         </div>
@@ -412,6 +425,89 @@ class PortfolioComparison {
         });
 
         this.container.innerHTML = gridHtml;
+    }
+
+    // 獲取分類數據（包括圖標、顏色和名稱）
+    getCategoryData(categoryName, portfolioTitle = '') {
+        // 優先使用作品標題進行智能分類判斷
+        const titleForDetection = portfolioTitle || categoryName;
+        const category = this.detectCategory(titleForDetection);
+        
+        const categoryMap = {
+            '前端開發': { name: '前端開發', icon: 'fas fa-code', color: '#3B82F6' },
+            '後端開發': { name: '後端開發', icon: 'fas fa-server', color: '#8B5CF6' },
+            'UI/UX設計': { name: 'UI/UX設計', icon: 'fas fa-palette', color: '#F59E0B' },
+            '資料分析': { name: '資料分析', icon: 'fas fa-chart-bar', color: '#10B981' },
+            '行動開發': { name: '行動開發', icon: 'fas fa-mobile-alt', color: '#EF4444' },
+            '遊戲開發': { name: '遊戲開發', icon: 'fas fa-gamepad', color: '#EC4899' },
+            '人工智慧': { name: '人工智慧', icon: 'fas fa-brain', color: '#6366F1' },
+            '機器學習': { name: '機器學習', icon: 'fas fa-robot', color: '#8B5CF6' },
+            '區塊鏈': { name: '區塊鏈', icon: 'fas fa-link', color: '#14B8A6' },
+            '雲端運算': { name: '雲端運算', icon: 'fas fa-cloud', color: '#06B6D4' },
+            '網路安全': { name: '網路安全', icon: 'fas fa-shield-alt', color: '#DC2626' },
+            '資料庫': { name: '資料庫', icon: 'fas fa-database', color: '#7C3AED' },
+            '建築設計': { name: '建築設計', icon: 'fas fa-building', color: '#059669' },
+            '工業設計': { name: '工業設計', icon: 'fas fa-cogs', color: '#D97706' },
+            '產品設計': { name: '產品設計', icon: 'fas fa-box', color: '#EA580C' },
+            '平面設計': { name: '平面設計', icon: 'fas fa-image', color: '#F59E0B' },
+            '3D設計': { name: '3D設計', icon: 'fas fa-cube', color: '#8B5CF6' },
+            '動畫設計': { name: '動畫設計', icon: 'fas fa-film', color: '#EC4899' },
+            '網頁設計': { name: '網頁設計', icon: 'fas fa-desktop', color: '#3B82F6' },
+            '多媒體設計': { name: '多媒體設計', icon: 'fas fa-photo-video', color: '#F59E0B' },
+            '系統開發': { name: '系統開發', icon: 'fas fa-project-diagram', color: '#6366F1' },
+            '嵌入式系統': { name: '嵌入式系統', icon: 'fas fa-microchip', color: '#EF4444' },
+            '物聯網': { name: '物聯網', icon: 'fas fa-wifi', color: '#14B8A6' },
+            '自動化': { name: '自動化', icon: 'fas fa-industry', color: '#64748B' },
+            '其他': { name: '其他', icon: 'fas fa-folder', color: '#94A3B8' }
+        };
+        
+        return categoryMap[category] || { name: category || '未分類', icon: 'fas fa-folder', color: '#94A3B8' };
+    }
+
+    // 智能檢測分類
+    detectCategory(title) {
+        if (!title) return '其他';
+        
+        const titleLower = title.toLowerCase();
+        
+        // 定義關鍵字映射
+        const keywordMap = {
+            '前端開發': ['前端', 'frontend', 'react', 'vue', 'angular', 'web開發', '網頁', 'html', 'css', 'javascript'],
+            '後端開發': ['後端', 'backend', 'api', 'server', 'node', 'python', 'java', 'php', '伺服器'],
+            'UI/UX設計': ['ui', 'ux', '介面', '使用者', '體驗', 'user interface', 'user experience', 'figma', 'sketch'],
+            '資料分析': ['資料', 'data', '分析', 'analytics', '數據', '統計', 'visualization', '視覺化'],
+            '行動開發': ['行動', 'mobile', 'app', 'ios', 'android', 'flutter', 'react native', '應用程式'],
+            '遊戲開發': ['遊戲', 'game', 'unity', 'unreal', '3d遊戲'],
+            '人工智慧': ['ai', '人工智慧', 'artificial intelligence', '智能', '深度學習', 'deep learning'],
+            '機器學習': ['machine learning', '機器學習', 'ml', 'tensorflow', 'pytorch', '模型'],
+            '區塊鏈': ['blockchain', '區塊鏈', 'crypto', 'ethereum', 'smart contract', '智能合約'],
+            '雲端運算': ['cloud', '雲端', 'aws', 'azure', 'gcp', '雲計算'],
+            '網路安全': ['security', '安全', 'cybersecurity', '資安', '防護'],
+            '資料庫': ['database', '資料庫', 'sql', 'nosql', 'mongodb', 'mysql'],
+            '建築設計': ['建築', 'architecture', '永續', 'sustainable', '建設'],
+            '工業設計': ['工業', 'industrial', '製造', '產線'],
+            '產品設計': ['產品', 'product', '設計'],
+            '平面設計': ['平面', 'graphic', '海報', 'poster', '視覺'],
+            '3D設計': ['3d', '立體', '建模', 'modeling'],
+            '動畫設計': ['動畫', 'animation', '影片', 'video'],
+            '網頁設計': ['網頁設計', 'web design', '網站'],
+            '多媒體設計': ['多媒體', 'multimedia', '影音'],
+            '系統開發': ['系統', 'system', '平台', 'platform'],
+            '嵌入式系統': ['嵌入式', 'embedded', 'iot device'],
+            '物聯網': ['iot', '物聯網', 'internet of things'],
+            '自動化': ['自動化', 'automation', '智慧工廠', 'smart factory', '工廠']
+        };
+        
+        // 檢查每個類別的關鍵字
+        for (const [category, keywords] of Object.entries(keywordMap)) {
+            for (const keyword of keywords) {
+                if (titleLower.includes(keyword.toLowerCase())) {
+                    return category;
+                }
+            }
+        }
+        
+        return '其他';
     }
 
     getDefaultThumbnail(category) {
@@ -475,7 +571,7 @@ class PortfolioComparison {
                     ${this.selectedPortfolios.map(portfolio => `
                         <div class="summary-card">
                             <h4>${portfolio.title}</h4>
-                            <p><strong>類型：</strong>${portfolio.category || '其他'}</p>
+                            <p><strong>類型：</strong>${portfolio.category_name || portfolio.category || '未分類'}</p>
                             <p><strong>瀏覽數：</strong>${portfolio.view_count || 0}</p>
                             <p><strong>讚數：</strong>${portfolio.like_count || 0}</p>
                         </div>
@@ -550,7 +646,7 @@ class PortfolioComparison {
                     <div class="portfolio-detail-card">
                         <div class="detail-header">
                             <h3>${portfolio.title}</h3>
-                            <div class="detail-category">${portfolio.category || '其他'}</div>
+                            <div class="detail-category">${portfolio.category_name || portfolio.category || '未分類'}</div>
                         </div>
                         <div class="detail-content">
                             <p><strong>描述：</strong>${portfolio.description || '暫無描述'}</p>
@@ -729,7 +825,8 @@ class PortfolioComparison {
         let score = 0;
         
         // 基礎分數：根據作品分類
-        if (portfolio.category === skill) {
+        const categoryName = portfolio.category_name || portfolio.category;
+        if (categoryName === skill) {
             score += 70;
         }
         
@@ -773,9 +870,10 @@ class PortfolioComparison {
         // 從所有選中的作品中收集技能
         this.selectedPortfolios.forEach(portfolio => {
             // 添加作品分類作為技能
-            if (portfolio.category) {
-                allSkills[portfolio.category] = true;
-                skillCounts[portfolio.category] = (skillCounts[portfolio.category] || 0) + 1;
+            const categoryName = portfolio.category_name || portfolio.category;
+            if (categoryName) {
+                allSkills[categoryName] = true;
+                skillCounts[categoryName] = (skillCounts[categoryName] || 0) + 1;
             }
             
             // 添加技能標籤
@@ -915,10 +1013,10 @@ class PortfolioComparison {
         let filtered = this.allPortfolios;
         
         if (category) {
-            filtered = filtered.filter(portfolio => 
-                portfolio.category === category || 
-                portfolio.category_name === category
-            );
+            filtered = filtered.filter(portfolio => {
+                const categoryName = portfolio.category_name || portfolio.category;
+                return categoryName === category;
+            });
         }
         
         if (department) {

@@ -1,6 +1,6 @@
 /**
  * 作品收藏夾系統
- * 純前端實現，使用 localStorage 儲存
+ * 整合後端 API，支援資料庫儲存
  */
 
 class FavoritesSystem {
@@ -8,15 +8,21 @@ class FavoritesSystem {
         this.storageKey = 'portfolio_favorites';
         this.foldersKey = 'portfolio_folders';
         this.currentFolder = 'all';
+        this.useBackend = true; // 使用後端 API
         this.init();
     }
 
     /**
      * 初始化系統
      */
-    init() {
+    async init() {
         // 確保有預設資料夾
         this.ensureDefaultFolders();
+        
+        // 如果使用後端，先載入資料
+        if (this.useBackend) {
+            await this.loadFavoritesFromBackend();
+        }
         
         // 創建面板 UI
         this.createPanel();
@@ -71,9 +77,9 @@ class FavoritesSystem {
             
             <div class="favorites-stats">
                 <span>已收藏 <span class="favorites-count" id="favoritesCount">0</span> 件作品</span>
-                <button class="add-folder-btn" onclick="favoritesSystem.addFolder()">
-                    <i class="fas fa-folder-plus"></i> 新增分類
-                </button>
+                <a href="bookmarks.html" class="view-all-btn" title="查看完整收藏頁面">
+                    <i class="fas fa-external-link-alt"></i> 完整頁面
+                </a>
             </div>
             
             <div class="favorites-actions">
@@ -175,7 +181,53 @@ class FavoritesSystem {
     /**
      * 添加收藏
      */
-    addFavorite(portfolioData) {
+    async addFavorite(portfolioData) {
+        if (this.useBackend) {
+            try {
+                const svc = window.apiService || window.initializeApiService?.();
+                if (!svc) {
+                    console.warn('API 服務未就緒，使用本地儲存');
+                    return this.addFavoriteLocal(portfolioData);
+                }
+
+                // 調用後端 API
+                const response = await svc.request('enterprise/portfolios.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        action: 'bookmark',
+                        portfolio_id: portfolioData.id,
+                        notes: portfolioData.notes || ''
+                    })
+                });
+                
+                const data = response?.data || response || {};
+                if (data.is_bookmarked) {
+                    // 更新 UI
+                    await this.loadFavoritesFromBackend();
+                    this.updateCount();
+                    this.renderList();
+                    this.showNotification('已加入收藏 ❤️');
+                    return true;
+                } else {
+                    console.log('作品已存在於收藏中');
+                    return false;
+                }
+            } catch (error) {
+                console.error('收藏失敗，使用本地儲存:', error);
+                return this.addFavoriteLocal(portfolioData);
+            }
+        } else {
+            return this.addFavoriteLocal(portfolioData);
+        }
+    }
+
+    /**
+     * 本地儲存方式添加收藏（降級方案）
+     */
+    addFavoriteLocal(portfolioData) {
         const favorites = this.getFavorites();
         
         // 檢查是否已收藏
@@ -213,7 +265,45 @@ class FavoritesSystem {
     /**
      * 移除收藏
      */
-    removeFavorite(portfolioId) {
+    async removeFavorite(portfolioId) {
+        if (this.useBackend) {
+            try {
+                const svc = window.apiService || window.initializeApiService?.();
+                if (!svc) {
+                    console.warn('API 服務未就緒，使用本地儲存');
+                    return this.removeFavoriteLocal(portfolioId);
+                }
+
+                // 調用後端 API 切換（實際上是取消收藏）
+                await svc.request('enterprise/portfolios.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        action: 'bookmark',
+                        portfolio_id: portfolioId 
+                    })
+                });
+                
+                // 更新 UI
+                await this.loadFavoritesFromBackend();
+                this.updateCount();
+                this.renderList();
+                this.showNotification('已取消收藏');
+            } catch (error) {
+                console.error('取消收藏失敗，使用本地儲存:', error);
+                this.removeFavoriteLocal(portfolioId);
+            }
+        } else {
+            this.removeFavoriteLocal(portfolioId);
+        }
+    }
+
+    /**
+     * 本地儲存方式移除收藏（降級方案）
+     */
+    removeFavoriteLocal(portfolioId) {
         let favorites = this.getFavorites();
         favorites = favorites.filter(f => f.id !== portfolioId);
         localStorage.setItem(this.storageKey, JSON.stringify(favorites));
@@ -227,17 +317,47 @@ class FavoritesSystem {
     }
 
     /**
+     * 從後端載入收藏列表
+     */
+    async loadFavoritesFromBackend() {
+        try {
+            const svc = window.apiService || window.initializeApiService?.();
+            if (!svc) return;
+
+            const response = await svc.request('enterprise/portfolios.php?action=bookmarks');
+            const bookmarks = response?.data || response || [];
+            
+            // 轉換為前端格式並儲存到 localStorage（作為緩存）
+            const favorites = bookmarks.map(b => ({
+                id: b.id,
+                title: b.title,
+                author: b.display_name || b.username || '學生',
+                image: b.cover_image,
+                views: b.view_count || 0,
+                likes: b.like_count || 0,
+                comments: b.comment_count || 0,
+                folder: 'all',
+                addedAt: b.bookmarked_at || new Date().toISOString()
+            }));
+            
+            localStorage.setItem(this.storageKey, JSON.stringify(favorites));
+        } catch (error) {
+            console.error('從後端載入收藏失敗:', error);
+        }
+    }
+
+    /**
      * 切換收藏狀態
      */
-    toggleFavorite(portfolioData) {
+    async toggleFavorite(portfolioData) {
         const favorites = this.getFavorites();
         const isFavorited = favorites.some(f => f.id === portfolioData.id);
         
         if (isFavorited) {
-            this.removeFavorite(portfolioData.id);
+            await this.removeFavorite(portfolioData.id);
             return false;
         } else {
-            this.addFavorite(portfolioData);
+            await this.addFavorite(portfolioData);
             return true;
         }
     }
@@ -283,9 +403,16 @@ class FavoritesSystem {
     /**
      * 打開面板
      */
-    openPanel() {
+    async openPanel() {
         const panel = document.getElementById('favoritesPanel');
         panel.classList.add('open');
+        
+        // 重新載入最新的收藏資料
+        if (this.useBackend) {
+            await this.loadFavoritesFromBackend();
+        }
+        
+        this.updateCount();
         this.renderList();
     }
 
@@ -327,9 +454,33 @@ class FavoritesSystem {
     /**
      * 清空收藏
      */
-    clearFavorites() {
+    async clearFavorites() {
         if (!confirm('確定要清空所有收藏嗎？此操作無法恢復。')) {
             return;
+        }
+        
+        if (this.useBackend) {
+            try {
+                const svc = window.apiService || window.initializeApiService?.();
+                if (svc) {
+                    const favorites = this.getFavorites();
+                    // 逐一取消收藏
+                    for (const fav of favorites) {
+                        await svc.request('enterprise/portfolios.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ 
+                                action: 'bookmark',
+                                portfolio_id: fav.id 
+                            })
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('清空收藏失敗:', error);
+            }
         }
         
         localStorage.setItem(this.storageKey, JSON.stringify([]));

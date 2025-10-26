@@ -43,7 +43,7 @@
                             <i class="fas fa-chart-radar"></i>
                             技能雷達圖分析
                         </h1>
-                        <p class="page-subtitle">基於您的作品自動生成技能分析雷達圖，幫助您了解自己的技能分布</p>
+                        <p class="page-subtitle" id="pageSubtitle">基於您的作品自動生成技能分析雷達圖，幫助您了解自己的技能分布</p>
                     </div>
                     <div class="header-actions">
                         <button class="btn btn-outline" onclick="goBack()">
@@ -110,8 +110,36 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // 從 localStorage 獲取當前登入的學生資訊
+            const userStr = localStorage.getItem('user');
+            
+            if (!userStr) {
+                // 未登入，重導向到登入頁面
+                alert('請先登入');
+                window.location.href = '../login.html';
+                return;
+            }
+            
+            const user = JSON.parse(userStr);
+            
+            // 確認是學生角色
+            if (user.role !== 'student') {
+                alert('此功能僅供學生使用');
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // 使用當前登入學生的 ID 初始化技能雷達圖
+            const studentId = user.id || user.user_id;
+            
+            if (!studentId) {
+                alert('無法取得學生資訊');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
             // 初始化技能雷達圖
-            new SkillRadarGenerator('skillRadarChart', 5);
+            window.skillRadarGenerator = new SkillRadarGenerator('skillRadarChart', studentId);
         });
 
         function refreshAnalysis() {
@@ -132,12 +160,17 @@
 
         function exportRadarChart() {
             // 匯出圖表功能
-            const canvas = document.querySelector('#skillRadarChart canvas');
-            if (canvas) {
-                const link = document.createElement('a');
-                link.download = 'skill-radar-chart.png';
-                link.href = canvas.toDataURL();
-                link.click();
+            if (window.skillRadarGenerator) {
+                window.skillRadarGenerator.exportChart();
+            } else {
+                // 備用方案：直接從 canvas 匯出
+                const canvas = document.querySelector('#skillRadarChart canvas');
+                if (canvas) {
+                    const link = document.createElement('a');
+                    link.download = 'skill-radar-chart.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                }
             }
         }
     </script>

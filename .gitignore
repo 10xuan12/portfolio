@@ -1,56 +1,59 @@
-# ---------------------------
-# 📦 Node.js 相關
-# ---------------------------
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Dependencies
+/vendor/
+/node_modules/
 
-# ---------------------------
-# 🐘 PHP + Composer 專案
-# ---------------------------
-vendor/
-composer.lock
+# Environment files
+.env
+.env.local
+.env.*.local
 
-# ---------------------------
-# 💻 VS Code 開發工具
-# ---------------------------
+# IDE
 .vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-# ---------------------------
-# 🖼️ 圖片、音樂、影片等大型檔案（避免佔空間）
-# ---------------------------
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.svg
-*.mp4
-*.mov
-*.avi
-*.mp3
-*.wav
-*.zip
-*.rar
-*.7z
-*.dll
-*.exe
-
-# ---------------------------
-# ⚙️ 系統自動產生的垃圾檔案
-# ---------------------------
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# ---------------------------
-# 🔐 機密設定檔
-# ---------------------------
-.env
+# Logs
+/logs/*.log
+*.log
 
-# ---------------------------
-# 🏗️ 編譯產物資料夾
-# ---------------------------
-dist/
-build/
-bin/
-out/
+# Cache
+/cache/*
+!cache/.gitkeep
+
+# Uploads (不上傳使用者檔案到 Git)
+/uploads/*
+!/uploads/.gitkeep
+/api/uploads/*
+!/api/uploads/.gitkeep
+
+# Database
+*.sql
+!database/eportfolio2.sql
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
+# Build files
+*.zip
+*.tar
+*.gz
+
+# Secret files
+js/SECRET.env
+
+# MySQL binaries
+/bin/
+/lib/
+/libexec/
+/share/
+
+# PHP
+composer.phar

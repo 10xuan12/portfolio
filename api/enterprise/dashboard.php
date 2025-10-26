@@ -337,91 +337,183 @@ function getJobSummary() {
 
 // 取得分析資料
 function getAnalytics() {
-    $userId = checkPermission('enterprise');
-    $days = isset($_GET['days']) ? (int)$_GET['days'] : 30;
+    try {
+        $userId = checkPermission('enterprise');
+        $days = isset($_GET['days']) ? (int)$_GET['days'] : 30;
+        
+        // 每日瀏覽統計
+        $viewStmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                DATE(ev.view_date) as date,
+                COUNT(*) as views
+            FROM enterprise_views ev
+            WHERE ev.enterprise_id = ? AND ev.view_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            GROUP BY DATE(ev.view_date)
+            ORDER BY date ASC
+        ");
+        if (!$viewStmt) {
+            throw new Exception('準備瀏覽統計查詢失敗: ' . $GLOBALS['conn']->error);
+        }
+        $viewStmt->bind_param("ii", $userId, $days);
+        if (!$viewStmt->execute()) {
+            throw new Exception('執行瀏覽統計查詢失敗: ' . $viewStmt->error);
+        }
+        $viewStats = $viewStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        
+        // 每日聯絡統計
+        $contactStmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                DATE(ec.contact_date) as date,
+                COUNT(*) as contacts
+            FROM enterprise_contacts ec
+            WHERE ec.enterprise_id = ? AND ec.contact_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            GROUP BY DATE(ec.contact_date)
+            ORDER BY date ASC
+        ");
+        if (!$contactStmt) {
+            throw new Exception('準備聯絡統計查詢失敗: ' . $GLOBALS['conn']->error);
+        }
+        $contactStmt->bind_param("ii", $userId, $days);
+        if (!$contactStmt->execute()) {
+            throw new Exception('執行聯絡統計查詢失敗: ' . $contactStmt->error);
+        }
+        $contactStats = $contactStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     
-    // 每日瀏覽統計
-    $viewStmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            DATE(ev.view_date) as date,
-            COUNT(*) as views
-        FROM enterprise_views ev
-        WHERE ev.enterprise_id = ? AND ev.view_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
-        GROUP BY DATE(ev.view_date)
-        ORDER BY date ASC
-    ");
-    $viewStmt->bind_param("ii", $userId, $days);
-    $viewStmt->execute();
-    $viewStats = $viewStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        // 職缺申請統計
+        $applicationStmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                DATE(ja.created_at) as date,
+                COUNT(*) as applications
+            FROM job_applications ja
+            JOIN jobs j ON ja.job_id = j.id
+            WHERE j.enterprise_id = ? AND ja.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            GROUP BY DATE(ja.created_at)
+            ORDER BY date ASC
+        ");
+        if (!$applicationStmt) {
+            throw new Exception('準備申請統計查詢失敗: ' . $GLOBALS['conn']->error);
+        }
+        $applicationStmt->bind_param("ii", $userId, $days);
+        if (!$applicationStmt->execute()) {
+            throw new Exception('執行申請統計查詢失敗: ' . $applicationStmt->error);
+        }
+        $applicationStats = $applicationStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     
-    // 每日聯絡統計
-    $contactStmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            DATE(ec.contact_date) as date,
-            COUNT(*) as contacts
-        FROM enterprise_contacts ec
-        WHERE ec.enterprise_id = ? AND ec.contact_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
-        GROUP BY DATE(ec.contact_date)
-        ORDER BY date ASC
-    ");
-    $contactStmt->bind_param("ii", $userId, $days);
-    $contactStmt->execute();
-    $contactStats = $contactStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        // 熱門技能統計（簡化版本）
+        $skillStmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(sp.skills, ',', numbers.n), ',', -1)) AS skill,
+                COUNT(*) AS count
+            FROM (
+                SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+                UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10
+            ) numbers
+            INNER JOIN enterprise_views ev ON ev.enterprise_id = ?
+            INNER JOIN portfolios p ON p.id = ev.portfolio_id AND p.status = 'published'
+            INNER JOIN users u ON u.id = p.user_id AND u.role = 'student' AND u.status = 'active'
+            INNER JOIN student_profiles sp ON sp.user_id = u.id
+            WHERE ev.view_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+              AND sp.skills IS NOT NULL 
+              AND sp.skills <> ''
+              AND CHAR_LENGTH(sp.skills) - CHAR_LENGTH(REPLACE(sp.skills, ',', '')) >= numbers.n - 1
+            GROUP BY skill
+            HAVING skill <> '' AND skill IS NOT NULL
+            ORDER BY count DESC
+            LIMIT 10
+        ");
+        if (!$skillStmt) {
+            throw new Exception('準備技能統計查詢失敗: ' . $GLOBALS['conn']->error);
+        }
+        $skillStmt->bind_param("ii", $userId, $days);
+        if (!$skillStmt->execute()) {
+            throw new Exception('執行技能統計查詢失敗: ' . $skillStmt->error);
+        }
+        $skillStats = $skillStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     
-    // 職缺申請統計
-    $applicationStmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            DATE(ja.created_at) as date,
-            COUNT(*) as applications
-        FROM job_applications ja
-        JOIN jobs j ON ja.job_id = j.id
-        WHERE j.enterprise_id = ? AND ja.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
-        GROUP BY DATE(ja.created_at)
-        ORDER BY date ASC
-    ");
-    $applicationStmt->bind_param("ii", $userId, $days);
-    $applicationStmt->execute();
-    $applicationStats = $applicationStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        // 熱門作品統計
+        $popularStmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                p.id,
+                p.title,
+                p.description,
+                p.cover_image,
+                COALESCE(sp.display_name, CONCAT(COALESCE(sp.last_name, ''), COALESCE(sp.first_name, '')), u.username) as student_name,
+                COALESCE(sp.major, '未知科系') as department,
+                sp.student_id,
+                COUNT(DISTINCT ev.id) as view_count,
+                COUNT(DISTINCT eb.id) as bookmark_count
+            FROM portfolios p
+            INNER JOIN users u ON p.user_id = u.id
+            LEFT JOIN student_profiles sp ON sp.user_id = u.id
+            LEFT JOIN enterprise_views ev ON ev.portfolio_id = p.id AND ev.enterprise_id = ?
+            LEFT JOIN enterprise_bookmarks eb ON eb.portfolio_id = p.id AND eb.enterprise_id = ?
+            WHERE p.status = 'published' 
+                AND u.role = 'student' 
+                AND u.status = 'active'
+            GROUP BY p.id, p.title, p.description, p.cover_image, sp.display_name, sp.last_name, sp.first_name, u.username, sp.major, sp.student_id
+            HAVING COUNT(DISTINCT ev.id) > 0 OR COUNT(DISTINCT eb.id) > 0
+            ORDER BY (COUNT(DISTINCT ev.id) * 0.7 + COUNT(DISTINCT eb.id) * 0.3) DESC
+            LIMIT 10
+        ");
+        if (!$popularStmt) {
+            throw new Exception('準備熱門作品查詢失敗: ' . $GLOBALS['conn']->error);
+        }
+        $popularStmt->bind_param("ii", $userId, $userId);
+        if (!$popularStmt->execute()) {
+            throw new Exception('執行熱門作品查詢失敗: ' . $popularStmt->error);
+        }
+        $popularPortfolios = $popularStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     
-    // 熱門技能統計（修正關聯：以企業瀏覽之作品對應的學生技能為來源）
-    $skillStmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(sp.skills, ',', numbers.n), ',', -1)) AS skill,
-            COUNT(*) AS count
-        FROM (
-            SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
-        ) numbers
-        JOIN enterprise_views ev 
-            ON ev.enterprise_id = ? 
-           AND ev.view_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
-        JOIN portfolios p 
-            ON p.id = ev.portfolio_id 
-           AND p.status = 'published'
-        JOIN users u 
-            ON u.id = p.user_id 
-           AND u.role = 'student' 
-           AND u.status = 'active'
-        LEFT JOIN student_profiles sp 
-            ON sp.user_id = u.id
-        WHERE sp.skills IS NOT NULL AND sp.skills <> ''
-          AND CHAR_LENGTH(sp.skills) - CHAR_LENGTH(REPLACE(sp.skills, ',', '')) >= numbers.n - 1
-        GROUP BY skill
-        HAVING skill <> ''
-        ORDER BY count DESC
-        LIMIT 10
-    ");
-    $skillStmt->bind_param("ii", $userId, $days);
-    $skillStmt->execute();
-    $skillStats = $skillStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    
-    $analytics = [
-        'views' => $viewStats,
-        'contacts' => $contactStats,
-        'applications' => $applicationStats,
-        'top_skills' => $skillStats
-    ];
-    
-    sendResponse($analytics, 200, '取得分析資料成功');
+        // 科系分布統計
+        $departmentStmt = $GLOBALS['conn']->prepare("
+            SELECT 
+                sp.major as department,
+                COUNT(DISTINCT p.id) as portfolio_count,
+                COUNT(DISTINCT ev.id) as view_count
+            FROM enterprise_views ev
+            INNER JOIN portfolios p ON p.id = ev.portfolio_id
+            INNER JOIN users u ON u.id = p.user_id
+            INNER JOIN student_profiles sp ON sp.user_id = u.id
+            WHERE ev.enterprise_id = ? 
+                AND ev.view_date >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                AND p.status = 'published'
+                AND u.role = 'student'
+                AND u.status = 'active'
+                AND sp.major IS NOT NULL
+                AND sp.major != ''
+            GROUP BY sp.major
+            ORDER BY COUNT(DISTINCT ev.id) DESC
+            LIMIT 10
+        ");
+        if (!$departmentStmt) {
+            throw new Exception('準備科系統計查詢失敗: ' . $GLOBALS['conn']->error);
+        }
+        $departmentStmt->bind_param("ii", $userId, $days);
+        if (!$departmentStmt->execute()) {
+            throw new Exception('執行科系統計查詢失敗: ' . $departmentStmt->error);
+        }
+        $departmentStats = $departmentStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        
+        // 計算科系百分比
+        $totalDeptViews = array_sum(array_column($departmentStats, 'view_count'));
+        foreach ($departmentStats as &$dept) {
+            $dept['percentage'] = $totalDeptViews > 0 ? round(($dept['view_count'] / $totalDeptViews) * 100, 1) : 0;
+        }
+        
+        $analytics = [
+            'views' => $viewStats,
+            'contacts' => $contactStats,
+            'applications' => $applicationStats,
+            'top_skills' => $skillStats,
+            'popular_portfolios' => $popularPortfolios,
+            'departments' => $departmentStats
+        ];
+        
+        sendResponse($analytics, 200, '取得分析資料成功');
+    } catch (Exception $e) {
+        error_log('Analytics Error: ' . $e->getMessage());
+        sendError('取得分析資料失敗: ' . $e->getMessage(), 500);
+    }
 }
 
 // 輔助函數：取得時間差

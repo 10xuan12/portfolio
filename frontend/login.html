@@ -499,8 +499,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="email">電子郵件</label>
-                    <input type="email" id="email" name="email" required placeholder="請輸入您的電子郵件">
+                    <label for="email"><span id="emailLabel">電子郵件</span></label>
+                    <input type="text" id="email" name="email" required placeholder="請輸入您的電子郵件或使用者名稱">
+                    <div class="hint" id="loginHint" style="color: #6c757d; font-size: 12px; margin-top: 5px;"></div>
                 </div>
 
                 <div class="form-group">
@@ -541,8 +542,38 @@
                 this.classList.add('active');
                 // 更新選中的角色
                 selectedRole = this.dataset.role;
+                
+                // 更新輸入提示
+                const emailLabel = document.getElementById('emailLabel');
+                const emailInput = document.getElementById('email');
+                const loginHint = document.getElementById('loginHint');
+                
+                if (selectedRole === 'admin') {
+                    emailLabel.textContent = '使用者名稱';
+                    emailInput.placeholder = '請輸入管理員帳號';
+                    emailInput.type = 'text';
+                    loginHint.innerHTML = '<i class="fas fa-info-circle"></i> 提示：管理員請使用 <strong>admin</strong>，密碼：<strong>password</strong>';
+                    loginHint.style.color = '#667eea';
+                } else if (selectedRole === 'enterprise') {
+                    emailLabel.textContent = '電子郵件';
+                    emailInput.placeholder = '請輸入企業信箱';
+                    emailInput.type = 'email';
+                    loginHint.innerHTML = '<i class="fas fa-info-circle"></i> 企業用戶請使用註冊時的電子郵件';
+                    loginHint.style.color = '#6c757d';
+                } else {
+                    emailLabel.textContent = '電子郵件';
+                    emailInput.placeholder = '請輸入學生信箱';
+                    emailInput.type = 'email';
+                    loginHint.innerHTML = '<i class="fas fa-info-circle"></i> 學生用戶請使用註冊時的電子郵件';
+                    loginHint.style.color = '#6c757d';
+                }
             });
         });
+        
+        // 初始化管理員提示（因為預設選中學生）
+        const loginHint = document.getElementById('loginHint');
+        loginHint.innerHTML = '<i class="fas fa-info-circle"></i> 學生用戶請使用註冊時的電子郵件';
+        loginHint.style.color = '#6c757d';
 
         // 實作登入表單提交
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -638,7 +669,20 @@
                 }
             } catch (error) {
                 console.error('登入錯誤:', error);
-                alert('登入失敗，請稍後再試');
+                
+                // 更詳細的錯誤訊息
+                let errorMessage = '登入失敗：';
+                if (error.message.includes('JSON')) {
+                    errorMessage += '伺服器返回格式錯誤，可能是資料庫連接問題。\n\n';
+                    errorMessage += '請檢查：\n';
+                    errorMessage += '1. XAMPP 的 Apache 和 MySQL 服務是否已啟動\n';
+                    errorMessage += '2. 資料庫 eportfolio2 是否存在\n';
+                    errorMessage += '3. 開啟瀏覽器開發者工具（F12）> Network 標籤查看詳細錯誤';
+                } else {
+                    errorMessage += error.message || '未知錯誤，請稍後再試';
+                }
+                
+                alert(errorMessage);
             }
         });
 

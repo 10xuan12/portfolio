@@ -220,27 +220,76 @@ function contactStudent(portfolioId) {
 }
 
 // 收藏/取消收藏作品
-function likePortfolio(portfolioId) {
-    if (likedPortfolios.has(portfolioId)) {
-        likedPortfolios.delete(portfolioId);
-        Utils.showNotification('已取消收藏', 'info');
-    } else {
-        likedPortfolios.add(portfolioId);
-        Utils.showNotification('已加入收藏', 'success');
+async function likePortfolio(portfolioId) {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (!svc) {
+            throw new Error('API 服務未就緒');
+        }
+
+        // 調用後端 API 切換收藏狀態
+        const response = await svc.request('enterprise/portfolios.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                action: 'bookmark',
+                portfolio_id: portfolioId 
+            })
+        });
+        
+        const data = response?.data || response || {};
+        const isBookmarked = data.is_bookmarked;
+        
+        // 更新本地狀態
+        if (isBookmarked) {
+            likedPortfolios.add(portfolioId);
+            Utils.showNotification('已加入收藏', 'success');
+        } else {
+            likedPortfolios.delete(portfolioId);
+            Utils.showNotification('已取消收藏', 'info');
+        }
+        
+        // 儲存收藏狀態到本地（作為緩存）
+        localStorage.setItem('likedPortfolios', JSON.stringify(Array.from(likedPortfolios)));
+        
+        // 重新渲染以更新按鈕狀態
+        applyFilters();
+    } catch (error) {
+        console.error('收藏操作失敗:', error);
+        Utils.showNotification('收藏操作失敗', 'error');
     }
-    
-    // 儲存收藏狀態
-    localStorage.setItem('likedPortfolios', JSON.stringify(Array.from(likedPortfolios)));
-    
-    // 重新渲染以更新按鈕狀態
-    applyFilters();
 }
 
 // 載入收藏的作品
-function loadLikedPortfolios() {
-    const saved = localStorage.getItem('likedPortfolios');
-    if (saved) {
-        likedPortfolios = new Set(JSON.parse(saved));
+async function loadLikedPortfolios() {
+    try {
+        const svc = window.apiService || window.initializeApiService?.();
+        if (svc) {
+            // 從後端 API 載入收藏狀態
+            const response = await svc.request('enterprise/portfolios.php?action=bookmarks');
+            const bookmarks = response?.data || response || [];
+            
+            // 更新本地集合
+            likedPortfolios = new Set(bookmarks.map(b => b.id));
+            
+            // 同步到本地儲存
+            localStorage.setItem('likedPortfolios', JSON.stringify(Array.from(likedPortfolios)));
+        } else {
+            // 降級方案：從本地儲存載入
+            const saved = localStorage.getItem('likedPortfolios');
+            if (saved) {
+                likedPortfolios = new Set(JSON.parse(saved));
+            }
+        }
+    } catch (error) {
+        console.error('載入收藏失敗:', error);
+        // 降級方案：從本地儲存載入
+        const saved = localStorage.getItem('likedPortfolios');
+        if (saved) {
+            likedPortfolios = new Set(JSON.parse(saved));
+        }
     }
 }
 

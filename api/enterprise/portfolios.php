@@ -395,8 +395,8 @@ function getBookmarks() {
     $offset = ($page - 1) * $limit;
     
     $stmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            p.id, p.title, p.description, p.cover_image, p.status,
+        SELECT DISTINCT
+            p.id, p.user_id, p.title, p.description, p.cover_image, p.status,
             p.view_count, p.like_count, p.comment_count, p.download_count,
             p.is_featured, p.published_at, p.created_at, p.tags,
             c.name as category_name, c.slug as category_slug, c.color as category_color,

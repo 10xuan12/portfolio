@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的收藏 - Portfolio+</title>
+    <link rel="stylesheet" href="../css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/enterprise/portfolio.css">
+    <link rel="stylesheet" href="../css/enterprise/bookmarks.css">
+</head>
+<body>
+    <!-- 導覽列 -->
+    <div id="navbar-placeholder"></div>
+    <script>
+    (function() {
+      var role = (localStorage.getItem('user') && JSON.parse(localStorage.getItem('user')).role) || null;
+      var path = '../navbar.html';
+      fetch(path)
+        .then(res => res.text())
+        .then(html => {
+          var temp = document.createElement('div');
+          temp.innerHTML = html;
+          var tplId = 'navbar-visitor';
+          if (role === 'student') tplId = 'navbar-student';
+          else if (role === 'enterprise') tplId = 'navbar-enterprise';
+          else if (role === 'admin') tplId = 'navbar-admin';
+          var tpl = temp.querySelector('#' + tplId);
+          if (tpl) document.getElementById('navbar-placeholder').innerHTML = tpl.innerHTML;
+        });
+    })();
+    </script>
+
+    <!-- 主要內容 -->
+    <main class="bookmarks-container">
+        <div class="container">
+            <div class="header-top">
+                <button class="btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    返回
+                </button>
+            </div>
+
+            <div class="bookmarks-header">
+                <div class="header-title">
+                    <h1><i class="fas fa-bookmark"></i> 我的收藏</h1>
+                    <p class="subtitle">您收藏的優秀作品集</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalBookmarks">0</span>
+                        <span class="stat-label">收藏作品</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 篩選排序欄 -->
+            <div class="filter-bar">
+                <div class="filter-left">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="搜尋收藏的作品...">
+                    </div>
+                </div>
+                <div class="filter-right">
+                    <select id="sortFilter" class="sort-select">
+                        <option value="recent">最近收藏</option>
+                        <option value="oldest">最早收藏</option>
+                        <option value="views">瀏覽最多</option>
+                        <option value="likes">最多讚</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 載入狀態 -->
+            <div id="loadingState" class="loading-state" style="display: none;">
+                <div class="spinner"></div>
+                <p>載入中...</p>
+            </div>
+
+            <!-- 作品網格 -->
+            <div class="bookmarks-grid" id="bookmarksGrid"></div>
+
+            <!-- 空狀態 -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-bookmark"></i>
+                <h3>還沒有收藏任何作品</h3>
+                <p>瀏覽優秀作品並點擊收藏按鈕，將喜歡的作品加入收藏</p>
+                <a href="portfolios.html" class="btn btn-primary">
+                    <i class="fas fa-search"></i> 瀏覽作品
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api-service.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/enterprise/bookmarks.js"></script>
+    
+    <script>
+    if (typeof goBack !== 'function') {
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+    }
+    </script>
+</body>
+</html>
+

@@ -1,194 +1,502 @@
 <?php
-require_once '../config.php';
+require_once __DIR__ . '/../config.php';
 
 // 管理員內容審核 API
+// 檢查管理員權限
+session_start();
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    sendError('需要管理員權限', 403);
+}
+
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
         getReviews();
         break;
-        
+    case 'POST':
+        handlePost();
+        break;
     default:
         sendError('不支援的 HTTP 方法', 405);
 }
 
-// 取得審核項目
+// 取得待審核內容列表
 function getReviews() {
-    checkPermission('admin');
+    try {
+        $tab = $_GET['tab'] ?? 'portfolios'; // portfolios, jobs, users, reports
+        $status = $_GET['status'] ?? 'pending';
+        $search = $_GET['q'] ?? '';
+        $type = $_GET['type'] ?? '';
+        $date = $_GET['date'] ?? '';
+        
+        $data = [];
+        
+        switch ($tab) {
+            case 'portfolios':
+                $data = getPortfolioReviews($status, $search, $type, $date);
+                break;
+            case 'jobs':
+                $data = getJobReviews($status, $search, $date);
+                break;
+            case 'users':
+                $data = getUserReviews($status, $search);
+                break;
+            case 'reports':
+                $data = getReportReviews($status, $search, $date);
+                break;
+            default:
+                sendError('無效的標籤', 400);
+        }
+        
+        sendResponse($data, 200, '取得審核列表成功');
+        
+    } catch (Exception $e) {
+        sendError('取得審核列表失敗: ' . $e->getMessage(), 500);
+    }
+}
+
+// 作品審核列表
+function getPortfolioReviews($status, $search, $type, $date) {
+    $where = ['1=1'];
+    $params = [];
+    $types = '';
     
-    $status = isset($_GET['status']) ? $_GET['status'] : 'pending';
-    $search = isset($_GET['q']) ? sanitizeInput($_GET['q']) : '';
+    if ($status !== 'all' && in_array($status, ['pending', 'approved', 'rejected'])) {
+        $where[] = "p.status = ?";
+        $params[] = $status;
+        $types .= 's';
+    }
     
-    // 取得待審核作品
-    $portfolios = [];
-    $portfolioStmt = $GLOBALS['conn']->prepare("
+    if (!empty($search)) {
+        $where[] = "(p.title LIKE ? OR p.description LIKE ? OR u.username LIKE ?)";
+        $searchTerm = "%$search%";
+        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+        $types .= 'sss';
+    }
+    
+    if (!empty($type)) {
+        $where[] = "p.category = ?";
+        $params[] = $type;
+        $types .= 's';
+    }
+    
+    if (!empty($date)) {
+        switch ($date) {
+            case 'today':
+                $where[] = "DATE(p.created_at) = CURDATE()";
+                break;
+            case 'week':
+                $where[] = "p.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+                break;
+            case 'month':
+                $where[] = "p.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+                break;
+        }
+    }
+    
+    $whereClause = implode(' AND ', $where);
+    
+    $sql = "
         SELECT 
-            p.id, p.title, p.description, p.category as type, p.status,
-            p.created_at as submitted_at,
-            u.username as author
+            p.id,
+            p.title,
+            p.description,
+            p.category,
+            p.status,
+            p.created_at,
+            p.views,
+            p.likes,
+            u.username as author,
+            u.id as author_id,
+            sp.avatar_url
         FROM portfolios p
-        JOIN users u ON p.user_id = u.id
-        WHERE p.status = ?
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN student_profiles sp ON u.id = sp.user_id
+        WHERE $whereClause
         ORDER BY p.created_at DESC
-        LIMIT 10
-    ");
-    $portfolioStmt->bind_param("s", $status);
-    $portfolioStmt->execute();
-    $result = $portfolioStmt->get_result();
+        LIMIT 50
+    ";
     
-    while ($row = $result->fetch_assoc()) {
-        // 取得技能標籤
-        $tagsStmt = $GLOBALS['conn']->prepare("
-            SELECT tag_name 
-            FROM portfolio_tags 
-            WHERE portfolio_id = ?
-        ");
-        $tagsStmt->bind_param("i", $row['id']);
-        $tagsStmt->execute();
-        $tagsResult = $tagsStmt->get_result();
-        
-        $skills = [];
-        while ($tag = $tagsResult->fetch_assoc()) {
-            $skills[] = $tag['tag_name'];
-        }
-        
-        // 取得封面圖片
-        $imageStmt = $GLOBALS['conn']->prepare("
-            SELECT file_path 
-            FROM portfolio_files 
-            WHERE portfolio_id = ? AND file_type LIKE 'image/%'
-            LIMIT 1
-        ");
-        $imageStmt->bind_param("i", $row['id']);
-        $imageStmt->execute();
-        $imageResult = $imageStmt->get_result();
-        $imageRow = $imageResult->fetch_assoc();
-        
-        $row['skills'] = $skills;
-        $row['image'] = $imageRow ? '../' . $imageRow['file_path'] : 'https://via.placeholder.com/400x200';
-        
-        $portfolios[] = $row;
+    $stmt = $GLOBALS['conn']->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
     }
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    // 取得待審核職缺
-    $jobs = [];
-    $jobStmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            j.id, j.title, j.description, j.job_type as type, j.status,
-            j.location, j.salary, j.created_at as submitted_at,
-            ep.company_name as enterprise
-        FROM jobs j
-        JOIN users u ON j.enterprise_id = u.id
-        LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
-        WHERE j.status = ?
-        ORDER BY j.created_at DESC
-        LIMIT 10
-    ");
-    $jobStmt->bind_param("s", $status);
-    $jobStmt->execute();
-    $result = $jobStmt->get_result();
-    
+    $portfolios = [];
     while ($row = $result->fetch_assoc()) {
-        // 取得技能要求
-        $reqStmt = $GLOBALS['conn']->prepare("
-            SELECT skill_name 
-            FROM job_requirements 
-            WHERE job_id = ?
-        ");
-        $reqStmt->bind_param("i", $row['id']);
-        $reqStmt->execute();
-        $reqResult = $reqStmt->get_result();
-        
-        $requirements = [];
-        while ($req = $reqResult->fetch_assoc()) {
-            $requirements[] = $req['skill_name'];
-        }
-        
-        $row['requirements'] = $requirements;
-        
-        $jobs[] = $row;
-    }
-    
-    // 取得待審核使用者
-    $users = [];
-    $userStmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            u.id, u.username, u.email, u.role as type, u.status,
-            u.created_at as submitted_at,
-            ep.company_name as name, ep.company_type, ep.company_size, ep.website,
-            ep.description
-        FROM users u
-        LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
-        WHERE u.status = ? AND u.role = 'enterprise'
-        ORDER BY u.created_at DESC
-        LIMIT 10
-    ");
-    $userStmt->bind_param("s", $status);
-    $userStmt->execute();
-    $result = $userStmt->get_result();
-    
-    while ($row = $result->fetch_assoc()) {
-        $users[] = $row;
-    }
-    
-    // 取得檢舉報告
-    $reports = [];
-    $reportStmt = $GLOBALS['conn']->prepare("
-        SELECT 
-            r.id, r.reported_type as type, r.reported_id, r.reason, r.description,
-            r.status, r.priority, r.created_at as submitted_at,
-            r.evidence_url,
-            u1.username as reporter,
-            u2.username as reported_user
-        FROM reports r
-        LEFT JOIN users u1 ON r.reporter_id = u1.id
-        LEFT JOIN users u2 ON r.reported_user_id = u2.id
-        WHERE r.status = ?
-        ORDER BY 
-            CASE r.priority 
-                WHEN 'urgent' THEN 1
-                WHEN 'high' THEN 2
-                WHEN 'medium' THEN 3
-                WHEN 'low' THEN 4
-            END,
-            r.created_at DESC
-        LIMIT 10
-    ");
-    $reportStmt->bind_param("s", $status);
-    $reportStmt->execute();
-    $result = $reportStmt->get_result();
-    
-    while ($row = $result->fetch_assoc()) {
-        // 格式化檢舉原因
-        $reasonMap = [
-            'inappropriate' => '不當內容',
-            'spam' => '垃圾訊息',
-            'harassment' => '騷擾行為',
-            'copyright' => '版權侵犯',
-            'other' => '其他'
+        $portfolios[] = [
+            'id' => (int)$row['id'],
+            'title' => $row['title'],
+            'description' => $row['description'],
+            'category' => $row['category'],
+            'status' => $row['status'],
+            'author' => $row['author'],
+            'author_id' => (int)$row['author_id'],
+            'avatar_url' => $row['avatar_url'],
+            'created_at' => $row['created_at'],
+            'views' => (int)$row['views'],
+            'likes' => (int)$row['likes']
         ];
-        $row['reason_text'] = $reasonMap[$row['reason']] ?? $row['reason'];
-        
-        // 格式化檢舉類型
-        $typeMap = [
-            'portfolio' => '作品',
-            'comment' => '評論',
-            'job' => '職缺',
-            'user' => '用戶',
-            'message' => '訊息'
-        ];
-        $row['type_text'] = $typeMap[$row['type']] ?? $row['type'];
-        
-        $reports[] = $row;
     }
     
-    $response = [
-        'portfolios' => $portfolios,
-        'jobs' => $jobs,
-        'users' => $users,
-        'reports' => $reports
+    return [
+        'items' => $portfolios,
+        'total' => count($portfolios)
     ];
+}
+
+// 職缺審核列表
+function getJobReviews($status, $search, $date) {
+    $where = ['1=1'];
+    $params = [];
+    $types = '';
     
-    sendResponse($response, 200, '取得審核項目成功');
+    if ($status !== 'all' && in_array($status, ['pending', 'approved', 'rejected'])) {
+        $where[] = "j.status = ?";
+        $params[] = $status;
+        $types .= 's';
+    }
+    
+    if (!empty($search)) {
+        $where[] = "(j.title LIKE ? OR j.description LIKE ? OR ep.company_name LIKE ?)";
+        $searchTerm = "%$search%";
+        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+        $types .= 'sss';
+    }
+    
+    if (!empty($date)) {
+        switch ($date) {
+            case 'today':
+                $where[] = "DATE(j.created_at) = CURDATE()";
+                break;
+            case 'week':
+                $where[] = "j.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+                break;
+            case 'month':
+                $where[] = "j.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+                break;
+        }
+    }
+    
+    $whereClause = implode(' AND ', $where);
+    
+    $sql = "
+        SELECT 
+            j.id,
+            j.title,
+            j.description,
+            j.job_type,
+            j.salary_min,
+            j.salary_max,
+            j.status,
+            j.created_at,
+            ep.company_name,
+            u.id as enterprise_id
+        FROM jobs j
+        LEFT JOIN users u ON j.enterprise_id = u.id
+        LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id
+        WHERE $whereClause
+        ORDER BY j.created_at DESC
+        LIMIT 50
+    ";
+    
+    $stmt = $GLOBALS['conn']->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $jobs = [];
+    while ($row = $result->fetch_assoc()) {
+        $jobs[] = [
+            'id' => (int)$row['id'],
+            'title' => $row['title'],
+            'description' => $row['description'],
+            'job_type' => $row['job_type'],
+            'salary_range' => $row['salary_min'] && $row['salary_max'] 
+                ? $row['salary_min'] . '-' . $row['salary_max'] 
+                : '面議',
+            'status' => $row['status'],
+            'company' => $row['company_name'],
+            'enterprise_id' => (int)$row['enterprise_id'],
+            'created_at' => $row['created_at']
+        ];
+    }
+    
+    return [
+        'items' => $jobs,
+        'total' => count($jobs)
+    ];
+}
+
+// 使用者審核列表
+function getUserReviews($status, $search) {
+    $where = ['1=1'];
+    $params = [];
+    $types = '';
+    
+    if ($status !== 'all' && in_array($status, ['pending', 'approved', 'rejected'])) {
+        $where[] = "u.status = ?";
+        $params[] = $status;
+        $types .= 's';
+    }
+    
+    if (!empty($search)) {
+        $where[] = "(u.username LIKE ? OR u.email LIKE ?)";
+        $searchTerm = "%$search%";
+        $params = array_merge($params, [$searchTerm, $searchTerm]);
+        $types .= 'ss';
+    }
+    
+    $whereClause = implode(' AND ', $where);
+    
+    $sql = "
+        SELECT 
+            u.id,
+            u.username,
+            u.email,
+            u.role,
+            u.status,
+            u.created_at,
+            sp.first_name,
+            sp.last_name,
+            sp.department,
+            ep.company_name
+        FROM users u
+        LEFT JOIN student_profiles sp ON u.id = sp.user_id AND u.role = 'student'
+        LEFT JOIN enterprise_profiles ep ON u.id = ep.user_id AND u.role = 'enterprise'
+        WHERE $whereClause
+        ORDER BY u.created_at DESC
+        LIMIT 50
+    ";
+    
+    $stmt = $GLOBALS['conn']->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $users = [];
+    while ($row = $result->fetch_assoc()) {
+        $name = $row['role'] === 'student' 
+            ? trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''))
+            : ($row['company_name'] ?? $row['username']);
+            
+        $users[] = [
+            'id' => (int)$row['id'],
+            'name' => $name ?: $row['username'],
+            'email' => $row['email'],
+            'type' => $row['role'],
+            'department' => $row['department'] ?? '',
+            'status' => $row['status'],
+            'created_at' => $row['created_at']
+        ];
+    }
+    
+    return [
+        'items' => $users,
+        'total' => count($users)
+    ];
+}
+
+// 報告審核列表
+function getReportReviews($status, $search, $date) {
+    $where = ['1=1'];
+    $params = [];
+    $types = '';
+    
+    if ($status !== 'all' && in_array($status, ['pending', 'resolved', 'dismissed'])) {
+        $where[] = "r.status = ?";
+        $params[] = $status;
+        $types .= 's';
+    }
+    
+    if (!empty($search)) {
+        $where[] = "(r.reason LIKE ? OR r.description LIKE ?)";
+        $searchTerm = "%$search%";
+        $params = array_merge($params, [$searchTerm, $searchTerm]);
+        $types .= 'ss';
+    }
+    
+    if (!empty($date)) {
+        switch ($date) {
+            case 'today':
+                $where[] = "DATE(r.created_at) = CURDATE()";
+                break;
+            case 'week':
+                $where[] = "r.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+                break;
+            case 'month':
+                $where[] = "r.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+                break;
+        }
+    }
+    
+    $whereClause = implode(' AND ', $where);
+    
+    $sql = "
+        SELECT 
+            r.id,
+            r.type,
+            r.reason,
+            r.description,
+            r.status,
+            r.created_at,
+            reporter.username as reporter,
+            reported.username as reported_user
+        FROM reports r
+        LEFT JOIN users reporter ON r.reporter_id = reporter.id
+        LEFT JOIN users reported ON r.reported_user_id = reported.id
+        WHERE $whereClause
+        ORDER BY r.created_at DESC
+        LIMIT 50
+    ";
+    
+    $stmt = $GLOBALS['conn']->prepare($sql);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $reports = [];
+    while ($row = $result->fetch_assoc()) {
+        $reports[] = [
+            'id' => (int)$row['id'],
+            'type' => $row['type'],
+            'reason' => $row['reason'],
+            'description' => $row['description'],
+            'status' => $row['status'],
+            'reporter' => $row['reporter'] ?? '系統',
+            'reported_user' => $row['reported_user'] ?? '未知',
+            'created_at' => $row['created_at']
+        ];
+    }
+    
+    return [
+        'items' => $reports,
+        'total' => count($reports)
+    ];
+}
+
+// 處理 POST 請求
+function handlePost() {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $action = $input['action'] ?? '';
+    $type = $input['type'] ?? '';
+    
+    switch ($action) {
+        case 'approve':
+            approveContent($input);
+            break;
+        case 'reject':
+            rejectContent($input);
+            break;
+        default:
+            sendError('未知的操作', 400);
+    }
+}
+
+// 審核通過
+function approveContent($data) {
+    try {
+        $id = $data['id'] ?? 0;
+        $type = $data['type'] ?? '';
+        
+        if (!$id || !$type) {
+            sendError('缺少必要參數', 400);
+        }
+        
+        $table = '';
+        switch ($type) {
+            case 'portfolio':
+                $table = 'portfolios';
+                break;
+            case 'job':
+                $table = 'jobs';
+                break;
+            case 'user':
+                $table = 'users';
+                break;
+            default:
+                sendError('無效的類型', 400);
+        }
+        
+        $stmt = $GLOBALS['conn']->prepare("
+            UPDATE $table 
+            SET status = 'approved', updated_at = NOW() 
+            WHERE id = ?
+        ");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        
+        if ($stmt->affected_rows === 0) {
+            sendError('內容不存在', 404);
+        }
+        
+        sendResponse([
+            'id' => $id,
+            'type' => $type,
+            'status' => 'approved'
+        ], 200, '審核通過');
+        
+    } catch (Exception $e) {
+        sendError('審核失敗: ' . $e->getMessage(), 500);
+    }
+}
+
+// 拒絕審核
+function rejectContent($data) {
+    try {
+        $id = $data['id'] ?? 0;
+        $type = $data['type'] ?? '';
+        $reason = $data['reason'] ?? '';
+        
+        if (!$id || !$type) {
+            sendError('缺少必要參數', 400);
+        }
+        
+        $table = '';
+        switch ($type) {
+            case 'portfolio':
+                $table = 'portfolios';
+                break;
+            case 'job':
+                $table = 'jobs';
+                break;
+            case 'user':
+                $table = 'users';
+                break;
+            default:
+                sendError('無效的類型', 400);
+        }
+        
+        $stmt = $GLOBALS['conn']->prepare("
+            UPDATE $table 
+            SET status = 'rejected', updated_at = NOW() 
+            WHERE id = ?
+        ");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        
+        if ($stmt->affected_rows === 0) {
+            sendError('內容不存在', 404);
+        }
+        
+        // TODO: 可以記錄拒絕原因到單獨的表
+        
+        sendResponse([
+            'id' => $id,
+            'type' => $type,
+            'status' => 'rejected',
+            'reason' => $reason
+        ], 200, '已拒絕');
+        
+    } catch (Exception $e) {
+        sendError('操作失敗: ' . $e->getMessage(), 500);
+    }
 }
 ?>
-

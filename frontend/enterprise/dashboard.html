@@ -11,7 +11,6 @@
     <!-- 新功能樣式 -->
     <link rel="stylesheet" href="../css/featured-daily.css">
     <link rel="stylesheet" href="../css/popularity-tags.css">
-    <link rel="stylesheet" href="../css/favorites-system.css">
     <link rel="stylesheet" href="../css/card-3d-flip.css">
     <!-- 作品對比功能樣式 -->
     <link rel="stylesheet" href="../css/portfolio-comparison.css">
@@ -612,7 +611,7 @@
                         <div class="label">瀏覽作品數</div>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" onclick="window.location.href='bookmarks.html'" style="cursor: pointer;">
                     <div class="stat-content-box">
                         <div class="stat-number" id="total-favorites">0</div>
                         <div class="label">收藏作品</div>
@@ -646,6 +645,10 @@
                         <a href="portfolios.html" class="quick-action">
                             <i class="fas fa-search"></i>
                             <span>瀏覽作品</span>
+                        </a>
+                        <a href="bookmarks.html" class="quick-action">
+                            <i class="fas fa-bookmark"></i>
+                            <span>我的收藏</span>
                         </a>
                         <a href="portfolio-comparison-demo.html" class="quick-action">
                             <i class="fas fa-balance-scale"></i>
@@ -761,7 +764,6 @@
     <!-- 新功能腳本 -->
     <script src="../js/featured-daily.js"></script>
     <script src="../js/popularity-tags.js"></script>
-    <script src="../js/favorites-system.js"></script>
     <script src="../js/card-3d-flip.js"></script>
     
     <script src="../js/enterprise/dashboard.js"></script>
@@ -786,6 +788,7 @@
                     // 轉換數據格式
                     const featuredData = portfolios.map(p => ({
                         id: p.id,
+                        userId: p.user_id,
                         title: p.title,
                         description: p.description || '精彩的作品展示',
                         category: p.category || '作品展示',
@@ -807,7 +810,8 @@
                         autoPlayInterval: 6000,
                         maxFeatured: 5,
                         onPortfolioClick: (portfolio) => {
-                            window.location.href = `student-profile.html?portfolio_id=${portfolio.id}`;
+                            // 跳轉到學生個人檔案頁面，使用學生ID
+                            window.location.href = `student-profile.html?id=${portfolio.userId}`;
                         }
                     });
                 }

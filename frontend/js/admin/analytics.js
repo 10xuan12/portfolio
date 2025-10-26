@@ -3,6 +3,9 @@
  * 包含圖表渲染、資料分析、匯出功能等
  */
 
+// 初始化 API 服務
+let apiService = null;
+
 // Chart.js 圖表實例
 let mainChart = null;
 let pieChart = null;
@@ -76,7 +79,12 @@ let analyticsData = {
 };
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // 初始化 API 服務
+    if (typeof ApiService !== 'undefined') {
+        apiService = new ApiService();
+    }
+    
     setDefaultDateRange();
     initEventListeners();
     loadAnalyticsData().then(() => {

@@ -92,19 +92,27 @@
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-item">
-                    <div class="stat-number">1,234</div>
+                    <div class="stat-number" id="statPortfolios">
+                        <div class="stat-loading"></div>
+                    </div>
                     <div class="stat-label">作品數量</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">45,678</div>
+                    <div class="stat-number" id="statViews">
+                        <div class="stat-loading"></div>
+                    </div>
                     <div class="stat-label">總瀏覽次數</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">8,901</div>
+                    <div class="stat-number" id="statLikes">
+                        <div class="stat-loading"></div>
+                    </div>
                     <div class="stat-label">總讚數</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">2,345</div>
+                    <div class="stat-number" id="statComments">
+                        <div class="stat-loading"></div>
+                    </div>
                     <div class="stat-label">總評論數</div>
                 </div>
             </div>
@@ -154,7 +162,7 @@
             <div class="features-grid">
                 <div class="feature-card new-feature-card">
                     <div class="feature-icon">
-                        <i class="fa-solid fa-hexagon-nodes"></i>
+                        <i class="fas fa-chart-line"></i>
                     </div>
                     <h3>技能雷達圖</h3>
                     <p>自動分析學生作品，生成技能雷達圖，直觀展示技能分佈與強弱項，幫助學生了解自身優勢。</p>
@@ -298,17 +306,23 @@
                     </div>
                 </div>
                 
-                <form class="contact-form">
+                <form class="contact-form" id="contactForm">
                     <div class="form-group">
-                        <input type="text" placeholder="您的姓名" required>
+                        <input type="text" id="contactName" name="name" placeholder="您的姓名" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="您的電子郵件" required>
+                        <input type="email" id="contactEmail" name="email" placeholder="您的電子郵件" required>
                     </div>
                     <div class="form-group">
-                        <textarea placeholder="您的訊息" rows="5" required></textarea>
+                        <textarea id="contactMessage" name="message" placeholder="您的訊息" rows="5" required maxlength="2000"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">發送訊息</button>
+                    <div id="contactFormMessage" class="form-message" style="display: none;"></div>
+                    <button type="submit" class="btn btn-primary" id="contactSubmitBtn">
+                        <span class="btn-text">發送訊息</span>
+                        <span class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> 發送中...
+                        </span>
+                    </button>
                 </form>
             </div>
         </div>
@@ -546,9 +560,149 @@
             window.location.href = `student/portfolio-detail.html?id=${portfolioId}`;
         }
         
+        // 載入統計數據
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/portfolio/api/public-stats.php?t=' + Date.now());
+                
+                if (!response.ok) {
+                    throw new Error('無法載入統計數據');
+                }
+                
+                const result = await response.json();
+                
+                if (result.status === 200 && result.data) {
+                    // 使用動畫效果更新數字
+                    animateNumber('statPortfolios', result.data.total_portfolios);
+                    animateNumber('statViews', result.data.total_views);
+                    animateNumber('statLikes', result.data.total_likes);
+                    animateNumber('statComments', result.data.total_comments);
+                }
+            } catch (error) {
+                console.error('載入統計數據失敗:', error);
+                // 載入失敗時顯示預設值
+                document.getElementById('statPortfolios').textContent = '0';
+                document.getElementById('statViews').textContent = '0';
+                document.getElementById('statLikes').textContent = '0';
+                document.getElementById('statComments').textContent = '0';
+            }
+        }
+        
+        // 數字動畫效果
+        function animateNumber(elementId, targetNumber) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const duration = 2000; // 動畫持續時間（毫秒）
+            const steps = 60; // 動畫步數
+            const stepDuration = duration / steps;
+            const increment = targetNumber / steps;
+            let current = 0;
+            
+            element.textContent = '0';
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= targetNumber) {
+                    element.textContent = formatNumber(targetNumber);
+                    clearInterval(timer);
+                } else {
+                    element.textContent = formatNumber(Math.floor(current));
+                }
+            }, stepDuration);
+        }
+        
+        // 格式化數字（添加千分位逗號）
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+        
+        // 處理聯絡表單提交
+        async function handleContactFormSubmit(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('contactForm');
+            const submitBtn = document.getElementById('contactSubmitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            const messageDiv = document.getElementById('contactFormMessage');
+            
+            // 獲取表單數據
+            const formData = {
+                name: document.getElementById('contactName').value.trim(),
+                email: document.getElementById('contactEmail').value.trim(),
+                message: document.getElementById('contactMessage').value.trim()
+            };
+            
+            // 簡單驗證
+            if (!formData.name || !formData.email || !formData.message) {
+                showFormMessage('請填寫所有欄位', 'error');
+                return;
+            }
+            
+            // 顯示載入狀態
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            messageDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/portfolio/api/contact.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 200) {
+                    // 成功
+                    showFormMessage(result.data.message || '訊息發送成功！我們會盡快回覆您。', 'success');
+                    form.reset(); // 清空表單
+                } else {
+                    // 失敗
+                    showFormMessage(result.message || '發送失敗，請稍後再試', 'error');
+                }
+            } catch (error) {
+                console.error('發送聯絡訊息錯誤:', error);
+                showFormMessage('網路錯誤，請稍後再試', 'error');
+            } finally {
+                // 恢復按鈕狀態
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        }
+        
+        // 顯示表單訊息
+        function showFormMessage(message, type) {
+            const messageDiv = document.getElementById('contactFormMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = 'form-message form-message-' + type;
+            messageDiv.style.display = 'block';
+            
+            // 3秒後自動隱藏成功訊息
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
         // 頁面載入時執行 (v20250927)
         document.addEventListener('DOMContentLoaded', function() {
             console.log('首頁 DOM 載入完成，開始載入隨機作品...');
+            
+            // 載入統計數據
+            loadStatistics();
+            
+            // 綁定聯絡表單提交事件
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', handleContactFormSubmit);
+            }
             
             // 檢查必要的 DOM 元素
             const portfoliosGrid = document.getElementById('portfoliosGrid');
@@ -672,6 +826,17 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* 統計數字載入動畫 */
+        .stat-loading {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
         /* 載入狀態樣式 */
         .loading-state {
             display: flex;
@@ -780,6 +945,49 @@
         
         .new-feature-card h3 {
             color: #1976d2;
+        }
+        
+        /* 聯絡表單訊息樣式 */
+        .form-message {
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .form-message-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .form-message-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 按鈕載入狀態 */
+        .btn-loading {
+            display: none;
+        }
+        
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
     </style>
 </body>

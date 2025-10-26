@@ -3,7 +3,7 @@
 /* 主要容器 */
 .comparison-main {
     padding: 2rem 0;
-    background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+    background: #f8fafc;
     min-height: 100vh;
 }
 
@@ -34,12 +34,8 @@
     gap: 1rem;
     font-size: 2rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #7c3aed;
     margin: 0 0 0.5rem 0;
-    background: linear-gradient(135deg, #7c3aed, #4A90E2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .title-icon {
@@ -53,7 +49,7 @@
 }
 
 .comparison-icon {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: #f59e0b;
     position: relative;
 }
 
@@ -301,7 +297,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #7c3aed, #4A90E2);
+    background: #7c3aed;
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
@@ -318,7 +314,7 @@
 
 .portfolio-card.selected {
     border-color: #7c3aed;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #f8fafc;
 }
 
 .portfolio-card.selected::before {
@@ -326,31 +322,30 @@
 }
 
 .portfolio-card.selected::after {
-    content: '';
+    content: '✓';
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 28px;
+    height: 28px;
+    background: #7c3aed;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.portfolio-card.selected::after {
-    content: '✓';
     color: white;
     font-weight: bold;
-    font-size: 18.2px;
-    line-height: 1;
+    font-size: 16px;
+    line-height: 28px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+    z-index: 10;
 }
 
 .portfolio-thumbnail {
     width: 100%;
     height: 140px;
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    background: #e2e8f0;
     border-radius: 12px;
     margin-bottom: 1rem;
     display: flex;
@@ -400,13 +395,17 @@
 .portfolio-category {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     padding: 0.25rem 0.75rem;
-    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    background: #7c3aed;
     color: white;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
+}
+
+.portfolio-category i {
+    font-size: 0.75rem;
 }
 
 .category-icon {
@@ -422,7 +421,7 @@
     position: absolute;
     width: 8px;
     height: 8px;
-    background: linear-gradient(45deg, #7c3aed, #4A90E2);
+    background: #7c3aed;
     border-radius: 1px;
     top: 50%;
     left: 50%;
@@ -441,14 +440,18 @@
 .portfolio-stat {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
+}
+
+.portfolio-stat i {
+    font-size: 0.85rem;
 }
 
 .stat-icon {
     width: 12px;
     height: 12px;
     border-radius: 2px;
-    background: linear-gradient(45deg, #7c3aed, #4A90E2);
+    background: #7c3aed;
 }
 
 /* 對比結果區域 */
@@ -555,7 +558,7 @@
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
     border-radius: 12px;
     border: 2px dashed #e2e8f0;
     display: flex;
@@ -580,7 +583,7 @@
 }
 
 .summary-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
     border-radius: 12px;
     padding: 1.5rem;
     border: 1px solid #e2e8f0;
@@ -613,14 +616,14 @@
 }
 
 .skills-radar-container {
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
     border-radius: 12px;
     padding: 2rem;
     border: 1px solid #e2e8f0;
 }
 
 .skills-breakdown {
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
     border-radius: 12px;
     padding: 2rem;
     border: 1px solid #e2e8f0;
@@ -643,22 +646,22 @@
 }
 
 .skills-table th {
-    background: linear-gradient(135deg, #7c3aed, #4A90E2);
+    background: #7c3aed;
     color: white;
     font-weight: 600;
 }
 
 .skills-table tr:hover {
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #f8fafc;
 }
 
 /* 額外的圖標樣式 */
 .view-icon {
-    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+    color: #3b82f6;
 }
 
 .like-icon {
-    background: linear-gradient(45deg, #ef4444, #dc2626);
+    color: #ef4444;
 }
 
 /* 無資料狀態 */
@@ -677,7 +680,7 @@
     height: 80px;
     border-radius: 50%;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    background: #e2e8f0;
     position: relative;
 }
 
@@ -715,7 +718,7 @@
 }
 
 .portfolio-detail-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
     border-radius: 12px;
     padding: 1.5rem;
     border: 1px solid #e2e8f0;

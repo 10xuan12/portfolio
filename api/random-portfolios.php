@@ -19,6 +19,7 @@ try {
     $stmt = $GLOBALS['conn']->prepare("
         SELECT DISTINCT
             p.id,
+            p.user_id,
             p.title,
             p.description,
             p.cover_image as thumbnail_url,
@@ -29,7 +30,10 @@ try {
             p.comment_count,
             p.created_at,
             u.username as author_name,
-            sp.display_name as author_display_name
+            sp.display_name as author_display_name,
+            sp.bio as author_bio,
+            sp.major as department,
+            sp.avatar_url as author_avatar
         FROM portfolios p
         JOIN users u ON p.user_id = u.id
         LEFT JOIN student_profiles sp ON u.id = sp.user_id

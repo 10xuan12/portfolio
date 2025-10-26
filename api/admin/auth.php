@@ -1,15 +1,12 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+// 先載入配置檔案（包含錯誤處理和 header 設定）
+require_once __DIR__ . '/../config.php';
 
 // 處理 OPTIONS 請求
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+	http_response_code(200);
 	exit(0);
 }
-
-require_once '../config.php';
 
 // 檢查資料庫連接
 if (!isset($GLOBALS['conn']) || !$GLOBALS['conn']) {
@@ -178,15 +175,6 @@ function handlePasswordResetConfirm($data) {
 	sendResponse([], 200, '密碼已更新');
 }
 
-// 證明必填欄位
-function validateRequired($data, $required_fields) {
-	foreach ($required_fields as $field) {
-		if (!isset($data[$field]) || empty($data[$field])) {
-			sendError("缺少必填欄位: $field", 400);
-		}
-	}
-}
-
-// 注意：sanitizeInput、sendResponse 和 sendError 函數已在 config.php 中定義
+// 注意：validateRequired、sanitizeInput、sendResponse 和 sendError 函數已在 config.php 中定義
 ?>
 

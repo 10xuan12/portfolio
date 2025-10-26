@@ -3,6 +3,9 @@
  * 包含系統統計、使用者管理、內容審核等功能
  */
 
+// 初始化 API 服務
+let apiService = null;
+
 // 管理員儀表板資料（可從後端 API 載入：/api/admin/dashboard）
 let dashboardData = {
     stats: {
@@ -142,7 +145,12 @@ let dashboardData = {
 };
 
 // 初始化頁面
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // 初始化 API 服務
+    if (typeof ApiService !== 'undefined') {
+        apiService = new ApiService();
+    }
+    
     initEventListeners();
     loadDashboardData();
     startRealTimeUpdates();
@@ -191,8 +199,19 @@ async function loadDashboardData() {
         if (activityList) {
             activityList.innerHTML = `<li style="display:flex;justify-content:center;padding:12px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>載入中...</li>`;
         }
-        const resp = await apiService.getAdminDashboard();
-        const data = resp?.data || resp;
+        
+        // 如果 apiService 可用，則從 API 載入資料
+        let data = null;
+        if (apiService && typeof apiService.getAdminDashboard === 'function') {
+            const resp = await apiService.getAdminDashboard();
+            data = resp?.data || resp;
+        }
+        
+        // 如果沒有 API 資料，使用預設資料
+        if (!data) {
+            console.log('使用預設儀表板資料');
+            data = dashboardData;
+        }
         if (data) {
             dashboardData = {
                 stats: data.stats || dashboardData.stats,
