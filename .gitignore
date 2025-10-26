@@ -26,9 +26,30 @@ desktop.ini
 /cache/*
 !cache/.gitkeep
 
-# Uploads (不上傳使用者檔案到 Git)
-/uploads/*
-!/uploads/.gitkeep
+# Uploads 策略：
+# - 允許示例圖片和目錄結構被提交（用於 Railway 部署）
+# - 忽略用戶實際上傳的文件（帶時間戳的文件名）
+# - 保留目錄結構
+!/uploads/
+!/uploads/**/.gitkeep
+
+# 忽略用戶上傳的文件（通常包含時間戳或用戶 ID）
+uploads/**/avatar_*_*.jpg
+uploads/**/avatar_*_*.png
+uploads/**/resume_*_*.pdf
+uploads/**/portfolio_*_*.*
+
+# 允許示例圖片（不含時間戳的檔名）
+!uploads/portfolios/*.jpg
+!uploads/portfolios/*.png
+!uploads/avatars/demo-*.jpg
+!uploads/avatars/demo-*.png
+!uploads/avatars/default-*.jpg
+!uploads/avatars/default-*.png
+!uploads/enterprise/logos/*.jpg
+!uploads/enterprise/logos/*.png
+
+# api/uploads 完全忽略（如果有的話）
 /api/uploads/*
 !/api/uploads/.gitkeep
 

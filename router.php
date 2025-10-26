@@ -37,6 +37,25 @@ if (strpos($uri, 'portfolio/') === 0) {
 $file_path = __DIR__ . '/' . $uri;
 if (is_file($file_path)) {
     error_log("Router: Serving static file: " . $file_path);
+    
+    // 設置正確的 Content-Type
+    $mime_types = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'svg' => 'image/svg+xml',
+        'pdf' => 'application/pdf',
+        'css' => 'text/css',
+        'js' => 'application/javascript',
+        'json' => 'application/json',
+    ];
+    
+    $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+    if (isset($mime_types[$ext])) {
+        header('Content-Type: ' . $mime_types[$ext]);
+    }
+    
     return false; // 讓 PHP 內建伺服器處理
 }
 
@@ -92,7 +111,7 @@ if (strpos($uri, 'api/') === 0) {
 // 處理前端路由（SPA）
 // 檢查是否為靜態資源
 $extension = pathinfo($uri, PATHINFO_EXTENSION);
-$static_extensions = ['css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot', 'json', 'xml', 'txt'];
+$static_extensions = ['css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot', 'json', 'xml', 'txt', 'pdf'];
 
 if (in_array($extension, $static_extensions)) {
     error_log("Router: Static resource not found: " . $uri);
