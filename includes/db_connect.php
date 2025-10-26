@@ -20,6 +20,8 @@ $db_port = getEnvVar('MYSQL_PORT') ?: getEnvVar('DB_PORT', '3306');
 
 // 調試：記錄環境變數（生產環境請移除）
 error_log("資料庫連接參數: host=$db_host, user=$db_username, db=$db_name, port=$db_port");
+error_log("密碼長度: " . strlen($db_password) . " 字元");
+error_log("可用的環境變數: " . implode(', ', array_keys($_ENV)));
 
 // 如果有環境變數，使用單一配置（生產環境）
 if ($db_host !== 'localhost') {
@@ -82,11 +84,22 @@ foreach ($connection_configs as $config) {
             // 檢查連線
             if (!$conn->connect_error) {
                 // 連線成功，跳出迴圈
+                error_log("資料庫連接成功！");
                 break;
+            } else {
+                $error_msg = "連接後錯誤: " . $conn->connect_error;
+                error_log($error_msg);
+                $connection_error .= $error_msg . "<br>";
             }
+        } else {
+            $error_msg = "mysqli_real_connect 失敗: " . mysqli_connect_error();
+            error_log($error_msg);
+            $connection_error .= $error_msg . "<br>";
         }
     } catch (Exception $e) {
-        $connection_error .= "連線 {$config['host']} 失敗: " . $e->getMessage() . "<br>";
+        $error_msg = "連線 {$config['host']} 失敗: " . $e->getMessage();
+        error_log($error_msg);
+        $connection_error .= $error_msg . "<br>";
         continue;
     }
 }
