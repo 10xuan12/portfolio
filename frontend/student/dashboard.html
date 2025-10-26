@@ -759,8 +759,11 @@
                 
                 console.log('載入技能雷達圖預覽，學生ID:', studentId);
                 
-                // 使用正確的 API 路徑
-                const apiUrl = `${window.location.origin}/portfolio/api/student/skill-analysis.php?action=get_skill_analysis&student_id=${studentId}`;
+                // 使用配置的 API 路徑
+                const apiBaseUrl = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+                    ? APP_CONFIG.API_BASE_URL 
+                    : '/api';
+                const apiUrl = `${window.location.origin}${apiBaseUrl}/student/skill-analysis.php?action=get_skill_analysis&student_id=${studentId}`;
                 console.log('API URL:', apiUrl);
                 
                 const response = await fetch(apiUrl);
@@ -838,8 +841,11 @@
                 
                 console.log('載入作品時光機預覽，學生ID:', studentId);
                 
-                // 使用正確的 API 路徑
-                const apiUrl = `${window.location.origin}/portfolio/api/student/portfolio.php?action=list&user_id=${studentId}`;
+                // 使用配置的 API 路徑
+                const apiBaseUrl = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+                    ? APP_CONFIG.API_BASE_URL 
+                    : '/api';
+                const apiUrl = `${window.location.origin}${apiBaseUrl}/student/portfolio.php?action=list&user_id=${studentId}`;
                 console.log('API URL:', apiUrl);
                 
                 const response = await fetch(apiUrl);

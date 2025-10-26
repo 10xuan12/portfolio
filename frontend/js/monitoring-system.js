@@ -16,7 +16,12 @@ if (typeof window.MonitoringSystem === 'undefined') {
             logLevel: 'info', // debug, info, warn, error
             maxLogEntries: 1000,
             sendToServer: true,
-            serverEndpoint: '/portfolio/api/monitoring.php'
+            get serverEndpoint() {
+                const apiBase = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+                    ? APP_CONFIG.API_BASE_URL 
+                    : '/api';
+                return `${apiBase}/monitoring.php`;
+            }
         },
         
         // 日誌存儲

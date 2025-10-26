@@ -3,6 +3,13 @@
  * 基於學生作品自動分析技能並生成雷達圖
  */
 
+// 輔助函數：獲取 API 基礎 URL
+function getApiBase() {
+    return (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+        ? APP_CONFIG.API_BASE_URL 
+        : '/api';
+}
+
 class SkillRadarGenerator {
     constructor(containerId, studentId) {
         this.container = document.getElementById(containerId);
@@ -45,7 +52,7 @@ class SkillRadarGenerator {
     async fetchSkillAnalysis() {
         try {
             console.log('正在為學生 ID', this.studentId, '獲取技能分析數據...');
-            const response = await fetch(`/portfolio/api/student/skill-analysis.php?action=get_skill_analysis&student_id=${this.studentId}`);
+            const response = await fetch(`${getApiBase()}/student/skill-analysis.php?action=get_skill_analysis&student_id=${this.studentId}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

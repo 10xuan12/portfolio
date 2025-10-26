@@ -3,6 +3,13 @@
  * 企業可同時查看多個學生作品進行比較
  */
 
+// 輔助函數：獲取 API 基礎 URL
+function getApiBase() {
+    return (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+        ? APP_CONFIG.API_BASE_URL 
+        : '/api';
+}
+
 class PortfolioComparison {
     constructor(containerId, resultsId) {
         this.container = document.getElementById(containerId);
@@ -51,7 +58,7 @@ class PortfolioComparison {
     async fetchPortfolios() {
         try {
             console.log('正在從API載入作品數據...');
-            const response = await fetch('/portfolio/api/enterprise/portfolios.php?action=get_all_published_portfolios&limit=50');
+            const response = await fetch(`${getApiBase()}/enterprise/portfolios.php?action=get_all_published_portfolios&limit=50`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -230,7 +237,7 @@ class PortfolioComparison {
                 return;
             }
 
-            const response = await fetch('/portfolio/api/enterprise/portfolios.php?action=categories');
+            const response = await fetch(`${getApiBase()}/enterprise/portfolios.php?action=categories`);
             const data = await response.json();
             
             if (data.status === 200 && data.data) {
@@ -286,7 +293,7 @@ class PortfolioComparison {
 
         try {
             console.log('正在從API載入科系數據...');
-            const response = await fetch('/portfolio/api/student/skill-analysis.php?action=get_departments');
+            const response = await fetch(`${getApiBase()}/student/skill-analysis.php?action=get_departments`);
             const data = await response.json();
             
             if (data.status === 200 && data.data) {

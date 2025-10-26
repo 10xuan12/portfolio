@@ -137,7 +137,8 @@ self.addEventListener('fetch', event => {
 // 處理API請求
 async function handleApiRequest(request) {
     const url = new URL(request.url);
-    const endpoint = url.pathname.replace('/portfolio/api/', '');
+    // 支援 /api/ 和 /portfolio/api/ 兩種路徑
+    const endpoint = url.pathname.replace(/^\/(portfolio\/)?api\//, '');
     
     try {
         // 根據策略處理不同的API端點

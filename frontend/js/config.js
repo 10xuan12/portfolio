@@ -229,8 +229,26 @@ function initializeConfig() {
         APP_CONFIG.VERBOSE_LOGGING = false;
     }
     
-    // 保持 API Base URL（可在部署時於此調整）
-    APP_CONFIG.API_BASE_URL = '/portfolio/api';
+    // 自動檢測並設定 API Base URL
+    const hostname = window.location.hostname;
+    const isRailwayApp = hostname.includes('railway.app');
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    
+    if (isRailwayApp) {
+        // Railway 生產環境：直接使用 /api
+        APP_CONFIG.API_BASE_URL = '/api';
+        APP_CONFIG.ENVIRONMENT = 'production';
+        debugLog('檢測到 Railway 環境，使用 /api');
+    } else if (isLocalhost) {
+        // 本地開發環境：使用 /portfolio/api
+        APP_CONFIG.API_BASE_URL = '/portfolio/api';
+        APP_CONFIG.ENVIRONMENT = 'development';
+        debugLog('檢測到本地環境，使用 /portfolio/api');
+    } else {
+        // 其他環境：保持原有設定
+        APP_CONFIG.API_BASE_URL = APP_CONFIG.API_BASE_URL || '/api';
+        debugLog('使用預設 API URL: ' + APP_CONFIG.API_BASE_URL);
+    }
     
     // 強制覆蓋 localStorage 中的設定
     try {

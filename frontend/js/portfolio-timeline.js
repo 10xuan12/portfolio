@@ -3,6 +3,13 @@
  * 展示學生的作品成長歷程
  */
 
+// 輔助函數：獲取 API 基礎 URL
+function getApiBase() {
+    return (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+        ? APP_CONFIG.API_BASE_URL 
+        : '/api';
+}
+
 class PortfolioTimeline {
     constructor(containerId, studentId) {
         this.container = document.getElementById(containerId);
@@ -71,7 +78,7 @@ class PortfolioTimeline {
         
         try {
             console.log('正在從API載入作品數據...');
-            const response = await fetch(`/portfolio/api/student/portfolio.php?action=list&user_id=${this.studentId}`);
+            const response = await fetch(`${getApiBase()}/student/portfolio.php?action=list&user_id=${this.studentId}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -149,7 +156,7 @@ class PortfolioTimeline {
             }
 
             console.log('正在從API載入分類數據...');
-            const response = await fetch('/portfolio/api/student/portfolio.php?action=categories');
+            const response = await fetch(`${getApiBase()}/student/portfolio.php?action=categories`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -201,7 +208,7 @@ class PortfolioTimeline {
 
         try {
             console.log('正在從API載入科系數據...');
-            const response = await fetch('/portfolio/api/student/skill-analysis.php?action=get_departments');
+            const response = await fetch(`${getApiBase()}/student/skill-analysis.php?action=get_departments`);
             const data = await response.json();
             
             if (data.status === 200 && data.data) {
