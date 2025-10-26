@@ -5,7 +5,7 @@
   },
   "deploy": {
     "startCommand": "php -S 0.0.0.0:$PORT -t .",
-    "healthcheckPath": "/api/index.php",
+    "healthcheckPath": "/health.php",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
