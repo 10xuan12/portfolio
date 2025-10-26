@@ -17,7 +17,8 @@ $db_port = getenv('DB_PORT') ?: (getenv('MYSQL_PORT') ?: '3306');
 if (getenv('DB_HOST') || getenv('MYSQL_HOST')) {
     $connection_configs = [
         [
-            'host' => $db_host . ':' . $db_port,
+            'host' => $db_host,
+            'port' => $db_port,
             'username' => $db_username,
             'password' => $db_password,
             'database' => $db_name
@@ -63,7 +64,10 @@ foreach ($connection_configs as $config) {
         $conn = mysqli_init();
         mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, 3);
         
-        if (mysqli_real_connect($conn, $config['host'], $config['username'], $config['password'], $config['database'])) {
+        // 取得端口號（如果有的話）
+        $port = isset($config['port']) ? intval($config['port']) : null;
+        
+        if (mysqli_real_connect($conn, $config['host'], $config['username'], $config['password'], $config['database'], $port)) {
             // 設定字符集
             $conn->set_charset("utf8mb4");
             
