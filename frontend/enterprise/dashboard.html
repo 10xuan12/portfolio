@@ -779,7 +779,10 @@
         async function initEnterpriseFeaturedDaily() {
             try {
                 // 從 API 獲取推薦作品
-                const response = await fetch('/portfolio/api/random-portfolios.php?limit=5');
+                const apiBaseUrl = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+                    ? APP_CONFIG.API_BASE_URL 
+                    : '/api';
+                const response = await fetch(`${apiBaseUrl}/random-portfolios.php?limit=5`);
                 const result = await response.json();
                 
                 if (result.status === 200 && result.data && result.data.length > 0) {
@@ -823,7 +826,10 @@
         // 載入篩選選項
         async function loadFilterOptions() {
             try {
-                const response = await fetch('/portfolio/api/enterprise/filter-options.php');
+                const apiBaseUrl = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+                    ? APP_CONFIG.API_BASE_URL 
+                    : '/api';
+                const response = await fetch(`${apiBaseUrl}/enterprise/filter-options.php`);
                 const result = await response.json();
                 
                 if (result.status === 200 && result.data) {
