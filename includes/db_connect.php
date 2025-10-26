@@ -7,14 +7,22 @@ error_reporting(E_ALL);
 global $conn;
 
 // 優先使用環境變數（生產環境）
-$db_host = getenv('DB_HOST') ?: (getenv('MYSQL_HOST') ?: 'localhost');
-$db_username = getenv('DB_USERNAME') ?: (getenv('MYSQL_USER') ?: 'root');
-$db_password = getenv('DB_PASSWORD') ?: (getenv('MYSQL_PASSWORD') ?: '');
-$db_name = getenv('DB_NAME') ?: (getenv('MYSQL_DATABASE') ?: 'eportfolio2');
-$db_port = getenv('DB_PORT') ?: (getenv('MYSQL_PORT') ?: '3306');
+// 使用 $_ENV 或 $_SERVER 來獲取環境變數（更可靠）
+function getEnvVar($key, $default = '') {
+    return $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?: $default;
+}
+
+$db_host = getEnvVar('MYSQL_HOST') ?: getEnvVar('DB_HOST', 'localhost');
+$db_username = getEnvVar('MYSQL_USER') ?: getEnvVar('DB_USERNAME', 'root');
+$db_password = getEnvVar('MYSQL_PASSWORD') ?: getEnvVar('DB_PASSWORD', '');
+$db_name = getEnvVar('MYSQL_DATABASE') ?: getEnvVar('DB_NAME', 'eportfolio2');
+$db_port = getEnvVar('MYSQL_PORT') ?: getEnvVar('DB_PORT', '3306');
+
+// 調試：記錄環境變數（生產環境請移除）
+error_log("資料庫連接參數: host=$db_host, user=$db_username, db=$db_name, port=$db_port");
 
 // 如果有環境變數，使用單一配置（生產環境）
-if (getenv('DB_HOST') || getenv('MYSQL_HOST')) {
+if ($db_host !== 'localhost') {
     $connection_configs = [
         [
             'host' => $db_host,

@@ -631,7 +631,19 @@
                     body: JSON.stringify(requestBody)
                 });
 
-                const result = await response.json();
+                // 先檢查回應類型
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                let result;
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    // 不是 JSON，可能是錯誤頁面
+                    const textResponse = await response.text();
+                    console.error('伺服器返回非 JSON 內容:', textResponse.substring(0, 500));
+                    throw new Error('伺服器錯誤：' + textResponse.substring(0, 200));
+                }
                 console.log('登入回應:', result);
 
                 if (result.status === 200) {

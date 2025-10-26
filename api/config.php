@@ -1,12 +1,8 @@
 <?php
-    ini_set('opcache.enable', 1);
-    ini_set('opcache.validate_timestamps', 1);
-    ini_set('opcache.revalidate_freq', 0);
-    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-    header('Pragma: no-cache');
-    
 // API 配置檔案
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 
 // 啟用調試模式
 define('DEBUG_MODE', true);
