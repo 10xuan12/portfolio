@@ -597,7 +597,7 @@
                 
                 switch(selectedRole) {
                     case 'student':
-                        apiEndpoint = '/portfolio/api/student/auth-direct.php';
+                        apiEndpoint = '/api/student/auth-direct.php';
                         requestBody = {
                             action: 'login',
                             username: username,
@@ -605,7 +605,7 @@
                         };
                         break;
                     case 'enterprise':
-                        apiEndpoint = '/portfolio/api/enterprise/auth.php';
+                        apiEndpoint = '/api/enterprise/auth.php';
                         requestBody = {
                             action: 'login',
                             email: username, // 企業端使用 email
@@ -613,7 +613,7 @@
                         };
                         break;
                     case 'admin':
-                        apiEndpoint = '/portfolio/api/admin/auth.php';
+                        apiEndpoint = '/api/admin/auth.php';
                         requestBody = {
                             action: 'login',
                             username: username,
@@ -695,13 +695,13 @@
                 let endpoint = '';
                 let payload = {};
                 if (role === 'student') {
-                    endpoint = '/portfolio/api/student/password.php';
+                    endpoint = '/api/student/password.php';
                     payload = { action: 'request_reset', email };
                 } else if (role === 'enterprise') {
-                    endpoint = '/portfolio/api/enterprise/auth.php';
+                    endpoint = '/api/enterprise/auth.php';
                     payload = { action: 'password_reset_request', email };
                 } else {
-                    endpoint = '/portfolio/api/admin/auth.php';
+                    endpoint = '/api/admin/auth.php';
                     payload = { action: 'password_reset_request', email };
                 }
                 fetch(endpoint, {

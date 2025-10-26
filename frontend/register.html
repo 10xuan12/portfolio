@@ -917,11 +917,11 @@
                 // 根據角色選擇對應的 API 端點
                 let apiEndpoint = '';
                 if (selectedRole === 'student') {
-                    apiEndpoint = '/portfolio/api/student/auth-direct.php';
+                    apiEndpoint = '/api/student/auth-direct.php';
                 } else if (selectedRole === 'enterprise') {
-                    apiEndpoint = '/portfolio/api/enterprise/auth.php';
+                    apiEndpoint = '/api/enterprise/auth.php';
                 } else if (selectedRole === 'admin') {
-                    apiEndpoint = '/portfolio/api/student/auth-direct.php'; // 暫時使用學生 API，之後可以建立專門的管理員 API
+                    apiEndpoint = '/api/student/auth-direct.php'; // 暫時使用學生 API，之後可以建立專門的管理員 API
                 }
 
                 console.log('使用 API 端點:', apiEndpoint);
