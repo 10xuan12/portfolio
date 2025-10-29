@@ -84,8 +84,9 @@ function listRecommendations($enterpriseId) {
             // 使用姓名生成頭像（DiceBear API）
             $initial = mb_substr($name ?: '學', 0, 1, 'UTF-8');
             $avatarUrl = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
-        } elseif (strpos($avatarUrl, '/portfolio/') !== 0 && strpos($avatarUrl, 'http') !== 0) {
-            $avatarUrl = '/portfolio/' . ltrim($avatarUrl, '/');
+        } elseif (strpos($avatarUrl, 'http') !== 0) {
+            // 確保路徑以 / 開頭（適用於本地和 Railway）
+            $avatarUrl = '/' . ltrim($avatarUrl, '/');
         }
         
         $list[] = [

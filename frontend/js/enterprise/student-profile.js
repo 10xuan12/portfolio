@@ -23,7 +23,7 @@
         const avatar = document.getElementById('spAvatar');
         if (avatar) {
             if (profile.avatar_url) {
-                // API 已返回完整路徑（/portfolio/... 或 http://...），直接使用
+                // API 已返回完整路徑（絕對路徑或 http://...），直接使用
                 avatar.src = profile.avatar_url;
             } else {
                 avatar.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initial)}`;

@@ -372,10 +372,8 @@ function getImageUrl(path) {
     if (path.startsWith('http://') || path.startsWith('https://')) {
         return path;
     }
-    if (path.startsWith('/portfolio/')) {
-        return path;
-    }
-    return '/portfolio/' + path.replace(/^\/+/, '');
+    // 確保路徑以 / 開頭
+    return path.startsWith('/') ? path : '/' + path;
 }
 
 /**

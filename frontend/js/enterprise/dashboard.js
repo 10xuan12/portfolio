@@ -283,7 +283,7 @@ function renderRecentPortfolios(portfolios) {
         portfolioItem.className = 'portfolio-item';
         portfolioItem.innerHTML = `
             <div class="portfolio-image">
-                <img src="${portfolio.thumbnail_url || '/portfolio/images/default-portfolio.jpg'}" alt="${portfolio.title}">
+                <img src="${portfolio.thumbnail_url || '/images/default-portfolio.jpg'}" alt="${portfolio.title}">
             </div>
             <div class="portfolio-info">
                 <h4>${portfolio.title}</h4>
@@ -296,7 +296,7 @@ function renderRecentPortfolios(portfolios) {
         `;
         
         portfolioItem.addEventListener('click', () => {
-            window.location.href = `/portfolio/frontend/enterprise/portfolios.html?id=${portfolio.id}`;
+            window.location.href = `/frontend/enterprise/portfolios.html?id=${portfolio.id}`;
         });
         
         portfolioGrid.appendChild(portfolioItem);
@@ -322,7 +322,7 @@ function renderRecommendedStudents(students) {
         studentItem.className = 'student-item';
         studentItem.innerHTML = `
             <div class="student-avatar">
-                <img src="${student.avatar_url || '/portfolio/images/default-avatar.jpg'}" alt="${student.name}">
+                <img src="${student.avatar_url || '/images/default-avatar.jpg'}" alt="${student.name}">
             </div>
             <div class="student-info">
                 <h4>${student.name}</h4>
@@ -400,7 +400,7 @@ function renderJobPostings(jobs) {
         `;
         
         jobItem.addEventListener('click', () => {
-            window.location.href = `/portfolio/frontend/enterprise/jobs.html?id=${job.id}`;
+            window.location.href = `/frontend/enterprise/jobs.html?id=${job.id}`;
         });
         
         jobList.appendChild(jobItem);

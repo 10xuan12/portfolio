@@ -74,14 +74,15 @@ $sql = "
         u.username,
         sp.display_name, sp.first_name, sp.last_name, sp.avatar_url,
         sp.major, sp.school, sp.grade, sp.skills, sp.bio,
-        COALESCE(COUNT(p.id), 0) AS portfolio_count,
+        COALESCE(COUNT(DISTINCT p.id), 0) AS portfolio_count,
         COALESCE(SUM(p.view_count), 0) AS total_views,
         COALESCE(SUM(p.like_count), 0) AS total_likes
     FROM users u
     LEFT JOIN student_profiles sp ON u.id = sp.user_id
     LEFT JOIN portfolios p ON p.user_id = u.id AND p.status = 'published'
     WHERE $whereSql
-    GROUP BY u.id
+    GROUP BY u.id, u.username, sp.display_name, sp.first_name, sp.last_name, 
+             sp.avatar_url, sp.major, sp.school, sp.grade, sp.skills, sp.bio
     HAVING portfolio_count > 0
     ORDER BY portfolio_count DESC, total_views DESC, total_likes DESC
     LIMIT ? OFFSET ?
@@ -168,8 +169,9 @@ foreach ($rows as $r) {
             // 使用姓名生成頭像（DiceBear API）
             $initial = mb_substr($name ?: '學', 0, 1, 'UTF-8');
             $avatarUrl = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
-        } elseif (strpos($avatarUrl, '/portfolio/') !== 0 && strpos($avatarUrl, 'http') !== 0) {
-            $avatarUrl = '/portfolio/' . ltrim($avatarUrl, '/');
+        } elseif (strpos($avatarUrl, 'http') !== 0) {
+            // 確保路徑以 / 開頭（適用於本地和 Railway）
+            $avatarUrl = '/' . ltrim($avatarUrl, '/');
         }
         
         $result[] = [

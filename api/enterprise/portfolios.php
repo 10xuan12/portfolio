@@ -174,6 +174,19 @@ function getPortfolioList() {
         $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
         $portfolio['is_bookmarked'] = (bool)$portfolio['is_bookmarked'];
+        
+        // 處理頭像路徑
+        if (!empty($portfolio['avatar_url']) && strpos($portfolio['avatar_url'], 'http') !== 0) {
+            $portfolio['avatar_url'] = '/' . ltrim($portfolio['avatar_url'], '/');
+        }
+        
+        // 處理封面圖片路徑
+        if (!empty($portfolio['cover_image']) && strpos($portfolio['cover_image'], 'http') !== 0) {
+            $portfolio['cover_image'] = '/' . ltrim($portfolio['cover_image'], '/');
+        }
+        if (!empty($portfolio['thumbnail_url']) && strpos($portfolio['thumbnail_url'], 'http') !== 0) {
+            $portfolio['thumbnail_url'] = '/' . ltrim($portfolio['thumbnail_url'], '/');
+        }
     }
     
     $response = [
@@ -228,6 +241,16 @@ function getPortfolioDetail() {
     $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
     $portfolio['is_bookmarked'] = (bool)$portfolio['is_bookmarked'];
     
+    // 處理頭像路徑
+    if (!empty($portfolio['avatar_url']) && strpos($portfolio['avatar_url'], 'http') !== 0) {
+        $portfolio['avatar_url'] = '/' . ltrim($portfolio['avatar_url'], '/');
+    }
+    
+    // 處理封面圖片路徑
+    if (!empty($portfolio['cover_image']) && strpos($portfolio['cover_image'], 'http') !== 0) {
+        $portfolio['cover_image'] = '/' . ltrim($portfolio['cover_image'], '/');
+    }
+    
     // 取得作品檔案
     $filesStmt = $GLOBALS['conn']->prepare("
         SELECT id, file_name, file_path, file_size, file_type, file_extension, is_primary, sort_order
@@ -257,6 +280,18 @@ function getPortfolioDetail() {
     // 處理評論資料
     foreach ($portfolio['comments'] as &$comment) {
         $comment['student_name'] = $comment['display_name'] ?: ($comment['first_name'] . ' ' . $comment['last_name']);
+        
+        // 處理評論者頭像路徑
+        if (!empty($comment['avatar_url']) && strpos($comment['avatar_url'], 'http') !== 0) {
+            $comment['avatar_url'] = '/' . ltrim($comment['avatar_url'], '/');
+        }
+    }
+    
+    // 處理作品檔案路徑
+    foreach ($portfolio['files'] as &$file) {
+        if (!empty($file['file_path']) && strpos($file['file_path'], 'http') !== 0) {
+            $file['file_path'] = '/' . ltrim($file['file_path'], '/');
+        }
     }
     
     sendResponse($portfolio, 200, '取得作品詳細資料成功');
@@ -424,6 +459,16 @@ function getBookmarks() {
         $bookmark['skills'] = $bookmark['skills'] ? explode(',', $bookmark['skills']) : [];
         $bookmark['student_name'] = $bookmark['display_name'] ?: ($bookmark['first_name'] . ' ' . $bookmark['last_name']);
         $bookmark['is_bookmarked'] = true;
+        
+        // 處理頭像路徑
+        if (!empty($bookmark['avatar_url']) && strpos($bookmark['avatar_url'], 'http') !== 0) {
+            $bookmark['avatar_url'] = '/' . ltrim($bookmark['avatar_url'], '/');
+        }
+        
+        // 處理封面圖片路徑
+        if (!empty($bookmark['cover_image']) && strpos($bookmark['cover_image'], 'http') !== 0) {
+            $bookmark['cover_image'] = '/' . ltrim($bookmark['cover_image'], '/');
+        }
     }
     
     sendResponse($bookmarks, 200, '取得收藏列表成功');

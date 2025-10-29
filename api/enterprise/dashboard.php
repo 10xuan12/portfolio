@@ -162,6 +162,19 @@ function getRecentPortfolios() {
         $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
         $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
+        
+        // 處理頭像路徑
+        if (!empty($portfolio['avatar_url']) && strpos($portfolio['avatar_url'], 'http') !== 0) {
+            $portfolio['avatar_url'] = '/' . ltrim($portfolio['avatar_url'], '/');
+        }
+        
+        // 處理封面圖片路徑
+        if (!empty($portfolio['cover_image']) && strpos($portfolio['cover_image'], 'http') !== 0) {
+            $portfolio['cover_image'] = '/' . ltrim($portfolio['cover_image'], '/');
+        }
+        if (!empty($portfolio['thumbnail_url']) && strpos($portfolio['thumbnail_url'], 'http') !== 0) {
+            $portfolio['thumbnail_url'] = '/' . ltrim($portfolio['thumbnail_url'], '/');
+        }
     }
     
     sendResponse($portfolios, 200, '取得最近瀏覽作品成功');
@@ -202,6 +215,16 @@ function getRecommendedStudents() {
         $student['student_name'] = $student['display_name'] ?: ($student['first_name'] . ' ' . $student['last_name']);
         $student['avg_views'] = round($student['avg_views'], 0);
         $student['avg_likes'] = round($student['avg_likes'], 0);
+        
+        // 處理頭像路徑
+        if (empty($student['avatar_url'])) {
+            $name = $student['student_name'] ?: '學生';
+            $initial = mb_substr($name, 0, 1, 'UTF-8');
+            $student['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
+        } elseif (strpos($student['avatar_url'], 'http') !== 0) {
+            // 確保路徑以 / 開頭（適用於本地和 Railway）
+            $student['avatar_url'] = '/' . ltrim($student['avatar_url'], '/');
+        }
     }
     
     sendResponse($students, 200, '取得推薦學生成功');

@@ -440,8 +440,9 @@ function getJobApplications() {
                 $name = $app['student_name'] ?: '學生';
                 $initial = mb_substr($name, 0, 1, 'UTF-8');
                 $app['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
-            } elseif (strpos($app['avatar_url'], '/portfolio/') !== 0 && strpos($app['avatar_url'], 'http') !== 0) {
-                $app['avatar_url'] = '/portfolio/' . ltrim($app['avatar_url'], '/');
+            } elseif (strpos($app['avatar_url'], 'http') !== 0) {
+                // 確保路徑以 / 開頭（適用於本地和 Railway）
+                $app['avatar_url'] = '/' . ltrim($app['avatar_url'], '/');
             }
         }
         

@@ -111,8 +111,9 @@ function getEnterpriseProfile() {
         $profile['social_media'] = $profile['social_media'] ? json_decode($profile['social_media'], true) : [];
         
         // 處理 Logo 路徑
-        if (!empty($profile['logo_url']) && strpos($profile['logo_url'], '/portfolio/') !== 0 && strpos($profile['logo_url'], 'http') !== 0) {
-            $profile['logo_url'] = '/portfolio/' . ltrim($profile['logo_url'], '/');
+        if (!empty($profile['logo_url']) && strpos($profile['logo_url'], 'http') !== 0) {
+            // 確保路徑以 / 開頭（適用於本地和 Railway）
+            $profile['logo_url'] = '/' . ltrim($profile['logo_url'], '/');
         }
         
         // 計算統計資料
@@ -173,9 +174,9 @@ function getStudentPublicProfile() {
         $name = $profile['display_name'] ?: ($profile['first_name'] . $profile['last_name']) ?: '學生';
         $initial = mb_substr($name, 0, 1, 'UTF-8');
         $profile['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
-    } elseif (strpos($profile['avatar_url'], '/portfolio/') !== 0 && strpos($profile['avatar_url'], 'http') !== 0) {
-        // 將資料庫中相對路徑統一轉為以 /portfolio 為前綴的絕對路徑
-        $profile['avatar_url'] = '/portfolio/' . ltrim($profile['avatar_url'], '/');
+    } elseif (strpos($profile['avatar_url'], 'http') !== 0) {
+        // 確保路徑以 / 開頭（適用於本地和 Railway）
+        $profile['avatar_url'] = '/' . ltrim($profile['avatar_url'], '/');
     }
 
     // 公開社群
