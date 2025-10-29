@@ -371,17 +371,21 @@ function createPortfolio($data) {
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
             
-            // 檢查並授予徽章
-            require_once '../badge-manager.php';
-            $awardedBadges = checkSpecificBadge($userId, '首次上傳');
-            
             $response = [
                 'portfolio_id' => $portfolioId,
                 'message' => '作品建立成功'
             ];
             
-            if ($awardedBadges) {
-                $response['new_badge'] = '首次上傳';
+            // 檢查並授予徽章（失敗不影響作品創建）
+            try {
+                require_once __DIR__ . '/../badge-manager.php';
+                $awardedBadges = checkSpecificBadge($userId, '首次上傳');
+                if ($awardedBadges) {
+                    $response['new_badge'] = '首次上傳';
+                }
+            } catch (Exception $e) {
+                error_log('徽章檢查失敗: ' . $e->getMessage());
+                // 繼續執行，不影響作品創建
             }
             
             sendResponse($response, 201, '建立成功');

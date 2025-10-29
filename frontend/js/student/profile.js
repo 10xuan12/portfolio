@@ -231,9 +231,9 @@
                             if (!url || url.trim() === '') return '';
                             // 外部 URL（如 DiceBear API），直接使用
                             if (/^https?:\/\//i.test(url)) return url;
-                            // 本地檔案路徑，轉換為相對路徑
-                            if (url.startsWith('/portfolio/')) {
-                                return url.replace('/portfolio/', '../');
+                            // 本地檔案路徑，確保以 / 開頭（適用於本地和 Railway）
+                            if (!url.startsWith('/')) {
+                                return '/' + url;
                             }
                             // 其他情況，直接使用
                             return url;
