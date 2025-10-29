@@ -174,13 +174,26 @@ function getPortfolioList() {
         
         $portfolios = [];
         while ($row = $result->fetch_assoc()) {
+            // 處理 tags：可能是 JSON 或逗號分隔字符串
+            $tagsArray = [];
+            if (!empty($row['tags'])) {
+                // 嘗試解析為 JSON
+                $decoded = json_decode($row['tags'], true);
+                if (is_array($decoded)) {
+                    $tagsArray = $decoded;
+                } else {
+                    // 如果不是 JSON，按逗號分隔
+                    $tagsArray = array_map('trim', explode(',', $row['tags']));
+                }
+            }
+            
             $portfolios[] = [
                 'id' => (int)$row['id'],
                 'title' => $row['title'],
                 'description' => $row['description'],
                 'status' => $row['status'],
                 'category' => $row['category'],
-                'tags' => $row['tags'] ? explode(',', $row['tags']) : [],
+                'tags' => $tagsArray,
                 'cover_image' => $row['cover_image'],
                 'views' => (int)$row['view_count'],
                 'likes' => (int)$row['like_count'],
@@ -260,6 +273,19 @@ function getPortfolioDetail() {
     $likeCount = (int)($row['like_count'] ?? 0);
     $commentCount = (int)($row['comment_count'] ?? 0);
 
+    // 處理 tags：可能是 JSON 或逗號分隔字符串
+    $tagsArray = [];
+    if (!empty($row['tags'])) {
+        // 嘗試解析為 JSON
+        $decoded = json_decode($row['tags'], true);
+        if (is_array($decoded)) {
+            $tagsArray = $decoded;
+        } else {
+            // 如果不是 JSON，按逗號分隔
+            $tagsArray = array_map('trim', explode(',', $row['tags']));
+        }
+    }
+    
     $portfolio = [
         'id' => (int)$row['id'],
         'author_id' => isset($row['author_id']) ? (int)$row['author_id'] : null,
@@ -267,7 +293,7 @@ function getPortfolioDetail() {
         'description' => $row['description'] ?? '',
         'status' => $row['status'] ?? 'draft',
         'category' => $row['category'] ?? null,
-        'tags' => !empty($row['tags']) ? explode(',', $row['tags']) : [],
+        'tags' => $tagsArray,
         'cover_image' => $row['cover_image'] ?? null,
         'views' => (int)($row['view_count'] ?? 0),
         'likes' => $likeCount,
