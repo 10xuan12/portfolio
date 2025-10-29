@@ -321,8 +321,18 @@ function createPortfolio($data) {
     // 臨時調試信息
     error_log('createPortfolio - 接收到的資料: ' . json_encode($data));
     error_log('createPortfolio - Content-Type: ' . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+    error_log('createPortfolio - POST: ' . json_encode($_POST));
     error_log('createPortfolio - GET user_id: ' . ($_GET['user_id'] ?? 'not set'));
     error_log('createPortfolio - POST user_id: ' . ($_POST['user_id'] ?? 'not set'));
+    
+    // 支援 multipart/form-data 和 JSON 兩種格式
+    $contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
+    $isMultipart = stripos($contentType, 'multipart/form-data') !== false;
+    
+    // 如果是 multipart 請求，從 $_POST 讀取資料
+    if ($isMultipart && !empty($_POST)) {
+        $data = array_merge($data, $_POST);
+    }
     
     $userId = getUserId();
     error_log('createPortfolio - getUserId() 返回: ' . ($userId ?? 'null'));
@@ -335,7 +345,18 @@ function createPortfolio($data) {
     $title = sanitizeInput($data['title'] ?? '');
     $description = sanitizeInput($data['description'] ?? '');
     $category = sanitizeInput($data['category'] ?? '');
-    $tags = sanitizeInput($data['tags'] ?? '');
+    
+    // 處理 tags - 如果是陣列，轉換為 JSON 字符串
+    $tagsData = $data['tags'] ?? '';
+    if (is_array($tagsData)) {
+        $tags = json_encode($tagsData, JSON_UNESCAPED_UNICODE);
+    } else if (is_string($tagsData) && !empty($tagsData)) {
+        // 如果已經是 JSON 字符串或普通字符串，直接使用
+        $tags = $tagsData;
+    } else {
+        $tags = '[]';
+    }
+    
     $status = sanitizeInput($data['status'] ?? 'draft');
     $coverImage = sanitizeInput($data['cover_image'] ?? '');
     
@@ -366,7 +387,7 @@ function createPortfolio($data) {
         ");
         
         $publishedAt = $status === 'published' ? date('Y-m-d H:i:s') : null;
-        $stmt->bind_param("isissss", $userId, $title, $description, $categoryId, $tags, $coverImage, $status, $publishedAt);
+        $stmt->bind_param("isiissss", $userId, $title, $description, $categoryId, $tags, $coverImage, $status, $publishedAt);
         
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
@@ -375,6 +396,68 @@ function createPortfolio($data) {
                 'portfolio_id' => $portfolioId,
                 'message' => '作品建立成功'
             ];
+            
+            // 處理檔案上傳（如果有）
+            if (isset($_FILES['files']) && is_array($_FILES['files']['name'])) {
+                error_log('createPortfolio - 開始處理檔案上傳，檔案數量: ' . count($_FILES['files']['name']));
+                
+                $uploadedFiles = [];
+                $errors = [];
+                
+                foreach ($_FILES['files']['tmp_name'] as $key => $tmpName) {
+                    if ($_FILES['files']['error'][$key] === UPLOAD_ERR_OK) {
+                        $fileName = $_FILES['files']['name'][$key];
+                        $fileSize = $_FILES['files']['size'][$key];
+                        $fileType = $_FILES['files']['type'][$key];
+                        
+                        // 生成唯一檔名
+                        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+                        $newFileName = 'portfolio_' . $portfolioId . '_' . time() . '_' . $key . '.' . $extension;
+                        $uploadDir = __DIR__ . '/../uploads/portfolios/';
+                        
+                        // 確保上傳目錄存在
+                        if (!is_dir($uploadDir)) {
+                            mkdir($uploadDir, 0755, true);
+                        }
+                        
+                        $filePath = $uploadDir . $newFileName;
+                        
+                        // 移動上傳的檔案
+                        if (move_uploaded_file($tmpName, $filePath)) {
+                            // 儲存到資料庫
+                            $relativePath = 'uploads/portfolios/' . $newFileName;
+                            $fileStmt = $GLOBALS['conn']->prepare("
+                                INSERT INTO portfolio_files (
+                                    portfolio_id, file_name, file_path, file_size, file_type
+                                ) VALUES (?, ?, ?, ?, ?)
+                            ");
+                            $fileStmt->bind_param("issis", $portfolioId, $fileName, $relativePath, $fileSize, $fileType);
+                            
+                            if ($fileStmt->execute()) {
+                                $uploadedFiles[] = [
+                                    'original_name' => $fileName,
+                                    'file_path' => $relativePath,
+                                    'file_size' => $fileSize
+                                ];
+                            } else {
+                                $errors[] = "檔案 $fileName 資料庫儲存失敗";
+                                @unlink($filePath);
+                            }
+                        } else {
+                            $errors[] = "檔案 $fileName 上傳失敗";
+                        }
+                    }
+                }
+                
+                if (!empty($uploadedFiles)) {
+                    $response['uploaded_files'] = $uploadedFiles;
+                    error_log('createPortfolio - 成功上傳 ' . count($uploadedFiles) . ' 個檔案');
+                }
+                if (!empty($errors)) {
+                    $response['file_errors'] = $errors;
+                    error_log('createPortfolio - 檔案上傳錯誤: ' . implode(', ', $errors));
+                }
+            }
             
             // 檢查並授予徽章（失敗不影響作品創建）
             try {
@@ -409,7 +492,18 @@ function updatePortfolio($data) {
     $title = sanitizeInput($data['title'] ?? '');
     $description = sanitizeInput($data['description'] ?? '');
     $category = sanitizeInput($data['category'] ?? '');
-    $tags = sanitizeInput($data['tags'] ?? '');
+    
+    // 處理 tags - 如果是陣列，轉換為 JSON 字符串
+    $tagsData = $data['tags'] ?? '';
+    if (is_array($tagsData)) {
+        $tags = json_encode($tagsData, JSON_UNESCAPED_UNICODE);
+    } else if (is_string($tagsData) && !empty($tagsData)) {
+        // 如果已經是 JSON 字符串或普通字符串，直接使用
+        $tags = $tagsData;
+    } else {
+        $tags = '[]';
+    }
+    
     $status = sanitizeInput($data['status'] ?? 'draft');
     
     if (!$portfolioId || empty($title) || empty($description)) {
@@ -441,7 +535,7 @@ function updatePortfolio($data) {
             WHERE id = ? AND user_id = ?
         ");
         
-        $stmt->bind_param("ssisssii", $title, $description, $categoryId, $tags, $status, $portfolioId, $userId);
+        $stmt->bind_param("ssissii", $title, $description, $categoryId, $tags, $status, $portfolioId, $userId);
         
         if ($stmt->execute()) {
             sendResponse(['message' => '作品更新成功'], 200, '更新成功');
@@ -836,8 +930,8 @@ function uploadCoverImage() {
         return;
     }
     
-    // 智能上傳：優先 Cloudinary，降級本地
-    $uploadResult = smartUploadImage($tmpName, $userId, 'cover');
+    // 智能上傳：優先 Cloudinary，降級本地（傳遞原始檔案名稱以獲取正確的副檔名）
+    $uploadResult = smartUploadImage($tmpName, $userId, 'cover', $fileName);
     
     if ($uploadResult['success']) {
         $storageInfo = $uploadResult['storage'] === 'cloudinary' ? ' (雲端儲存)' : ' (本地儲存)';

@@ -352,32 +352,91 @@ async function loadFilterOptions() {
         const categories = Array.isArray(data.categories) ? data.categories : [];
         const grades = Array.isArray(data.grades) ? data.grades : [];
 
-        // 部門/學群
+        // 部門/科系
         const deptSel = document.getElementById('departmentFilter');
-        if (deptSel && departments.length) {
+        if (deptSel) {
             const cur = deptSel.value;
-            deptSel.innerHTML = '<option value="">全部/科系</option>' + departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            if (departments.length > 0) {
+                deptSel.innerHTML = '<option value="">全部科系</option>' + departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            } else {
+                // 備用選項
+                deptSel.innerHTML = `<option value="">全部科系</option>
+                    <option value="資訊管理學系">資訊管理學系</option>
+                    <option value="資訊工程學系">資訊工程學系</option>
+                    <option value="資訊安全學系">資訊安全學系</option>
+                    <option value="資料科學學系">資料科學學系</option>
+                    <option value="人工智慧學系">人工智慧學系</option>
+                    <option value="企業管理學系">企業管理學系</option>
+                    <option value="財務金融學系">財務金融學系</option>
+                    <option value="國際企業學系">國際企業學系</option>`;
+            }
             if (cur) deptSel.value = cur;
         }
 
         // 年級
         const gradeSel = document.getElementById('gradeFilter');
-        if (gradeSel && grades.length) {
+        if (gradeSel) {
             const cur = gradeSel.value;
-            gradeSel.innerHTML = '<option value="">全部年級</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+            if (grades.length > 0) {
+                gradeSel.innerHTML = '<option value="">全部年級</option>' + grades.map(g => `<option value="${g}">${g}</option>`).join('');
+            } else {
+                // 備用選項
+                gradeSel.innerHTML = `<option value="">全部年級</option>
+                    <option value="大學一年級">大學一年級</option>
+                    <option value="大學二年級">大學二年級</option>
+                    <option value="大學三年級">大學三年級</option>
+                    <option value="大學四年級">大學四年級</option>
+                    <option value="碩士生">碩士生</option>
+                    <option value="博士生">博士生</option>`;
+            }
             if (cur) gradeSel.value = cur;
         }
 
         // 熱門搜尋標籤（技能）
         const suggWrap = document.querySelector('.suggestion-tags');
         if (suggWrap) {
-            suggWrap.innerHTML = (skills || []).slice(0, 12).map(s => {
-                const safe = String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
-                return `<span class="suggestion-tag" onclick="addSkillTag(\"${safe}\")">${safe}</span>`;
-            }).join('');
+            if (skills.length > 0) {
+                suggWrap.innerHTML = skills.slice(0, 12).map(s => {
+                    const safe = String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                    return `<span class="suggestion-tag" onclick="addSkillTag(\"${safe}\")">${safe}</span>`;
+                }).join('');
+            } else {
+                // 備用熱門技能
+                const defaultSkills = ['JavaScript', 'Python', 'Java', 'React', 'Node.js', 'SQL', 'HTML', 'CSS', 'UI/UX', 'Git'];
+                suggWrap.innerHTML = defaultSkills.map(s => {
+                    return `<span class="suggestion-tag" onclick="addSkillTag('${s}')">${s}</span>`;
+                }).join('');
+            }
         }
+        
+        console.log('篩選選項載入成功:', { departments: departments.length, grades: grades.length, skills: skills.length });
     } catch (e) {
-        console.warn('載入搜尋篩選元資料失敗', e);
+        console.error('載入搜尋篩選元資料失敗', e);
+        
+        // 發生錯誤時，載入備用選項
+        const deptSel = document.getElementById('departmentFilter');
+        if (deptSel && deptSel.options.length <= 1) {
+            deptSel.innerHTML = `<option value="">全部科系</option>
+                <option value="資訊管理學系">資訊管理學系</option>
+                <option value="資訊工程學系">資訊工程學系</option>
+                <option value="資訊安全學系">資訊安全學系</option>
+                <option value="資料科學學系">資料科學學系</option>
+                <option value="人工智慧學系">人工智慧學系</option>
+                <option value="企業管理學系">企業管理學系</option>
+                <option value="財務金融學系">財務金融學系</option>
+                <option value="國際企業學系">國際企業學系</option>`;
+        }
+        
+        const gradeSel = document.getElementById('gradeFilter');
+        if (gradeSel && gradeSel.options.length <= 1) {
+            gradeSel.innerHTML = `<option value="">全部年級</option>
+                <option value="大學一年級">大學一年級</option>
+                <option value="大學二年級">大學二年級</option>
+                <option value="大學三年級">大學三年級</option>
+                <option value="大學四年級">大學四年級</option>
+                <option value="碩士生">碩士生</option>
+                <option value="博士生">博士生</option>`;
+        }
     }
 }
 

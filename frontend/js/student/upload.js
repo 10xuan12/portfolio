@@ -1104,7 +1104,8 @@ async function handleFormSubmit(e) {
         formData.append('title', portfolioData.title);
         formData.append('category', portfolioData.category);
         formData.append('description', portfolioData.description);
-        formData.append('tags', JSON.stringify(portfolioData.tags));
+        // 將標籤陣列轉換為逗號分隔的字串（後端期待這個格式）
+        formData.append('tags', Array.isArray(portfolioData.tags) ? portfolioData.tags.join(',') : '');
         formData.append('status', portfolioData.status);
         formData.append('url', portfolioData.url || '');
         formData.append('github', portfolioData.github || '');

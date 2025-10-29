@@ -1,0 +1,511 @@
+/**
+ * 企業系統響應式設計增強
+ */
+
+/* ========================================
+   企業儀表板響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 統計卡片 */
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    
+    /* 快速操作 */
+    .enterprise-quick-actions {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* 最近活動 */
+    .recent-activities {
+        padding: 16px;
+    }
+    
+    .activity-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ========================================
+   作品瀏覽響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 作品篩選 */
+    .portfolio-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    /* 作品網格 */
+    .portfolios-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+    
+    /* 作品卡片 */
+    .portfolio-card {
+        flex-direction: column;
+    }
+    
+    .portfolio-card-image {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .portfolio-card-content {
+        padding: 16px;
+    }
+    
+    .portfolio-card-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .portfolio-card-actions .btn {
+        width: 100%;
+    }
+    
+    /* 查看模式切換 */
+    .view-mode-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+    }
+}
+
+/* ========================================
+   學生資料響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 學生頭部 */
+    .student-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .student-avatar {
+        margin-bottom: 16px;
+    }
+    
+    .student-info {
+        width: 100%;
+    }
+    
+    .student-actions {
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .student-actions .btn {
+        flex: 1;
+        min-width: auto;
+    }
+    
+    /* 學生統計 */
+    .student-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    /* 學生作品 */
+    .student-portfolios {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 技能列表 */
+    .skills-section {
+        padding: 16px;
+    }
+    
+    .skill-item {
+        margin-bottom: 12px;
+    }
+    
+    .skill-bar {
+        height: 6px;
+    }
+}
+
+/* ========================================
+   職缺管理響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 職缺列表 */
+    .jobs-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 職缺卡片 */
+    .job-card {
+        padding: 16px;
+    }
+    
+    .job-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .job-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .job-actions .btn {
+        width: 100%;
+    }
+    
+    /* 職缺詳情 */
+    .job-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .job-info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* 應徵者列表 */
+    .applicants-list {
+        padding: 16px;
+    }
+    
+    .applicant-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .applicant-info {
+        width: 100%;
+    }
+    
+    .applicant-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* ========================================
+   職缺申請響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 申請列表 */
+    .applications-list {
+        padding: 16px;
+    }
+    
+    .application-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+    
+    .application-header {
+        width: 100%;
+        margin-bottom: 12px;
+    }
+    
+    .application-status {
+        margin-bottom: 12px;
+    }
+    
+    .application-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .application-actions .btn {
+        width: 100%;
+    }
+    
+    /* 申請詳情 */
+    .application-detail {
+        padding: 16px;
+    }
+    
+    .applicant-profile {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+/* ========================================
+   收藏夾響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 收藏分類 */
+    .bookmark-categories {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .category-tab {
+        flex: 1 1 auto;
+        min-width: 80px;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    
+    /* 收藏列表 */
+    .bookmarks-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .bookmark-item {
+        flex-direction: column;
+        padding: 16px;
+    }
+    
+    .bookmark-thumbnail {
+        width: 100%;
+        height: 150px;
+        margin-bottom: 12px;
+    }
+    
+    .bookmark-info {
+        width: 100%;
+    }
+    
+    .bookmark-actions {
+        width: 100%;
+        margin-top: 12px;
+        justify-content: space-between;
+    }
+}
+
+/* ========================================
+   搜尋響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 搜尋欄 */
+    .search-bar {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .search-input-group {
+        width: 100%;
+    }
+    
+    .search-btn {
+        width: 100%;
+    }
+    
+    /* 高級篩選 */
+    .advanced-filters {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    /* 篩選側邊欄 */
+    .filters-sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        padding: 20px;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .filters-sidebar.active {
+        left: 0;
+    }
+    
+    .filters-toggle {
+        display: block;
+        width: 100%;
+        margin-bottom: 16px;
+    }
+    
+    /* 搜尋結果 */
+    .search-results-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* ========================================
+   企業資料響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 企業頭部 */
+    .enterprise-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .enterprise-logo {
+        margin-bottom: 16px;
+    }
+    
+    .enterprise-info {
+        width: 100%;
+    }
+    
+    /* 企業資料表單 */
+    .profile-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 企業照片 */
+    .company-photos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .photo-item {
+        height: 150px;
+    }
+}
+
+/* ========================================
+   作品對比響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 對比容器 */
+    .comparison-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    /* 對比項目 */
+    .comparison-item {
+        width: 100%;
+        padding: 16px;
+    }
+    
+    /* 對比選擇器 */
+    .comparison-selector {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 16px;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 100;
+    }
+    
+    /* 對比按鈕 */
+    .compare-btn {
+        width: 100%;
+        position: fixed;
+        bottom: 80px;
+        left: 16px;
+        right: 16px;
+        z-index: 99;
+    }
+}
+
+/* ========================================
+   通知中心響應式
+======================================== */
+
+@media (max-width: 768px) {
+    .notification-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+    }
+    
+    .notification-icon {
+        margin-bottom: 8px;
+    }
+    
+    .notification-content {
+        width: 100%;
+    }
+    
+    .notification-actions {
+        width: 100%;
+        margin-top: 12px;
+        justify-content: space-between;
+    }
+}
+
+/* ========================================
+   分析工具響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 圖表容器 */
+    .chart-container {
+        padding: 16px;
+    }
+    
+    .chart-canvas {
+        height: 250px !important;
+    }
+    
+    /* 統計卡片 */
+    .analytics-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* 時間範圍選擇器 */
+    .date-range-selector {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .date-input {
+        width: 100%;
+    }
+}
+

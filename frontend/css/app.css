@@ -566,7 +566,7 @@ body {
 }
 
 .portfolio-card {
-    background: var(--white);
+    background: #293992;
     border-radius: var(--radius-xl);
     overflow: hidden;
     box-shadow: var(--shadow-md);
@@ -596,7 +596,7 @@ body {
 
 .portfolio-title {
     font-weight: 600;
-    color: var(--gray-900);
+    color: white;
 }
 
 .portfolio-status {
@@ -611,11 +611,11 @@ body {
     font-size: var(--text-lg);
     font-weight: 600;
     margin-bottom: var(--spacing-sm);
-    color: var(--gray-900);
+    color: white;
 }
 
 .portfolio-content p {
-    color: var(--gray-600);
+    color: white;
     margin-bottom: var(--spacing-md);
     line-height: 1.6;
 }
@@ -628,8 +628,8 @@ body {
 }
 
 .tag {
-    background: var(--gray-100);
-    color: var(--gray-700);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-md);
     font-size: var(--text-xs);
@@ -639,7 +639,7 @@ body {
 .portfolio-stats {
     display: flex;
     gap: var(--spacing-lg);
-    color: var(--gray-500);
+    color: white;
     font-size: var(--text-sm);
 }
 
@@ -647,6 +647,7 @@ body {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
+    color: white;
 }
 
 /* 聯絡區塊 */

@@ -8,8 +8,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     sendError('不支援的 HTTP 方法', 405);
 }
 
-$enterpriseId = checkPermission('enterprise');
+// 對於 search_filters，允許未登入用戶也能訪問（提供基本選項）
 $action = $_GET['action'] ?? 'search_filters';
+
+// 嘗試驗證權限，但不強制要求（search_filters 可公開訪問）
+$enterpriseId = null;
+try {
+    $enterpriseId = checkPermission('enterprise');
+    error_log("meta.php - 權限檢查成功，企業 ID: " . $enterpriseId);
+} catch (Exception $e) {
+    error_log("meta.php - 權限檢查失敗: " . $e->getMessage());
+    // 權限檢查失敗，但對於 search_filters 仍允許繼續
+    if ($action !== 'search_filters') {
+        sendError('需要企業用戶權限', 401);
+    }
+    error_log("meta.php - 允許未登入訪問 search_filters");
+}
 
 switch ($action) {
     case 'search_filters':

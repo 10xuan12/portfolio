@@ -1,0 +1,497 @@
+/**
+ * 學生系統響應式設計增強
+ */
+
+/* ========================================
+   儀表板響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 統計卡片 */
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    
+    /* 快速操作 */
+    .quick-actions {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .quick-action {
+        padding: 16px;
+        text-align: center;
+    }
+    
+    /* 活動列表 */
+    .activity-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+    }
+    
+    .activity-time {
+        margin-top: 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ========================================
+   作品集響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 作品網格 */
+    .portfolio-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+    
+    /* 作品卡片 */
+    .portfolio-card {
+        flex-direction: column;
+    }
+    
+    .portfolio-image {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .portfolio-content {
+        padding: 16px;
+    }
+    
+    .portfolio-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .portfolio-actions .btn {
+        width: 100%;
+    }
+    
+    /* 作品篩選 */
+    .portfolio-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-item {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   上傳作品響應式
+======================================== */
+
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 16px;
+    }
+    
+    .upload-form {
+        padding: 16px;
+    }
+    
+    .upload-area {
+        padding: 40px 20px;
+        min-height: 200px;
+    }
+    
+    .upload-preview {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .preview-item {
+        max-width: 100%;
+    }
+    
+    /* 表單欄位 */
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-col {
+        width: 100%;
+    }
+    
+    /* 技能標籤 */
+    .skill-tags {
+        gap: 8px;
+    }
+    
+    .skill-tag {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
+
+/* ========================================
+   個人資料響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 頭像上傳 */
+    .avatar-upload {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .avatar-preview {
+        margin-bottom: 16px;
+    }
+    
+    /* 個人資料表單 */
+    .profile-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 技能列表 */
+    .skills-list {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .skill-item {
+        padding: 12px;
+    }
+    
+    /* 社交連結 */
+    .social-links-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   履歷響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 履歷預覽 */
+    .resume-preview {
+        padding: 16px;
+    }
+    
+    /* 履歷區塊 */
+    .resume-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    /* 經歷項目 */
+    .experience-item,
+    .education-item {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .experience-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .experience-date {
+        font-size: 12px;
+    }
+    
+    /* 履歷操作 */
+    .resume-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .resume-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   搜尋響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 搜尋欄 */
+    .search-bar {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .search-btn {
+        width: 100%;
+    }
+    
+    /* 篩選器 */
+    .search-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    /* 搜尋結果 */
+    .search-results {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 側邊欄篩選 */
+    .sidebar-filters {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        padding: 20px;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar-filters.active {
+        left: 0;
+    }
+    
+    .filter-toggle {
+        display: block;
+        width: 100%;
+        margin-bottom: 16px;
+    }
+}
+
+/* ========================================
+   通知中心響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 通知列表 */
+    .notification-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+    }
+    
+    .notification-icon {
+        margin-bottom: 8px;
+    }
+    
+    .notification-content {
+        width: 100%;
+    }
+    
+    .notification-time {
+        font-size: 11px;
+        margin-top: 8px;
+    }
+    
+    .notification-actions {
+        width: 100%;
+        margin-top: 12px;
+        justify-content: space-between;
+    }
+    
+    /* 通知篩選 */
+    .notification-filters {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .filter-btn {
+        flex: 1 1 auto;
+        min-width: 80px;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+}
+
+/* ========================================
+   設定頁面響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 設定選單 */
+    .settings-menu {
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--gray-200);
+    }
+    
+    .settings-menu-item {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 12px 16px;
+        border-right: none;
+        border-bottom: 3px solid transparent;
+    }
+    
+    .settings-menu-item.active {
+        border-right: none;
+        border-bottom-color: var(--primary-color);
+    }
+    
+    /* 設定內容 */
+    .settings-content {
+        padding: 16px;
+    }
+    
+    /* 設定項目 */
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 0;
+    }
+    
+    .setting-label {
+        margin-bottom: 12px;
+    }
+    
+    .setting-control {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   作品詳情響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 作品標題 */
+    .portfolio-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .portfolio-title-section {
+        width: 100%;
+    }
+    
+    .portfolio-actions-section {
+        width: 100%;
+    }
+    
+    /* 作品圖片 */
+    .portfolio-images {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .portfolio-main-image {
+        height: 250px;
+    }
+    
+    .portfolio-thumbnails {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+    
+    /* 作品資訊 */
+    .portfolio-info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .info-item {
+        padding: 12px;
+    }
+    
+    /* 留言區 */
+    .comments-section {
+        padding: 16px;
+    }
+    
+    .comment-item {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .comment-form {
+        padding: 16px;
+    }
+}
+
+/* ========================================
+   技能雷達圖響應式
+======================================== */
+
+@media (max-width: 768px) {
+    .skill-radar-container {
+        padding: 16px;
+    }
+    
+    .radar-chart {
+        height: 300px;
+    }
+    
+    .skill-legend {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+/* ========================================
+   作品時光機響應式
+======================================== */
+
+@media (max-width: 768px) {
+    .timeline-container {
+        padding: 16px;
+    }
+    
+    .timeline-item {
+        padding-left: 40px;
+    }
+    
+    .timeline-dot {
+        left: 10px;
+        width: 16px;
+        height: 16px;
+    }
+    
+    .timeline-content {
+        padding: 12px;
+    }
+}
+
+/* ========================================
+   徽章系統響應式
+======================================== */
+
+@media (max-width: 768px) {
+    .badge-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .badge-item {
+        padding: 12px;
+    }
+    
+    .badge-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+}
+

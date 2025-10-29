@@ -1,0 +1,586 @@
+/**
+ * 管理員系統響應式設計增強
+ */
+
+/* ========================================
+   管理員儀表板響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 統計卡片 */
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    
+    /* 系統概況 */
+    .system-overview {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 圖表容器 */
+    .chart-container {
+        padding: 16px;
+    }
+    
+    .chart-canvas {
+        height: 250px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ========================================
+   使用者管理響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 使用者篩選 */
+    .user-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    /* 使用者表格 */
+    .users-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .users-table {
+        min-width: 600px;
+    }
+    
+    /* 使用者卡片檢視 */
+    .users-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .user-card {
+        padding: 16px;
+    }
+    
+    .user-card-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .user-card-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .user-card-actions .btn {
+        width: 100%;
+    }
+    
+    /* 使用者詳情 */
+    .user-detail-modal .modal-content {
+        padding: 16px;
+    }
+    
+    .user-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+/* ========================================
+   內容審核響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 審核篩選 */
+    .content-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .status-tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .status-tab {
+        flex: 1 1 auto;
+        min-width: 80px;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    
+    /* 內容列表 */
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .content-item {
+        flex-direction: column;
+        padding: 16px;
+    }
+    
+    .content-thumbnail {
+        width: 100%;
+        height: 150px;
+        margin-bottom: 12px;
+    }
+    
+    .content-info {
+        width: 100%;
+    }
+    
+    .content-actions {
+        width: 100%;
+        margin-top: 12px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .content-actions .btn {
+        width: 100%;
+    }
+    
+    /* 審核詳情 */
+    .review-detail {
+        padding: 16px;
+    }
+    
+    .review-images {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .review-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .review-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   報告管理響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 報告篩選 */
+    .reports-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* 報告列表 */
+    .reports-list {
+        padding: 16px;
+    }
+    
+    .report-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .report-header {
+        width: 100%;
+    }
+    
+    .report-status {
+        margin-top: 8px;
+    }
+    
+    .report-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .report-actions .btn {
+        width: 100%;
+    }
+    
+    /* 報告詳情 */
+    .report-detail {
+        padding: 16px;
+    }
+    
+    .report-info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+/* ========================================
+   分析統計響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 統計卡片 */
+    .analytics-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .stat-card {
+        padding: 16px;
+    }
+    
+    /* 圖表網格 */
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 時間範圍選擇器 */
+    .date-range-selector {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .date-input-group {
+        width: 100%;
+    }
+    
+    /* 匯出按鈕 */
+    .export-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .export-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   系統設定響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 設定選單 */
+    .settings-sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        max-width: 280px;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        padding: 20px;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .settings-sidebar.active {
+        left: 0;
+    }
+    
+    .settings-toggle {
+        display: block;
+        width: 100%;
+        margin-bottom: 16px;
+    }
+    
+    .settings-menu-item {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    /* 設定內容 */
+    .settings-content {
+        padding: 16px;
+    }
+    
+    /* 設定表單 */
+    .settings-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 設定項目 */
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 0;
+    }
+    
+    .setting-label {
+        width: 100%;
+        margin-bottom: 12px;
+    }
+    
+    .setting-control {
+        width: 100%;
+    }
+    
+    /* 設定按鈕 */
+    .settings-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .settings-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   權限管理響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 權限表格 */
+    .permissions-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .permissions-table {
+        min-width: 700px;
+    }
+    
+    /* 角色卡片 */
+    .roles-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .role-card {
+        padding: 16px;
+    }
+    
+    .role-card-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .role-card-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   活動日誌響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 日誌篩選 */
+    .log-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* 日誌列表 */
+    .logs-list {
+        padding: 16px;
+    }
+    
+    .log-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+        gap: 8px;
+    }
+    
+    .log-icon {
+        margin-bottom: 8px;
+    }
+    
+    .log-content {
+        width: 100%;
+    }
+    
+    .log-time {
+        font-size: 11px;
+    }
+    
+    .log-details {
+        width: 100%;
+        margin-top: 8px;
+    }
+}
+
+/* ========================================
+   系統監控響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 監控儀表板 */
+    .monitoring-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* 系統資源 */
+    .resource-meters {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .resource-meter {
+        padding: 16px;
+    }
+    
+    /* 伺服器狀態 */
+    .servers-list {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .server-card {
+        padding: 16px;
+    }
+    
+    /* 即時圖表 */
+    .realtime-charts {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* ========================================
+   備份管理響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 備份列表 */
+    .backups-list {
+        padding: 16px;
+    }
+    
+    .backup-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .backup-info {
+        width: 100%;
+    }
+    
+    .backup-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .backup-actions .btn {
+        width: 100%;
+    }
+    
+    /* 建立備份表單 */
+    .backup-form {
+        padding: 16px;
+    }
+    
+    .backup-options {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+/* ========================================
+   聯絡訊息響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 訊息篩選 */
+    .message-filters {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* 訊息列表 */
+    .messages-list {
+        padding: 16px;
+    }
+    
+    .message-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .message-header {
+        width: 100%;
+    }
+    
+    .message-content {
+        width: 100%;
+    }
+    
+    .message-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .message-actions .btn {
+        width: 100%;
+    }
+    
+    /* 訊息詳情 */
+    .message-detail {
+        padding: 16px;
+    }
+    
+    .message-reply-form {
+        padding: 16px;
+    }
+}
+
+/* ========================================
+   公告管理響應式
+======================================== */
+
+@media (max-width: 768px) {
+    /* 公告列表 */
+    .announcements-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .announcement-card {
+        padding: 16px;
+    }
+    
+    .announcement-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .announcement-actions .btn {
+        width: 100%;
+    }
+    
+    /* 編輯器 */
+    .editor-toolbar {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .editor-btn {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+

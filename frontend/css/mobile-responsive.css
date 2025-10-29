@@ -1,0 +1,751 @@
+/**
+ * Portfolio+ 完整響應式設計框架
+ * 支援手機、平板和桌面裝置
+ */
+
+/* ========================================
+   漢堡選單按鈕
+======================================== */
+
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 1001;
+    transition: all 0.3s ease;
+}
+
+.hamburger-line {
+    width: 100%;
+    height: 3px;
+    background-color: var(--white, #ffffff);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+/* 漢堡選單動畫 */
+.mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+/* ========================================
+   平板尺寸 (768px - 1024px)
+======================================== */
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    /* 容器調整 */
+    .container {
+        max-width: 100%;
+        padding: 0 var(--spacing-lg, 1.5rem);
+    }
+    
+    /* 網格佈局 - 兩欄 */
+    .dashboard-grid,
+    .portfolios-grid,
+    .features-grid,
+    .roles-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--spacing-lg, 1.5rem);
+    }
+    
+    /* 統計卡片 - 兩欄 */
+    .dashboard-stats,
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--spacing-md, 1rem);
+    }
+    
+    /* 標題字體縮小 */
+    h1 {
+        font-size: var(--text-4xl, 3.5rem);
+    }
+    
+    h2 {
+        font-size: var(--text-3xl, 2.9rem);
+    }
+    
+    /* Hero 區塊 */
+    .hero .container {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xl, 2rem);
+    }
+}
+
+/* ========================================
+   手機尺寸 (最大 768px)
+======================================== */
+
+@media (max-width: 768px) {
+    /* === 全域設定 === */
+    
+    html {
+        font-size: 14px; /* 基礎字體稍微縮小 */
+    }
+    
+    body {
+        padding-bottom: 0;
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    /* 容器調整 */
+    .container {
+        max-width: 100%;
+        padding: 0 var(--spacing-md, 1rem);
+    }
+    
+    /* === 導航欄 === */
+    
+    .mobile-menu-toggle {
+        display: flex;
+        position: relative;
+        margin-left: auto;
+    }
+    
+    .navbar {
+        padding: var(--spacing-md, 1rem) 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .navbar .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+    
+    .navbar-brand {
+        flex: 0 0 auto;
+    }
+    
+    .navbar-logo {
+        font-size: var(--text-lg, 1.75rem);
+    }
+    
+    /* 隱藏預設選單 */
+    .navbar-menu,
+    .navbar-actions {
+        display: none;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: var(--navbar-bg, var(--primary-color));
+        flex-direction: column;
+        padding: var(--spacing-lg, 1.5rem);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 999;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 顯示活動選單 */
+    .navbar-menu.active,
+    .navbar-actions.active {
+        display: flex;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* 選單項目 */
+    .nav-link {
+        padding: var(--spacing-md, 1rem) var(--spacing-sm, 0.5rem);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: left;
+        font-size: var(--text-base, 1.56rem);
+        display: block;
+    }
+    
+    .nav-link:last-child {
+        border-bottom: none;
+    }
+    
+    /* 下拉選單 */
+    .nav-dropdown {
+        position: relative;
+    }
+    
+    .dropdown-menu {
+        position: static !important;
+        opacity: 1;
+        visibility: visible;
+        transform: none !important;
+        box-shadow: none;
+        background: rgba(0, 0, 0, 0.1);
+        margin-top: var(--spacing-sm, 0.5rem);
+        border-radius: var(--radius-md, 0.375rem);
+        display: none;
+    }
+    
+    .nav-dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .dropdown-item {
+        padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+        color: var(--white, #ffffff) !important;
+        font-size: var(--text-sm, 1.365rem);
+    }
+    
+    .dropdown-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* 導航欄按鈕 */
+    .navbar-actions {
+        top: auto;
+        gap: var(--spacing-sm, 0.5rem);
+        margin-top: var(--spacing-md, 1rem);
+        padding-top: var(--spacing-md, 1rem);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: var(--spacing-md, 1rem);
+    }
+    
+    /* === Hero 英雄區塊 === */
+    
+    .hero {
+        padding: var(--spacing-2xl, 3rem) 0;
+    }
+    
+    .hero .container {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: var(--spacing-xl, 2rem);
+    }
+    
+    .hero-title {
+        font-size: var(--text-3xl, 2.925rem);
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: var(--text-base, 1.56rem);
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+        gap: var(--spacing-md, 1rem);
+        align-items: stretch;
+    }
+    
+    .hero-actions .btn {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .hero-image {
+        order: -1; /* 圖片移到上方 */
+    }
+    
+    .hero-visual {
+        width: 100%;
+        max-width: 300px;
+        height: 250px;
+        margin: 0 auto;
+    }
+    
+    /* === 網格佈局 === */
+    
+    .dashboard-grid,
+    .portfolios-grid,
+    .features-grid,
+    .roles-grid,
+    .search-results-grid {
+        grid-template-columns: 1fr !important;
+        gap: var(--spacing-md, 1rem);
+    }
+    
+    /* === 統計卡片 === */
+    
+    .dashboard-stats,
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--spacing-sm, 0.5rem);
+    }
+    
+    .stat-card {
+        padding: var(--spacing-md, 1rem);
+    }
+    
+    .stat-number {
+        font-size: var(--text-2xl, 2.34rem);
+    }
+    
+    .stat-label {
+        font-size: var(--text-sm, 1.365rem);
+    }
+    
+    /* === 卡片 === */
+    
+    .card,
+    .portfolio-card,
+    .feature-card,
+    .job-card {
+        margin-bottom: var(--spacing-md, 1rem);
+        padding: var(--spacing-md, 1rem);
+    }
+    
+    /* === 表單 === */
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-group {
+        margin-bottom: var(--spacing-md, 1rem);
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="date"],
+    input[type="url"],
+    select,
+    textarea {
+        font-size: 16px !important; /* 防止 iOS 自動縮放 */
+        width: 100%;
+        padding: var(--spacing-md, 1rem);
+        min-height: 44px; /* iOS 建議最小觸控尺寸 */
+    }
+    
+    /* === 按鈕 === */
+    
+    .btn {
+        padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem);
+        font-size: var(--text-base, 1.56rem);
+        min-height: 44px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        gap: var(--spacing-sm, 0.5rem);
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+    }
+    
+    /* === 表格 === */
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+    
+    /* === 模態框 === */
+    
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: var(--spacing-md, 1rem) auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: var(--spacing-md, 1rem);
+    }
+    
+    /* === 側邊欄 === */
+    
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        order: 2;
+        margin-top: var(--spacing-lg, 1.5rem);
+    }
+    
+    /* === 標籤 === */
+    
+    .tag {
+        font-size: var(--text-xs, 1.17rem);
+        padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+    }
+    
+    /* === 分頁 === */
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: var(--spacing-xs, 0.25rem);
+        justify-content: center;
+    }
+    
+    .pagination .page-link {
+        min-width: 40px;
+        height: 40px;
+        font-size: var(--text-sm, 1.365rem);
+        padding: var(--spacing-xs, 0.25rem);
+    }
+    
+    /* === 頁籤 === */
+    
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+    
+    .tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+        font-size: var(--text-sm, 1.365rem);
+    }
+    
+    /* === Toast 通知 === */
+    
+    .toast-container {
+        top: auto;
+        bottom: var(--spacing-md, 1rem);
+        left: var(--spacing-md, 1rem);
+        right: var(--spacing-md, 1rem);
+    }
+    
+    .toast {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    /* === 搜尋篩選 === */
+    
+    .search-filters {
+        flex-direction: column;
+        gap: var(--spacing-sm, 0.5rem);
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    /* === 上傳區域 === */
+    
+    .upload-area {
+        padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
+    }
+    
+    /* === 標題字體 === */
+    
+    h1 {
+        font-size: var(--text-2xl, 2.34rem);
+    }
+    
+    h2 {
+        font-size: var(--text-xl, 1.95rem);
+    }
+    
+    h3 {
+        font-size: var(--text-lg, 1.755rem);
+    }
+    
+    h4 {
+        font-size: var(--text-base, 1.56rem);
+    }
+    
+    /* === 區塊間距 === */
+    
+    .section,
+    section {
+        padding: var(--spacing-xl, 2rem) 0;
+    }
+    
+    .section-header {
+        margin-bottom: var(--spacing-lg, 1.5rem);
+    }
+    
+    /* === 頁腳 === */
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg, 1.5rem);
+        text-align: center;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    /* === 聯絡區塊 === */
+    
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg, 1.5rem);
+    }
+}
+
+/* ========================================
+   小手機尺寸 (最大 480px)
+======================================== */
+
+@media (max-width: 480px) {
+    html {
+        font-size: 13px;
+    }
+    
+    .container {
+        padding: 0 var(--spacing-sm, 0.5rem);
+    }
+    
+    /* 統計卡片改為單欄 */
+    .dashboard-stats,
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .stat-card {
+        padding: var(--spacing-md, 1rem);
+    }
+    
+    /* 標題更小 */
+    h1 {
+        font-size: var(--text-xl, 1.95rem);
+    }
+    
+    h2 {
+        font-size: var(--text-lg, 1.755rem);
+    }
+    
+    h3 {
+        font-size: var(--text-base, 1.56rem);
+    }
+    
+    /* Hero 區塊更小間距 */
+    .hero {
+        padding: var(--spacing-xl, 2rem) 0;
+    }
+    
+    .hero-title {
+        font-size: var(--text-xl, 1.95rem);
+    }
+    
+    .hero-subtitle {
+        font-size: var(--text-sm, 1.365rem);
+    }
+    
+    /* 按鈕更小 */
+    .btn {
+        padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+        font-size: var(--text-sm, 1.365rem);
+    }
+    
+    /* 卡片更小間距 */
+    .card,
+    .portfolio-card,
+    .feature-card {
+        padding: var(--spacing-sm, 0.5rem);
+    }
+    
+    /* 表單元素 */
+    input,
+    select,
+    textarea {
+        padding: var(--spacing-sm, 0.5rem);
+    }
+}
+
+/* ========================================
+   平板橫向模式
+======================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .hero .container {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .features-grid,
+    .roles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .portfolios-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ========================================
+   手機橫向模式
+======================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .section,
+    section {
+        padding: var(--spacing-md, 1rem) 0;
+    }
+    
+    .dashboard-header {
+        padding: var(--spacing-md, 1rem) 0;
+    }
+    
+    .hero {
+        padding: var(--spacing-lg, 1.5rem) 0;
+    }
+    
+    /* 模態框高度調整 */
+    .modal-content {
+        max-height: 85vh;
+    }
+    
+    /* 導航欄選單調整 */
+    .navbar-menu,
+    .navbar-actions {
+        max-height: calc(100vh - 50px);
+    }
+}
+
+/* ========================================
+   觸控優化
+======================================== */
+
+@media (max-width: 768px) {
+    /* 增大可點擊區域 */
+    a,
+    button,
+    .clickable {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* 移除 hover 效果，改為 active */
+    .btn:hover {
+        transform: none;
+    }
+    
+    .btn:active {
+        transform: scale(0.98);
+        opacity: 0.8;
+    }
+    
+    /* 卡片點擊效果 */
+    .card:active,
+    .portfolio-card:active {
+        transform: scale(0.99);
+    }
+}
+
+/* ========================================
+   安全區域支援 (iPhone X 等)
+======================================== */
+
+@supports (padding: max(0px)) {
+    @media (max-width: 768px) {
+        .navbar .container {
+            padding-left: max(var(--spacing-md, 1rem), env(safe-area-inset-left));
+            padding-right: max(var(--spacing-md, 1rem), env(safe-area-inset-right));
+        }
+        
+        .container {
+            padding-left: max(var(--spacing-md, 1rem), env(safe-area-inset-left));
+            padding-right: max(var(--spacing-md, 1rem), env(safe-area-inset-right));
+        }
+        
+        body {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    }
+}
+
+/* ========================================
+   高對比度模式
+======================================== */
+
+@media (prefers-contrast: high) {
+    .btn {
+        border-width: 2px;
+    }
+    
+    .card,
+    .portfolio-card {
+        border: 2px solid var(--gray-300);
+    }
+}
+
+/* ========================================
+   減少動畫模式
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   列印樣式
+======================================== */
+
+@media print {
+    .navbar,
+    .footer,
+    .btn,
+    .mobile-menu-toggle,
+    .navbar-actions {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+    
+    body {
+        font-size: 12pt;
+    }
+    
+    .card,
+    .portfolio-card {
+        box-shadow: none;
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+}
+

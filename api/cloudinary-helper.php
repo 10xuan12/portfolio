@@ -65,7 +65,7 @@ function uploadToCloudinary($filePath, $folder = 'portfolio') {
 }
 
 // 智能上傳：優先使用 Cloudinary，降級到本地儲存
-function smartUploadImage($tmpFile, $userId, $prefix = 'cover') {
+function smartUploadImage($tmpFile, $userId, $prefix = 'cover', $originalFileName = '') {
     $response = [
         'success' => false,
         'path' => null,
@@ -86,7 +86,30 @@ function smartUploadImage($tmpFile, $userId, $prefix = 'cover') {
     }
     
     // 降級：儲存到本地
-    $extension = pathinfo($tmpFile, PATHINFO_EXTENSION);
+    // 優先從原始檔案名稱獲取副檔名，否則從臨時檔案路徑獲取
+    if ($originalFileName) {
+        $extension = pathinfo($originalFileName, PATHINFO_EXTENSION);
+    } else {
+        $extension = pathinfo($tmpFile, PATHINFO_EXTENSION);
+    }
+    
+    // 如果還是沒有副檔名，嘗試從 MIME 類型推斷
+    if (empty($extension)) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $tmpFile);
+        finfo_close($finfo);
+        
+        $mimeToExt = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'image/svg+xml' => 'svg'
+        ];
+        
+        $extension = $mimeToExt[$mimeType] ?? 'jpg'; // 預設為 jpg
+    }
+    
     $fileName = $prefix . '_' . $userId . '_' . time() . '.' . $extension;
     $uploadDir = __DIR__ . '/../uploads/portfolios/';
     
