@@ -10,7 +10,7 @@ if (typeof window.APP_CONFIG === 'undefined') {
     
     
     // API 基礎 URL
-    API_BASE_URL: '/portfolio/api',
+    API_BASE_URL: '/api',
     
     // 應用程式版本
     VERSION: '2.0.2',

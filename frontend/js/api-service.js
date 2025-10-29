@@ -42,7 +42,7 @@ if (typeof window.ApiService === 'undefined') {
         if (typeof getApiBaseUrl === 'function') {
             return getApiBaseUrl();
         }
-        return 'http://localhost:8000/api'; // 預設值
+        return '/api'; // 預設值
     }
 
     /**

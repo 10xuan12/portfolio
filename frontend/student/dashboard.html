@@ -557,8 +557,11 @@
             }
         }
         
-        // 設定 WebSocket 連接
+        // 設定 WebSocket 連接（暫時禁用，等待後端支援）
         function setupWebSocketConnection() {
+            // WebSocket 功能暫時禁用
+            return;
+            
             try {
                 const ws = new WebSocket('ws://localhost:8000/ws');
                 
