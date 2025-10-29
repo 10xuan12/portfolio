@@ -166,19 +166,38 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeUpload();
 });
 
+// 防止重複初始化的標記
+let coverImageInitialized = false;
+
 // 初始化封面圖片上傳
 function initCoverImageUpload() {
+    // 防止重複初始化
+    if (coverImageInitialized) {
+        console.log('封面圖片上傳已經初始化，跳過');
+        return;
+    }
+    
     const coverUploadArea = document.getElementById('coverUploadArea');
     const coverImageInput = document.getElementById('coverImageInput');
     
     if (coverUploadArea && coverImageInput) {
-        // 點擊上傳區域觸發檔案選擇
-        coverUploadArea.addEventListener('click', () => {
+        // 使用命名函數避免重複綁定
+        const handleClick = () => {
+            console.log('觸發封面圖片選擇');
             coverImageInput.click();
-        });
+        };
+        
+        // 移除可能存在的舊監聽器（如果有的話）
+        coverUploadArea.removeEventListener('click', handleClick);
+        
+        // 添加新監聽器
+        coverUploadArea.addEventListener('click', handleClick);
         
         // 處理檔案選擇
         coverImageInput.addEventListener('change', handleCoverImageSelect);
+        
+        coverImageInitialized = true;
+        console.log('封面圖片上傳事件已初始化');
     }
 }
 
