@@ -318,10 +318,12 @@ function getRelatedPortfolios() {
 
 // 建立作品
 function createPortfolio($data) {
-    // 臨時調試信息
-    error_log('createPortfolio - 接收到的資料: ' . json_encode($data));
+    // 詳細調試信息
+    error_log('=== createPortfolio 開始 ===');
+    error_log('createPortfolio - 接收到的 $data: ' . json_encode($data, JSON_UNESCAPED_UNICODE));
     error_log('createPortfolio - Content-Type: ' . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
-    error_log('createPortfolio - POST: ' . json_encode($_POST));
+    error_log('createPortfolio - POST 資料: ' . json_encode($_POST, JSON_UNESCAPED_UNICODE));
+    error_log('createPortfolio - FILES: ' . json_encode(array_keys($_FILES)));
     error_log('createPortfolio - GET user_id: ' . ($_GET['user_id'] ?? 'not set'));
     error_log('createPortfolio - POST user_id: ' . ($_POST['user_id'] ?? 'not set'));
     
@@ -346,6 +348,10 @@ function createPortfolio($data) {
     $description = sanitizeInput($data['description'] ?? '');
     $category = sanitizeInput($data['category'] ?? '');
     
+    // 記錄原始描述
+    error_log('原始 description from $data: ' . var_export($data['description'] ?? 'UNDEFINED', true));
+    error_log('處理後 description: ' . var_export($description, true));
+    
     // 處理 tags - 如果是陣列，轉換為 JSON 字符串
     $tagsData = $data['tags'] ?? '';
     if (is_array($tagsData)) {
@@ -360,7 +366,10 @@ function createPortfolio($data) {
     $status = sanitizeInput($data['status'] ?? 'draft');
     $coverImage = sanitizeInput($data['cover_image'] ?? '');
     
+    error_log('最終要插入的: title=' . $title . ', description=' . $description . ', cover_image=' . $coverImage);
+    
     if (empty($title) || empty($description)) {
+        error_log('驗證失敗: title=' . ($title ?: 'EMPTY') . ', description=' . ($description ?: 'EMPTY'));
         sendError('標題和描述不能為空', 400);
         return;
     }
