@@ -299,17 +299,9 @@
                 step3Content.style.setProperty('display', 'none', 'important');
             }
             
-            // 等待 upload.js 載入後初始化
-            if (typeof initializeUpload === 'function') {
-                initializeUpload();
-            } else {
-                // 如果函數還沒載入，等待一下再試
-                setTimeout(function() {
-                    if (typeof initializeUpload === 'function') {
-                        initializeUpload();
-                    }
-                }, 100);
-            }
+            // 不再手動調用 initializeUpload()
+            // upload.js 會自動在 DOMContentLoaded 時初始化
+            // 這裡移除重複調用以避免事件監聽器被綁定多次
         });
     </script>
     
