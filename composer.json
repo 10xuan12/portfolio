@@ -3,10 +3,11 @@
     "description": "學生作品集管理系統",
     "type": "project",
     "require": {
-        "php": "^8.0",
+        "php": ">=7.3",
         "mpdf/mpdf": "^8.2",
         "dompdf/dompdf": "^3.1",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "cloudinary/cloudinary_php": "^2.0"
     },
     "config": {
         "optimize-autoloader": true,
