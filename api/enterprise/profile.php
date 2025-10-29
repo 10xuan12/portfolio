@@ -212,8 +212,9 @@ function getStudentPublicPortfolios() {
     while ($row = $res->fetch_assoc()) {
         // 處理封面圖片路徑
         $coverImage = $row['cover_image'];
-        if (!empty($coverImage) && strpos($coverImage, '/portfolio/') !== 0 && strpos($coverImage, 'http') !== 0) {
-            $coverImage = '/portfolio/' . ltrim($coverImage, '/');
+        if (!empty($coverImage) && strpos($coverImage, 'http') !== 0) {
+            // 確保路徑以 / 開頭（適用於本地和 Railway）
+            $coverImage = '/' . ltrim($coverImage, '/');
         }
         
         $list[] = [

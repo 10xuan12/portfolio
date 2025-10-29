@@ -111,13 +111,8 @@ function getStudentProfile() {
         // 外部 URL（如 DiceBear API），直接使用
         // 保持原樣
     } else {
-        // 本地檔案，轉換為正確的路徑
-        if (strpos($profile['avatar_url'], '/portfolio/') === 0) {
-            // 已經是完整路徑，保持原樣
-        } else {
-            // 相對路徑，轉換為完整路徑
-            $profile['avatar_url'] = '/portfolio/' . ltrim($profile['avatar_url'], '/');
-        }
+        // 本地檔案，確保路徑以 / 開頭（適用於本地和 Railway）
+        $profile['avatar_url'] = '/' . ltrim($profile['avatar_url'], '/');
     }
     
     // 取得社群媒體連結
