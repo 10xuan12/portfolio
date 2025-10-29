@@ -168,6 +168,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 防止重複初始化的標記
 let coverImageInitialized = false;
+let coverClickHandler = null;
+let isSelectingCover = false;
 
 // 初始化封面圖片上傳
 function initCoverImageUpload() {
@@ -181,36 +183,30 @@ function initCoverImageUpload() {
     const coverImageInput = document.getElementById('coverImageInput');
     
     if (coverUploadArea && coverImageInput) {
-        // 使用防抖機制避免重複觸發
-        let isClicking = false;
-        
-        const handleClick = (event) => {
+        // 創建點擊處理函數（使用防抖）
+        coverClickHandler = function(event) {
             // 防止事件冒泡
             event.preventDefault();
             event.stopPropagation();
             
             // 防抖：如果正在處理中，忽略後續點擊
-            if (isClicking) {
+            if (isSelectingCover) {
                 console.log('已在處理中，忽略重複點擊');
                 return;
             }
             
-            isClicking = true;
+            isSelectingCover = true;
             console.log('觸發封面圖片選擇');
             coverImageInput.click();
             
-            // 500ms 後重置標記
+            // 1秒後重置標記
             setTimeout(() => {
-                isClicking = false;
-            }, 500);
+                isSelectingCover = false;
+            }, 1000);
         };
         
-        // 移除所有可能的舊監聽器
-        const newCoverUploadArea = coverUploadArea.cloneNode(true);
-        coverUploadArea.parentNode.replaceChild(newCoverUploadArea, coverUploadArea);
-        
-        // 添加新監聽器
-        newCoverUploadArea.addEventListener('click', handleClick);
+        // 添加點擊事件
+        coverUploadArea.addEventListener('click', coverClickHandler);
         
         // 處理檔案選擇
         coverImageInput.addEventListener('change', handleCoverImageSelect);
@@ -222,8 +218,18 @@ function initCoverImageUpload() {
 
 // 處理封面圖片選擇
 function handleCoverImageSelect(event) {
+    console.log('🖼️ handleCoverImageSelect 被調用');
+    console.log('event.target:', event.target);
+    console.log('event.target.id:', event.target.id);
+    console.log('files:', event.target.files);
+    
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+        console.log('沒有選擇檔案，返回');
+        return;
+    }
+    
+    console.log('選擇的封面圖片:', file.name, file.size, file.type);
     
     // 檢查檔案類型
     if (!file.type.startsWith('image/')) {
@@ -239,6 +245,7 @@ function handleCoverImageSelect(event) {
     
     // 儲存封面圖片檔案
     coverImageFile = file;
+    console.log('✅ coverImageFile 已設置:', coverImageFile.name);
     
     // 預覽圖片
     const reader = new FileReader();
@@ -249,6 +256,7 @@ function handleCoverImageSelect(event) {
         
         if (coverPreviewImage) {
             coverPreviewImage.src = e.target.result;
+            console.log('預覽圖片已設置');
         }
         
         if (coverPreview) {
@@ -260,6 +268,7 @@ function handleCoverImageSelect(event) {
         }
         
         showNotification('封面圖片已選擇', 'success');
+        console.log('封面圖片選擇完成');
     };
     
     reader.readAsDataURL(file);
@@ -1116,22 +1125,32 @@ async function handleFormSubmit(e) {
         }
         
         // 檢查是否有封面圖片
+        console.log('🔍 檢查 coverImageFile:', coverImageFile);
         if (!coverImageFile) {
+            console.error('❌ coverImageFile 為 null 或 undefined');
             showNotification('請上傳封面圖片', 'error');
             return;
         }
+        
+        console.log('✅ coverImageFile 存在:', coverImageFile.name);
         
         // 顯示上傳中狀態
         showUploadProgress(true);
         showNotification('正在上傳封面圖片...', 'info');
         
+        console.log('📤 開始上傳封面圖片到服務器...');
+        
         // 先上傳封面圖片
         const coverImagePath = await uploadCoverImage(coverImageFile, user.id);
+        
+        console.log('封面圖片上傳返回結果:', coverImagePath);
+        
         if (!coverImagePath) {
+            console.error('❌ 封面圖片路徑為空');
             throw new Error('封面圖片上傳失敗');
         }
         
-        console.log('封面圖片上傳成功:', coverImagePath);
+        console.log('✅ 封面圖片上傳成功:', coverImagePath);
         portfolioData.cover_image = coverImagePath;
         
         showNotification('正在上傳作品...', 'info');
