@@ -19,7 +19,20 @@ function uploadToCloudinary($filePath, $folder = 'portfolio') {
     }
     
     try {
-        require_once __DIR__ . '/../vendor/autoload.php';
+        // 檢查 autoload 和 Cloudinary 類別是否存在
+        $autoloadPath = __DIR__ . '/../vendor/autoload.php';
+        if (!file_exists($autoloadPath)) {
+            error_log('Vendor autoload 不存在，無法使用 Cloudinary');
+            return null;
+        }
+        
+        require_once $autoloadPath;
+        
+        // 檢查 Cloudinary 類別是否存在
+        if (!class_exists('Cloudinary\Cloudinary')) {
+            error_log('Cloudinary 套件未安裝');
+            return null;
+        }
         
         // 配置 Cloudinary
         \Cloudinary\Cloudinary::config([
