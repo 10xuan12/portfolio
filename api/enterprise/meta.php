@@ -59,6 +59,7 @@ function getSearchFilters() {
                 $skills[] = $r['skill']; 
             }
         }
+        error_log('meta.php - 技能數量: ' . count($skills));
     } catch (Exception $e) {
         error_log('獲取技能列表失敗: ' . $e->getMessage());
         // 使用備用方案：直接從資料庫獲取常見技能
@@ -68,40 +69,67 @@ function getSearchFilters() {
     // 科系（departments）
     $departments = [];
     try {
-        $deptStmt = $GLOBALS['conn']->prepare("SELECT DISTINCT name FROM departments WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+        $deptStmt = $GLOBALS['conn']->prepare("SELECT name FROM departments WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
         if ($deptStmt) {
             $deptStmt->execute();
             $res2 = $deptStmt->get_result();
-            while ($r = $res2->fetch_assoc()) { $departments[] = $r['name']; }
+            while ($r = $res2->fetch_assoc()) { 
+                $departments[] = $r['name']; 
+            }
+            error_log('meta.php - 科系數量: ' . count($departments));
         }
     } catch (Exception $e) {
         error_log('獲取科系列表失敗: ' . $e->getMessage());
         $departments = [];
     }
+    
+    // 如果沒有從資料庫獲取到科系，使用備用列表
+    if (empty($departments)) {
+        error_log('meta.php - 使用備用科系列表');
+        $departments = [
+            '資訊管理學系', '財務金融學系', '國際企業學系', '資訊工程學系',
+            '統計學系', '企業管理學系', '會計學系', '經濟學系',
+            '資訊安全學系', '資料科學學系', '人工智慧學系', '電機工程學系'
+        ];
+    }
 
     // 學群（categories）
     $categories = [];
-    if ($GLOBALS['conn']->query("SHOW TABLES LIKE 'categories'") && $GLOBALS['conn']->affected_rows >= 0) {
+    try {
         $catStmt = $GLOBALS['conn']->prepare("SELECT name FROM categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
         if ($catStmt) {
             $catStmt->execute();
             $resCat = $catStmt->get_result();
-            while ($c = $resCat->fetch_assoc()) { $categories[] = $c['name']; }
+            while ($c = $resCat->fetch_assoc()) { 
+                $categories[] = $c['name']; 
+            }
+            error_log('meta.php - 分類數量: ' . count($categories));
         }
+    } catch (Exception $e) {
+        error_log('獲取分類列表失敗: ' . $e->getMessage());
     }
 
     // 年級（grades）
     $grades = [];
     try {
-        $gradeStmt = $GLOBALS['conn']->prepare("SELECT DISTINCT name FROM grades WHERE is_active = 1 ORDER BY sort_order ASC, year ASC, name ASC");
+        $gradeStmt = $GLOBALS['conn']->prepare("SELECT name FROM grades WHERE is_active = 1 ORDER BY sort_order ASC, year ASC, name ASC");
         if ($gradeStmt) {
             $gradeStmt->execute();
             $res3 = $gradeStmt->get_result();
-            while ($r = $res3->fetch_assoc()) { $grades[] = $r['name']; }
+            while ($r = $res3->fetch_assoc()) { 
+                $grades[] = $r['name']; 
+            }
+            error_log('meta.php - 年級數量: ' . count($grades));
         }
     } catch (Exception $e) {
         error_log('獲取年級列表失敗: ' . $e->getMessage());
         $grades = [];
+    }
+    
+    // 如果沒有從資料庫獲取到年級，使用備用列表
+    if (empty($grades)) {
+        error_log('meta.php - 使用備用年級列表');
+        $grades = ['大學一年級', '大學二年級', '大學三年級', '大學四年級', '碩士生', '博士生'];
     }
 
     sendResponse([

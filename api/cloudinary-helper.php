@@ -6,10 +6,22 @@
 
 // 檢查是否啟用 Cloudinary
 function isCloudinaryEnabled() {
-    // 如果環境變數中有 CLOUDINARY_URL，則啟用
-    return !empty(getenv('CLOUDINARY_URL')) || 
-           !empty($_ENV['CLOUDINARY_URL']) || 
-           (defined('CLOUDINARY_ENABLED') && CLOUDINARY_ENABLED);
+    // 檢查是否有完整的 CLOUDINARY_URL
+    if (!empty(getenv('CLOUDINARY_URL')) || !empty($_ENV['CLOUDINARY_URL'])) {
+        return true;
+    }
+    
+    // 或檢查是否有分開的三個環境變數
+    $hasCloudName = !empty(getenv('CLOUDINARY_CLOUD_NAME')) || !empty($_ENV['CLOUDINARY_CLOUD_NAME']);
+    $hasApiKey = !empty(getenv('CLOUDINARY_API_KEY')) || !empty($_ENV['CLOUDINARY_API_KEY']);
+    $hasApiSecret = !empty(getenv('CLOUDINARY_API_SECRET')) || !empty($_ENV['CLOUDINARY_API_SECRET']);
+    
+    if ($hasCloudName && $hasApiKey && $hasApiSecret) {
+        return true;
+    }
+    
+    // 或檢查是否有定義 CLOUDINARY_ENABLED 常數
+    return (defined('CLOUDINARY_ENABLED') && CLOUDINARY_ENABLED);
 }
 
 // 上傳圖片到 Cloudinary
