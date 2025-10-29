@@ -168,16 +168,9 @@ function getStudentPublicProfile() {
         'total_likes' => (int)($stats['total_likes'] ?? 0)
     ];
 
-    // 處理頭像路徑
-    if (empty($profile['avatar_url'])) {
-        // 使用姓名生成頭像（DiceBear API）
-        $name = $profile['display_name'] ?: ($profile['first_name'] . $profile['last_name']) ?: '學生';
-        $initial = mb_substr($name, 0, 1, 'UTF-8');
-        $profile['avatar_url'] = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
-    } elseif (strpos($profile['avatar_url'], 'http') !== 0) {
-        // 確保路徑以 / 開頭（適用於本地和 Railway）
-        $profile['avatar_url'] = '/' . ltrim($profile['avatar_url'], '/');
-    }
+    // 處理頭像路徑（帶檔案存在性檢查）
+    $name = $profile['display_name'] ?: ($profile['first_name'] . $profile['last_name']) ?: '學生';
+    $profile['avatar_url'] = processAvatarUrl($profile['avatar_url'], $name);
 
     // 公開社群
     $sm = $GLOBALS['conn']->prepare("SELECT platform, url FROM user_social_media WHERE user_id = ? AND is_public = 1 ORDER BY platform");
@@ -211,11 +204,7 @@ function getStudentPublicPortfolios() {
     $list = [];
     while ($row = $res->fetch_assoc()) {
         // 處理封面圖片路徑
-        $coverImage = $row['cover_image'];
-        if (!empty($coverImage) && strpos($coverImage, 'http') !== 0) {
-            // 確保路徑以 / 開頭（適用於本地和 Railway）
-            $coverImage = '/' . ltrim($coverImage, '/');
-        }
+        $coverImage = processImageUrl($row['cover_image']);
         
         $list[] = [
             'id' => (int)$row['id'],

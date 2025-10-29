@@ -51,12 +51,40 @@ class FavoritesSystem {
     }
 
     /**
+     * 根據用戶角色取得收藏頁面路徑
+     */
+    getBookmarksUrl() {
+        try {
+            // 從 localStorage 取得用戶資訊
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                const role = user.role;
+                
+                if (role === 'enterprise') {
+                    return '/frontend/enterprise/bookmarks.html';
+                } else if (role === 'student') {
+                    return '/frontend/student/bookmarks.html';
+                }
+            }
+        } catch (e) {
+            console.warn('無法取得用戶角色:', e);
+        }
+        
+        // 預設返回學生端
+        return 'bookmarks.html';
+    }
+
+    /**
      * 創建收藏夾面板
      */
     createPanel() {
         const panel = document.createElement('div');
         panel.className = 'favorites-panel';
         panel.id = 'favoritesPanel';
+        
+        // 根據用戶角色決定收藏頁面路徑
+        const bookmarksUrl = this.getBookmarksUrl();
         
         panel.innerHTML = `
             <div class="favorites-header">
@@ -77,7 +105,7 @@ class FavoritesSystem {
             
             <div class="favorites-stats">
                 <span>已收藏 <span class="favorites-count" id="favoritesCount">0</span> 件作品</span>
-                <a href="bookmarks.html" class="view-all-btn" title="查看完整收藏頁面">
+                <a href="${bookmarksUrl}" class="view-all-btn" title="查看完整收藏頁面">
                     <i class="fas fa-external-link-alt"></i> 完整頁面
                 </a>
             </div>

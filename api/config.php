@@ -556,4 +556,48 @@ if (!is_dir(UPLOAD_PATH . 'avatars/')) {
 if (!is_dir(UPLOAD_PATH . 'resumes/')) {
     mkdir(UPLOAD_PATH . 'resumes/', 0755, true);
 }
+
+// 處理頭像路徑（帶檔案存在性檢查和降級處理）
+function processAvatarUrl($avatarUrl, $fallbackName = '使用者') {
+    // 空值處理
+    if (empty($avatarUrl)) {
+        $initial = mb_substr($fallbackName, 0, 1, 'UTF-8');
+        return 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
+    }
+    
+    // 外部 URL，直接使用
+    if (strpos($avatarUrl, 'http') === 0) {
+        return $avatarUrl;
+    }
+    
+    // 本地檔案路徑，檢查檔案是否存在
+    $relativePath = ltrim($avatarUrl, '/');
+    $fullPath = __DIR__ . '/../' . $relativePath;
+    
+    if (file_exists($fullPath)) {
+        // 檔案存在，返回絕對路徑
+        return '/' . $relativePath;
+    } else {
+        // 檔案不存在，使用 DiceBear API 生成
+        error_log("頭像檔案不存在: {$fullPath}，使用 DiceBear API");
+        $initial = mb_substr($fallbackName, 0, 1, 'UTF-8');
+        return 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($initial);
+    }
+}
+
+// 處理圖片路徑（封面圖片等）
+function processImageUrl($imageUrl) {
+    // 空值處理
+    if (empty($imageUrl)) {
+        return '';
+    }
+    
+    // 外部 URL，直接使用
+    if (strpos($imageUrl, 'http') === 0) {
+        return $imageUrl;
+    }
+    
+    // 本地檔案路徑，統一轉換為絕對路徑
+    return '/' . ltrim($imageUrl, '/');
+}
 ?>
