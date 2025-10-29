@@ -181,23 +181,42 @@ function initCoverImageUpload() {
     const coverImageInput = document.getElementById('coverImageInput');
     
     if (coverUploadArea && coverImageInput) {
-        // 使用命名函數避免重複綁定
-        const handleClick = () => {
+        // 使用防抖機制避免重複觸發
+        let isClicking = false;
+        
+        const handleClick = (event) => {
+            // 防止事件冒泡
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 防抖：如果正在處理中，忽略後續點擊
+            if (isClicking) {
+                console.log('已在處理中，忽略重複點擊');
+                return;
+            }
+            
+            isClicking = true;
             console.log('觸發封面圖片選擇');
             coverImageInput.click();
+            
+            // 500ms 後重置標記
+            setTimeout(() => {
+                isClicking = false;
+            }, 500);
         };
         
-        // 移除可能存在的舊監聽器（如果有的話）
-        coverUploadArea.removeEventListener('click', handleClick);
+        // 移除所有可能的舊監聽器
+        const newCoverUploadArea = coverUploadArea.cloneNode(true);
+        coverUploadArea.parentNode.replaceChild(newCoverUploadArea, coverUploadArea);
         
         // 添加新監聽器
-        coverUploadArea.addEventListener('click', handleClick);
+        newCoverUploadArea.addEventListener('click', handleClick);
         
         // 處理檔案選擇
         coverImageInput.addEventListener('change', handleCoverImageSelect);
         
         coverImageInitialized = true;
-        console.log('封面圖片上傳事件已初始化');
+        console.log('封面圖片上傳事件已初始化（帶防抖）');
     }
 }
 
