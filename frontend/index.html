@@ -395,8 +395,8 @@
                     loadingState.style.display = 'block';
                 }
                 
-                // 發送 API 請求
-                const apiUrl = '/api/random-portfolios.php?limit=6&t=' + Date.now();
+                // 發送 API 請求 - 使用動態配置
+                const apiUrl = getApiUrl('random-portfolios.php') + '?limit=6&t=' + Date.now();
                 console.log('API URL:', apiUrl);
                 
                 const response = await fetch(apiUrl);
@@ -558,7 +558,7 @@
         // 載入統計數據
         async function loadStatistics() {
             try {
-                const response = await fetch('/api/public-stats.php?t=' + Date.now());
+                const response = await fetch(getApiUrl('public-stats.php') + '?t=' + Date.now());
                 
                 if (!response.ok) {
                     throw new Error('無法載入統計數據');
@@ -642,7 +642,7 @@
             messageDiv.style.display = 'none';
             
             try {
-                const response = await fetch('/api/contact.php', {
+                const response = await fetch(getApiUrl('contact.php'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -771,7 +771,7 @@
                 document.body.appendChild(loadingMsg);
                 
                 // 發送登入請求
-                const response = await fetch('/api/enterprise/auth.php', {
+                const response = await fetch(getApiUrl('enterprise/auth.php'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

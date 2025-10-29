@@ -65,6 +65,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
             case 'delete':
                 deletePortfolio($input);
                 break;
+            case 'upload_cover':
+                // 上傳封面圖片
+                uploadCoverImage();
+                break;
             case 'upload_files':
                 // multipart 透過 $_FILES/$_POST 傳遞
                 uploadPortfolioFiles();
@@ -333,6 +337,7 @@ function createPortfolio($data) {
     $category = sanitizeInput($data['category'] ?? '');
     $tags = sanitizeInput($data['tags'] ?? '');
     $status = sanitizeInput($data['status'] ?? 'draft');
+    $coverImage = sanitizeInput($data['cover_image'] ?? '');
     
     if (empty($title) || empty($description)) {
         sendError('標題和描述不能為空', 400);
@@ -356,12 +361,12 @@ function createPortfolio($data) {
         
         $stmt = $GLOBALS['conn']->prepare("
             INSERT INTO portfolios (
-                user_id, title, description, category_id, tags, status, published_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                user_id, title, description, category_id, tags, cover_image, status, published_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $publishedAt = $status === 'published' ? date('Y-m-d H:i:s') : null;
-        $stmt->bind_param("ississs", $userId, $title, $description, $categoryId, $tags, $status, $publishedAt);
+        $stmt->bind_param("isissss", $userId, $title, $description, $categoryId, $tags, $coverImage, $status, $publishedAt);
         
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
@@ -790,6 +795,56 @@ function uploadPortfolioFiles() {
         ], 200, '上傳成功');
     } else {
         sendError('所有檔案上傳失敗: ' . implode(', ', $errors), 500);
+    }
+}
+
+// 上傳封面圖片（支援 Cloudinary 和本地儲存）
+function uploadCoverImage() {
+    require_once __DIR__ . '/../cloudinary-helper.php';
+    
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
+    
+    if (!isset($_FILES['cover_image']) || $_FILES['cover_image']['error'] !== UPLOAD_ERR_OK) {
+        sendError('沒有上傳封面圖片或上傳失敗', 400);
+        return;
+    }
+    
+    $file = $_FILES['cover_image'];
+    $fileName = $file['name'];
+    $fileSize = $file['size'];
+    $fileType = $file['type'];
+    $tmpName = $file['tmp_name'];
+    
+    // 檢查檔案類型
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!in_array($fileType, $allowedTypes)) {
+        sendError('不支援的圖片格式，請上傳 JPG、PNG、GIF 或 WebP 格式', 400);
+        return;
+    }
+    
+    // 檢查檔案大小（5MB）
+    if ($fileSize > 5 * 1024 * 1024) {
+        sendError('圖片檔案不能超過 5MB', 400);
+        return;
+    }
+    
+    // 智能上傳：優先 Cloudinary，降級本地
+    $uploadResult = smartUploadImage($tmpName, $userId, 'cover');
+    
+    if ($uploadResult['success']) {
+        $storageInfo = $uploadResult['storage'] === 'cloudinary' ? ' (雲端儲存)' : ' (本地儲存)';
+        
+        sendResponse([
+            'cover_image_path' => $uploadResult['path'],
+            'storage_type' => $uploadResult['storage'],
+            'message' => '封面圖片上傳成功' . $storageInfo
+        ], 200, '上傳成功');
+    } else {
+        sendError('封面圖片上傳失敗', 500);
     }
 }
 

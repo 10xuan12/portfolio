@@ -77,6 +77,7 @@ document.head.appendChild(style);
 // 上傳狀態
 let currentStep = 1;
 let uploadedFiles = [];
+let coverImageFile = null; // 儲存封面圖片檔案
 let portfolioData = {
     title: '',
     category: '',
@@ -85,7 +86,8 @@ let portfolioData = {
     status: 'draft',
     files: [],
     url: '',
-    github: ''
+    github: '',
+    cover_image: null // 封面圖片路徑
 };
 
 // 初始化頁面
@@ -139,6 +141,7 @@ function initializeUpload() {
     }
     
     initEventListeners();
+    initCoverImageUpload(); // 初始化封面圖片上傳
 
     // 動態載入學群分類
     loadCategories();
@@ -162,6 +165,133 @@ function initializeUpload() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeUpload();
 });
+
+// 初始化封面圖片上傳
+function initCoverImageUpload() {
+    const coverUploadArea = document.getElementById('coverUploadArea');
+    const coverImageInput = document.getElementById('coverImageInput');
+    
+    if (coverUploadArea && coverImageInput) {
+        // 點擊上傳區域觸發檔案選擇
+        coverUploadArea.addEventListener('click', () => {
+            coverImageInput.click();
+        });
+        
+        // 處理檔案選擇
+        coverImageInput.addEventListener('change', handleCoverImageSelect);
+    }
+}
+
+// 處理封面圖片選擇
+function handleCoverImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // 檢查檔案類型
+    if (!file.type.startsWith('image/')) {
+        showNotification('請選擇圖片檔案', 'error');
+        return;
+    }
+    
+    // 檢查檔案大小（5MB）
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('圖片檔案不能超過 5MB', 'error');
+        return;
+    }
+    
+    // 儲存封面圖片檔案
+    coverImageFile = file;
+    
+    // 預覽圖片
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const coverPreview = document.getElementById('coverPreview');
+        const coverPreviewImage = document.getElementById('coverPreviewImage');
+        const coverUploadArea = document.getElementById('coverUploadArea');
+        
+        if (coverPreviewImage) {
+            coverPreviewImage.src = e.target.result;
+        }
+        
+        if (coverPreview) {
+            coverPreview.style.display = 'block';
+        }
+        
+        if (coverUploadArea) {
+            coverUploadArea.style.display = 'none';
+        }
+        
+        showNotification('封面圖片已選擇', 'success');
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// 移除封面圖片
+function removeCoverImage() {
+    coverImageFile = null;
+    portfolioData.cover_image = null;
+    
+    const coverPreview = document.getElementById('coverPreview');
+    const coverPreviewImage = document.getElementById('coverPreviewImage');
+    const coverUploadArea = document.getElementById('coverUploadArea');
+    const coverImageInput = document.getElementById('coverImageInput');
+    
+    if (coverPreviewImage) {
+        coverPreviewImage.src = '';
+    }
+    
+    if (coverPreview) {
+        coverPreview.style.display = 'none';
+    }
+    
+    if (coverUploadArea) {
+        coverUploadArea.style.display = 'block';
+    }
+    
+    if (coverImageInput) {
+        coverImageInput.value = '';
+    }
+    
+    showNotification('封面圖片已移除', 'info');
+}
+
+// 上傳封面圖片
+async function uploadCoverImage(file, userId) {
+    try {
+        const formData = new FormData();
+        formData.append('action', 'upload_cover');
+        formData.append('cover_image', file);
+        formData.append('user_id', userId);
+        
+        const apiService = window.apiService || window.initializeApiService?.();
+        if (!apiService) {
+            throw new Error('API服務未初始化');
+        }
+        
+        const uploadUrl = apiService.getApiUrl('student/portfolio.php');
+        const response = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+                'X-User-ID': userId
+            },
+            body: formData
+        });
+        
+        const result = await response.json();
+        console.log('封面圖片上傳結果:', result);
+        
+        if (result.status === 200 && result.data && result.data.cover_image_path) {
+            return result.data.cover_image_path;
+        } else {
+            throw new Error(result.message || '上傳失敗');
+        }
+    } catch (error) {
+        console.error('封面圖片上傳失敗:', error);
+        showNotification('封面圖片上傳失敗：' + error.message, 'error');
+        return null;
+    }
+}
 
 // 初始化事件監聽器
 function initEventListeners() {
@@ -947,8 +1077,25 @@ async function handleFormSubmit(e) {
             throw new Error('請先登入後再上傳作品');
         }
         
+        // 檢查是否有封面圖片
+        if (!coverImageFile) {
+            showNotification('請上傳封面圖片', 'error');
+            return;
+        }
+        
         // 顯示上傳中狀態
         showUploadProgress(true);
+        showNotification('正在上傳封面圖片...', 'info');
+        
+        // 先上傳封面圖片
+        const coverImagePath = await uploadCoverImage(coverImageFile, user.id);
+        if (!coverImagePath) {
+            throw new Error('封面圖片上傳失敗');
+        }
+        
+        console.log('封面圖片上傳成功:', coverImagePath);
+        portfolioData.cover_image = coverImagePath;
+        
         showNotification('正在上傳作品...', 'info');
         
         // 準備上傳資料
@@ -961,6 +1108,7 @@ async function handleFormSubmit(e) {
         formData.append('status', portfolioData.status);
         formData.append('url', portfolioData.url || '');
         formData.append('github', portfolioData.github || '');
+        formData.append('cover_image', coverImagePath); // 添加封面圖片路徑
         formData.append('user_id', user.id); // 明確添加用戶ID
         
         console.log('準備上傳的資料:');

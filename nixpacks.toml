@@ -8,5 +8,5 @@ cmds = ["composer install --no-dev --optimize-autoloader"]
 cmds = ["echo 'Build completed'"]
 
 [start]
-cmd = "php -S 0.0.0.0:$PORT -t ."
+cmd = "php -d memory_limit=128M -d upload_max_filesize=10M -d post_max_size=10M -d max_execution_time=30 -S 0.0.0.0:$PORT -t . router.php"
 

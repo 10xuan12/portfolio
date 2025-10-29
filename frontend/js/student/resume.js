@@ -1392,14 +1392,42 @@
                 })
             });
             
-            if (result.status === 200 && result.data && result.data.pdf_url) {
-                // 下載 PDF
-                window.open(result.data.pdf_url, '_blank');
-                
-                if (typeof Utils !== 'undefined' && Utils.showNotification) {
-                    Utils.showNotification('PDF 已生成，正在下載...', 'success');
+            if (result.status === 200 && result.data) {
+                // 檢查是否返回 base64 PDF（Railway 環境）
+                if (result.data.pdf_base64) {
+                    // 將 base64 轉換為 Blob 並下載
+                    const binaryString = atob(result.data.pdf_base64);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const blob = new Blob([bytes], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = result.data.file_name || 'resume.pdf';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                    if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                        Utils.showNotification('PDF 已生成並下載', 'success');
+                    } else {
+                        alert('PDF 已生成並下載');
+                    }
+                } 
+                // 檢查是否返回 URL（本地環境向後兼容）
+                else if (result.data.pdf_url) {
+                    window.open(result.data.pdf_url, '_blank');
+                    
+                    if (typeof Utils !== 'undefined' && Utils.showNotification) {
+                        Utils.showNotification('PDF 已生成，正在下載...', 'success');
+                    } else {
+                        alert('PDF 已生成，正在下載...');
+                    }
                 } else {
-                    alert('PDF 已生成，正在下載...');
+                    throw new Error('無法獲取 PDF 檔案');
                 }
             } else {
                 throw new Error(result.message || '生成失敗');

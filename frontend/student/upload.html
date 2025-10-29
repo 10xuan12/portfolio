@@ -131,6 +131,29 @@
                         <h3>上傳作品檔案</h3>
                         <p style="color: #718096; margin-bottom: 2rem; font-size: 0.95rem;">支援多種格式，單個檔案最大 50MB</p>
                         
+                        <!-- 封面圖片上傳 -->
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label for="coverImage">
+                                封面圖片 
+                                <span style="color: #e53e3e; font-weight: 600;">*</span>
+                                <span style="color: #718096; font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem;">（必填，建議尺寸 1200x630px）</span>
+                            </label>
+                            <div class="cover-image-upload" id="coverImageUpload">
+                                <div class="cover-preview" id="coverPreview" style="display: none;">
+                                    <img id="coverPreviewImage" src="" alt="封面預覽">
+                                    <button type="button" class="btn-remove-cover" onclick="removeCoverImage()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="cover-upload-area" id="coverUploadArea">
+                                    <i class="fas fa-image" style="font-size: 3rem; color: #cbd5e0; margin-bottom: 1rem;"></i>
+                                    <p style="color: #4a5568; font-weight: 500; margin-bottom: 0.5rem;">點擊上傳封面圖片</p>
+                                    <small style="color: #718096;">支援 JPG、PNG、GIF 格式，檔案不超過 5MB</small>
+                                    <input type="file" id="coverImageInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- 標籤設定 -->
                         <div class="form-group" style="margin-bottom: 2rem;">
                             <label for="tags">作品標籤</label>

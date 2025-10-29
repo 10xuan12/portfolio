@@ -981,6 +981,7 @@ function generateResumeHTML($resumeData) {
 
 // 生成並儲存 PDF（從前端呼叫）
 function generateAndSavePDF($input) {
+    require_once __DIR__ . '/../../vendor/autoload.php';
     $userId = checkPermission('student');
     
     if (!$input || !isset($input['resume_data'])) {
@@ -990,10 +991,60 @@ function generateAndSavePDF($input) {
     $resumeData = $input['resume_data'];
     
     try {
-        // 生成 PDF 文件
-        $pdfPath = generateResumePDF($resumeData, $userId);
+        // 檢查 MPDF 是否可用
+        if (!class_exists('\Mpdf\Mpdf')) {
+            throw new Exception('MPDF 類別未找到，請檢查 Composer 安裝');
+        }
         
-        // 更新資料庫中的 file_path
+        // 建立 mPDF 實例（優化配置以減少記憶體使用）
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 16,
+            'margin_bottom' => 16,
+            'margin_header' => 9,
+            'margin_footer' => 9,
+            'default_font' => 'dejavusans',
+            'tempDir' => sys_get_temp_dir(),
+            'allow_charset_conversion' => true,
+            'charset_in' => 'UTF-8',
+            // 優化免費版效能
+            'simpleTables' => true,
+            'packTableData' => true
+        ]);
+        
+        // 設定中文字體支援
+        $mpdf->autoScriptToLang = true;
+        $mpdf->autoLangToFont = true;
+        $mpdf->SetDefaultFont('dejavusans');
+        
+        // 生成 HTML 內容
+        $html = generateResumeHTML($resumeData);
+        
+        // 寫入 PDF
+        $mpdf->WriteHTML($html);
+        
+        // 生成 PDF 到記憶體（優化記憶體使用）
+        $pdfContent = $mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN);
+        
+        // 檢查 PDF 大小（如果太大可能會有問題）
+        $pdfSize = strlen($pdfContent);
+        if ($pdfSize > 5 * 1024 * 1024) { // 5MB 限制
+            throw new Exception('PDF 檔案過大，請簡化履歷內容');
+        }
+        
+        // 將 PDF 轉換為 base64
+        $pdfBase64 = base64_encode($pdfContent);
+        
+        // 釋放記憶體
+        unset($pdfContent);
+        
+        // 生成檔案名稱
+        $fileName = 'resume_' . ($resumeData['basic']['name'] ?? 'resume') . '_' . date('YmdHis') . '.pdf';
+        
+        // 更新資料庫（可選，記錄生成歷史）
         $stmt = $GLOBALS['conn']->prepare("SELECT id FROM resumes WHERE user_id = ? ORDER BY version DESC LIMIT 1");
         $stmt->bind_param("i", $userId);
         $stmt->execute();
@@ -1001,26 +1052,29 @@ function generateAndSavePDF($input) {
         
         if ($result->num_rows > 0) {
             $resume = $result->fetch_assoc();
-            
             $stmt = $GLOBALS['conn']->prepare("
                 UPDATE resumes 
-                SET file_path = ?, status = 'published', updated_at = NOW()
+                SET download_count = download_count + 1, status = 'published', updated_at = NOW()
                 WHERE id = ?
             ");
-            $stmt->bind_param("si", $pdfPath, $resume['id']);
+            $stmt->bind_param("i", $resume['id']);
             $stmt->execute();
         }
         
-        // 返回 PDF 完整 URL 供下載
-        $pdfUrl = '/portfolio/' . $pdfPath;
+        // 清除輸出緩衝區
+        if (ob_get_length()) { 
+            @ob_clean(); 
+        }
         
+        // 返回 base64 編碼的 PDF
         sendResponse([
             'message' => 'PDF 已生成',
-            'pdf_path' => $pdfPath,
-            'pdf_url' => $pdfUrl
+            'pdf_base64' => $pdfBase64,
+            'file_name' => $fileName
         ], 200, '生成成功');
         
     } catch (Exception $e) {
+        error_log('PDF 生成失敗: ' . $e->getMessage());
         sendError('PDF 生成失敗: ' . $e->getMessage(), 500);
     }
 }
