@@ -148,6 +148,8 @@ function sendEmailNotification($name, $email, $message) {
         // SMTP 設定
         $mail->isSMTP();
         $mail->CharSet = 'UTF-8';
+        $mail->Timeout = 10; // 設定 10 秒超時
+        $mail->SMTPDebug = 0; // 關閉除錯模式以提升速度
         
         // Gmail SMTP 設定（如果使用 Gmail）
         // 您需要在 Gmail 設定中啟用「應用程式密碼」
@@ -157,6 +159,13 @@ function sendEmailNotification($name, $email, $message) {
         $mail->Password   = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? 'zhdp nvtc aqzq hwuu'; // 請在 .env 設定
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = $_ENV['SMTP_PORT'] ?? getenv('SMTP_PORT') ?? 587;
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
         
         // 發件人資訊
         $fromEmail = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'portfolioplus2025@gmail.com';

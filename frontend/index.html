@@ -645,14 +645,20 @@
             messageDiv.style.display = 'none';
             
             try {
+                // 設定 30 秒超時
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                
                 const response = await fetch(getApiUrl('contact.php'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify(formData),
+                    signal: controller.signal
                 });
                 
+                clearTimeout(timeoutId);
                 const result = await response.json();
                 
                 if (result.status === 200) {
@@ -665,7 +671,11 @@
                 }
             } catch (error) {
                 console.error('發送聯絡訊息錯誤:', error);
-                showFormMessage('網路錯誤，請稍後再試', 'error');
+                if (error.name === 'AbortError') {
+                    showFormMessage('發送超時，請檢查網路連線或稍後再試', 'error');
+                } else {
+                    showFormMessage('網路錯誤，請稍後再試', 'error');
+                }
             } finally {
                 // 恢復按鈕狀態
                 submitBtn.disabled = false;
