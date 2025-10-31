@@ -454,21 +454,106 @@
                     return;
                 }
                 
-                // 這裡可以從 API 獲取技能數據，目前使用示例數據
-                const skills = [
-                    { name: 'HTML', level: 5, category: '前端技術', count: 95, icon: '🌐', showLevel: true },
-                    { name: 'CSS', level: 5, category: '前端技術', count: 90, icon: '🎨', showLevel: true },
-                    { name: 'JavaScript', level: 4, category: '程式語言', count: 75, icon: '💛', showLevel: true },
-                    { name: 'React', level: 3, category: '前端框架', count: 35, icon: '⚛️', showLevel: true },
-                    { name: 'PHP', level: 4, category: '後端技術', count: 60, icon: '🐘', showLevel: true },
-                    { name: 'MySQL', level: 4, category: '資料庫', count: 55, icon: '🗄️', showLevel: true },
-                    { name: 'Git', level: 3, category: '工具', count: 40, icon: '📦', showLevel: true },
-                    { name: 'Figma', level: 3, category: '設計工具', count: 30, icon: '🎨', showLevel: true }
-                ];
+                // 顯示載入中狀態
+                cloudContainer.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 31.2px; margin-bottom: 10px;"></i>
+                        <p>正在載入您的技能數據...</p>
+                    </div>
+                `;
                 
-                console.log('創建技能標籤雲，技能數量:', skills.length);
+                // 從 API 獲取學生作品數據
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const userId = user.id;
                 
-                createSkillCloud('studentSkillCloud', skills, {
+                if (!userId) {
+                    throw new Error('無法取得使用者 ID');
+                }
+                
+                console.log('正在獲取學生 ID', userId, '的作品數據...');
+                
+                const response = await fetch(`${getApiBase()}/student/portfolio.php?action=list&user_id=${userId}&limit=100`);
+                const data = await response.json();
+                
+                if (!data || !data.data || data.data.length === 0) {
+                    console.log('沒有找到作品，顯示空狀態');
+                    cloudContainer.innerHTML = `
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            <i class="fas fa-folder-open" style="font-size: 62.4px; margin-bottom: 10px; opacity: 0.3;"></i>
+                            <p>尚無作品數據</p>
+                            <p style="font-size: 14px; color: #999;">上傳作品後，系統會自動分析您的技能</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 從作品標籤中提取技能統計
+                const skillMap = {};
+                const portfolios = data.data;
+                
+                console.log('正在分析', portfolios.length, '個作品的標籤...');
+                
+                portfolios.forEach(portfolio => {
+                    let tags = [];
+                    
+                    // 處理標籤（可能是陣列或逗號分隔的字串）
+                    if (Array.isArray(portfolio.tags)) {
+                        tags = portfolio.tags;
+                    } else if (typeof portfolio.tags === 'string' && portfolio.tags) {
+                        tags = portfolio.tags.split(',').map(t => t.trim()).filter(t => t);
+                    }
+                    
+                    // 統計每個標籤出現的次數
+                    tags.forEach(tag => {
+                        if (tag) {
+                            if (!skillMap[tag]) {
+                                skillMap[tag] = {
+                                    name: tag,
+                                    count: 0,
+                                    category: categorizeSkill(tag),
+                                    showLevel: true
+                                };
+                            }
+                            skillMap[tag].count++;
+                        }
+                    });
+                });
+                
+                // 轉換為陣列並計算等級
+                const skills = Object.values(skillMap).map(skill => {
+                    // 根據使用次數計算等級 (1-5)
+                    let level = 1;
+                    if (skill.count >= 10) level = 5;
+                    else if (skill.count >= 7) level = 4;
+                    else if (skill.count >= 5) level = 3;
+                    else if (skill.count >= 3) level = 2;
+                    
+                    return {
+                        ...skill,
+                        level: level,
+                        icon: getSkillIcon(skill.name)
+                    };
+                });
+                
+                // 按使用次數排序，取前20個
+                skills.sort((a, b) => b.count - a.count);
+                const topSkills = skills.slice(0, 20);
+                
+                console.log('分析完成，找到', skills.length, '個技能，顯示前', topSkills.length, '個');
+                
+                if (topSkills.length === 0) {
+                    cloudContainer.innerHTML = `
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            <i class="fas fa-tags" style="font-size: 62.4px; margin-bottom: 10px; opacity: 0.3;"></i>
+                            <p>尚無技能標籤</p>
+                            <p style="font-size: 14px; color: #999;">為作品添加標籤後，這裡會顯示您的技能分布</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 創建技能雲
+                createSkillCloud('studentSkillCloud', topSkills, {
                     interactive: true,
                     showStats: true,
                     showFilter: false,
@@ -476,6 +561,7 @@
                         console.log('選中技能:', skill.name);
                     }
                 });
+                
             } catch (error) {
                 console.error('初始化技能標籤雲失敗:', error);
                 cloudContainer.innerHTML = `
@@ -486,6 +572,229 @@
                     </div>
                 `;
             }
+        }
+        
+        // 根據技能名稱分類（支援多種領域）
+        function categorizeSkill(skillName) {
+            const lowerName = skillName.toLowerCase();
+            
+            // 資訊技術類
+            if (['html', 'css', 'javascript', 'js', 'react', 'vue', 'angular', 'typescript', 'sass', 'less', 'webpack', '前端'].some(k => lowerName.includes(k))) {
+                return '前端技術';
+            } else if (['python', 'java', 'c++', 'c#', 'go', 'rust', 'ruby', 'kotlin', 'swift', '程式', '編程'].some(k => lowerName.includes(k))) {
+                return '程式語言';
+            } else if (['node.js', 'nodejs', 'php', 'django', 'flask', 'express', 'spring', 'laravel', '.net', '後端', 'api'].some(k => lowerName.includes(k))) {
+                return '後端技術';
+            } else if (['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'oracle', 'sql', '資料庫', '數據庫'].some(k => lowerName.includes(k))) {
+                return '資料庫';
+            } else if (['git', 'github', 'docker', 'kubernetes', 'jenkins', 'ci/cd', 'aws', 'azure', 'gcp', '部署'].some(k => lowerName.includes(k))) {
+                return '開發工具';
+            } else if (['android', 'ios', 'react native', 'flutter', 'xamarin', 'app', '行動', '手機'].some(k => lowerName.includes(k))) {
+                return '行動開發';
+            } 
+            // 設計藝術類
+            else if (['figma', 'photoshop', 'illustrator', 'xd', 'sketch', 'indesign', '平面設計', '視覺設計', '海報', 'logo', '品牌', '排版'].some(k => lowerName.includes(k))) {
+                return '平面設計';
+            } else if (['ui', 'ux', '介面設計', '使用者體驗', '互動設計', '原型', 'wireframe'].some(k => lowerName.includes(k))) {
+                return 'UI/UX設計';
+            } else if (['3d', 'blender', 'maya', 'cinema 4d', 'c4d', 'zbrush', '建模', '渲染', '動畫'].some(k => lowerName.includes(k))) {
+                return '3D設計';
+            } else if (['插畫', '繪畫', '手繪', 'procreate', '水彩', '素描', '漫畫', '角色設計'].some(k => lowerName.includes(k))) {
+                return '插畫繪圖';
+            } else if (['攝影', 'photography', 'lightroom', '修圖', '人像', '風景', '商業攝影'].some(k => lowerName.includes(k))) {
+                return '攝影';
+            } else if (['影片', '剪輯', 'premiere', 'final cut', 'davinci', 'after effects', '特效', '調色', '影像'].some(k => lowerName.includes(k))) {
+                return '影片製作';
+            }
+            // 商管行銷類
+            else if (['行銷', 'marketing', 'seo', 'sem', 'google analytics', '社群', '數位行銷', '內容行銷', '廣告'].some(k => lowerName.includes(k))) {
+                return '行銷企劃';
+            } else if (['企劃', '專案管理', 'project management', 'scrum', 'agile', '團隊管理', '敏捷'].some(k => lowerName.includes(k))) {
+                return '專案管理';
+            } else if (['財務', '會計', 'accounting', 'finance', '報表', '分析', '預算', '成本'].some(k => lowerName.includes(k))) {
+                return '財務會計';
+            } else if (['商業', '企業', '管理', '策略', '營運', 'business'].some(k => lowerName.includes(k))) {
+                return '商業管理';
+            } else if (['資料分析', '數據分析', 'data analysis', 'excel', 'powerbi', 'tableau', '統計', '視覺化'].some(k => lowerName.includes(k))) {
+                return '資料分析';
+            }
+            // 文學傳播類
+            else if (['文案', '寫作', 'copywriting', '內容創作', '編輯', '文字'].some(k => lowerName.includes(k))) {
+                return '文案寫作';
+            } else if (['文學', '小說', '詩歌', '散文', '創作', '劇本'].some(k => lowerName.includes(k))) {
+                return '文學創作';
+            } else if (['新聞', '採訪', '報導', 'journalism', '傳播', '媒體'].some(k => lowerName.includes(k))) {
+                return '新聞傳播';
+            } else if (['翻譯', 'translation', '口譯', '英文', '日文', '多語'].some(k => lowerName.includes(k))) {
+                return '語言翻譯';
+            }
+            // 其他專業領域
+            else if (['建築', 'architecture', 'autocad', 'revit', 'sketchup', '室內設計', '空間設計'].some(k => lowerName.includes(k))) {
+                return '建築設計';
+            } else if (['音樂', 'music', '作曲', '編曲', '混音', 'logic pro', 'ableton', '錄音'].some(k => lowerName.includes(k))) {
+                return '音樂創作';
+            } else if (['教學', '教育', 'teaching', '課程', '講義', '教案', '簡報'].some(k => lowerName.includes(k))) {
+                return '教學教育';
+            } else if (['研究', 'research', '論文', '實驗', '學術', '分析'].some(k => lowerName.includes(k))) {
+                return '學術研究';
+            }
+            // 通用技能
+            else if (['簡報', 'powerpoint', 'keynote', '演講', 'presentation'].some(k => lowerName.includes(k))) {
+                return '簡報技能';
+            } else if (['溝通', '團隊合作', 'teamwork', '協作', '領導', 'leadership'].some(k => lowerName.includes(k))) {
+                return '軟實力';
+            } else {
+                return '其他專業';
+            }
+        }
+        
+        // 根據技能名稱獲取圖標（支援多種領域）
+        function getSkillIcon(skillName) {
+            const lowerName = skillName.toLowerCase();
+            
+            // 資訊技術類圖標
+            const techIcons = {
+                'javascript': '💛', 'js': '💛',
+                'python': '🐍',
+                'react': '⚛️',
+                'vue': '💚',
+                'angular': '🔺',
+                'node.js': '💚', 'nodejs': '💚',
+                'html': '🌐',
+                'css': '🎨',
+                'java': '☕',
+                'c++': '⚙️', 'c#': '⚙️',
+                'php': '🐘',
+                'sql': '🗄️', 'mysql': '🗄️', 'postgresql': '🗄️',
+                'mongodb': '🍃',
+                'git': '📦', 'github': '📦',
+                'docker': '🐳',
+                'aws': '☁️', 'azure': '☁️', 'gcp': '☁️',
+            };
+            
+            // 設計藝術類圖標
+            const designIcons = {
+                'ui': '🎨', 'ux': '✨',
+                'figma': '🎨',
+                'photoshop': '🖼️',
+                'illustrator': '🎨',
+                'indesign': '📄',
+                'xd': '💎',
+                'sketch': '💎',
+                '平面設計': '🎨',
+                '插畫': '🖌️',
+                '手繪': '✏️',
+                '3d': '🎲',
+                'blender': '🎲',
+                '攝影': '📷',
+                '影片': '🎬',
+                '剪輯': '🎬',
+                'premiere': '🎬',
+                '動畫': '🎞️'
+            };
+            
+            // 商管行銷類圖標
+            const businessIcons = {
+                '行銷': '📢',
+                'marketing': '📢',
+                'seo': '🔍',
+                '企劃': '📋',
+                '專案管理': '📊',
+                '財務': '💰',
+                '會計': '💰',
+                '商業': '💼',
+                '管理': '📈',
+                '資料分析': '📊',
+                'excel': '📊',
+                'powerbi': '📊',
+                '簡報': '📊',
+                'powerpoint': '📊'
+            };
+            
+            // 文學傳播類圖標
+            const writingIcons = {
+                '文案': '✍️',
+                '寫作': '📝',
+                '文學': '📚',
+                '小說': '📖',
+                '詩歌': '📜',
+                '創作': '✨',
+                '新聞': '📰',
+                '採訪': '🎤',
+                '翻譯': '🌍',
+                '編輯': '📝'
+            };
+            
+            // 其他專業類圖標
+            const otherIcons = {
+                '建築': '🏛️',
+                '室內設計': '🏠',
+                '音樂': '🎵',
+                '作曲': '🎼',
+                '教學': '📚',
+                '教育': '🎓',
+                '研究': '🔬',
+                '論文': '📄',
+                '溝通': '💬',
+                '領導': '👑',
+                '團隊合作': '🤝'
+            };
+            
+            // 合併所有圖標映射
+            const allIcons = {
+                ...techIcons,
+                ...designIcons,
+                ...businessIcons,
+                ...writingIcons,
+                ...otherIcons
+            };
+            
+            // 優先匹配完全相同的技能名稱
+            if (allIcons[lowerName]) {
+                return allIcons[lowerName];
+            }
+            
+            // 如果沒有完全匹配，嘗試部分匹配
+            for (const [key, icon] of Object.entries(allIcons)) {
+                if (lowerName.includes(key) || key.includes(lowerName)) {
+                    return icon;
+                }
+            }
+            
+            // 如果都沒匹配到，根據類別返回預設圖標
+            const category = categorizeSkill(skillName);
+            const categoryIcons = {
+                '前端技術': '💻',
+                '程式語言': '⌨️',
+                '後端技術': '🔧',
+                '資料庫': '🗄️',
+                '開發工具': '🛠️',
+                '行動開發': '📱',
+                '平面設計': '🎨',
+                'UI/UX設計': '✨',
+                '3D設計': '🎲',
+                '插畫繪圖': '🖌️',
+                '攝影': '📷',
+                '影片製作': '🎬',
+                '行銷企劃': '📢',
+                '專案管理': '📋',
+                '財務會計': '💰',
+                '商業管理': '💼',
+                '資料分析': '📊',
+                '文案寫作': '✍️',
+                '文學創作': '📚',
+                '新聞傳播': '📰',
+                '語言翻譯': '🌍',
+                '建築設計': '🏛️',
+                '音樂創作': '🎵',
+                '教學教育': '🎓',
+                '學術研究': '🔬',
+                '簡報技能': '📊',
+                '軟實力': '💪',
+                '其他專業': '⭐'
+            };
+            
+            return categoryIcons[category] || '⭐';
         }
         
         // 更新歡迎標題

@@ -161,8 +161,15 @@
     <script src="../js/portfolio-timeline.js?v=20251020-1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // 從 localStorage 獲取當前登入用戶的資訊
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const studentId = user.id || 5; // 如果沒有登入，預設使用 ID 5
+            
+            console.log('當前登入用戶:', user);
+            console.log('使用學生 ID:', studentId);
+            
             // 初始化作品時光機
-            window.portfolioTimeline = new PortfolioTimeline('timelineContainer', 5);
+            window.portfolioTimeline = new PortfolioTimeline('timelineContainer', studentId);
         });
 
         function refreshTimeline() {
