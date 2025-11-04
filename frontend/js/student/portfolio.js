@@ -199,7 +199,7 @@
         grid.innerHTML = portfoliosToRender.map(portfolio => `
             <div class="portfolio-item" data-status="${portfolio.status}" data-category="${portfolio.category}">
                 <div class="portfolio-image">
-                    <img src="${portfolio.cover_image || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio'}" 
+                    <img src="${getImageUrl(portfolio.cover_image) || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio'}" 
                          alt="${portfolio.title}"
                          onerror="handleImageError(this)">
                     <div class="portfolio-overlay">
@@ -548,6 +548,24 @@
                 suggestionsContainer.style.display = 'none';
             }
         });
+    }
+
+    // 處理圖片 URL（支援 Cloudinary 和本地路徑）
+    function getImageUrl(url) {
+        if (!url || url === 'null') return '';
+        
+        // 如果已經是完整 URL（Cloudinary 等）
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        // 如果已經是絕對路徑，直接返回
+        if (url.startsWith('/')) {
+            return url;
+        }
+        
+        // 其他情況，添加 / 前綴
+        return '/' + url;
     }
 
     // 全域函數供 HTML 使用

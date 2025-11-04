@@ -107,7 +107,7 @@ function renderPortfolios(filteredPortfolios = null) {
     grid.innerHTML = portfoliosToRender.map(portfolio => `
         <div class="portfolio-item" data-category="${portfolio.category}" data-department="${portfolio.department}">
             <div class="portfolio-image">
-                <img src="${portfolio.image}" alt="${portfolio.title}">
+                <img src="${getImageUrl(portfolio.cover_image || portfolio.image) || 'https://via.placeholder.com/400x300/667eea/ffffff?text=Portfolio'}" alt="${portfolio.title}">
                 <div class="portfolio-overlay">
                     <button class="overlay-btn" onclick="viewPortfolio(${portfolio.id})">
                         <i class="fas fa-eye"></i> 查看
@@ -428,6 +428,24 @@ window.likePortfolio = likePortfolio;
 window.refreshPortfolios = refreshPortfolios;
 window.exportPortfolios = exportPortfolios;
 window.clearFilters = clearFilters; 
+
+// 處理圖片 URL（支援 Cloudinary 和本地路徑）
+function getImageUrl(url) {
+    if (!url || url === 'null') return '';
+    
+    // 如果已經是完整 URL（Cloudinary 等）
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+    }
+    
+    // 如果已經是絕對路徑，直接返回
+    if (url.startsWith('/')) {
+        return url;
+    }
+    
+    // 其他情況，添加 / 前綴
+    return '/' + url;
+}
 
 // 全域保險：確保 API 服務就緒
 async function ensureApiServiceReady(maxRetries = 10, delayMs = 100) {
