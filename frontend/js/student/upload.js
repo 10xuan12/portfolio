@@ -199,11 +199,11 @@ function initCoverImageUpload() {
             console.log('觸發封面圖片選擇');
             coverImageInput.click();
             
-            // 5秒後重置標記（給用戶足夠時間選擇檔案）
+            // 2秒後重置標記（縮短等待時間）
             setTimeout(() => {
                 isSelectingCover = false;
-                console.log('防抖標誌已重置');
-            }, 5000);
+                console.log('防抖標誌已自動重置');
+            }, 2000);
         };
         
         // 添加點擊事件
@@ -211,6 +211,23 @@ function initCoverImageUpload() {
         
         // 處理檔案選擇
         coverImageInput.addEventListener('change', handleCoverImageSelect);
+        
+        // 監聽 input 的 focus 事件，當對話框關閉時重置標誌
+        coverImageInput.addEventListener('cancel', function() {
+            isSelectingCover = false;
+            console.log('用戶取消選擇，重置標誌');
+        });
+        
+        // 監聽點擊事件後的 focus 變化
+        window.addEventListener('focus', function() {
+            // 當視窗重新獲得焦點時（用戶關閉檔案選擇對話框）
+            setTimeout(() => {
+                if (isSelectingCover) {
+                    isSelectingCover = false;
+                    console.log('視窗重新獲得焦點，重置標誌');
+                }
+            }, 500);
+        });
         
         coverImageInitialized = true;
         console.log('封面圖片上傳事件已初始化（帶防抖）');
