@@ -170,7 +170,14 @@ function getPortfolioList() {
     
     // 處理資料
     foreach ($portfolios as &$portfolio) {
-        $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
+        // 處理 tags：支持 JSON 數組或逗號分隔字符串
+        if (!empty($portfolio['tags'])) {
+            $decoded = json_decode($portfolio['tags'], true);
+            $portfolio['tags'] = is_array($decoded) ? $decoded : explode(',', $portfolio['tags']);
+        } else {
+            $portfolio['tags'] = [];
+        }
+        
         $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
         $portfolio['is_bookmarked'] = (bool)$portfolio['is_bookmarked'];
@@ -236,7 +243,14 @@ function getPortfolioDetail() {
     }
     
     // 處理資料
-    $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
+    // 處理 tags：支持 JSON 數組或逗號分隔字符串
+    if (!empty($portfolio['tags'])) {
+        $decoded = json_decode($portfolio['tags'], true);
+        $portfolio['tags'] = is_array($decoded) ? $decoded : explode(',', $portfolio['tags']);
+    } else {
+        $portfolio['tags'] = [];
+    }
+    
     $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
     $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
     $portfolio['is_bookmarked'] = (bool)$portfolio['is_bookmarked'];
@@ -383,7 +397,13 @@ function searchPortfolios() {
     
     // 處理資料並計算匹配度
     foreach ($portfolios as &$portfolio) {
-        $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
+        // 處理 tags：支持 JSON 數組或逗號分隔字符串
+        if (!empty($portfolio['tags'])) {
+            $decoded = json_decode($portfolio['tags'], true);
+            $portfolio['tags'] = is_array($decoded) ? $decoded : explode(',', $portfolio['tags']);
+        } else {
+            $portfolio['tags'] = [];
+        }
         $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
         $portfolio['is_bookmarked'] = (bool)$portfolio['is_bookmarked'];
@@ -455,7 +475,13 @@ function getBookmarks() {
     
     // 處理資料
     foreach ($bookmarks as &$bookmark) {
-        $bookmark['tags'] = $bookmark['tags'] ? explode(',', $bookmark['tags']) : [];
+        // 處理 tags：支持 JSON 數組或逗號分隔字符串
+        if (!empty($bookmark['tags'])) {
+            $decoded = json_decode($bookmark['tags'], true);
+            $bookmark['tags'] = is_array($decoded) ? $decoded : explode(',', $bookmark['tags']);
+        } else {
+            $bookmark['tags'] = [];
+        }
         $bookmark['skills'] = $bookmark['skills'] ? explode(',', $bookmark['skills']) : [];
         $bookmark['student_name'] = $bookmark['display_name'] ?: ($bookmark['first_name'] . ' ' . $bookmark['last_name']);
         $bookmark['is_bookmarked'] = true;
@@ -719,7 +745,13 @@ function getAllPublishedPortfolios() {
     
     // 處理資料
     foreach ($portfolios as &$portfolio) {
-        $portfolio['tags'] = $portfolio['tags'] ? explode(',', $portfolio['tags']) : [];
+        // 處理 tags：支持 JSON 數組或逗號分隔字符串
+        if (!empty($portfolio['tags'])) {
+            $decoded = json_decode($portfolio['tags'], true);
+            $portfolio['tags'] = is_array($decoded) ? $decoded : explode(',', $portfolio['tags']);
+        } else {
+            $portfolio['tags'] = [];
+        }
         $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
         
