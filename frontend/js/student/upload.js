@@ -183,21 +183,34 @@ function initCoverImageUpload() {
     const coverImageInput = document.getElementById('coverImageInput');
     
     if (coverUploadArea && coverImageInput) {
+        console.log('✅ 找到封面圖片上傳元素:', { coverUploadArea, coverImageInput });
+        
         // 創建點擊處理函數（使用防抖）
         coverClickHandler = function(event) {
-            // 防止事件冒泡
-            event.preventDefault();
-            event.stopPropagation();
+            console.log('🖱️ coverUploadArea 被點擊');
             
             // 防抖：如果正在處理中，忽略後續點擊
             if (isSelectingCover) {
                 console.log('已在處理中，忽略重複點擊');
+                event.preventDefault();
+                event.stopPropagation();
                 return;
             }
             
+            // 不阻止默認行為，允許正常的用戶互動流程
             isSelectingCover = true;
-            console.log('觸發封面圖片選擇');
-            coverImageInput.click();
+            console.log('觸發封面圖片選擇，input元素:', coverImageInput);
+            
+            // 使用 setTimeout 確保在用戶互動上下文中觸發
+            setTimeout(() => {
+                try {
+                    coverImageInput.click();
+                    console.log('✅ input.click() 已調用');
+                } catch (error) {
+                    console.error('❌ input.click() 失敗:', error);
+                    isSelectingCover = false;
+                }
+            }, 0);
             
             // 2秒後重置標記（縮短等待時間）
             setTimeout(() => {
