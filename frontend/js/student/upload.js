@@ -199,10 +199,11 @@ function initCoverImageUpload() {
             console.log('觸發封面圖片選擇');
             coverImageInput.click();
             
-            // 1秒後重置標記
+            // 5秒後重置標記（給用戶足夠時間選擇檔案）
             setTimeout(() => {
                 isSelectingCover = false;
-            }, 1000);
+                console.log('防抖標誌已重置');
+            }, 5000);
         };
         
         // 添加點擊事件
@@ -222,6 +223,9 @@ function handleCoverImageSelect(event) {
     console.log('event.target:', event.target);
     console.log('event.target.id:', event.target.id);
     console.log('files:', event.target.files);
+    
+    // 立即重置選擇標誌
+    isSelectingCover = false;
     
     const file = event.target.files[0];
     if (!file) {
