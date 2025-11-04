@@ -561,10 +561,17 @@
     
     .hero-title {
         font-size: var(--text-xl, 1.95rem);
+        color: #ffffff !important;  /* 手機版強制白色 */
+    }
+    
+    .hero-title > div {
+        color: #ffffff !important;  /* 第一行文字白色 */
     }
     
     .hero-subtitle {
         font-size: var(--text-sm, 1.365rem);
+        color: #ffffff !important;  /* 手機版強制白色 */
+        opacity: 0.95;  /* 稍微透明以區分層次 */
     }
     
     /* 按鈕更小 */
