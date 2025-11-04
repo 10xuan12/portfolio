@@ -1174,24 +1174,24 @@ async function handleFormSubmit(e) {
         
         if (response.success) {
             showUploadProgress(false);
-            showNotification('作品上傳成功！', 'success');
+            showNotification('作品上傳成功！可以繼續上傳或前往作品集查看', 'success');
             
             // 添加成功動畫
             const uploadContent = document.querySelector('.upload-content');
             if (uploadContent) {
                 uploadContent.classList.add('success-animation');
                 
-                // 重置表單
+                // 重置表單（讓用戶可以繼續上傳）
                 setTimeout(() => {
                     resetForm();
                     uploadContent.classList.remove('success-animation');
                 }, 2000);
             }
             
-            // 跳轉到作品集頁面
-            setTimeout(() => {
-                window.location.href = 'portfolio.html';
-            }, 3000);
+            // ✅ 不自動跳轉，讓用戶停留在上傳頁面
+            // 如果想跳轉，可以手動點擊導航欄的「作品集」
+            console.log('✅ 作品上傳成功！作品 ID:', response.data?.portfolio_id);
+            console.log('📄 停留在上傳頁面，可以繼續上傳更多作品');
         } else {
             throw new Error(response.message || '上傳失敗');
         }
