@@ -219,14 +219,16 @@
                         </div>
                         <span class="portfolio-status status-${portfolio.status}">${getStatusText(portfolio.status)}</span>
                     </div>
-                    <p class="portfolio-description">${portfolio.description}</p>
+                    <p class="portfolio-description">${portfolio.description || '暫無描述'}</p>
                     <div class="portfolio-tags">
-                        ${portfolio.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        ${Array.isArray(portfolio.tags) && portfolio.tags.length > 0 
+                            ? portfolio.tags.map(tag => `<span class="tag">${tag}</span>`).join('') 
+                            : '<span class="text-muted">無標籤</span>'}
                     </div>
                     <div class="portfolio-stats">
-                        <span><i class="fas fa-eye"></i> ${portfolio.views} 次瀏覽</span>
-                        <span><i class="fas fa-heart"></i> ${portfolio.likes} 個讚</span>
-                        <span><i class="fas fa-comment"></i> ${portfolio.comments} 則評論</span>
+                        <span><i class="fas fa-eye"></i> ${portfolio.views || 0} 次瀏覽</span>
+                        <span><i class="fas fa-heart"></i> ${portfolio.likes || 0} 個讚</span>
+                        <span><i class="fas fa-comment"></i> ${portfolio.comments || 0} 則評論</span>
                     </div>
                 </div>
             </div>
