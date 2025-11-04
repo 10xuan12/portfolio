@@ -8,14 +8,22 @@
 
     // 等待 DOM 載入完成
     function initMobileMenu() {
+        console.log('📱 initMobileMenu 被調用');
         const navbar = document.querySelector('.navbar');
-        if (!navbar) return;
+        if (!navbar) {
+            console.log('❌ 找不到 .navbar');
+            return;
+        }
 
         const container = navbar.querySelector('.container');
-        if (!container) return;
+        if (!container) {
+            console.log('❌ 找不到 .container');
+            return;
+        }
 
         // 檢查是否已經有漢堡按鈕
         let menuToggle = navbar.querySelector('.mobile-menu-toggle');
+        console.log('漢堡按鈕存在:', !!menuToggle);
         
         if (!menuToggle) {
             // 創建漢堡選單按鈕
@@ -41,29 +49,46 @@
         // 切換選單
         menuToggle.addEventListener('click', function(e) {
             e.stopPropagation();
+            console.log('🖱️ 漢堡選單被點擊');
             const isActive = menuToggle.classList.contains('active');
+            console.log('選單當前狀態:', isActive ? '開啟' : '關閉');
             
             if (isActive) {
+                console.log('準備關閉選單');
                 closeMenu();
             } else {
+                console.log('準備開啟選單');
                 openMenu();
             }
         });
 
         function openMenu() {
+            console.log('✅ openMenu 執行');
+            console.log('navbarMenu 存在:', !!navbarMenu);
+            console.log('navbarActions 存在:', !!navbarActions);
+            
             menuToggle.classList.add('active');
             menuToggle.setAttribute('aria-label', '關閉選單');
-            if (navbarMenu) navbarMenu.classList.add('active');
-            if (navbarActions) navbarActions.classList.add('active');
+            if (navbarMenu) {
+                navbarMenu.classList.add('active');
+                console.log('✅ navbarMenu 已添加 active');
+            }
+            if (navbarActions) {
+                navbarActions.classList.add('active');
+                console.log('✅ navbarActions 已添加 active');
+            }
             document.body.style.overflow = 'hidden'; // 防止背景滾動
+            console.log('✅ 選單已開啟');
         }
 
         function closeMenu() {
+            console.log('🔽 closeMenu 執行');
             menuToggle.classList.remove('active');
             menuToggle.setAttribute('aria-label', '開啟選單');
             if (navbarMenu) navbarMenu.classList.remove('active');
             if (navbarActions) navbarActions.classList.remove('active');
             document.body.style.overflow = ''; // 恢復滾動
+            console.log('🔽 選單已關閉');
         }
 
         // 點擊選單項目後關閉選單
