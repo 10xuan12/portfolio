@@ -182,6 +182,14 @@ function getPortfolioList() {
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
         $portfolio['is_bookmarked'] = (bool)$portfolio['is_bookmarked'];
         
+        // 添加前端期待的欄位別名
+        $portfolio['author'] = $portfolio['student_name'];  // 前端期待 author
+        $portfolio['department'] = $portfolio['major'] ?: '未設定';  // 前端期待 department
+        $portfolio['image'] = $portfolio['cover_image'];  // 前端可能期待 image
+        $portfolio['views'] = (int)$portfolio['view_count'];  // 統一命名
+        $portfolio['likes'] = (int)$portfolio['like_count'];
+        $portfolio['comments'] = (int)$portfolio['comment_count'];
+        
         // 處理頭像路徑
         if (!empty($portfolio['avatar_url']) && strpos($portfolio['avatar_url'], 'http') !== 0) {
             $portfolio['avatar_url'] = '/' . ltrim($portfolio['avatar_url'], '/');
@@ -408,6 +416,14 @@ function searchPortfolios() {
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
         $portfolio['is_bookmarked'] = (bool)$portfolio['is_bookmarked'];
         
+        // 添加前端期待的欄位別名
+        $portfolio['author'] = $portfolio['student_name'];
+        $portfolio['department'] = $portfolio['major'] ?: '未設定';
+        $portfolio['image'] = $portfolio['cover_image'];
+        $portfolio['views'] = (int)$portfolio['view_count'];
+        $portfolio['likes'] = (int)$portfolio['like_count'];
+        $portfolio['comments'] = (int)$portfolio['comment_count'];
+        
         // 計算匹配度
         $portfolio['match_score'] = calculateMatchScore($portfolio, $query, $skills, $department, $grade);
     }
@@ -485,6 +501,14 @@ function getBookmarks() {
         $bookmark['skills'] = $bookmark['skills'] ? explode(',', $bookmark['skills']) : [];
         $bookmark['student_name'] = $bookmark['display_name'] ?: ($bookmark['first_name'] . ' ' . $bookmark['last_name']);
         $bookmark['is_bookmarked'] = true;
+        
+        // 添加前端期待的欄位別名
+        $bookmark['author'] = $bookmark['student_name'];
+        $bookmark['department'] = $bookmark['major'] ?: '未設定';
+        $bookmark['image'] = $bookmark['cover_image'];
+        $bookmark['views'] = (int)$bookmark['view_count'];
+        $bookmark['likes'] = (int)$bookmark['like_count'];
+        $bookmark['comments'] = (int)$bookmark['comment_count'];
         
         // 處理頭像路徑
         if (!empty($bookmark['avatar_url']) && strpos($bookmark['avatar_url'], 'http') !== 0) {
@@ -754,6 +778,14 @@ function getAllPublishedPortfolios() {
         }
         $portfolio['skills'] = $portfolio['skills'] ? explode(',', $portfolio['skills']) : [];
         $portfolio['student_name'] = $portfolio['display_name'] ?: ($portfolio['first_name'] . ' ' . $portfolio['last_name']);
+        
+        // 添加前端期待的欄位別名
+        $portfolio['author'] = $portfolio['student_name'];
+        $portfolio['department'] = $portfolio['major'] ?: '未設定';
+        $portfolio['image'] = $portfolio['cover_image'];
+        $portfolio['views'] = (int)$portfolio['view_count'];
+        $portfolio['likes'] = (int)$portfolio['like_count'];
+        $portfolio['comments'] = (int)$portfolio['comment_count'];
         
         // 處理封面圖片路徑
         $coverImage = $portfolio['cover_image'];
