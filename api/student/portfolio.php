@@ -430,7 +430,9 @@ function createPortfolio($data) {
         ");
         
         $publishedAt = $status === 'published' ? date('Y-m-d H:i:s') : null;
-        $stmt->bind_param("isssisss", $userId, $title, $description, $categoryId, $tags, $coverImage, $status, $publishedAt);
+        // i=int, s=string
+        // user_id(i), title(s), description(s), category_id(i), tags(s), cover_image(s), status(s), published_at(s)
+        $stmt->bind_param("ississss", $userId, $title, $description, $categoryId, $tags, $coverImage, $status, $publishedAt);
         
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
