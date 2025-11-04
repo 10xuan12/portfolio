@@ -46,12 +46,22 @@ function uploadToCloudinary($filePath, $folder = 'portfolio') {
             return null;
         }
         
-        // 配置 Cloudinary
-        \Cloudinary\Cloudinary::config([
+        // 配置 Cloudinary（使用正確的 v2 API）
+        $cloudName = getenv('CLOUDINARY_CLOUD_NAME');
+        $apiKey = getenv('CLOUDINARY_API_KEY');
+        $apiSecret = getenv('CLOUDINARY_API_SECRET');
+        
+        if (empty($cloudName) || empty($apiKey) || empty($apiSecret)) {
+            error_log('Cloudinary 環境變數未完整設定');
+            return null;
+        }
+        
+        // 創建 Cloudinary 實例
+        $cloudinary = new \Cloudinary\Cloudinary([
             'cloud' => [
-                'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
-                'api_key' => getenv('CLOUDINARY_API_KEY'),
-                'api_secret' => getenv('CLOUDINARY_API_SECRET'),
+                'cloud_name' => $cloudName,
+                'api_key' => $apiKey,
+                'api_secret' => $apiSecret
             ],
             'url' => [
                 'secure' => true
@@ -59,7 +69,7 @@ function uploadToCloudinary($filePath, $folder = 'portfolio') {
         ]);
         
         // 上傳圖片
-        $result = \Cloudinary\Uploader::upload($filePath, [
+        $result = $cloudinary->uploadApi()->upload($filePath, [
             'folder' => $folder,
             'resource_type' => 'image',
             'transformation' => [

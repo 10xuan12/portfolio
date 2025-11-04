@@ -168,8 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 防止重複初始化的標記
 let coverImageInitialized = false;
-let coverClickHandler = null;
-let isSelectingCover = false;
 
 // 初始化封面圖片上傳
 function initCoverImageUpload() {
@@ -185,65 +183,12 @@ function initCoverImageUpload() {
     if (coverUploadArea && coverImageInput) {
         console.log('✅ 找到封面圖片上傳元素:', { coverUploadArea, coverImageInput });
         
-        // 創建點擊處理函數（使用防抖）
-        coverClickHandler = function(event) {
-            console.log('🖱️ coverUploadArea 被點擊');
-            
-            // 防抖：如果正在處理中，忽略後續點擊
-            if (isSelectingCover) {
-                console.log('已在處理中，忽略重複點擊');
-                event.preventDefault();
-                event.stopPropagation();
-                return;
-            }
-            
-            // 不阻止默認行為，允許正常的用戶互動流程
-            isSelectingCover = true;
-            console.log('觸發封面圖片選擇，input元素:', coverImageInput);
-            
-            // 使用 setTimeout 確保在用戶互動上下文中觸發
-            setTimeout(() => {
-                try {
-                    coverImageInput.click();
-                    console.log('✅ input.click() 已調用');
-                } catch (error) {
-                    console.error('❌ input.click() 失敗:', error);
-                    isSelectingCover = false;
-                }
-            }, 0);
-            
-            // 2秒後重置標記（縮短等待時間）
-            setTimeout(() => {
-                isSelectingCover = false;
-                console.log('防抖標誌已自動重置');
-            }, 2000);
-        };
-        
-        // 添加點擊事件
-        coverUploadArea.addEventListener('click', coverClickHandler);
-        
-        // 處理檔案選擇
+        // 由於使用了 <label for="coverImageInput">，瀏覽器會自動處理點擊
+        // 我們只需要監聽檔案選擇事件
         coverImageInput.addEventListener('change', handleCoverImageSelect);
         
-        // 監聽 input 的 focus 事件，當對話框關閉時重置標誌
-        coverImageInput.addEventListener('cancel', function() {
-            isSelectingCover = false;
-            console.log('用戶取消選擇，重置標誌');
-        });
-        
-        // 監聽點擊事件後的 focus 變化
-        window.addEventListener('focus', function() {
-            // 當視窗重新獲得焦點時（用戶關閉檔案選擇對話框）
-            setTimeout(() => {
-                if (isSelectingCover) {
-                    isSelectingCover = false;
-                    console.log('視窗重新獲得焦點，重置標誌');
-                }
-            }, 500);
-        });
-        
         coverImageInitialized = true;
-        console.log('封面圖片上傳事件已初始化（帶防抖）');
+        console.log('封面圖片上傳事件已初始化（使用原生 label 觸發）');
     }
 }
 
@@ -253,9 +198,6 @@ function handleCoverImageSelect(event) {
     console.log('event.target:', event.target);
     console.log('event.target.id:', event.target.id);
     console.log('files:', event.target.files);
-    
-    // 立即重置選擇標誌
-    isSelectingCover = false;
     
     const file = event.target.files[0];
     if (!file) {
