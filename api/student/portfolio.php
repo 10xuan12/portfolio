@@ -360,7 +360,10 @@ function createPortfolio($data) {
     // 如果是 multipart 請求，從 $_POST 讀取資料
     if ($isMultipart && !empty($_POST)) {
         $data = array_merge($data, $_POST);
+        error_log('createPortfolio - Multipart 請求，$_POST 內容: ' . json_encode($_POST, JSON_UNESCAPED_UNICODE));
     }
+    
+    error_log('createPortfolio - 合併後的 $data: ' . json_encode($data, JSON_UNESCAPED_UNICODE));
     
     $userId = getUserId();
     error_log('createPortfolio - getUserId() 返回: ' . ($userId ?? 'null'));
@@ -380,11 +383,14 @@ function createPortfolio($data) {
     
     // 處理 tags - 如果是陣列，轉換為 JSON 字符串
     $tagsData = $data['tags'] ?? '';
+    error_log('createPortfolio - 原始 tags 資料: ' . var_export($tagsData, true) . ' (type: ' . gettype($tagsData) . ')');
+    
     if (is_array($tagsData)) {
         $tags = json_encode($tagsData, JSON_UNESCAPED_UNICODE);
     } else if (is_string($tagsData) && !empty($tagsData)) {
-        // 如果已經是 JSON 字符串或普通字符串，直接使用
-        $tags = $tagsData;
+        // 如果是逗號分隔的字符串，轉換為 JSON 數組
+        $tagsArray = array_map('trim', explode(',', $tagsData));
+        $tags = json_encode($tagsArray, JSON_UNESCAPED_UNICODE);
     } else {
         $tags = '[]';
     }
@@ -392,7 +398,9 @@ function createPortfolio($data) {
     $status = sanitizeInput($data['status'] ?? 'draft');
     $coverImage = sanitizeInput($data['cover_image'] ?? '');
     
-    error_log('最終要插入的: title=' . $title . ', description=' . $description . ', cover_image=' . $coverImage);
+    error_log('createPortfolio - 原始 cover_image: ' . var_export($data['cover_image'] ?? 'UNDEFINED', true));
+    error_log('createPortfolio - 處理後 tags: ' . $tags);
+    error_log('最終要插入的: title=' . $title . ', description=' . $description . ', cover_image=' . $coverImage . ', tags=' . $tags);
     
     if (empty($title) || empty($description)) {
         error_log('驗證失敗: title=' . ($title ?: 'EMPTY') . ', description=' . ($description ?: 'EMPTY'));
