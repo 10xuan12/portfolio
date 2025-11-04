@@ -486,17 +486,27 @@ if (typeof window.ApiService === 'undefined') {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
 
             // 解析資料
-            let title, description, category, tags, status, files = [], userId = null;
+            let title, description, category, tags, status, coverImage, files = [], userId = null;
             if (data instanceof FormData) {
                 title = data.get('title') || '';
                 description = data.get('description') || '';
                 category = data.get('category') || '';
                 status = data.get('status') || 'draft';
+                coverImage = data.get('cover_image') || '';  // ✅ 讀取封面圖片
                 userId = data.get('user_id') || user?.id; // 優先使用 FormData 中的 user_id
-                try {
-                    const tagsRaw = data.get('tags');
-                    tags = Array.isArray(tagsRaw) ? tagsRaw : JSON.parse(tagsRaw || '[]');
-                } catch (_) {
+                
+                // 處理 tags：可能是逗號分隔字符串或 JSON 數組
+                const tagsRaw = data.get('tags');
+                if (Array.isArray(tagsRaw)) {
+                    tags = tagsRaw;
+                } else if (typeof tagsRaw === 'string' && tagsRaw) {
+                    // 嘗試解析為 JSON，如果失敗則按逗號分隔
+                    try {
+                        tags = JSON.parse(tagsRaw);
+                    } catch (_) {
+                        tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t);
+                    }
+                } else {
                     tags = [];
                 }
                 // 收集檔案（files[0], files[1], ... 或 files）
@@ -509,29 +519,36 @@ if (typeof window.ApiService === 'undefined') {
                     }
                 });
             } else {
-                ({ title = '', description = '', category = '', tags = [], status = 'draft', user_id: userId } = data || {});
+                ({ title = '', description = '', category = '', tags = [], status = 'draft', cover_image: coverImage = '', user_id: userId } = data || {});
                 userId = userId || user?.id;
             }
 
             // 檢查用戶ID
             console.log('createPortfolio - userId:', userId);
             console.log('createPortfolio - user:', user);
+            console.log('createPortfolio - 封面圖片:', coverImage);
+            console.log('createPortfolio - 標籤:', tags);
             if (!userId) {
                 throw new Error('無法獲取用戶ID，請重新登入');
             }
             
             // 第一步：建立作品（JSON）
+            const requestBody = {
+                action: 'create',
+                title,
+                description,
+                category,
+                tags: Array.isArray(tags) ? tags.join(',') : String(tags || ''),
+                cover_image: coverImage || '',  // ✅ 傳遞封面圖片 URL
+                status,
+                user_id: userId
+            };
+            
+            console.log('createPortfolio - 準備傳送的資料:', requestBody);
+            
             const createResp = await this.request('student/portfolio.php', {
                 method: 'POST',
-                body: JSON.stringify({
-                    action: 'create',
-                    title,
-                    description,
-                    category,
-                    tags: Array.isArray(tags) ? tags.join(',') : String(tags || ''),
-                    status,
-                    user_id: userId
-                })
+                body: JSON.stringify(requestBody)
             });
 
             console.log('createPortfolio - createResp:', createResp);
