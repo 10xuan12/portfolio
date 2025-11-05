@@ -109,7 +109,7 @@
     .featured-carousel-wrapper {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 6px;
         transform: none !important;
     }
     
