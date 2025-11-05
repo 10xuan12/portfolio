@@ -109,7 +109,8 @@
     .featured-carousel-wrapper {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
+        column-gap: 4px; /* 更緊密的左右間距 */
+        row-gap: 8px;
         transform: none !important;
     }
     
@@ -119,6 +120,7 @@
         max-height: 220px;
         flex-direction: column;
         aspect-ratio: 3 / 2;
+        margin: 0; /* 確保卡片無額外外距 */
     }
     
     /* 隱藏導航按鈕和指示器 */
@@ -132,6 +134,7 @@
         overflow: visible;
         box-shadow: none;
         background: transparent;
+        padding: 0; /* 移除任何內距以縮小間距 */
     }
 }
 
