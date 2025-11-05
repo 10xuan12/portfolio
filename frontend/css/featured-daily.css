@@ -108,7 +108,7 @@
 @media (min-width: 768px) {
     .featured-carousel-wrapper {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         column-gap: 4px; /* 更緊密的左右間距 */
         row-gap: 8px;
         transform: none !important;
@@ -121,6 +121,7 @@
         flex-direction: column;
         aspect-ratio: 3 / 2;
         margin: 0; /* 確保卡片無額外外距 */
+        width: 100%; /* 撐滿 grid 欄位，避免留下多餘空白 */
     }
     
     /* 隱藏導航按鈕和指示器 */
