@@ -108,17 +108,20 @@
 @media (min-width: 768px) {
     .featured-carousel-wrapper {
         display: grid !important;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 4px; /* 更緊密的左右間距 */
+        row-gap: 8px;
         transform: none !important;
     }
     
     .featured-card {
         min-width: auto;
-        min-height: 200px;
-        max-height: 200px;
+        min-height: 220px;
+        max-height: 220px;
         flex-direction: column;
-        aspect-ratio: 1;
+        aspect-ratio: 3 / 2;
+        margin: 0; /* 確保卡片無額外外距 */
+        width: 100%; /* 撐滿 grid 欄位，避免留下多餘空白 */
     }
     
     /* 隱藏導航按鈕和指示器 */
@@ -132,6 +135,7 @@
         overflow: visible;
         box-shadow: none;
         background: transparent;
+        padding: 0; /* 移除任何內距以縮小間距 */
     }
 }
 
@@ -147,7 +151,7 @@
 @media (min-width: 768px) {
     .featured-card-image {
         width: 100%;
-        height: 120px;
+        height: 150px;
         flex-shrink: 0;
     }
 }
