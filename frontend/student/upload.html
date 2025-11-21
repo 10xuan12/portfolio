@@ -128,8 +128,8 @@
 
                     <!-- 步驟 2: 上傳檔案 -->
                     <div class="form-section" id="step2Content">
-                        <h3>上傳作品檔案</h3>
-                        <p style="color: #718096; margin-bottom: 2rem; font-size: 0.95rem;">支援多種格式，單個檔案最大 50MB</p>
+                        <h3>上傳作品檔案或連結</h3>
+                        <p style="color: #718096; margin-bottom: 2rem; font-size: 0.95rem;">您可以上傳檔案、輸入作品連結，或兩者都提供。至少需要選擇其中一種方式。</p>
                         
                         <!-- 封面圖片上傳 -->
                         <div class="form-group" style="margin-bottom: 2rem;">
@@ -172,6 +172,29 @@
                                 <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">已選標籤：</small>
                                 <div class="selected-tags-list" id="selectedTagsList"></div>
                             </div>
+                        </div>
+                        
+                        <!-- 作品連結 -->
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label for="portfolioUrl">
+                                作品連結 
+                                <span style="color: #718096; font-weight: 400; font-size: 0.85rem;">（選填，但需與檔案至少選一個）</span>
+                            </label>
+                            <input type="url" id="portfolioUrl" name="portfolioUrl" placeholder="https://example.com 或 https://your-project.vercel.app" pattern="https?://.*">
+                            <small style="color: #718096; font-size: 0.85rem; display: block; margin-top: 0.5rem;">
+                                輸入作品的線上展示連結，例如：網站、Demo、線上作品等。如果只有連結沒有檔案，也可以只填寫連結。
+                            </small>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 2rem 0; color: #718096; font-size: 0.9rem;">
+                            <i class="fas fa-minus" style="margin: 0 1rem;"></i>
+                            <span>或</span>
+                            <i class="fas fa-minus" style="margin: 0 1rem;"></i>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label>上傳檔案 <span style="color: #718096; font-weight: 400; font-size: 0.85rem;">（選填，但需與連結至少選一個）</span></label>
+                            <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 1rem;">支援多種格式，單個檔案最大 50MB</small>
                         </div>
                         
                         <div class="upload-container">
@@ -253,6 +276,10 @@
                                     <div class="preview-item">
                                         <label>標籤</label>
                                         <div class="preview-tags" id="previewTags"></div>
+                                    </div>
+                                    <div class="preview-item" id="previewUrlItem" style="display: none;">
+                                        <label>作品連結</label>
+                                        <div class="preview-value" id="previewUrl"></div>
                                     </div>
                                 </div>
                             </div>

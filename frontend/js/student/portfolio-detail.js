@@ -253,21 +253,68 @@ function updatePortfolioDisplay() {
     const tagsContainer = document.querySelector('.portfolio-tags');
     tagsContainer.innerHTML = (portfolioDetail.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('');
 
+    // 作品連結
+    const portfolioUrl = portfolioDetail.url || portfolioDetail.portfolio_url;
+    const portfolioFilesSection = document.querySelector('.portfolio-files');
+    if (portfolioUrl && portfolioFilesSection) {
+        // 檢查是否已經有連結顯示區域
+        let urlSection = document.getElementById('portfolioUrlSection');
+        if (!urlSection) {
+            urlSection = document.createElement('div');
+            urlSection.id = 'portfolioUrlSection';
+            urlSection.className = 'portfolio-url-section';
+            urlSection.innerHTML = `
+                <h3 class="files-title">作品連結</h3>
+                <div class="portfolio-url-item">
+                    <a href="${portfolioUrl}" target="_blank" rel="noopener noreferrer" class="portfolio-url-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>${portfolioUrl}</span>
+                    </a>
+                </div>
+            `;
+            portfolioFilesSection.parentNode.insertBefore(urlSection, portfolioFilesSection);
+        } else {
+            urlSection.querySelector('.portfolio-url-link').href = portfolioUrl;
+            urlSection.querySelector('.portfolio-url-link span').textContent = portfolioUrl;
+        }
+    } else {
+        // 如果沒有連結，移除連結區域
+        const urlSection = document.getElementById('portfolioUrlSection');
+        if (urlSection) {
+            urlSection.remove();
+        }
+    }
+    
     // 檔案
     const fileList = document.getElementById('fileList');
     if (fileList && Array.isArray(portfolioDetail.files)) {
-        fileList.innerHTML = portfolioDetail.files.map(f => `
+        fileList.innerHTML = portfolioDetail.files.map((f, index) => {
+            const fileName = f.file_name || '';
+            const fileSize = f.file_size || 0;
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+            const fileIcon = getFileIconByExtension(fileExtension);
+            const canPreview = canPreviewFile(fileExtension);
+            
+            return `
             <div class="file-item">
-                <div class="file-icon"><i class="fas fa-file"></i></div>
+                <div class="file-icon"><i class="${fileIcon}"></i></div>
                 <div class="file-info">
-                    <div class="file-name">${f.file_name || ''}</div>
-                    <div class="file-size">${(f.file_size || 0)} B</div>
+                    <div class="file-name">${fileName}</div>
+                    <div class="file-size">${formatFileSize(fileSize)}</div>
                 </div>
-                <button class="file-download" onclick="downloadFile('${(f.file_name || '').replace(/'/g,"\'")}')">
-                    <i class="fas fa-download"></i>
-                </button>
+                <div class="file-actions">
+                    ${canPreview ? `
+                    <button class="file-preview-btn" onclick="previewPortfolioFile('${fileName.replace(/'/g, "\\'")}', ${index})" title="預覽文件">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ` : ''}
+                    <button class="file-download" onclick="downloadFile('${fileName.replace(/'/g, "\\'")}')" title="下載文件">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     // 作者卡片
@@ -508,6 +555,242 @@ async function deletePortfolio() {
             Utils.showNotification('刪除失敗，請稍後再試', 'error');
         }
     }
+}
+
+// 根據文件擴展名獲取圖標
+function getFileIconByExtension(extension) {
+    const iconMap = {
+        'pdf': 'fas fa-file-pdf',
+        'jpg': 'fas fa-file-image',
+        'jpeg': 'fas fa-file-image',
+        'png': 'fas fa-file-image',
+        'gif': 'fas fa-file-image',
+        'svg': 'fas fa-file-image',
+        'webp': 'fas fa-file-image',
+        'txt': 'fas fa-file-alt',
+        'md': 'fas fa-file-alt',
+        'doc': 'fas fa-file-word',
+        'docx': 'fas fa-file-word',
+        'xls': 'fas fa-file-excel',
+        'xlsx': 'fas fa-file-excel',
+        'ppt': 'fas fa-file-powerpoint',
+        'pptx': 'fas fa-file-powerpoint',
+        'zip': 'fas fa-file-archive',
+        'rar': 'fas fa-file-archive',
+        '7z': 'fas fa-file-archive',
+        'mp4': 'fas fa-file-video',
+        'avi': 'fas fa-file-video',
+        'mov': 'fas fa-file-video',
+        'mp3': 'fas fa-file-audio',
+        'wav': 'fas fa-file-audio',
+        'js': 'fas fa-file-code',
+        'html': 'fas fa-file-code',
+        'css': 'fas fa-file-code',
+        'json': 'fas fa-file-code',
+        'xml': 'fas fa-file-code'
+    };
+    return iconMap[extension] || 'fas fa-file';
+}
+
+// 檢查文件是否可以預覽
+function canPreviewFile(extension) {
+    const previewableExtensions = [
+        'pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', // 圖片和 PDF
+        'txt', 'md', 'json', 'xml', 'csv', 'log', 'ini', 'conf', 'config', // 文字檔
+        'js', 'jsx', 'ts', 'tsx', 'html', 'htm', 'css', 'scss', 'sass', 'less', // 程式碼
+        'php', 'py', 'java', 'cpp', 'c', 'h', 'hpp', 'cs', 'go', 'rs', 'rb', // 程式碼
+        'swift', 'kt', 'dart', 'sql', 'sh', 'bash', 'yaml', 'yml', 'toml', // 程式碼
+        'mp4', 'avi', 'mov', 'wmv', 'webm', // 影片
+        'mp3', 'wav', 'flac', 'aac', 'ogg' // 音頻
+    ];
+    return previewableExtensions.includes(extension);
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// 預覽作品文件
+async function previewPortfolioFile(filename, fileIndex) {
+    try {
+        const modal = document.getElementById('filePreviewModal');
+        const modalTitle = document.getElementById('previewModalTitle');
+        const modalBody = document.getElementById('previewModalBody');
+        
+        if (!modal || !modalTitle || !modalBody) {
+            Utils.showNotification('預覽功能初始化失敗', 'error');
+            return;
+        }
+        
+        // 設置標題
+        modalTitle.textContent = filename;
+        
+        // 顯示模態框
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // 顯示載入中
+        modalBody.innerHTML = '<div class="preview-loading"><i class="fas fa-spinner fa-spin"></i> 載入中...</div>';
+        
+        // 獲取文件 URL
+        const svc = window.apiService || window.initializeApiService?.();
+        const result = await svc.request('student/portfolio.php', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'get_file_url',
+                portfolio_id: portfolioDetail.id,
+                filename: filename
+            })
+        });
+        
+        if ((result.status === 200 || result.success) && result.data && result.data.file_url) {
+            const fileUrl = result.data.file_url;
+            const fileExtension = filename.split('.').pop().toLowerCase();
+            
+            // 根據文件類型顯示預覽
+            if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(fileExtension)) {
+                previewImageFromUrl(fileUrl, filename, modalBody);
+            } else if (fileExtension === 'pdf') {
+                previewPDFFromUrl(fileUrl, filename, modalBody);
+            } else if (['txt', 'md', 'json', 'xml', 'csv', 'log', 'ini', 'conf', 'config'].includes(fileExtension) ||
+                       ['js', 'jsx', 'ts', 'tsx', 'html', 'htm', 'css', 'scss', 'sass', 'less',
+                        'php', 'py', 'java', 'cpp', 'c', 'h', 'hpp', 'cs', 'go', 'rs', 'rb',
+                        'swift', 'kt', 'dart', 'sql', 'sh', 'bash', 'yaml', 'yml', 'toml'].includes(fileExtension)) {
+                previewTextFileFromUrl(fileUrl, filename, fileExtension, modalBody);
+            } else if (['mp4', 'avi', 'mov', 'wmv', 'webm'].includes(fileExtension)) {
+                previewVideoFromUrl(fileUrl, filename, modalBody);
+            } else if (['mp3', 'wav', 'flac', 'aac', 'ogg'].includes(fileExtension)) {
+                previewAudioFromUrl(fileUrl, filename, modalBody);
+            } else {
+                previewUnsupportedFile(filename, modalBody);
+            }
+        } else {
+            throw new Error(result.message || '無法獲取文件 URL');
+        }
+        
+    } catch (error) {
+        console.error('預覽文件失敗:', error);
+        const modalBody = document.getElementById('previewModalBody');
+        if (modalBody) {
+            modalBody.innerHTML = '<div class="preview-error">無法載入文件預覽：' + error.message + '</div>';
+        }
+        Utils.showNotification('預覽文件失敗，請稍後再試', 'error');
+    }
+}
+
+// 從 URL 預覽圖片
+function previewImageFromUrl(url, filename, container) {
+    container.innerHTML = `
+        <div class="preview-image-container">
+            <img src="${url}" alt="${filename}" class="preview-image" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'preview-error\\'>無法載入圖片</div>'">
+        </div>
+    `;
+}
+
+// 從 URL 預覽 PDF
+function previewPDFFromUrl(url, filename, container) {
+    container.innerHTML = `
+        <div class="preview-pdf-container">
+            <iframe src="${url}" class="preview-pdf" frameborder="0"></iframe>
+            <div class="preview-pdf-fallback">
+                <p>如果 PDF 無法顯示，請<a href="${url}" download="${filename}" target="_blank">點擊這裡下載</a></p>
+            </div>
+        </div>
+    `;
+}
+
+// 從 URL 預覽文字檔
+async function previewTextFileFromUrl(url, filename, extension, container) {
+    try {
+        const response = await fetch(url);
+        const content = await response.text();
+        
+        const maxLength = 10000;
+        const displayContent = content.length > maxLength 
+            ? content.substring(0, maxLength) + '\n\n... (文件過大，僅顯示前 ' + maxLength + ' 字元)'
+            : content;
+        
+        container.innerHTML = `
+            <div class="preview-text-container">
+                <div class="preview-text-header">
+                    <span class="preview-file-info">${extension.toUpperCase()} 文件</span>
+                    <button class="btn-copy-text" onclick="copyTextToClipboard(\`${content.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
+                        <i class="fas fa-copy"></i> 複製
+                    </button>
+                </div>
+                <pre class="preview-text-content"><code>${escapeHtml(displayContent)}</code></pre>
+                ${content.length > maxLength ? '<div class="preview-text-warning">文件過大，僅顯示部分內容</div>' : ''}
+            </div>
+        `;
+    } catch (error) {
+        container.innerHTML = '<div class="preview-error">無法載入文字文件</div>';
+    }
+}
+
+// 從 URL 預覽影片
+function previewVideoFromUrl(url, filename, container) {
+    container.innerHTML = `
+        <div class="preview-video-container">
+            <video controls class="preview-video">
+                <source src="${url}" type="video/${filename.split('.').pop()}">
+                您的瀏覽器不支援影片播放
+            </video>
+        </div>
+    `;
+}
+
+// 從 URL 預覽音頻
+function previewAudioFromUrl(url, filename, container) {
+    container.innerHTML = `
+        <div class="preview-audio-container">
+            <audio controls class="preview-audio">
+                <source src="${url}" type="audio/${filename.split('.').pop()}">
+                您的瀏覽器不支援音頻播放
+            </audio>
+            <div class="preview-audio-info">
+                <p><strong>檔案名稱：</strong>${filename}</p>
+            </div>
+        </div>
+    `;
+}
+
+// 預覽不支援的文件類型
+function previewUnsupportedFile(filename, container) {
+    const extension = filename.split('.').pop().toLowerCase();
+    container.innerHTML = `
+        <div class="preview-unsupported">
+            <div class="preview-unsupported-icon">
+                <i class="${getFileIconByExtension(extension)}"></i>
+            </div>
+            <h4>此文件類型無法預覽</h4>
+            <p>文件類型：${extension.toUpperCase()}</p>
+            <p>請使用下載功能獲取文件</p>
+        </div>
+    `;
+}
+
+// 關閉文件預覽
+function closeFilePreview() {
+    const modal = document.getElementById('filePreviewModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// 複製文字到剪貼板
+function copyTextToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        Utils.showNotification('已複製到剪貼板', 'success');
+    }, function(err) {
+        console.error('複製失敗:', err);
+        Utils.showNotification('複製失敗', 'error');
+    });
 }
 
 // 下載檔案

@@ -212,5 +212,21 @@
             }
         });
     </script>
+
+    <!-- 文件預覽模態框 -->
+    <div id="filePreviewModal" class="file-preview-modal" style="display: none;">
+        <div class="file-preview-modal-overlay" onclick="closeFilePreview()"></div>
+        <div class="file-preview-modal-content">
+            <div class="file-preview-modal-header">
+                <h3 id="previewModalTitle">文件預覽</h3>
+                <button class="file-preview-close" onclick="closeFilePreview()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="file-preview-modal-body" id="previewModalBody">
+                <!-- 預覽內容將在這裡動態載入 -->
+            </div>
+        </div>
+    </div>
 </body>
 </html> 

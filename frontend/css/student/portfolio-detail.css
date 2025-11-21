@@ -400,6 +400,27 @@
     flex: 0 0 auto;
 }
 
+.portfolio-files .file-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.portfolio-files .file-preview-btn {
+    background: #eef2ff;
+    color: #4f46e5;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.portfolio-files .file-preview-btn:hover {
+    background: #e0e7ff;
+    transform: scale(1.05);
+}
+
 .portfolio-files .file-download {
     background: #eef2ff;
     color: #4f46e5;
@@ -407,9 +428,369 @@
     padding: 8px 10px;
     border-radius: 10px;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.portfolio-files .file-download:hover { background: #e0e7ff; }
+.portfolio-files .file-download:hover {
+    background: #e0e7ff;
+    transform: scale(1.05);
+}
+
+/* 作品連結區域 */
+.portfolio-url-section {
+    margin-bottom: 2rem;
+}
+
+.portfolio-url-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.portfolio-url-item:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+}
+
+.portfolio-url-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 500;
+    word-break: break-all;
+    transition: all 0.3s ease;
+}
+
+.portfolio-url-link:hover {
+    color: #4338ca;
+    text-decoration: underline;
+}
+
+.portfolio-url-link i {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.portfolio-url-link span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 文件預覽模態框 */
+.file-preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.file-preview-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.file-preview-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    z-index: 10001;
+    animation: slideUp 0.3s ease;
+}
+
+.file-preview-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.file-preview-modal-header h3 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.file-preview-close {
+    background: #f7fafc;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4a5568;
+    transition: all 0.3s ease;
+}
+
+.file-preview-close:hover {
+    background: #edf2f7;
+    color: #2d3748;
+    transform: rotate(90deg);
+}
+
+.file-preview-modal-body {
+    padding: 2rem;
+    overflow-y: auto;
+    flex: 1;
+    max-height: calc(90vh - 80px);
+}
+
+/* 預覽載入中 */
+.preview-loading {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+}
+
+.preview-loading i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* 預覽錯誤 */
+.preview-error {
+    text-align: center;
+    padding: 3rem;
+    color: #e53e3e;
+}
+
+/* 圖片預覽 */
+.preview-image-container {
+    text-align: center;
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.preview-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* PDF 預覽 */
+.preview-pdf-container {
+    width: 100%;
+    height: 70vh;
+    position: relative;
+}
+
+.preview-pdf {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+}
+
+.preview-pdf-fallback {
+    margin-top: 1rem;
+    text-align: center;
+    padding: 1rem;
+    background: #f7fafc;
+    border-radius: 8px;
+}
+
+.preview-pdf-fallback a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.preview-pdf-fallback a:hover {
+    text-decoration: underline;
+}
+
+/* 文字檔預覽 */
+.preview-text-container {
+    width: 100%;
+}
+
+.preview-text-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.preview-file-info {
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+.btn-copy-text {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-copy-text:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.preview-text-content {
+    background: #1a202c;
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.preview-text-content code {
+    color: #e2e8f0;
+    white-space: pre;
+}
+
+.preview-text-warning {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* 影片預覽 */
+.preview-video-container {
+    text-align: center;
+}
+
+.preview-video {
+    width: 100%;
+    max-height: 70vh;
+    border-radius: 8px;
+}
+
+/* 音頻預覽 */
+.preview-audio-container {
+    text-align: center;
+}
+
+.preview-audio {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.preview-audio-info {
+    background: #f7fafc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.preview-audio-info p {
+    margin: 0.5rem 0;
+    color: #4a5568;
+}
+
+/* 不支援的文件類型 */
+.preview-unsupported {
+    text-align: center;
+    padding: 3rem;
+}
+
+.preview-unsupported-icon {
+    font-size: 4rem;
+    color: #cbd5e0;
+    margin-bottom: 1.5rem;
+}
+
+.preview-unsupported h4 {
+    color: #2d3748;
+    margin-bottom: 1rem;
+}
+
+.preview-unsupported p {
+    color: #718096;
+    margin: 0.5rem 0;
+}
+
+/* 動畫 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 響應式設計 - 預覽模態框 */
+@media (max-width: 768px) {
+    .file-preview-modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .file-preview-modal-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .file-preview-modal-body {
+        padding: 1.5rem;
+    }
+    
+    .preview-text-content {
+        font-size: 0.8rem;
+        padding: 1rem;
+    }
+}
 
 /* 側邊欄 */
 .sidebar {

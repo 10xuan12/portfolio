@@ -541,13 +541,29 @@ function validateStep1() {
     return true;
 }
 
-// 驗證步驟2 - 檔案上傳
+// 驗證步驟2 - 檔案上傳或連結
 function validateStep2() {
     console.log('驗證步驟2開始，檔案數量:', uploadedFiles.length);
     
-    // 檢查 uploadedFiles 陣列而不是 fileInput.files
-    if (uploadedFiles.length === 0) {
-        showNotification('請至少上傳一個檔案', 'error');
+    // 收集作品連結
+    const portfolioUrl = document.getElementById('portfolioUrl');
+    let hasUrl = false;
+    if (portfolioUrl && portfolioUrl.value && portfolioUrl.value.trim()) {
+        // 驗證 URL 格式
+        const urlPattern = /^https?:\/\/.+/;
+        const urlValue = portfolioUrl.value.trim();
+        if (urlValue && !urlPattern.test(urlValue)) {
+            showNotification('請輸入有效的 URL（需以 http:// 或 https:// 開頭）', 'error');
+            return false;
+        }
+        portfolioData.url = urlValue;
+        hasUrl = true;
+        console.log('作品連結已收集:', portfolioData.url);
+    }
+    
+    // 檢查：至少要有檔案或連結其中一個
+    if (uploadedFiles.length === 0 && !hasUrl) {
+        showNotification('請至少上傳一個檔案或輸入作品連結', 'error');
         return false;
     }
     
@@ -578,6 +594,20 @@ function validateStep3() {
     if (githubUrl && githubUrl.value) {
         portfolioData.github = githubUrl.value.trim();
         console.log('GitHub URL已收集:', portfolioData.github);
+    }
+    
+    // 收集作品連結
+    const portfolioUrl = document.getElementById('portfolioUrl');
+    if (portfolioUrl && portfolioUrl.value) {
+        // 驗證 URL 格式
+        const urlPattern = /^https?:\/\/.+/;
+        const urlValue = portfolioUrl.value.trim();
+        if (urlValue && !urlPattern.test(urlValue)) {
+            showNotification('請輸入有效的 URL（需以 http:// 或 https:// 開頭）', 'error');
+            return false;
+        }
+        portfolioData.url = urlValue;
+        console.log('作品連結已收集:', portfolioData.url);
     }
     
     console.log('步驟3驗證通過');
@@ -814,7 +844,10 @@ function createFileItem(file, index) {
             </div>
         </div>
         <div class="file-actions">
-            <button type="button" class="btn-remove" onclick="removeFile(${index})">
+            <button type="button" class="btn-preview" onclick="previewFile(${index})" title="預覽文件">
+                <i class="fas fa-eye"></i>
+            </button>
+            <button type="button" class="btn-remove" onclick="removeFile(${index})" title="移除文件">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -1008,6 +1041,13 @@ function collectFormData() {
         console.log('GitHub URL:', portfolioData.github);
     }
     
+    // 收集作品連結
+    const portfolioUrl = document.getElementById('portfolioUrl');
+    if (portfolioUrl && portfolioUrl.value) {
+        portfolioData.url = portfolioUrl.value.trim();
+        console.log('作品連結:', portfolioData.url);
+    }
+    
     console.log('收集的表單資料:', portfolioData);
 }
 
@@ -1051,9 +1091,27 @@ function updatePreview() {
         }
     }
     
+    // 更新作品連結預覽
+    const previewUrl = document.getElementById('previewUrl');
+    if (previewUrl) {
+        if (portfolioData.url && portfolioData.url.trim()) {
+            previewUrl.innerHTML = `
+                <a href="${portfolioData.url}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; word-break: break-all;">
+                    ${portfolioData.url} <i class="fas fa-external-link-alt" style="font-size: 0.8rem; margin-left: 0.3rem;"></i>
+                </a>
+            `;
+            previewUrl.closest('.preview-item').style.display = 'block';
+            console.log('作品連結已更新:', portfolioData.url);
+        } else {
+            previewUrl.closest('.preview-item').style.display = 'none';
+        }
+    }
     
     if (previewFiles) {
-        if (uploadedFiles && uploadedFiles.length > 0) {
+        const hasFiles = uploadedFiles && uploadedFiles.length > 0;
+        const hasUrl = portfolioData.url && portfolioData.url.trim();
+        
+        if (hasFiles) {
             previewFiles.innerHTML = uploadedFiles.map(file => {
                 const fileType = getFileType(file);
                 const icon = getFileIcon(fileType);
@@ -1068,9 +1126,22 @@ function updatePreview() {
                 `;
             }).join('');
             console.log('檔案預覽已更新，檔案數量:', uploadedFiles.length);
+        } else if (hasUrl) {
+            previewFiles.innerHTML = `
+                <div class="file-preview-item" style="text-align: center; padding: 1.5rem;">
+                    <i class="fas fa-link" style="font-size: 2rem; color: #667eea; margin-bottom: 0.5rem;"></i>
+                    <div class="preview-file-name">
+                        <a href="${portfolioData.url}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none;">
+                            ${portfolioData.url} <i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>
+                        </a>
+                    </div>
+                    <small style="color: #718096;">僅提供連結，無上傳檔案</small>
+                </div>
+            `;
+            console.log('僅連結預覽已更新');
         } else {
-            previewFiles.innerHTML = '<div class="text-muted">無檔案</div>';
-            console.log('無檔案，顯示預設文字');
+            previewFiles.innerHTML = '<div class="text-muted">無檔案或連結</div>';
+            console.log('無檔案和連結，顯示預設文字');
         }
     }
     

@@ -88,6 +88,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
             case 'download_file':
                 downloadPortfolioFile($input);
                 break;
+            case 'get_file_url':
+                getPortfolioFileUrl($input);
+                break;
             case 'record_view':
                 recordPortfolioView($input);
                 break;
@@ -149,7 +152,7 @@ function getPortfolioList() {
             SELECT DISTINCT
                 p.id, p.title, p.description, p.status,
                 c.slug AS category, p.tags,
-                p.cover_image, p.view_count, p.like_count, p.comment_count, 
+                p.cover_image, p.portfolio_url AS url, p.view_count, p.like_count, p.comment_count, 
                 p.download_count, p.created_at, p.published_at
             FROM portfolios p
             LEFT JOIN categories c ON p.category_id = c.id
@@ -225,7 +228,7 @@ function getPortfolioDetail() {
     // 單筆詳情（不用 get_result，避免 mysqlnd 依賴）
     $sql = "SELECT 
                 p.id, p.user_id AS author_id, p.title, p.description, p.status, p.tags, p.cover_image,
-                p.view_count, p.like_count, p.comment_count, p.download_count, 
+                p.portfolio_url AS url, p.view_count, p.like_count, p.comment_count, p.download_count, 
                 p.created_at, p.published_at,
                 u.username AS author_name,
                 sp.major, sp.grade,
@@ -423,16 +426,23 @@ function createPortfolio($data) {
             }
         }
         
+        // 處理作品連結
+        $portfolioUrl = sanitizeInput($data['url'] ?? '');
+        if (!empty($portfolioUrl) && !preg_match('/^https?:\/\//', $portfolioUrl)) {
+            sendError('URL 格式不正確，必須以 http:// 或 https:// 開頭', 400);
+            return;
+        }
+        
         $stmt = $GLOBALS['conn']->prepare("
             INSERT INTO portfolios (
-                user_id, title, description, category_id, tags, cover_image, status, published_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                user_id, title, description, category_id, tags, cover_image, portfolio_url, status, published_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $publishedAt = $status === 'published' ? date('Y-m-d H:i:s') : null;
         // i=int, s=string
-        // user_id(i), title(s), description(s), category_id(i), tags(s), cover_image(s), status(s), published_at(s)
-        $stmt->bind_param("ississss", $userId, $title, $description, $categoryId, $tags, $coverImage, $status, $publishedAt);
+        // user_id(i), title(s), description(s), category_id(i), tags(s), cover_image(s), portfolio_url(s), status(s), published_at(s)
+        $stmt->bind_param("ississsss", $userId, $title, $description, $categoryId, $tags, $coverImage, $portfolioUrl, $status, $publishedAt);
         
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
@@ -571,16 +581,23 @@ function updatePortfolio($data) {
             }
         }
         
+        // 處理作品連結
+        $portfolioUrl = sanitizeInput($data['url'] ?? '');
+        if (!empty($portfolioUrl) && !preg_match('/^https?:\/\//', $portfolioUrl)) {
+            sendError('URL 格式不正確，必須以 http:// 或 https:// 開頭', 400);
+            return;
+        }
+        
         $stmt = $GLOBALS['conn']->prepare("
             UPDATE portfolios SET 
                 title = ?, description = ?, category_id = ?, tags = ?, 
-                status = ?, updated_at = CURRENT_TIMESTAMP,
+                portfolio_url = ?, status = ?, updated_at = CURRENT_TIMESTAMP,
                 published_at = CASE WHEN status = 'published' AND published_at IS NULL 
                                    THEN CURRENT_TIMESTAMP ELSE published_at END
             WHERE id = ? AND user_id = ?
         ");
         
-        $stmt->bind_param("ssissii", $title, $description, $categoryId, $tags, $status, $portfolioId, $userId);
+        $stmt->bind_param("ssisssii", $title, $description, $categoryId, $tags, $portfolioUrl, $status, $portfolioId, $userId);
         
         if ($stmt->execute()) {
             sendResponse(['message' => '作品更新成功'], 200, '更新成功');
@@ -757,6 +774,46 @@ function likePortfolioComment($data) {
         }
     } catch (Exception $e) {
         sendError('操作失敗: ' . $e->getMessage(), 500);
+    }
+}
+
+// 獲取文件 URL（用於預覽）
+function getPortfolioFileUrl($data) {
+    $userId = getUserId();
+    if (!$userId) {
+        sendError('無法獲取使用者資訊', 401);
+        return;
+    }
+    
+    $portfolioId = (int)($data['portfolio_id'] ?? 0);
+    $filename = sanitizeInput($data['filename'] ?? '');
+    
+    if (!$portfolioId || empty($filename)) {
+        sendError('缺少必要參數', 400);
+        return;
+    }
+    
+    try {
+        $stmt = $GLOBALS['conn']->prepare("
+            SELECT file_path FROM portfolio_files 
+            WHERE portfolio_id = ? AND file_name = ?
+        ");
+        $stmt->bind_param("is", $portfolioId, $filename);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $file = $result->fetch_assoc();
+        
+        if ($file) {
+            // 返回文件 URL（用於預覽，不更新下載次數）
+            sendResponse([
+                'file_url' => $file['file_path'],
+                'message' => '文件 URL 獲取成功'
+            ], 200, '成功');
+        } else {
+            sendError('檔案不存在', 404);
+        }
+    } catch (Exception $e) {
+        sendError('獲取文件 URL 失敗: ' . $e->getMessage(), 500);
     }
 }
 
