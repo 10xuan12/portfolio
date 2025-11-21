@@ -142,9 +142,12 @@ function initializeUpload() {
     
     initEventListeners();
     initCoverImageUpload(); // 初始化封面圖片上傳
-
+    
     // 動態載入學群分類
     loadCategories();
+    
+    // 動態載入技能標籤
+    loadSkillTags();
     
     // 設定當前步驟為1，但不調用updateStepDisplay避免重複設定
     currentStep = 1;
@@ -985,9 +988,13 @@ function collectFormData() {
         portfolioData.description = description.value.trim();
         console.log('描述:', portfolioData.description);
     }
-    if (tags && tags.value) {
-        portfolioData.tags = tags.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    // 收集選中的標籤（checkbox）
+    const tagCheckboxes = document.querySelectorAll('input[name="tags"]:checked');
+    if (tagCheckboxes && tagCheckboxes.length > 0) {
+        portfolioData.tags = Array.from(tagCheckboxes).map(cb => cb.value);
         console.log('標籤:', portfolioData.tags);
+    } else {
+        portfolioData.tags = [];
     }
     if (status && status.value) {
         portfolioData.status = status.value;
@@ -1292,9 +1299,205 @@ function handleUploadProgress(progress) {
     }
 }
 
-// 添加標籤
+// 獲取 API base URL
+function getApiBase() {
+    return (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_BASE_URL) 
+        ? APP_CONFIG.API_BASE_URL 
+        : '/api';
+}
+
+// 載入技能標籤
+async function loadSkillTags() {
+    try {
+        console.log('開始載入技能標籤...');
+        
+        const response = await fetch(`${getApiBase()}/student/skill-tags.php?action=get_tags`);
+        const result = await response.json();
+        
+        if (result.status === 200 && result.data) {
+            console.log('標籤載入成功:', result.data);
+            renderSkillTags(result.data);
+            initTagSelection();
+        } else {
+            throw new Error(result.message || '載入標籤失敗');
+        }
+    } catch (error) {
+        console.error('載入技能標籤失敗:', error);
+        // 使用預設標籤
+        const defaultTags = getDefaultTags();
+        renderSkillTags(defaultTags);
+        initTagSelection();
+    }
+}
+
+// 渲染技能標籤選項
+function renderSkillTags(tagsData) {
+    const container = document.getElementById('tagsOptionsContainer');
+    if (!container) {
+        console.error('找不到標籤容器');
+        return;
+    }
+    
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 定義類別順序
+    const categoryOrder = [
+        '前端開發',
+        '後端開發',
+        'UI/UX設計',
+        '資料分析',
+        '行動開發',
+        '專案管理',
+        '數位行銷',
+        '網路安全',
+        '工業自動化',
+        '機器人學',
+        '建築/營建',
+        '數學/統計',
+        '物理',
+        '醫療資訊',
+        '公共衛生',
+        '生物資訊',
+        '品牌設計',
+        '心理學',
+        '數位媒體',
+        '跨文化溝通',
+        '電商/商業',
+        '爬蟲/自動化',
+        '雲端/DevOps',
+        '其他技能'
+    ];
+    
+    // 按順序渲染每個類別
+    categoryOrder.forEach(category => {
+        const tags = tagsData[category] || [];
+        if (tags.length === 0) return;
+        
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'tag-category';
+        
+        const title = document.createElement('h4');
+        title.className = 'tag-category-title';
+        title.textContent = category;
+        
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'tag-options';
+        
+        tags.forEach(tag => {
+            const tagName = typeof tag === 'string' ? tag : (tag.name || tag);
+            
+            const label = document.createElement('label');
+            label.className = 'tag-option';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'tags';
+            checkbox.value = tagName;
+            
+            const span = document.createElement('span');
+            span.textContent = tagName;
+            
+            label.appendChild(checkbox);
+            label.appendChild(span);
+            optionsDiv.appendChild(label);
+        });
+        
+        categoryDiv.appendChild(title);
+        categoryDiv.appendChild(optionsDiv);
+        container.appendChild(categoryDiv);
+    });
+    
+    console.log('標籤渲染完成');
+}
+
+// 獲取預設標籤（當 API 失敗時使用）
+function getDefaultTags() {
+    return {
+        '前端開發': ['HTML', 'CSS', 'JavaScript', 'React', 'Vue', 'Angular', '前端', 'UI', '響應式', 'TypeScript'],
+        '後端開發': ['Node.js', 'Python', 'PHP', 'Java', 'C#', '後端', 'API', '資料庫', 'SQL', 'MySQL', 'MongoDB'],
+        'UI/UX設計': ['UX', '設計', 'Figma', 'Adobe', 'Photoshop', 'Illustrator', '使用者體驗'],
+        '資料分析': ['R', 'Excel', 'PowerBI', 'Tableau', '數據分析', '統計', '機器學習', 'Python'],
+        '行動開發': ['iOS', 'Android', 'React Native', 'Flutter', 'Swift', 'Kotlin', '行動應用'],
+        '專案管理': ['專案管理', '敏捷', 'Scrum', '團隊協作', 'Git', '版本控制', '管理'],
+        '數位行銷': ['行銷', 'SEO', 'Google Analytics', '社群媒體', '內容行銷', '數位行銷'],
+        '網路安全': ['網路安全', '滲透測試', '弱點評估', '資訊安全'],
+        '工業自動化': ['PLC', 'SCADA', '物聯網', '工業自動化', 'IoT'],
+        '機器人學': ['機器人學', '控制系統', 'PID控制', '路徑規劃', 'Arduino'],
+        '建築/營建': ['BIM', 'Revit', '3D建模', '建築學', '永續建築', '綠建築'],
+        '數學/統計': ['數學建模', '最佳化', '線性規劃', '統計學', 'R'],
+        '物理': ['物理學', 'LabVIEW', '實驗數據', 'MATLAB'],
+        '醫療資訊': ['醫療資訊', '護理資訊學', '病患照護'],
+        '公共衛生': ['公共衛生', '流行病學', '健康統計'],
+        '生物資訊': ['生物資訊學', '基因組學', '蛋白質分析'],
+        '品牌設計': ['品牌識別', 'Logo設計', '視覺識別'],
+        '心理學': ['心理測驗', '評估', '統計學'],
+        '數位媒體': ['數位媒體', '內容創作', '影片製作', 'Premiere Pro'],
+        '跨文化溝通': ['跨文化溝通', '語言教學', '培訓設計'],
+        '電商/商業': ['電商', '用戶行為', '商業分析'],
+        '爬蟲/自動化': ['爬蟲', '自動化', 'Selenium', 'Python'],
+        '雲端/DevOps': ['AWS', 'Docker', 'CI/CD', 'Git'],
+        '其他技能': ['創意', '創新', '解決問題', '溝通', '領導']
+    };
+}
+
+// 初始化標籤選擇功能
+function initTagSelection() {
+    console.log('初始化標籤選擇功能...');
+    
+    // 為所有標籤 checkbox 添加事件監聽
+    const tagCheckboxes = document.querySelectorAll('input[name="tags"]');
+    tagCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectedTags();
+            collectFormData(); // 更新 portfolioData.tags
+        });
+    });
+    
+    // 初始更新已選標籤顯示
+    updateSelectedTags();
+}
+
+// 更新已選標籤顯示
+function updateSelectedTags() {
+    const selectedTagsContainer = document.getElementById('selectedTags');
+    const selectedTagsList = document.getElementById('selectedTagsList');
+    
+    if (!selectedTagsContainer || !selectedTagsList) return;
+    
+    // 獲取所有選中的標籤
+    const checkedBoxes = document.querySelectorAll('input[name="tags"]:checked');
+    const selectedTags = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (selectedTags.length > 0) {
+        selectedTagsContainer.style.display = 'block';
+        selectedTagsList.innerHTML = selectedTags.map(tag => `
+            <div class="selected-tag-item">
+                <span>${tag}</span>
+                <button type="button" class="tag-remove-btn" onclick="removeTagByValue('${tag}')" aria-label="移除標籤">×</button>
+            </div>
+        `).join('');
+    } else {
+        selectedTagsContainer.style.display = 'none';
+        selectedTagsList.innerHTML = '';
+    }
+}
+
+// 根據值移除標籤
+function removeTagByValue(tagValue) {
+    const checkbox = document.querySelector(`input[name="tags"][value="${tagValue}"]`);
+    if (checkbox) {
+        checkbox.checked = false;
+        updateSelectedTags();
+        collectFormData(); // 更新 portfolioData.tags
+    }
+}
+
+// 添加標籤（保留以兼容舊代碼）
 function addTag() {
     const tagInput = document.getElementById('tagInput');
+    if (!tagInput) return;
+    
     const tag = tagInput.value.trim();
     
     if (tag && !portfolioData.tags.includes(tag)) {
@@ -1304,13 +1507,13 @@ function addTag() {
     }
 }
 
-// 移除標籤
+// 移除標籤（保留以兼容舊代碼）
 function removeTag(index) {
     portfolioData.tags.splice(index, 1);
     renderTags();
 }
 
-// 渲染標籤
+// 渲染標籤（保留以兼容舊代碼）
 function renderTags() {
     const tagsContainer = document.getElementById('tagsContainer');
     if (!tagsContainer) return;

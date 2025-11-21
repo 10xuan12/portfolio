@@ -156,9 +156,22 @@
                         
                         <!-- 標籤設定 -->
                         <div class="form-group" style="margin-bottom: 2rem;">
-                            <label for="tags">作品標籤</label>
-                            <input type="text" id="tags" name="tags" placeholder="用逗號分隔標籤，例如：JavaScript, React, UI/UX">
-                            <small style="color: #718096; font-size: 0.85rem;">標籤有助於企業更容易找到您的作品</small>
+                            <label for="tags">作品標籤 <span style="color: #718096; font-weight: 400; font-size: 0.85rem;">（可多選）</span></label>
+                            <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 1rem;">選擇與您作品相關的技能標籤，有助於企業更容易找到您的作品</small>
+                            
+                            <!-- 技能標籤選項容器（動態載入） -->
+                            <div class="tags-options-container" id="tagsOptionsContainer">
+                                <div style="text-align: center; padding: 2rem; color: #718096;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                    <p>載入標籤中...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 已選標籤顯示 -->
+                            <div class="selected-tags" id="selectedTags" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                                <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">已選標籤：</small>
+                                <div class="selected-tags-list" id="selectedTagsList"></div>
+                            </div>
                         </div>
                         
                         <div class="upload-container">

@@ -1480,6 +1480,178 @@
     display: none;
 }
 
+/* 技能標籤選項樣式 */
+.tags-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: rgba(247, 250, 252, 0.8);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.tag-category {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.tag-category:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.tag-category-title {
+    color: #2d3748;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tag-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.tag-option {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.tag-option input[type="checkbox"] {
+    display: none;
+}
+
+.tag-option span {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    color: #4a5568;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.tag-option:hover span {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.tag-option input[type="checkbox"]:checked + span {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transform: scale(1.05);
+}
+
+.tag-option input[type="checkbox"]:checked + span::before {
+    content: '✓ ';
+    font-weight: 700;
+    margin-right: 0.3rem;
+}
+
+/* 已選標籤顯示 */
+.selected-tags {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.selected-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.selected-tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    animation: fadeInUp 0.3s ease;
+}
+
+.selected-tag-item .tag-remove-btn {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    transition: all 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.selected-tag-item .tag-remove-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+}
+
+/* 響應式設計 - 標籤選項 */
+@media (max-width: 768px) {
+    .tags-options-container {
+        max-height: 400px;
+        padding: 0.8rem;
+    }
+    
+    .tag-category {
+        padding: 1rem;
+    }
+    
+    .tag-options {
+        gap: 0.6rem;
+    }
+    
+    .tag-option span {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tags-options-container {
+        max-height: 350px;
+    }
+    
+    .tag-options {
+        gap: 0.5rem;
+    }
+    
+    .tag-option span {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
 /* 確保第一步驟內容顯示 */
 #step1Content {
     display: block;
