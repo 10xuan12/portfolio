@@ -381,15 +381,31 @@ async function handleAIGenerateDescription() {
             generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>生成中...</span>';
         }
         
-        // 調用AI服務生成描述
-        const description = await window.aiService.generateDescription(title, category);
+        // 調用AI服務生成描述（獲取元數據以顯示來源）
+        const result = await window.aiService.generateDescription(title, category, true);
+        
+        // 處理返回結果（可能是字串或物件）
+        let description, metadata;
+        if (typeof result === 'string') {
+            description = result;
+            metadata = { source: 'local' };
+        } else {
+            description = result.description;
+            metadata = result.metadata;
+        }
         
         // 填入描述
         if (description && descriptionTextarea) {
             descriptionTextarea.value = description;
             // 觸發input事件以更新資料
             descriptionTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-            showNotification('AI描述生成成功！', 'success');
+            
+            // 顯示來源資訊
+            const sourceText = metadata.source === 'huggingface' 
+                ? `使用 Hugging Face API (模型: ${metadata.model || '未知'})` 
+                : '使用本地智能生成';
+            console.log('📊 [生成結果]', { source: metadata.source, model: metadata.model, timestamp: metadata.timestamp });
+            showNotification(`AI描述生成成功！(${sourceText})`, 'success');
         } else {
             showNotification('AI描述生成失敗，請稍後再試', 'error');
         }
@@ -440,15 +456,39 @@ async function handleAIGenerateTags() {
             generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>生成中...</span>';
         }
         
-        // 調用AI服務生成標籤
-        const tags = await window.aiService.generateTags(title, description);
+        // 調用AI服務生成標籤（獲取元數據以顯示來源）
+        const result = await window.aiService.generateTags(title, description, true);
+        
+        // 處理返回結果（可能是陣列或物件）
+        let tags, metadata;
+        if (Array.isArray(result)) {
+            tags = result;
+            metadata = { source: 'local', method: 'keyword_matching' };
+        } else {
+            tags = result.tags;
+            metadata = result.metadata;
+        }
         
         if (tags && tags.length > 0) {
             // 展開標籤區域
             expandTagsSection();
             // 自動選中匹配的標籤
             selectTagsByValues(tags);
-            showNotification(`AI已為您生成 ${tags.length} 個相關標籤！`, 'success');
+            
+            // 顯示來源資訊
+            const methodText = metadata.method === 'ai_analysis' 
+                ? 'AI分析' 
+                : '關鍵字匹配';
+            const sourceText = metadata.source === 'huggingface' 
+                ? `Hugging Face API` 
+                : '本地';
+            console.log('📊 [生成結果]', { 
+                source: metadata.source, 
+                method: metadata.method, 
+                tagCount: tags.length,
+                timestamp: metadata.timestamp 
+            });
+            showNotification(`AI已為您生成 ${tags.length} 個相關標籤！(來源: ${sourceText}, 方法: ${methodText})`, 'success');
         } else {
             showNotification('AI未能生成標籤，請手動選擇', 'info');
         }

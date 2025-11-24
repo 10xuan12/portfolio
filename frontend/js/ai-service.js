@@ -10,6 +10,17 @@ class AIService {
         // 使用公開的文本生成模型
         this.baseUrl = 'https://api-inference.huggingface.co/models';
         
+        // 使用量統計（追蹤API調用）
+        this.usageStats = {
+            local: { description: 0, tags: 0 },
+            huggingface: { description: 0, tags: 0 },
+            daily: {}, // 按日期記錄
+            lastReset: new Date().toDateString()
+        };
+        
+        // 載入已保存的統計資料
+        this.loadUsageStats();
+        
         // 備用模型列表（如果一個失敗，嘗試下一個）
         this.textGenerationModels = [
             'google/flan-t5-base',  // 輕量級，快速響應
@@ -43,39 +54,89 @@ class AIService {
      * 生成作品描述
      * @param {string} title - 作品標題
      * @param {string} category - 作品分類
-     * @returns {Promise<string>} 生成的描述
+     * @param {boolean} returnMetadata - 是否返回元數據（包含來源資訊）
+     * @returns {Promise<string|Object>} 生成的描述（或包含元數據的物件）
      */
-    async generateDescription(title, category) {
+    async generateDescription(title, category, returnMetadata = false) {
+        const metadata = {
+            source: 'local', // 'local' 或 'huggingface'
+            model: null,
+            timestamp: new Date().toISOString()
+        };
+        
         try {
             // 由於Hugging Face API對中文支援有限，我們使用智能本地生成
             // 但保留API調用的結構以便未來擴展
-            console.log('開始生成作品描述...', { title, category });
+            console.log('🤖 [AI服務] 開始生成作品描述...', { title, category });
             
             // 先嘗試使用本地智能生成（更可靠）
             let description = this.generateDescriptionLocally(title, category);
             
             // 如果本地生成成功，直接返回
             if (description && description.length > 20) {
+                metadata.source = 'local';
+                this.recordUsage('local', 'description');
+                console.log('✅ [AI服務] 使用本地生成完成', { 
+                    source: 'local', 
+                    descriptionLength: description.length 
+                });
+                
+                if (returnMetadata) {
+                    return { description, metadata };
+                }
                 return description;
             }
             
             // 備用：嘗試API（如果網路允許）
             try {
+                console.log('🌐 [AI服務] 嘗試使用 Hugging Face API...');
                 const prompt = this.buildDescriptionPrompt(title, category);
                 const apiDescription = await this.callTextGenerationAPI(prompt, this.textGenerationModels[0]);
+                
                 if (apiDescription && apiDescription.length > 10) {
+                    metadata.source = 'huggingface';
+                    metadata.model = this.textGenerationModels[0];
+                    this.recordUsage('huggingface', 'description');
+                    console.log('✅ [AI服務] 使用 Hugging Face API 生成完成', { 
+                        source: 'huggingface', 
+                        model: this.textGenerationModels[0],
+                        descriptionLength: apiDescription.length 
+                    });
+                    
+                    if (returnMetadata) {
+                        return { description: apiDescription, metadata };
+                    }
                     return apiDescription;
+                } else {
+                    console.log('⚠️ [AI服務] Hugging Face API 返回結果不理想，改用本地生成');
                 }
             } catch (apiError) {
-                console.log('API調用失敗，使用本地生成:', apiError);
+                console.log('❌ [AI服務] Hugging Face API 調用失敗，改用本地生成:', apiError.message);
             }
             
             // 最終備用：使用本地生成
-            return this.generateDescriptionLocally(title, category);
+            metadata.source = 'local';
+            this.recordUsage('local', 'description');
+            console.log('✅ [AI服務] 使用本地生成完成（備用方案）', { 
+                source: 'local', 
+                descriptionLength: description.length 
+            });
+            
+            if (returnMetadata) {
+                return { description, metadata };
+            }
+            return description;
         } catch (error) {
-            console.error('AI描述生成錯誤:', error);
+            console.error('❌ [AI服務] AI描述生成錯誤:', error);
             // 發生錯誤時使用本地生成邏輯
-            return this.generateDescriptionLocally(title, category);
+            metadata.source = 'local';
+            this.recordUsage('local', 'description');
+            const fallbackDescription = this.generateDescriptionLocally(title, category);
+            
+            if (returnMetadata) {
+                return { description: fallbackDescription, metadata };
+            }
+            return fallbackDescription;
         }
     }
 
@@ -83,30 +144,66 @@ class AIService {
      * 生成智能標籤
      * @param {string} title - 作品標題
      * @param {string} description - 作品描述
-     * @returns {Promise<Array<string>>} 生成的標籤陣列
+     * @param {boolean} returnMetadata - 是否返回元數據（包含來源資訊）
+     * @returns {Promise<Array<string>|Object>} 生成的標籤陣列（或包含元數據的物件）
      */
-    async generateTags(title, description) {
+    async generateTags(title, description, returnMetadata = false) {
+        const metadata = {
+            source: 'local', // 'local' 或 'huggingface'
+            method: 'keyword_matching', // 'keyword_matching' 或 'ai_analysis'
+            timestamp: new Date().toISOString()
+        };
+        
         try {
+            console.log('🏷️ [AI服務] 開始生成智能標籤...', { title, description: description?.substring(0, 50) });
+            
             // 組合文本
             const text = `${title} ${description}`.toLowerCase();
             
             // 從技能關鍵字列表中匹配
             const matchedTags = this.matchSkillKeywords(text);
+            console.log(`💻 [本地匹配] 找到 ${matchedTags.length} 個匹配標籤:`, matchedTags);
             
             // 如果匹配的標籤太少，使用AI分析
             if (matchedTags.length < 3) {
+                console.log('🤖 [AI服務] 標籤數量不足，嘗試使用AI分析...');
                 const aiTags = await this.analyzeTextWithAI(text);
-                matchedTags.push(...aiTags);
+                if (aiTags && aiTags.length > 0) {
+                    matchedTags.push(...aiTags);
+                    metadata.method = 'ai_analysis';
+                    console.log(`✅ [AI分析] 額外找到 ${aiTags.length} 個標籤:`, aiTags);
+                }
+            } else {
+                metadata.method = 'keyword_matching';
             }
+            
+            // 記錄使用量（標籤生成主要使用本地匹配）
+            this.recordUsage('local', 'tags');
             
             // 去重並限制數量
             const uniqueTags = [...new Set(matchedTags)].slice(0, 10);
+            console.log(`✅ [AI服務] 標籤生成完成，共 ${uniqueTags.length} 個標籤`, { 
+                source: metadata.source, 
+                method: metadata.method,
+                tags: uniqueTags 
+            });
             
+            if (returnMetadata) {
+                return { tags: uniqueTags, metadata };
+            }
             return uniqueTags;
         } catch (error) {
-            console.error('AI標籤生成錯誤:', error);
+            console.error('❌ [AI服務] AI標籤生成錯誤:', error);
             // 發生錯誤時使用本地匹配邏輯
-            return this.matchSkillKeywords(`${title} ${description}`.toLowerCase());
+            metadata.source = 'local';
+            metadata.method = 'keyword_matching';
+            this.recordUsage('local', 'tags');
+            const fallbackTags = this.matchSkillKeywords(`${title} ${description}`.toLowerCase());
+            
+            if (returnMetadata) {
+                return { tags: fallbackTags, metadata };
+            }
+            return fallbackTags;
         }
     }
 
@@ -115,6 +212,9 @@ class AIService {
      */
     async callTextGenerationAPI(prompt, model) {
         try {
+            console.log(`🌐 [Hugging Face] 正在調用模型: ${model}`);
+            const startTime = Date.now();
+            
             const response = await fetch(`${this.baseUrl}/${model}`, {
                 method: 'POST',
                 headers: {
@@ -130,11 +230,16 @@ class AIService {
                 })
             });
 
+            const responseTime = Date.now() - startTime;
+            
             if (!response.ok) {
-                throw new Error(`API錯誤: ${response.status}`);
+                const errorText = await response.text();
+                console.error(`❌ [Hugging Face] API錯誤 ${response.status}:`, errorText);
+                throw new Error(`API錯誤: ${response.status} - ${errorText}`);
             }
 
             const data = await response.json();
+            console.log(`✅ [Hugging Face] API調用成功 (耗時: ${responseTime}ms)`, { model, responseTime });
             
             // 處理不同的回應格式
             if (Array.isArray(data) && data[0] && data[0].generated_text) {
@@ -145,9 +250,10 @@ class AIService {
                 return data.trim();
             }
             
+            console.warn('⚠️ [Hugging Face] API返回格式未預期:', data);
             return null;
         } catch (error) {
-            console.error(`模型 ${model} 調用失敗:`, error);
+            console.error(`❌ [Hugging Face] 模型 ${model} 調用失敗:`, error);
             return null;
         }
     }
@@ -176,6 +282,13 @@ class AIService {
         });
         
         return matched;
+    }
+    
+    /**
+     * 獲取最後一次生成操作的元數據（用於調試）
+     */
+    getLastGenerationMetadata() {
+        return this.lastMetadata || null;
     }
 
     /**
@@ -216,6 +329,7 @@ class AIService {
      * 本地生成描述（智能生成，基於標題和分類）
      */
     generateDescriptionLocally(title, category) {
+        console.log('💻 [本地生成] 開始生成描述...', { title, category });
         const categoryMap = {
             'engineering': { name: '工程', keywords: ['系統設計', '技術實現', '工程方法', '實務應用'] },
             'information': { name: '資訊', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'] },
@@ -303,6 +417,137 @@ class AIService {
         }
         
         return selected;
+    }
+    
+    /**
+     * 記錄使用量統計
+     */
+    recordUsage(source, type) {
+        const today = new Date().toDateString();
+        
+        // 如果日期改變，重置每日統計
+        if (this.usageStats.lastReset !== today) {
+            this.usageStats.daily = {};
+            this.usageStats.lastReset = today;
+        }
+        
+        // 更新統計
+        this.usageStats[source][type]++;
+        
+        // 更新每日統計
+        if (!this.usageStats.daily[today]) {
+            this.usageStats.daily[today] = { local: 0, huggingface: 0 };
+        }
+        this.usageStats.daily[today][source]++;
+        
+        // 保存到 localStorage
+        this.saveUsageStats();
+        
+        // 檢查每日限制（Hugging Face 免費層：每天 1000 次）
+        const todayHuggingFaceUsage = this.usageStats.daily[today]?.huggingface || 0;
+        if (source === 'huggingface' && todayHuggingFaceUsage >= 900) {
+            console.warn(`⚠️ [使用量警告] 今日已使用 ${todayHuggingFaceUsage} 次 Hugging Face API，接近每日限制（1000次）`);
+        }
+    }
+    
+    /**
+     * 保存使用量統計到 localStorage
+     */
+    saveUsageStats() {
+        try {
+            localStorage.setItem('aiService_usageStats', JSON.stringify(this.usageStats));
+        } catch (error) {
+            console.warn('無法保存使用量統計:', error);
+        }
+    }
+    
+    /**
+     * 從 localStorage 載入使用量統計
+     */
+    loadUsageStats() {
+        try {
+            const saved = localStorage.getItem('aiService_usageStats');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const today = new Date().toDateString();
+                
+                // 如果日期改變，重置每日統計但保留總計
+                if (parsed.lastReset !== today) {
+                    this.usageStats.daily = {};
+                    this.usageStats.lastReset = today;
+                    // 保留總計統計
+                    this.usageStats.local = parsed.local || { description: 0, tags: 0 };
+                    this.usageStats.huggingface = parsed.huggingface || { description: 0, tags: 0 };
+                } else {
+                    this.usageStats = parsed;
+                }
+            }
+        } catch (error) {
+            console.warn('無法載入使用量統計:', error);
+        }
+    }
+    
+    /**
+     * 獲取使用量統計
+     */
+    getUsageStats() {
+        const today = new Date().toDateString();
+        const todayStats = this.usageStats.daily[today] || { local: 0, huggingface: 0 };
+        
+        return {
+            total: {
+                local: {
+                    description: this.usageStats.local.description,
+                    tags: this.usageStats.local.tags,
+                    total: this.usageStats.local.description + this.usageStats.local.tags
+                },
+                huggingface: {
+                    description: this.usageStats.huggingface.description,
+                    tags: this.usageStats.huggingface.tags,
+                    total: this.usageStats.huggingface.description + this.usageStats.huggingface.tags
+                }
+            },
+            today: {
+                local: todayStats.local,
+                huggingface: todayStats.huggingface,
+                total: todayStats.local + todayStats.huggingface,
+                limit: 1000, // Hugging Face 免費層每日限制
+                remaining: Math.max(0, 1000 - todayStats.huggingface)
+            },
+            daily: this.usageStats.daily
+        };
+    }
+    
+    /**
+     * 重置使用量統計
+     */
+    resetUsageStats() {
+        this.usageStats = {
+            local: { description: 0, tags: 0 },
+            huggingface: { description: 0, tags: 0 },
+            daily: {},
+            lastReset: new Date().toDateString()
+        };
+        this.saveUsageStats();
+        console.log('✅ [統計] 使用量統計已重置');
+    }
+    
+    /**
+     * 顯示使用量統計（在控制台）
+     */
+    showUsageStats() {
+        const stats = this.getUsageStats();
+        console.group('📊 AI 服務使用量統計');
+        console.log('📈 總計統計:');
+        console.log('  本地生成:', stats.total.local);
+        console.log('  Hugging Face API:', stats.total.huggingface);
+        console.log('📅 今日統計:');
+        console.log('  本地生成:', stats.today.local, '次');
+        console.log('  Hugging Face API:', stats.today.huggingface, '次 /', stats.today.limit, '次');
+        console.log('  剩餘配額:', stats.today.remaining, '次');
+        console.log('📊 使用率:', ((stats.today.huggingface / stats.today.limit) * 100).toFixed(2) + '%');
+        console.groupEnd();
+        return stats;
     }
 }
 
