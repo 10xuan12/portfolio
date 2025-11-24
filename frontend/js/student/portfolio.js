@@ -8,6 +8,10 @@
 
     // 作品資料陣列
     let portfolios = [];
+    
+    // 分頁相關變數
+    let currentPortfolioPage = 1;
+    let portfoliosPerPage = 12; // 每頁顯示12個作品（3列x4行）
 
     // 當前篩選條件
     let currentFilters = {
@@ -15,6 +19,9 @@
         category: '',
         search: ''
     };
+    
+    // 當前顯示的作品列表（經過篩選）
+    let filteredPortfolios = [];
 
     // 初始化頁面
     document.addEventListener('DOMContentLoaded', async function() {
@@ -180,23 +187,46 @@
         }
     }
 
-    // 渲染作品列表
-    function renderPortfolios(filteredPortfolios = null) {
+    // 渲染作品列表（帶分頁）
+    function renderPortfolios(portfoliosToFilter = null) {
         const grid = document.getElementById('portfolioGrid');
         const emptyState = document.getElementById('emptyState');
         
-        const portfoliosToRender = filteredPortfolios || portfolios;
+        // 如果傳入了要過濾的作品列表，使用它；否則使用全部作品
+        const allPortfolios = portfoliosToFilter || portfolios;
         
-        if (portfoliosToRender.length === 0) {
+        // 保存過濾後的作品列表
+        filteredPortfolios = allPortfolios;
+        
+        if (filteredPortfolios.length === 0) {
             grid.style.display = 'none';
             emptyState.style.display = 'block';
+            document.getElementById('portfolioPagination').style.display = 'none';
             return;
         }
         
         grid.style.display = 'grid';
         emptyState.style.display = 'none';
         
-        grid.innerHTML = portfoliosToRender.map(portfolio => `
+        // 重置到第一頁
+        currentPortfolioPage = 1;
+        
+        // 渲染當前頁的作品
+        renderPortfolioPage();
+    }
+    
+    // 渲染當前頁的作品
+    function renderPortfolioPage() {
+        const grid = document.getElementById('portfolioGrid');
+        
+        // 計算分頁
+        const totalPages = Math.ceil(filteredPortfolios.length / portfoliosPerPage);
+        const startIndex = (currentPortfolioPage - 1) * portfoliosPerPage;
+        const endIndex = Math.min(startIndex + portfoliosPerPage, filteredPortfolios.length);
+        const currentPagePortfolios = filteredPortfolios.slice(startIndex, endIndex);
+        
+        // 渲染當前頁的作品
+        grid.innerHTML = currentPagePortfolios.map(portfolio => `
             <div class="portfolio-item" data-status="${portfolio.status}" data-category="${portfolio.category}">
                 <div class="portfolio-image">
                     <img src="${getImageUrl(portfolio.cover_image) || 'https://via.placeholder.com/400x200/667eea/ffffff?text=Portfolio'}" 
@@ -233,6 +263,141 @@
                 </div>
             </div>
         `).join('');
+        
+        // 更新分頁控制
+        updatePortfolioPagination();
+    }
+    
+    // 更新作品分頁控制
+    function updatePortfolioPagination() {
+        const paginationDiv = document.getElementById('portfolioPagination');
+        const paginationInfo = document.getElementById('portfolioPaginationInfo');
+        const paginationNumbers = document.getElementById('portfolioPaginationNumbers');
+        const prevBtn = document.getElementById('portfolioPrevPageBtn');
+        const nextBtn = document.getElementById('portfolioNextPageBtn');
+        
+        if (!paginationDiv || !paginationInfo || !paginationNumbers) return;
+        
+        const totalPages = Math.ceil(filteredPortfolios.length / portfoliosPerPage);
+        
+        // 如果只有一頁或沒有作品，隱藏分頁控制
+        if (totalPages <= 1) {
+            paginationDiv.style.display = 'none';
+            return;
+        }
+        
+        // 顯示分頁控制
+        paginationDiv.style.display = 'flex';
+        
+        // 更新分頁資訊
+        const startIndex = (currentPortfolioPage - 1) * portfoliosPerPage + 1;
+        const endIndex = Math.min(currentPortfolioPage * portfoliosPerPage, filteredPortfolios.length);
+        paginationInfo.textContent = `第 ${currentPortfolioPage} 頁，共 ${totalPages} 頁（顯示 ${startIndex}-${endIndex} / 共 ${filteredPortfolios.length} 個作品）`;
+        
+        // 更新上一頁/下一頁按鈕狀態
+        if (prevBtn) {
+            prevBtn.disabled = currentPortfolioPage === 1;
+            prevBtn.style.opacity = currentPortfolioPage === 1 ? '0.5' : '1';
+            prevBtn.style.cursor = currentPortfolioPage === 1 ? 'not-allowed' : 'pointer';
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = currentPortfolioPage === totalPages;
+            nextBtn.style.opacity = currentPortfolioPage === totalPages ? '0.5' : '1';
+            nextBtn.style.cursor = currentPortfolioPage === totalPages ? 'not-allowed' : 'pointer';
+        }
+        
+        // 生成頁碼按鈕
+        paginationNumbers.innerHTML = '';
+        
+        // 計算要顯示的頁碼範圍
+        let startPage = Math.max(1, currentPortfolioPage - 2);
+        let endPage = Math.min(totalPages, currentPortfolioPage + 2);
+        
+        // 如果接近開頭，顯示更多後面的頁碼
+        if (currentPortfolioPage <= 3) {
+            endPage = Math.min(5, totalPages);
+        }
+        
+        // 如果接近結尾，顯示更多前面的頁碼
+        if (currentPortfolioPage >= totalPages - 2) {
+            startPage = Math.max(1, totalPages - 4);
+        }
+        
+        // 第一頁
+        if (startPage > 1) {
+            const firstBtn = createPortfolioPageButton(1);
+            paginationNumbers.appendChild(firstBtn);
+            if (startPage > 2) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'pagination-ellipsis';
+                ellipsis.textContent = '...';
+                paginationNumbers.appendChild(ellipsis);
+            }
+        }
+        
+        // 中間頁碼
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = createPortfolioPageButton(i);
+            paginationNumbers.appendChild(pageBtn);
+        }
+        
+        // 最後一頁
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'pagination-ellipsis';
+                ellipsis.textContent = '...';
+                paginationNumbers.appendChild(ellipsis);
+            }
+            const lastBtn = createPortfolioPageButton(totalPages);
+            paginationNumbers.appendChild(lastBtn);
+        }
+    }
+    
+    // 創建作品頁碼按鈕
+    function createPortfolioPageButton(pageNum) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pagination-number';
+        if (pageNum === currentPortfolioPage) {
+            btn.classList.add('active');
+        }
+        btn.textContent = pageNum;
+        btn.onclick = () => goToPortfolioPage(pageNum);
+        return btn;
+    }
+    
+    // 切換作品頁面
+    function changePortfolioPage(direction) {
+        const totalPages = Math.ceil(filteredPortfolios.length / portfoliosPerPage);
+        const newPage = currentPortfolioPage + direction;
+        
+        if (newPage >= 1 && newPage <= totalPages) {
+            currentPortfolioPage = newPage;
+            renderPortfolioPage();
+            
+            // 滾動到作品列表頂部
+            const portfolioGrid = document.getElementById('portfolioGrid');
+            if (portfolioGrid) {
+                portfolioGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+    
+    // 跳轉到指定頁面
+    function goToPortfolioPage(pageNum) {
+        const totalPages = Math.ceil(filteredPortfolios.length / portfoliosPerPage);
+        if (pageNum >= 1 && pageNum <= totalPages) {
+            currentPortfolioPage = pageNum;
+            renderPortfolioPage();
+            
+            // 滾動到作品列表頂部
+            const portfolioGrid = document.getElementById('portfolioGrid');
+            if (portfolioGrid) {
+                portfolioGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
     }
 
     // 取得狀態文字
@@ -264,9 +429,17 @@
             const searchTerm = currentFilters.search.toLowerCase();
             filteredPortfolios = filteredPortfolios.filter(p => 
                 p.title.toLowerCase().includes(searchTerm) ||
-                p.description.toLowerCase().includes(searchTerm) ||
-                p.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+                (p.description && p.description.toLowerCase().includes(searchTerm)) ||
+                (Array.isArray(p.tags) && p.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
             );
+        }
+        
+        // 檢查當前頁是否還有作品，如果沒有則跳轉到上一頁
+        const totalPages = Math.ceil(filteredPortfolios.length / portfoliosPerPage);
+        if (currentPortfolioPage > totalPages && totalPages > 0) {
+            currentPortfolioPage = totalPages;
+        } else if (totalPages === 0) {
+            currentPortfolioPage = 1;
         }
         
         renderPortfolios(filteredPortfolios);
@@ -320,7 +493,8 @@
             if (result.status === 200) {
                 // 從本地陣列中移除
                 portfolios = portfolios.filter(p => p.id !== id);
-                renderPortfolios();
+                // 重新應用篩選並渲染（會自動處理分頁）
+                applyFilters();
                 Utils.showNotification('作品已刪除', 'success');
             } else {
                 throw new Error(result.message || '刪除失敗');
@@ -578,5 +752,7 @@
     window.deletePortfolio = deletePortfolio;
     window.applyFilters = applyFilters;
     window.exportPortfolio = exportPortfolio;
+    window.changePortfolioPage = changePortfolioPage;
+    window.goToPortfolioPage = goToPortfolioPage;
 
 })(); 

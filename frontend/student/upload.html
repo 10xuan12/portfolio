@@ -73,6 +73,14 @@
                 <p>展示您的才華，讓企業發現您的潛力</p>
             </div>
 
+            <!-- 進度指示器 -->
+            <div class="progress-indicator">
+                <div class="progress-text">完成度: <span id="progressPercentage">33%</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 33%;"></div>
+                </div>
+            </div>
+
             <!-- 上傳步驟 -->
             <div class="upload-steps">
                 <div class="step active" id="step1">
@@ -93,152 +101,225 @@
                 <form class="upload-form" id="uploadForm">
                     <!-- 步驟 1: 基本資訊 -->
                     <div class="form-section" id="step1Content">
-                        <h3>作品基本資訊</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="title">作品標題</label>
-                                <input type="text" id="title" name="title" required placeholder="請輸入作品標題">
+                        <!-- 卡片式設計 -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <div class="form-card-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="form-card-title">作品基本資訊</div>
                             </div>
-                            <div class="form-group">
-                                <label for="categoryFilter">作品學群分類</label>
-                                <select id="categoryFilter" name="category" required>
-                                    <option value="">請選擇學群分類</option>
-                                    <option value="engineering">工程學群</option>
-                                    <option value="information">資訊學群</option>
-                                    <option value="business">商管學群</option>
-                                    <option value="design">設計學群</option>
-                                    <option value="education">教育學群</option>
-                                    <option value="arts">藝術學群</option>
-                                    <option value="humanities">人文學群</option>
-                                    <option value="social">社會學群</option>
-                                    <option value="science">自然科學學群</option>
-                                    <option value="medicine">醫藥衛生學群</option>
-                                    <option value="agriculture">農業學群</option>
-                                    <option value="tourism">觀光餐旅學群</option>
-                                    <option value="sports">體育學群</option>
-                                    <option value="other">其他</option>
-                                </select>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="title" class="form-label form-label-required">作品標題</label>
+                                    <input type="text" id="title" name="title" class="form-input" required placeholder="例如：電商網站設計">
+                                    <div class="form-hint">簡潔明瞭的標題能讓企業快速了解您的作品</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="categoryFilter" class="form-label form-label-required">作品學群分類</label>
+                                    <select id="categoryFilter" name="category" class="form-input" required>
+                                        <option value="">請選擇學群分類</option>
+                                        <option value="engineering">工程學群</option>
+                                        <option value="information">資訊學群</option>
+                                        <option value="business">商管學群</option>
+                                        <option value="design">設計學群</option>
+                                        <option value="education">教育學群</option>
+                                        <option value="arts">藝術學群</option>
+                                        <option value="humanities">人文學群</option>
+                                        <option value="social">社會學群</option>
+                                        <option value="science">自然科學學群</option>
+                                        <option value="medicine">醫藥衛生學群</option>
+                                        <option value="agriculture">農業學群</option>
+                                        <option value="tourism">觀光餐旅學群</option>
+                                        <option value="sports">體育學群</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="description" class="form-label form-label-required">作品描述</label>
+                                    <div class="textarea-wrapper">
+                                        <textarea id="description" name="description" class="form-input form-textarea" rows="4" required placeholder="請詳細描述您的作品，包括使用的技術、功能特色等..."></textarea>
+                                        <button type="button" class="btn-ai-generate btn-ai-top-right" id="aiGenerateDescriptionBtn" title="使用AI自動生成描述">
+                                            <i class="fas fa-magic"></i>
+                                            <span>AI生成描述</span>
+                                        </button>
+                                    </div>
+                                    <div class="form-hint">詳細的描述有助於企業更好地了解您的作品</div>
+                                    <div id="aiDescriptionLoading" class="ai-loading" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <span>AI正在生成描述中...</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group full-width">
-                                <label for="description">作品描述</label>
-                                <textarea id="description" name="description" rows="4" required placeholder="請詳細描述您的作品，包括使用的技術、功能特色等..."></textarea>
+                        </div>
+
+                        <!-- 封面圖片卡片 -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <div class="form-card-icon">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="form-card-title">封面圖片</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="coverImageInput" class="form-label form-label-required">
+                                    封面圖片
+                                    <span style="color: #718096; font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem;">（必填，建議尺寸 1200x630px）</span>
+                                </label>
+                                <div class="cover-image-upload" id="coverImageUpload">
+                                    <div class="cover-preview" id="coverPreview" style="display: none;">
+                                        <img id="coverPreviewImage" src="" alt="封面預覽">
+                                        <button type="button" class="btn-remove-cover" onclick="removeCoverImage()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <label for="coverImageInput" class="cover-upload-area" id="coverUploadArea">
+                                        <i class="fas fa-image" style="font-size: 3rem; color: #cbd5e0; margin-bottom: 1rem;"></i>
+                                        <p style="color: #4a5568; font-weight: 500; margin-bottom: 0.5rem;">點擊上傳封面圖片</p>
+                                        <small style="color: #718096;">支援 JPG、PNG、GIF 格式，檔案不超過 5MB</small>
+                                    </label>
+                                    <input type="file" id="coverImageInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- 步驟 2: 上傳檔案 -->
                     <div class="form-section" id="step2Content">
-                        <h3>上傳作品檔案或連結</h3>
-                        <p style="color: #718096; margin-bottom: 2rem; font-size: 0.95rem;">您可以上傳檔案、輸入作品連結，或兩者都提供。至少需要選擇其中一種方式。</p>
-                        
-                        <!-- 封面圖片上傳 -->
-                        <div class="form-group" style="margin-bottom: 2rem;">
-                            <label for="coverImageInput">
-                                封面圖片 
-                                <span style="color: #e53e3e; font-weight: 600;">*</span>
-                                <span style="color: #718096; font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem;">（必填，建議尺寸 1200x630px）</span>
-                            </label>
-                            <div class="cover-image-upload" id="coverImageUpload">
-                                <div class="cover-preview" id="coverPreview" style="display: none;">
-                                    <img id="coverPreviewImage" src="" alt="封面預覽">
-                                    <button type="button" class="btn-remove-cover" onclick="removeCoverImage()">
-                                        <i class="fas fa-times"></i>
+                        <!-- 標籤設定卡片 -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <div class="form-card-icon">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                                <div class="form-card-title">作品標籤</div>
+                            </div>
+                            
+                            <div class="tags-section">
+                                <div class="tags-header" id="tagsHeader">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="fas fa-chevron-down" style="color: #718096; font-size: 0.875rem;"></i>
+                                        <div>
+                                            <strong>選擇技能標籤</strong>
+                                            <div style="font-size: 0.75rem; color: #718096; margin-top: 0.25rem;">點擊展開選擇標籤</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-ai-generate" id="aiGenerateTagsBtn" title="使用AI自動生成標籤" style="margin: 0;" onclick="event.stopPropagation();">
+                                        <i class="fas fa-magic"></i>
+                                        <span>AI生成標籤</span>
                                     </button>
                                 </div>
-                                <label for="coverImageInput" class="cover-upload-area" id="coverUploadArea">
-                                    <i class="fas fa-image" style="font-size: 3rem; color: #cbd5e0; margin-bottom: 1rem;"></i>
-                                    <p style="color: #4a5568; font-weight: 500; margin-bottom: 0.5rem;">點擊上傳封面圖片</p>
-                                    <small style="color: #718096;">支援 JPG、PNG、GIF 格式，檔案不超過 5MB</small>
-                                </label>
-                                <input type="file" id="coverImageInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
-                            </div>
-                        </div>
-                        
-                        <!-- 標籤設定 -->
-                        <div class="form-group" style="margin-bottom: 2rem;">
-                            <label for="tags">作品標籤 <span style="color: #718096; font-weight: 400; font-size: 0.85rem;">（可多選）</span></label>
-                            <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 1rem;">選擇與您作品相關的技能標籤，有助於企業更容易找到您的作品</small>
-                            
-                            <!-- 技能標籤選項容器（動態載入） -->
-                            <div class="tags-options-container" id="tagsOptionsContainer">
-                                <div style="text-align: center; padding: 2rem; color: #718096;">
-                                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                                    <p>載入標籤中...</p>
+                                
+                                <div id="aiTagsLoading" class="ai-loading" style="display: none; margin: 1rem 1.5rem;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>AI正在分析並生成標籤中...</span>
+                                </div>
+                                
+                                <div class="tags-content" id="tagsContent" style="display: none;">
+                                    <!-- 技能標籤選項容器（動態載入） -->
+                                    <div class="tags-options-container" id="tagsOptionsContainer">
+                                        <div style="text-align: center; padding: 2rem; color: #718096;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                            <p>載入標籤中...</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 分頁控制 -->
+                                    <div class="tags-pagination" id="tagsPagination" style="display: none; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                                        <div class="pagination-info">
+                                            <span id="paginationInfo">第 1 頁，共 1 頁</span>
+                                        </div>
+                                        <div class="pagination-controls">
+                                            <button type="button" class="pagination-btn" id="prevPageBtn" onclick="changeTagsPage(-1)">
+                                                <i class="fas fa-chevron-left"></i>
+                                                上一頁
+                                            </button>
+                                            <div class="pagination-numbers" id="paginationNumbers"></div>
+                                            <button type="button" class="pagination-btn" id="nextPageBtn" onclick="changeTagsPage(1)">
+                                                下一頁
+                                                <i class="fas fa-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 已選標籤顯示 -->
+                                    <div class="selected-tags" id="selectedTags" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                                        <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">已選標籤：</small>
+                                        <div class="selected-tags-list" id="selectedTagsList"></div>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <!-- 已選標籤顯示 -->
-                            <div class="selected-tags" id="selectedTags" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
-                                <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">已選標籤：</small>
-                                <div class="selected-tags-list" id="selectedTagsList"></div>
-                            </div>
                         </div>
-                        
-                        <!-- 作品連結 -->
-                        <div class="form-group" style="margin-bottom: 2rem;">
-                            <label for="portfolioUrl">
-                                作品連結 
-                                <span style="color: #718096; font-weight: 400; font-size: 0.85rem;">（選填，但需與檔案至少選一個）</span>
-                            </label>
-                            <input type="url" id="portfolioUrl" name="portfolioUrl" placeholder="https://example.com 或 https://your-project.vercel.app" pattern="https?://.*">
-                            <small style="color: #718096; font-size: 0.85rem; display: block; margin-top: 0.5rem;">
-                                輸入作品的線上展示連結，例如：網站、Demo、線上作品等。如果只有連結沒有檔案，也可以只填寫連結。
-                            </small>
-                        </div>
-                        
-                        <div style="text-align: center; margin: 2rem 0; color: #718096; font-size: 0.9rem;">
-                            <i class="fas fa-minus" style="margin: 0 1rem;"></i>
-                            <span>或</span>
-                            <i class="fas fa-minus" style="margin: 0 1rem;"></i>
-                        </div>
-                        
-                        <div class="form-group" style="margin-bottom: 1.5rem;">
-                            <label>上傳檔案 <span style="color: #718096; font-weight: 400; font-size: 0.85rem;">（選填，但需與連結至少選一個）</span></label>
-                            <small style="color: #718096; font-size: 0.85rem; display: block; margin-bottom: 1rem;">支援多種格式，單個檔案最大 50MB</small>
-                        </div>
-                        
-                        <div class="upload-container">
-                            <div class="upload-area" id="uploadArea">
-                                <div class="upload-icon">
+
+                        <!-- 檔案上傳卡片 -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <div class="form-card-icon">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                 </div>
-                                <div class="upload-text">
-                                    <h4>拖拽檔案或資料夾到這裡</h4>
-                                    <p>或點擊下方按鈕選擇檔案或資料夾</p>
+                                <div class="form-card-title">上傳作品檔案</div>
+                            </div>
+                            
+                            <div class="upload-zone" id="uploadZone">
+                                <div class="upload-icon-large">
+                                    <i class="fas fa-cloud-upload-alt"></i>
                                 </div>
+                                <div class="upload-text">拖拽檔案到這裡</div>
+                                <div class="upload-subtext">或點擊下方按鈕選擇檔案</div>
                                 <div class="upload-buttons">
-                                    <button type="button" class="btn btn-outline upload-btn" onclick="document.getElementById('fileInput').click()">
+                                    <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
                                         <i class="fas fa-file"></i>
                                         選擇檔案
                                     </button>
-                                    <button type="button" class="btn btn-outline upload-btn" onclick="document.getElementById('folderInput').click()">
+                                    <button type="button" class="btn btn-outline" onclick="document.getElementById('folderInput').click()">
                                         <i class="fas fa-folder"></i>
                                         選擇資料夾
                                     </button>
+                                </div>
+                                <div style="margin-top: 1.5rem; font-size: 0.75rem; color: #718096;">
+                                    支援格式：圖片、影片、PDF、壓縮檔等 | 單個檔案最大 50MB
                                 </div>
                                 <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.obj,.stl,.fbx,.glb,.gltf,.mp4,.avi,.mov,.wmv,.mp3,.wav,.flac,.aac" style="display: none;">
                                 <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
                             </div>
                             
                             <!-- 上傳進度 -->
-                            <div class="upload-progress" id="uploadProgress" style="display: none;">
+                            <div class="upload-progress" id="uploadProgress" style="display: none; margin-top: 1.5rem;">
                                 <div class="progress-header">
                                     <span class="progress-text">上傳中...</span>
-                                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                                    <span class="progress-percentage" id="uploadProgressPercentage">0%</span>
                                 </div>
                                 <div class="progress-bar">
-                                    <div class="progress-fill" id="progressFill"></div>
+                                    <div class="progress-fill" id="uploadProgressFill"></div>
                                 </div>
+                            </div>
+
+                            <!-- 檔案列表 -->
+                            <div class="file-list" id="fileList" style="display: none; margin-top: 1.5rem;">
+                                <div class="file-list-header">
+                                    <h4>已選擇的檔案</h4>
+                                    <span class="file-count" id="fileCount">0 個檔案</span>
+                                </div>
+                                <div class="file-items" id="fileItems"></div>
                             </div>
                         </div>
 
-                        <!-- 檔案列表 -->
-                        <div class="file-list" id="fileList" style="display: none;">
-                            <div class="file-list-header">
-                                <h4>已選擇的檔案</h4>
-                                <span class="file-count" id="fileCount">0 個檔案</span>
+                        <!-- 作品連結卡片 -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <div class="form-card-icon">
+                                    <i class="fas fa-link"></i>
+                                </div>
+                                <div class="form-card-title">作品連結（選填）</div>
                             </div>
-                            <div class="file-items" id="fileItems"></div>
+                            
+                            <div class="form-group">
+                                <label for="portfolioUrl" class="form-label">作品連結</label>
+                                <input type="url" id="portfolioUrl" name="portfolioUrl" class="form-input" placeholder="https://example.com 或 https://your-project.vercel.app" pattern="https?://.*">
+                                <div class="form-hint">如果作品已上線，可以輸入連結。至少需要上傳檔案或輸入連結其中一個。</div>
+                            </div>
                         </div>
                     </div>
 
@@ -349,6 +430,7 @@
     <script src="../js/config.js?v=20251104"></script>
     <script src="../js/api-service.js?v=20251104"></script>
     <script src="../js/app.js?v=20251104"></script>
+    <script src="../js/ai-service.js?v=20250101"></script>
     <script src="../js/student/upload.js?v=20251104"></script>
     <script>
         function goBack() {

@@ -25,8 +25,8 @@
 }
 
 .cover-upload-area:hover {
-    border-color: #667eea;
-    background: #edf2f7;
+    border-color: #273ec3;
+    background: #e0f1ff;
 }
 
 .cover-preview {
@@ -127,29 +127,41 @@
 .upload-steps {
     display: flex;
     justify-content: center;
-    margin-bottom: 4rem;
-    gap: 3rem;
+    margin-bottom: 3rem;
+    gap: 2rem;
     position: relative;
     z-index: 1;
+}
+
+.upload-steps::before {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 0;
 }
 
 .step {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: var(--secondary-color);
+    color: #718096;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     position: relative;
+    z-index: 1;
 }
 
 .step:hover {
-    color: var(--secondary-color);
+    color: #273ec3;
     transform: translateY(-2px);
 }
 
 .step.active {
-    color: var(--secondary-color);
+    color: #273ec3;
     transform: scale(1.05);
 }
 
@@ -157,40 +169,34 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #ffffff;
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: white;
+    border: 3px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    overflow: hidden;
-}
-
-.step-number::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.step:hover .step-number::before {
-    left: 100%;
+    color: #a0aec0;
 }
 
 .step.active .step-number {
-    background: #ffffff;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
-    border-color: rgba(255, 255, 255, 0.3);
-    animation: stepPulse 2s ease-in-out infinite;
+    background: #273ec3;
+    border-color: #273ec3;
+    color: white;
+    box-shadow: 0 4px 12px rgba(39, 62, 195, 0.4);
+}
+
+.step span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.step.active span {
+    color: #273ec3;
+    font-weight: 600;
 }
 
 @keyframes stepPulse {
@@ -1579,8 +1585,10 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
+    background: #e0f1ff;
+    border: 1px solid #273ec3;
+    border-radius: 20px;
+    color: #273ec3;
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 500;
@@ -1588,9 +1596,9 @@
 }
 
 .selected-tag-item .tag-remove-btn {
-    background: rgba(255, 255, 255, 0.3);
+    background: none;
     border: none;
-    color: white;
+    color: #273ec3;
     width: 18px;
     height: 18px;
     border-radius: 50%;
@@ -1605,7 +1613,8 @@
 }
 
 .selected-tag-item .tag-remove-btn:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: #273ec3;
+    color: white;
     transform: scale(1.1);
 }
 
@@ -1702,4 +1711,583 @@
     padding: 1.2rem 1.5rem !important;
     font-size: 1.1rem !important;
     color: #2d3748 !important;
+}
+
+/* 進度指示器 */
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #f7fafc;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.progress-indicator .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-indicator .progress-fill {
+    height: 100%;
+    background: #273ec3;
+    transition: width 0.3s ease;
+}
+
+.progress-indicator .progress-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #273ec3;
+    white-space: nowrap;
+}
+
+/* 卡片式設計 */
+.form-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.form-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e0;
+}
+
+.form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f7fafc;
+}
+
+.form-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #273ec3;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.form-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.form-label-required::after {
+    content: ' *';
+    color: #e53e3e;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #273ec3;
+    box-shadow: 0 0 0 3px rgba(39, 62, 195, 0.1);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-hint {
+    font-size: 0.75rem;
+    color: #718096;
+    margin-top: 0.5rem;
+}
+
+/* 文字輸入框包裹器（用於放置右上角按鈕） */
+.textarea-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.textarea-wrapper .btn-ai-top-right {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    margin: 0;
+    z-index: 10;
+}
+
+/* AI功能樣式 */
+.btn-ai-generate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin-left: 0.75rem;
+    background: #273ec3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(39, 62, 195, 0.3);
+}
+
+.btn-ai-generate:hover {
+    background: #00AEEF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(39, 62, 195, 0.4);
+}
+
+.btn-ai-generate:active {
+    transform: translateY(0);
+}
+
+.btn-ai-generate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-ai-generate i {
+    font-size: 0.875rem;
+}
+
+.btn-ai-generate span {
+    font-size: 0.875rem;
+}
+
+/* AI載入狀態 */
+.ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #e0f1ff;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    color: #273ec3;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.ai-loading i {
+    font-size: 1rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 標籤區域的AI按鈕樣式調整 */
+.form-group label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.form-group label .btn-ai-generate {
+    margin-left: auto;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .btn-ai-generate {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+    
+    .btn-ai-generate span {
+        display: none;
+    }
+    
+    .btn-ai-generate i {
+        font-size: 1rem;
+    }
+    
+    .form-group label {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-group label .btn-ai-generate {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* 標籤可收合設計 */
+.tags-section {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.tags-header {
+    background: #f7fafc;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tags-header:hover {
+    background: #edf2f7;
+}
+
+.tags-content {
+    padding: 1.5rem;
+}
+
+/* 簡化版標籤網格 - 無分類，傳統勾選樣式，一行約10個 */
+.tags-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0.5rem 1rem;
+}
+
+/* 傳統勾選式標籤 */
+.tag-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tag-item:hover {
+    background: #f7fafc;
+    border-radius: 4px;
+}
+
+.tag-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    accent-color: #273ec3;
+    flex-shrink: 0;
+}
+
+.tag-label {
+    font-size: 0.875rem;
+    color: #4a5568;
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tag-checkbox:checked + .tag-label {
+    color: #273ec3;
+    font-weight: 500;
+}
+
+.tag-item:hover .tag-label {
+    color: #273ec3;
+}
+
+/* 標籤分頁控制 */
+.tags-pagination {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.pagination-info {
+    font-size: 0.875rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #e0f1ff;
+    border-color: #273ec3;
+    color: #273ec3;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-number {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.5rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-number:hover {
+    background: #e0f1ff;
+    border-color: #273ec3;
+    color: #273ec3;
+}
+
+.pagination-number.active {
+    background: #273ec3;
+    border-color: #273ec3;
+    color: white;
+    font-weight: 600;
+}
+
+.pagination-ellipsis {
+    padding: 0 0.5rem;
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+/* 響應式：分頁控制 */
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .pagination-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination-numbers {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pagination-number {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+}
+
+/* 改進的檔案上傳區域 */
+.upload-zone {
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-zone:hover {
+    border-color: #273ec3;
+    background: #e0f1ff;
+}
+
+.upload-zone.drag-over {
+    border-color: #273ec3;
+    background: #e0f1ff;
+    transform: scale(1.02);
+}
+
+.upload-icon-large {
+    font-size: 4rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+}
+
+.upload-zone:hover .upload-icon-large {
+    color: #273ec3;
+}
+
+.upload-text {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.upload-subtext {
+    font-size: 0.875rem;
+    color: #718096;
+    margin-bottom: 1.5rem;
+}
+
+.upload-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* 更新按鈕樣式 */
+.upload-container .btn-primary {
+    background: #273ec3;
+    color: white;
+    border: none;
+}
+
+.upload-container .btn-primary:hover {
+    background: #00AEEF;
+}
+
+.upload-container .btn-outline {
+    background: white;
+    color: #273ec3;
+    border: 2px solid #273ec3;
+}
+
+.upload-container .btn-outline:hover {
+    background: #e0f1ff;
+}
+
+/* 響應式：標籤網格 */
+@media (max-width: 1200px) {
+    .tags-grid {
+        grid-template-columns: repeat(8, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .tags-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .tags-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+
+    .tag-item {
+        padding: 0.4rem 0;
+    }
+
+    .tag-label {
+        font-size: 0.8rem;
+    }
+
+    .tag-checkbox {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tags-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 響應式優化 */
+@media (max-width: 768px) {
+    .form-card {
+        padding: 1.5rem;
+    }
+    
+    .form-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .upload-zone {
+        padding: 2rem 1rem;
+    }
+    
+    .upload-icon-large {
+        font-size: 3rem;
+    }
+    
+    .upload-buttons {
+        flex-direction: column;
+    }
+    
+    .progress-indicator {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .progress-indicator .progress-bar {
+        width: 100%;
+    }
 }

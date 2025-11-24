@@ -84,6 +84,24 @@
                 <!-- 作品列表將由 JavaScript 動態載入 -->
             </div>
 
+            <!-- 分頁控制 -->
+            <div class="portfolio-pagination" id="portfolioPagination" style="display: none; margin-top: 2rem;">
+                <div class="pagination-info">
+                    <span id="portfolioPaginationInfo">第 1 頁，共 1 頁</span>
+                </div>
+                <div class="pagination-controls">
+                    <button type="button" class="pagination-btn" id="portfolioPrevPageBtn" onclick="changePortfolioPage(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                        上一頁
+                    </button>
+                    <div class="pagination-numbers" id="portfolioPaginationNumbers"></div>
+                    <button type="button" class="pagination-btn" id="portfolioNextPageBtn" onclick="changePortfolioPage(1)">
+                        下一頁
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- 空狀態 -->
             <div class="empty-state" id="emptyState">
                 <i class="fas fa-folder-open"></i>

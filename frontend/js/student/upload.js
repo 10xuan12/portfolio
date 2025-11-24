@@ -142,6 +142,9 @@ function initializeUpload() {
     
     initEventListeners();
     initCoverImageUpload(); // 初始化封面圖片上傳
+    initAIFeatures(); // 初始化AI功能
+    initTagsCollapse(); // 初始化標籤收合功能
+    initProgressIndicator(); // 初始化進度指示器
     
     // 動態載入學群分類
     loadCategories();
@@ -319,6 +322,183 @@ async function uploadCoverImage(file, userId) {
     }
 }
 
+// 初始化AI功能
+function initAIFeatures() {
+    console.log('初始化AI功能...');
+    
+    // AI描述生成按鈕
+    const aiDescriptionBtn = document.getElementById('aiGenerateDescriptionBtn');
+    if (aiDescriptionBtn) {
+        aiDescriptionBtn.addEventListener('click', handleAIGenerateDescription);
+        console.log('AI描述生成按鈕已綁定');
+    }
+    
+    // AI標籤生成按鈕
+    const aiTagsBtn = document.getElementById('aiGenerateTagsBtn');
+    if (aiTagsBtn) {
+        aiTagsBtn.addEventListener('click', handleAIGenerateTags);
+        console.log('AI標籤生成按鈕已綁定');
+    }
+}
+
+// 處理AI生成描述
+async function handleAIGenerateDescription() {
+    const titleInput = document.getElementById('title');
+    const categorySelect = document.getElementById('categoryFilter');
+    const descriptionTextarea = document.getElementById('description');
+    const loadingDiv = document.getElementById('aiDescriptionLoading');
+    const generateBtn = document.getElementById('aiGenerateDescriptionBtn');
+    
+    if (!titleInput || !categorySelect || !descriptionTextarea) {
+        showNotification('請先填寫作品標題和分類', 'error');
+        return;
+    }
+    
+    const title = titleInput.value.trim();
+    const category = categorySelect.value;
+    
+    if (!title) {
+        showNotification('請先輸入作品標題', 'error');
+        return;
+    }
+    
+    if (!category) {
+        showNotification('請先選擇作品分類', 'error');
+        return;
+    }
+    
+    // 檢查AI服務是否可用
+    if (!window.aiService) {
+        showNotification('AI服務未載入，請重新整理頁面', 'error');
+        return;
+    }
+    
+    try {
+        // 顯示載入狀態
+        if (loadingDiv) loadingDiv.style.display = 'block';
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>生成中...</span>';
+        }
+        
+        // 調用AI服務生成描述
+        const description = await window.aiService.generateDescription(title, category);
+        
+        // 填入描述
+        if (description && descriptionTextarea) {
+            descriptionTextarea.value = description;
+            // 觸發input事件以更新資料
+            descriptionTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+            showNotification('AI描述生成成功！', 'success');
+        } else {
+            showNotification('AI描述生成失敗，請稍後再試', 'error');
+        }
+    } catch (error) {
+        console.error('AI描述生成錯誤:', error);
+        showNotification('AI描述生成失敗：' + error.message, 'error');
+    } finally {
+        // 隱藏載入狀態
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i><span>AI生成描述</span>';
+        }
+    }
+}
+
+// 處理AI生成標籤
+async function handleAIGenerateTags() {
+    const titleInput = document.getElementById('title');
+    const descriptionTextarea = document.getElementById('description');
+    const loadingDiv = document.getElementById('aiTagsLoading');
+    const generateBtn = document.getElementById('aiGenerateTagsBtn');
+    
+    if (!titleInput) {
+        showNotification('請先填寫作品標題', 'error');
+        return;
+    }
+    
+    const title = titleInput.value.trim();
+    const description = descriptionTextarea ? descriptionTextarea.value.trim() : '';
+    
+    if (!title && !description) {
+        showNotification('請先填寫作品標題或描述', 'error');
+        return;
+    }
+    
+    // 檢查AI服務是否可用
+    if (!window.aiService) {
+        showNotification('AI服務未載入，請重新整理頁面', 'error');
+        return;
+    }
+    
+    try {
+        // 顯示載入狀態
+        if (loadingDiv) loadingDiv.style.display = 'block';
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>生成中...</span>';
+        }
+        
+        // 調用AI服務生成標籤
+        const tags = await window.aiService.generateTags(title, description);
+        
+        if (tags && tags.length > 0) {
+            // 展開標籤區域
+            expandTagsSection();
+            // 自動選中匹配的標籤
+            selectTagsByValues(tags);
+            showNotification(`AI已為您生成 ${tags.length} 個相關標籤！`, 'success');
+        } else {
+            showNotification('AI未能生成標籤，請手動選擇', 'info');
+        }
+    } catch (error) {
+        console.error('AI標籤生成錯誤:', error);
+        showNotification('AI標籤生成失敗：' + error.message, 'error');
+    } finally {
+        // 隱藏載入狀態
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i><span>AI生成標籤</span>';
+        }
+    }
+}
+
+// 根據標籤值自動選中標籤
+function selectTagsByValues(tagValues) {
+    if (!Array.isArray(tagValues) || tagValues.length === 0) return;
+    
+    let selectedCount = 0;
+    
+    tagValues.forEach(tagValue => {
+        // 嘗試精確匹配
+        let checkbox = document.querySelector(`input[name="tags"][value="${tagValue}"]`);
+        
+        // 如果精確匹配失敗，嘗試模糊匹配（不區分大小寫）
+        if (!checkbox) {
+            const allCheckboxes = document.querySelectorAll('input[name="tags"]');
+            allCheckboxes.forEach(cb => {
+                if (cb.value.toLowerCase() === tagValue.toLowerCase()) {
+                    checkbox = cb;
+                }
+            });
+        }
+        
+        // 如果找到匹配的checkbox，選中它
+        if (checkbox && !checkbox.checked) {
+            checkbox.checked = true;
+            selectedCount++;
+        }
+    });
+    
+    // 更新已選標籤顯示
+    updateSelectedTags();
+    collectFormData();
+    
+    console.log(`已自動選中 ${selectedCount} 個標籤`);
+}
+
 // 初始化事件監聽器
 function initEventListeners() {
     console.log('初始化事件監聽器...');
@@ -346,8 +526,21 @@ function initEventListeners() {
         console.log('資料夾輸入事件監聽器已綁定');
     }
     
+    // 更新：使用upload-zone作為拖拽區域
+    const uploadZone = document.getElementById('uploadZone');
+    if (uploadZone) {
+        uploadZone.removeEventListener('dragover', handleDragOver);
+        uploadZone.removeEventListener('dragleave', handleDragLeave);
+        uploadZone.removeEventListener('drop', handleDrop);
+        
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('dragleave', handleDragLeave);
+        uploadZone.addEventListener('drop', handleDrop);
+        console.log('拖拽事件監聽器已綁定到 uploadZone');
+    }
+    
+    // 保留舊的uploadArea以兼容
     if (uploadArea) {
-        // 移除舊的事件監聽器（如果有的話）
         uploadArea.removeEventListener('dragover', handleDragOver);
         uploadArea.removeEventListener('dragleave', handleDragLeave);
         uploadArea.removeEventListener('drop', handleDrop);
@@ -355,7 +548,7 @@ function initEventListeners() {
         uploadArea.addEventListener('dragover', handleDragOver);
         uploadArea.addEventListener('dragleave', handleDragLeave);
         uploadArea.addEventListener('drop', handleDrop);
-        console.log('拖拽事件監聽器已綁定');
+        console.log('拖拽事件監聽器已綁定到 uploadArea');
     }
     
     // 表單提交
@@ -413,6 +606,54 @@ function previousStep() {
     }
 }
 
+// 初始化進度指示器
+function initProgressIndicator() {
+    updateProgressIndicator();
+}
+
+// 更新進度指示器
+function updateProgressIndicator() {
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressPercentage');
+    
+    if (progressFill && progressText) {
+        const percentage = (currentStep / 3) * 100;
+        progressFill.style.width = percentage + '%';
+        progressText.textContent = Math.round(percentage) + '%';
+    }
+}
+
+// 初始化標籤收合功能
+function initTagsCollapse() {
+    const tagsHeader = document.getElementById('tagsHeader');
+    const tagsContent = document.getElementById('tagsContent');
+    
+    if (tagsHeader && tagsContent) {
+        // 點擊header時切換收合狀態（但排除AI按鈕）
+        tagsHeader.addEventListener('click', function(e) {
+            // 如果點擊的是AI按鈕或其子元素，不處理
+            if (e.target.closest('.btn-ai-generate')) {
+                return;
+            }
+            
+            const isExpanded = tagsContent.style.display !== 'none';
+            tagsContent.style.display = isExpanded ? 'none' : 'block';
+            
+            // 更新圖標（找到chevron圖標）
+            const icons = tagsHeader.querySelectorAll('i');
+            icons.forEach(icon => {
+                if (icon.classList.contains('fa-chevron-down') || icon.classList.contains('fa-chevron-up')) {
+                    icon.className = isExpanded ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                    icon.style.color = '#718096';
+                }
+            });
+        });
+        
+        // 初始狀態：收合
+        tagsContent.style.display = 'none';
+    }
+}
+
 // 更新步驟顯示
 function updateStepDisplay() {
     console.log('updateStepDisplay 被調用，當前步驟:', currentStep);
@@ -425,6 +666,9 @@ function updateStepDisplay() {
             step.classList.remove('active');
         }
     });
+    
+    // 更新進度指示器
+    updateProgressIndicator();
     
     // 更新步驟內容
     const stepContents = [
@@ -673,12 +917,14 @@ function organizeFolderStructure(files) {
 // 處理拖拽進入
 function handleDragOver(e) {
     e.preventDefault();
+    e.stopPropagation();
     e.currentTarget.classList.add('drag-over');
 }
 
 // 處理拖拽離開
 function handleDragLeave(e) {
     e.preventDefault();
+    e.stopPropagation();
     e.currentTarget.classList.remove('drag-over');
 }
 
@@ -844,9 +1090,6 @@ function createFileItem(file, index) {
             </div>
         </div>
         <div class="file-actions">
-            <button type="button" class="btn-preview" onclick="previewFile(${index})" title="預覽文件">
-                <i class="fas fa-eye"></i>
-            </button>
             <button type="button" class="btn-remove" onclick="removeFile(${index})" title="移除文件">
                 <i class="fas fa-times"></i>
             </button>
@@ -1401,7 +1644,12 @@ async function loadSkillTags() {
     }
 }
 
-// 渲染技能標籤選項
+// 標籤分頁相關變數
+let allTagsList = [];
+let currentTagsPage = 1;
+let tagsPerPage = 50; // 每頁顯示50個標籤（5行，每行10個）
+
+// 渲染技能標籤選項（簡化版：無分類，傳統勾選式，帶分頁）
 function renderSkillTags(tagsData) {
     const container = document.getElementById('tagsOptionsContainer');
     if (!container) {
@@ -1412,7 +1660,8 @@ function renderSkillTags(tagsData) {
     // 清空容器
     container.innerHTML = '';
     
-    // 定義類別順序
+    // 收集所有標籤（不分類）
+    allTagsList = [];
     const categoryOrder = [
         '前端開發',
         '後端開發',
@@ -1440,47 +1689,214 @@ function renderSkillTags(tagsData) {
         '其他技能'
     ];
     
-    // 按順序渲染每個類別
+    // 收集所有標籤到一個陣列
     categoryOrder.forEach(category => {
         const tags = tagsData[category] || [];
-        if (tags.length === 0) return;
-        
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'tag-category';
-        
-        const title = document.createElement('h4');
-        title.className = 'tag-category-title';
-        title.textContent = category;
-        
-        const optionsDiv = document.createElement('div');
-        optionsDiv.className = 'tag-options';
-        
         tags.forEach(tag => {
             const tagName = typeof tag === 'string' ? tag : (tag.name || tag);
-            
-            const label = document.createElement('label');
-            label.className = 'tag-option';
-            
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.name = 'tags';
-            checkbox.value = tagName;
-            
-            const span = document.createElement('span');
-            span.textContent = tagName;
-            
-            label.appendChild(checkbox);
-            label.appendChild(span);
-            optionsDiv.appendChild(label);
+            if (!allTagsList.includes(tagName)) {
+                allTagsList.push(tagName);
+            }
         });
-        
-        categoryDiv.appendChild(title);
-        categoryDiv.appendChild(optionsDiv);
-        container.appendChild(categoryDiv);
     });
     
-    console.log('標籤渲染完成');
+    // 按字母順序排序
+    allTagsList.sort();
+    
+    // 重置到第一頁
+    currentTagsPage = 1;
+    
+    // 渲染標籤（帶分頁）
+    renderTagsPage();
+    
+    // 重新初始化標籤選擇功能
+    initTagSelection();
+    
+    console.log('標籤渲染完成（簡化版，共', allTagsList.length, '個標籤）');
 }
+
+// 渲染當前頁的標籤
+function renderTagsPage() {
+    const container = document.getElementById('tagsOptionsContainer');
+    if (!container) return;
+    
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 計算分頁
+    const totalPages = Math.ceil(allTagsList.length / tagsPerPage);
+    const startIndex = (currentTagsPage - 1) * tagsPerPage;
+    const endIndex = Math.min(startIndex + tagsPerPage, allTagsList.length);
+    const currentPageTags = allTagsList.slice(startIndex, endIndex);
+    
+    // 創建網格容器
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'tags-grid';
+    
+    // 渲染當前頁的標籤
+    currentPageTags.forEach(tagName => {
+        const tagItem = document.createElement('div');
+        tagItem.className = 'tag-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'tags';
+        checkbox.value = tagName;
+        checkbox.id = `tag-${tagName.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+        checkbox.className = 'tag-checkbox';
+        
+        const label = document.createElement('label');
+        label.className = 'tag-label';
+        label.setAttribute('for', `tag-${tagName.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`);
+        label.textContent = tagName;
+        
+        tagItem.appendChild(checkbox);
+        tagItem.appendChild(label);
+        gridContainer.appendChild(tagItem);
+    });
+    
+    container.appendChild(gridContainer);
+    
+    // 更新分頁控制
+    updateTagsPagination();
+    
+    // 重新初始化標籤選擇功能（因為DOM更新了）
+    initTagSelection();
+}
+
+// 更新分頁控制
+function updateTagsPagination() {
+    const paginationDiv = document.getElementById('tagsPagination');
+    const paginationInfo = document.getElementById('paginationInfo');
+    const paginationNumbers = document.getElementById('paginationNumbers');
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    
+    if (!paginationDiv || !paginationInfo || !paginationNumbers) return;
+    
+    const totalPages = Math.ceil(allTagsList.length / tagsPerPage);
+    
+    // 如果只有一頁或沒有標籤，隱藏分頁控制
+    if (totalPages <= 1) {
+        paginationDiv.style.display = 'none';
+        return;
+    }
+    
+    // 顯示分頁控制
+    paginationDiv.style.display = 'flex';
+    
+    // 更新分頁資訊
+    paginationInfo.textContent = `第 ${currentTagsPage} 頁，共 ${totalPages} 頁（共 ${allTagsList.length} 個標籤）`;
+    
+    // 更新上一頁/下一頁按鈕狀態
+    if (prevBtn) {
+        prevBtn.disabled = currentTagsPage === 1;
+        prevBtn.style.opacity = currentTagsPage === 1 ? '0.5' : '1';
+        prevBtn.style.cursor = currentTagsPage === 1 ? 'not-allowed' : 'pointer';
+    }
+    
+    if (nextBtn) {
+        nextBtn.disabled = currentTagsPage === totalPages;
+        nextBtn.style.opacity = currentTagsPage === totalPages ? '0.5' : '1';
+        nextBtn.style.cursor = currentTagsPage === totalPages ? 'not-allowed' : 'pointer';
+    }
+    
+    // 生成頁碼按鈕
+    paginationNumbers.innerHTML = '';
+    
+    // 計算要顯示的頁碼範圍
+    let startPage = Math.max(1, currentTagsPage - 2);
+    let endPage = Math.min(totalPages, currentTagsPage + 2);
+    
+    // 如果接近開頭，顯示更多後面的頁碼
+    if (currentTagsPage <= 3) {
+        endPage = Math.min(5, totalPages);
+    }
+    
+    // 如果接近結尾，顯示更多前面的頁碼
+    if (currentTagsPage >= totalPages - 2) {
+        startPage = Math.max(1, totalPages - 4);
+    }
+    
+    // 第一頁
+    if (startPage > 1) {
+        const firstBtn = createPageButton(1);
+        paginationNumbers.appendChild(firstBtn);
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            paginationNumbers.appendChild(ellipsis);
+        }
+    }
+    
+    // 中間頁碼
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = createPageButton(i);
+        paginationNumbers.appendChild(pageBtn);
+    }
+    
+    // 最後一頁
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            paginationNumbers.appendChild(ellipsis);
+        }
+        const lastBtn = createPageButton(totalPages);
+        paginationNumbers.appendChild(lastBtn);
+    }
+}
+
+// 創建頁碼按鈕
+function createPageButton(pageNum) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pagination-number';
+    if (pageNum === currentTagsPage) {
+        btn.classList.add('active');
+    }
+    btn.textContent = pageNum;
+    btn.onclick = () => goToTagsPage(pageNum);
+    return btn;
+}
+
+// 切換標籤頁面
+function changeTagsPage(direction) {
+    const totalPages = Math.ceil(allTagsList.length / tagsPerPage);
+    const newPage = currentTagsPage + direction;
+    
+    if (newPage >= 1 && newPage <= totalPages) {
+        currentTagsPage = newPage;
+        renderTagsPage();
+        
+        // 滾動到標籤區域頂部
+        const tagsContent = document.getElementById('tagsContent');
+        if (tagsContent) {
+            tagsContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
+// 跳轉到指定頁面
+function goToTagsPage(pageNum) {
+    const totalPages = Math.ceil(allTagsList.length / tagsPerPage);
+    if (pageNum >= 1 && pageNum <= totalPages) {
+        currentTagsPage = pageNum;
+        renderTagsPage();
+        
+        // 滾動到標籤區域頂部
+        const tagsContent = document.getElementById('tagsContent');
+        if (tagsContent) {
+            tagsContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
+// 將函數暴露到全局
+window.changeTagsPage = changeTagsPage;
+window.goToTagsPage = goToTagsPage;
 
 // 獲取預設標籤（當 API 失敗時使用）
 function getDefaultTags() {
@@ -1519,7 +1935,11 @@ function initTagSelection() {
     // 為所有標籤 checkbox 添加事件監聽
     const tagCheckboxes = document.querySelectorAll('input[name="tags"]');
     tagCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
+        // 移除舊的事件監聽器
+        const newCheckbox = checkbox.cloneNode(true);
+        checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+        
+        newCheckbox.addEventListener('change', function() {
             updateSelectedTags();
             collectFormData(); // 更新 portfolioData.tags
         });
@@ -1556,11 +1976,30 @@ function updateSelectedTags() {
 
 // 根據值移除標籤
 function removeTagByValue(tagValue) {
+    // 使用 value 屬性查找，因為 value 是原始標籤名稱
     const checkbox = document.querySelector(`input[name="tags"][value="${tagValue}"]`);
     if (checkbox) {
         checkbox.checked = false;
         updateSelectedTags();
         collectFormData(); // 更新 portfolioData.tags
+    }
+}
+
+// 展開標籤區域（當AI生成標籤時）
+function expandTagsSection() {
+    const tagsContent = document.getElementById('tagsContent');
+    const tagsHeader = document.getElementById('tagsHeader');
+    
+    if (tagsContent && tagsContent.style.display === 'none') {
+        tagsContent.style.display = 'block';
+        // 更新圖標
+        const icons = tagsHeader?.querySelectorAll('i');
+        icons?.forEach(icon => {
+            if (icon.classList.contains('fa-chevron-down') || icon.classList.contains('fa-chevron-up')) {
+                icon.className = 'fas fa-chevron-up';
+                icon.style.color = '#718096';
+            }
+        });
     }
 }
 
