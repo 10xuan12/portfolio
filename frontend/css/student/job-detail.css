@@ -53,19 +53,14 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-md);
-    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--gray-200);
 }
 
+/* 企業頭貼已移除 */
 .company-logo {
-    width: 50px;
-    height: 50px;
-    border-radius: var(--radius-md);
-    object-fit: cover;
-    background: var(--gray-100);
-    padding: var(--spacing-xs);
-    border: 1px solid var(--gray-300);
+    display: none !important;
 }
 
 .company-details {
@@ -165,50 +160,65 @@
 /* 主要內容 */
 .main-content {
     background: white;
-    padding: var(--spacing-xl);
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border-left: 4px solid transparent;
+    padding: var(--spacing-2xl);
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
 }
 
 .main-content:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    border-left-color: var(--primary-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .job-section {
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-lg);
-    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    background: #fafbfc;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.job-section:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .job-section:last-child {
-    border-bottom: none;
     margin-bottom: 0;
-    padding-bottom: 0;
 }
 
 .job-section h3 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: var(--spacing-sm);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid #e5e7eb;
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
 }
 
 .job-section h3 i {
-    color: var(--primary-color);
-    font-size: var(--text-base);
+    color: white;
+    background: var(--primary-color);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
 .section-content {
-    color: #555;
-    line-height: 1.7;
-    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.8;
+    font-size: 0.9375rem;
+    padding-top: var(--spacing-sm);
 }
 
 .section-content p {
@@ -251,16 +261,22 @@
 .requirement-item {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #f0f0f0;
-    border-radius: 0;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: var(--spacing-sm);
+    transition: all 0.2s ease;
+}
+
+.requirement-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .requirement-item:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .requirement-item i {
@@ -291,12 +307,18 @@
 .salary-item {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #f0f0f0;
-    border-radius: 0;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: var(--spacing-sm);
+    transition: all 0.2s ease;
+}
+
+.salary-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .salary-item i {

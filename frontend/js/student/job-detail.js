@@ -87,19 +87,9 @@ function renderJobDetail() {
     const jobTitle = document.getElementById('jobTitle');
     if (jobTitle) jobTitle.textContent = jobDetail.title || '未命名職缺';
 
-    // 企業資訊
+    // 企業資訊（不顯示頭貼）
     const companyName = document.getElementById('companyName');
     if (companyName) companyName.textContent = jobDetail.company_name || '企業';
-
-    const companyLogo = document.getElementById('companyLogo');
-    if (companyLogo) {
-        if (jobDetail.logo_url) {
-            companyLogo.src = jobDetail.logo_url;
-            companyLogo.style.display = 'block';
-        } else {
-            companyLogo.style.display = 'none';
-        }
-    }
 
     // 狀態
     const jobStatus = document.getElementById('jobStatus');
