@@ -401,11 +401,9 @@ async function handleAIGenerateDescription() {
             descriptionTextarea.dispatchEvent(new Event('input', { bubbles: true }));
             
             // 顯示來源資訊
-            const sourceText = metadata.source === 'huggingface' 
-                ? `使用 Hugging Face API (模型: ${metadata.model || '未知'})` 
-                : '使用本地智能生成';
+            const sourceText = '智能生成系統';
             console.log('📊 [生成結果]', { source: metadata.source, model: metadata.model, timestamp: metadata.timestamp });
-            showNotification(`AI描述生成成功！(${sourceText})`, 'success');
+            showNotification(`描述生成成功！(${sourceText})`, 'success');
         } else {
             showNotification('AI描述生成失敗，請稍後再試', 'error');
         }

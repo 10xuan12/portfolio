@@ -1,4 +1,14 @@
 <?php
+// 關閉錯誤顯示，避免破壞 JSON 輸出
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(E_ALL);
+
+// 啟用輸出緩衝
+if (ob_get_level() === 0) {
+    ob_start();
+}
+
 require_once '../config.php';
 
 // 設定 CORS 與回應格式
@@ -12,6 +22,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
+// 錯誤處理
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    // 只記錄錯誤，不輸出
+    error_log("PHP Error [{$errno}]: {$errstr} in {$errfile} on line {$errline}");
+    return true;
+});
+
+// 異常處理
+set_exception_handler(function($exception) {
+    ob_clean();
+    http_response_code(500);
+    echo json_encode([
+        'status' => 500,
+        'success' => false,
+        'message' => '伺服器內部錯誤：' . $exception->getMessage()
+    ], JSON_UNESCAPED_UNICODE);
+    exit();
+});
 
 // AI 服務 API
 switch ($_SERVER['REQUEST_METHOD']) {
