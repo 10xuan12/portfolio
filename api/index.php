@@ -98,9 +98,6 @@ if ($pathParts[0] === 'student') {
             case 'activities':
                 require_once 'student/activities.php';
                 break;
-            case 'ai-service':
-                require_once 'student/ai-service.php';
-                break;
             case 'badges':
                 require_once 'student/badges.php';
                 break;

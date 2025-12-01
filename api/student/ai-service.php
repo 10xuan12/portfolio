@@ -88,7 +88,7 @@ function generateDescription($input) {
     
     try {
         // Hugging Face API 端點
-        $baseUrl = 'https://api-inference.huggingface.co/models';
+        $baseUrl = 'https://router.huggingface.co';
         
         // 模型列表（按優先順序）
         $models = [

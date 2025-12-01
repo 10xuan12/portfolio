@@ -48,9 +48,6 @@ switch ($endpoint) {
     case 'badges':
         require_once 'badges.php';
         break;
-    case 'ai-service':
-        require_once 'ai-service.php';
-        break;
     default:
         sendError('無效的 API 端點: ' . $endpoint, 404);
 }
