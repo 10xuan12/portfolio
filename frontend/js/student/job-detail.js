@@ -10,6 +10,7 @@ let isBookmarked = false;
 document.addEventListener('DOMContentLoaded', async function() {
     await loadJobDetail();
     initEventListeners();
+    initTabs();
 });
 
 /**
@@ -214,6 +215,108 @@ function renderJobDetail() {
     const applicationCount = document.getElementById('applicationCount');
     if (applicationCount) applicationCount.textContent = jobDetail.application_count || 0;
 
+    // 渲染職缺標籤
+    renderJobTags();
+    
+    // 渲染職缺元資訊
+    renderJobMetaInfo();
+
+}
+
+/**
+ * 渲染職缺標籤
+ */
+function renderJobTags() {
+    const tagsContainer = document.getElementById('jobTagsContainer');
+    if (!tagsContainer || !jobDetail) return;
+    
+    let tagsHTML = '';
+    
+    // 職位類型標籤
+    if (jobDetail.job_type) {
+        tagsHTML += `<span class="job-tag">${jobDetail.job_type}</span>`;
+    }
+    
+    // 薪資標籤
+    if (jobDetail.salary_range && jobDetail.salary_range !== '面議') {
+        tagsHTML += `<span class="job-tag salary">${jobDetail.salary_range}</span>`;
+    }
+    
+    // 學歷要求標籤
+    if (jobDetail.education_level && jobDetail.education_level !== '不拘') {
+        tagsHTML += `<span class="job-tag">${jobDetail.education_level}</span>`;
+    }
+    
+    // 地點標籤
+    if (jobDetail.location) {
+        tagsHTML += `<span class="job-tag">${jobDetail.location}</span>`;
+    }
+    
+    // 急徵標籤（如果有deadline且時間緊迫）
+    if (jobDetail.deadline) {
+        const deadline = new Date(jobDetail.deadline);
+        const now = new Date();
+        const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+        if (daysDiff <= 7 && daysDiff > 0) {
+            tagsHTML += `<span class="job-tag urgent">急徵</span>`;
+        }
+    }
+    
+    tagsContainer.innerHTML = tagsHTML || '';
+}
+
+/**
+ * 渲染職缺元資訊
+ */
+function renderJobMetaInfo() {
+    const metaInfoContainer = document.getElementById('jobMetaInfo');
+    if (!metaInfoContainer || !jobDetail) return;
+    
+    let metaHTML = '';
+    
+    // 應徵人數
+    if (jobDetail.application_count !== undefined) {
+        metaHTML += `
+            <div class="job-meta-info-item">
+                <i class="bi bi-people"></i>
+                <span>應徵人數 ${jobDetail.application_count}人</span>
+            </div>
+        `;
+    }
+    
+    // 瀏覽次數
+    if (jobDetail.view_count !== undefined) {
+        metaHTML += `
+            <div class="job-meta-info-item">
+                <i class="bi bi-eye"></i>
+                <span>瀏覽次數 ${jobDetail.view_count}次</span>
+            </div>
+        `;
+    }
+    
+    // 到職日期
+    if (jobDetail.deadline) {
+        const deadlineDate = formatDateShort(jobDetail.deadline);
+        metaHTML += `
+            <div class="job-meta-info-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>截止日期 ${deadlineDate}</span>
+            </div>
+        `;
+    }
+    
+    // 更新日期
+    if (jobDetail.published_at) {
+        const updateDate = formatDateShort(jobDetail.published_at);
+        metaHTML += `
+            <div class="job-meta-info-item">
+                <i class="bi bi-clock-history"></i>
+                <span>更新日期 ${updateDate}</span>
+            </div>
+        `;
+    }
+    
+    metaInfoContainer.innerHTML = metaHTML || '';
 }
 
 /**
@@ -351,6 +454,31 @@ async function applyJob() {
  */
 function initEventListeners() {
     // 可以在這裡添加其他事件監聽器
+}
+
+/**
+ * 初始化標籤切換功能
+ */
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            
+            // 移除所有活動狀態
+            tabButtons.forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 添加活動狀態
+            this.classList.add('active');
+            const targetContent = document.getElementById(`tab-${tabName}`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
 }
 
 /**

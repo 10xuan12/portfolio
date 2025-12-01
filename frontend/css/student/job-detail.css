@@ -3,7 +3,7 @@
 .job-detail-header {
     background: white;
     color: var(--gray-900);
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-lg) 0 var(--spacing-md) 0;
     margin-bottom: 0;
     border-bottom: 1px solid var(--gray-200);
 }
@@ -160,7 +160,7 @@
 /* 主要內容 */
 .main-content {
     background: white;
-    padding: var(--spacing-2xl);
+    padding: var(--spacing-lg);
     border-radius: 16px;
     border: 1px solid #e5e7eb;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -171,9 +171,114 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
+/* 導航標籤 */
+.job-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: var(--spacing-lg);
+    overflow-x: auto;
+}
+
+.tab-btn {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--gray-600);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+    background: #f8f9fa;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.tab-btn i {
+    font-size: 1rem;
+}
+
+/* Tab 內容 */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 職缺標籤容器 */
+.job-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.job-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: #f3f4f6;
+    color: #374151;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
+}
+
+.job-tag.urgent {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+.job-tag.salary {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+/* 職缺元資訊 */
+.job-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md) 0;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+.job-meta-info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.job-meta-info-item i {
+    color: var(--primary-color);
+    font-size: 0.875rem;
+}
+
 .job-section {
-    margin-bottom: var(--spacing-xl);
-    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-lg);
     background: #fafbfc;
     border-radius: 12px;
     border: 1px solid #e5e7eb;

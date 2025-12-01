@@ -76,6 +76,14 @@
                         </div>
                     </div>
                 </div>
+                <!-- 職缺標籤區域 -->
+                <div class="job-tags-container" id="jobTagsContainer">
+                    <!-- 動態載入標籤 -->
+                </div>
+                <!-- 職缺元資訊 -->
+                <div class="job-meta-info" id="jobMetaInfo">
+                    <!-- 動態載入 -->
+                </div>
             </div>
         </div>
     </section>
@@ -85,49 +93,65 @@
         <div class="container">
             <div class="job-detail-content">
                 <div class="main-content">
-                    <!-- 職缺描述 -->
-                    <div class="job-section">
-                        <h3><i class="bi bi-file-text"></i> 職缺描述</h3>
-                        <div class="section-content" id="jobDescription">
-                            <!-- 動態載入 -->
-                        </div>
+                    <!-- 導航標籤 -->
+                    <div class="job-tabs">
+                        <button class="tab-btn active" data-tab="description">
+                            <i class="bi bi-file-text"></i> 工作內容
+                        </button>
+                        <button class="tab-btn" data-tab="requirements">
+                            <i class="bi bi-person-badge"></i> 要求條件
+                        </button>
+                        <button class="tab-btn" data-tab="company">
+                            <i class="bi bi-building"></i> 公司資訊
+                        </button>
+                        <button class="tab-btn" data-tab="benefits">
+                            <i class="bi bi-gift"></i> 福利資訊
+                        </button>
                     </div>
 
-                    <!-- 技能要求 -->
-                    <div class="job-section">
-                        <h3><i class="bi bi-tags"></i> 技能要求</h3>
-                        <div class="section-content">
-                            <div class="requirements-list" id="requirementsList">
+                    <!-- 職缺描述 -->
+                    <div class="tab-content active" id="tab-description">
+                        <div class="job-section">
+                            <h3><i class="bi bi-file-text"></i> 職缺描述</h3>
+                            <div class="section-content" id="jobDescription">
+                                <!-- 動態載入 -->
+                            </div>
+                        </div>
+                        <div class="job-section" id="responsibilitiesSection" style="display: none;">
+                            <h3><i class="bi bi-list-check"></i> 工作職責</h3>
+                            <div class="section-content" id="jobResponsibilities">
                                 <!-- 動態載入 -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- 工作職責 -->
-                    <div class="job-section" id="responsibilitiesSection" style="display: none;">
-                        <h3><i class="bi bi-list-check"></i> 工作職責</h3>
-                        <div class="section-content" id="jobResponsibilities">
-                            <!-- 動態載入 -->
-                        </div>
-                    </div>
-
-                    <!-- 職位要求 -->
-                    <div class="job-section">
-                        <h3><i class="bi bi-person-badge"></i> 職位要求</h3>
-                        <div class="section-content">
-                            <div class="requirements-grid">
-                                <div class="requirement-item">
-                                    <i class="bi bi-briefcase"></i>
-                                    <div>
-                                        <label>經驗要求</label>
-                                        <span id="experienceLevel">不拘</span>
-                                    </div>
+                    <!-- 要求條件 -->
+                    <div class="tab-content" id="tab-requirements">
+                        <div class="job-section">
+                            <h3><i class="bi bi-tags"></i> 技能要求</h3>
+                            <div class="section-content">
+                                <div class="requirements-list" id="requirementsList">
+                                    <!-- 動態載入 -->
                                 </div>
-                                <div class="requirement-item">
-                                    <i class="bi bi-mortarboard"></i>
-                                    <div>
-                                        <label>學歷要求</label>
-                                        <span id="educationLevel">不拘</span>
+                            </div>
+                        </div>
+                        <div class="job-section">
+                            <h3><i class="bi bi-person-badge"></i> 職位要求</h3>
+                            <div class="section-content">
+                                <div class="requirements-grid">
+                                    <div class="requirement-item">
+                                        <i class="bi bi-briefcase"></i>
+                                        <div>
+                                            <label>經驗要求</label>
+                                            <span id="experienceLevel">不拘</span>
+                                        </div>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <i class="bi bi-mortarboard"></i>
+                                        <div>
+                                            <label>學歷要求</label>
+                                            <span id="educationLevel">不拘</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -154,12 +178,36 @@
                         </div>
                     </div>
 
-                    <!-- 企業資訊 -->
-                    <div class="job-section">
-                        <h3><i class="bi bi-building"></i> 企業資訊</h3>
-                        <div class="section-content">
-                            <div class="company-info-grid" id="companyInfoGrid">
-                                <!-- 動態載入 -->
+                    <!-- 公司資訊 -->
+                    <div class="tab-content" id="tab-company">
+                        <div class="job-section">
+                            <h3><i class="bi bi-building"></i> 企業資訊</h3>
+                            <div class="section-content">
+                                <div class="company-info-grid" id="companyInfoGrid">
+                                    <!-- 動態載入 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 福利資訊 -->
+                    <div class="tab-content" id="tab-benefits">
+                        <div class="job-section">
+                            <h3><i class="bi bi-currency-dollar"></i> 薪資與福利</h3>
+                            <div class="section-content">
+                                <div class="salary-info">
+                                    <div class="salary-item">
+                                        <i class="bi bi-cash-stack"></i>
+                                        <div>
+                                            <label>薪資範圍</label>
+                                            <span id="salaryRange">面議</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="benefits-content" id="benefitsContent" style="display: none;">
+                                    <h4>福利待遇</h4>
+                                    <div id="benefitsText"></div>
+                                </div>
                             </div>
                         </div>
                     </div>

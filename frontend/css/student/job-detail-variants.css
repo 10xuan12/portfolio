@@ -241,7 +241,7 @@
    範例 5: 現代卡片式設計（圓角、陰影）
    ============================================ */
 .job-detail-container.variant-5 {
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-md) 0;
     background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
 }
 
@@ -259,10 +259,10 @@
 
 .job-detail-container.variant-5 .main-content {
     background: white;
-    padding: var(--spacing-2xl);
-    border-radius: 24px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    border: none;
+    padding: var(--spacing-lg);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
 }
 
 /* 標題區域樣式 */
@@ -354,10 +354,10 @@
 }
 
 .job-detail-container.variant-5 .job-section {
-    margin-bottom: var(--spacing-xl);
-    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
     background: #fafbfc;
-    border-radius: 16px;
+    border-radius: 12px;
     border: 1px solid #e5e7eb;
     transition: all 0.3s ease;
 }
@@ -368,16 +368,12 @@
 }
 
 .job-detail-container.variant-5 .job-section h3 {
-    border-bottom: 2px solid #e5e7eb;
-    padding-bottom: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-}
-
-.job-detail-container.variant-5 .job-section h3 {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: #111827;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid #e5e7eb;
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
