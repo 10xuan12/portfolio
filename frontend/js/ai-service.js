@@ -22,10 +22,12 @@ class AIService {
         this.loadUsageStats();
         
         // 備用模型列表（如果一個失敗，嘗試下一個）
+        // 優先使用支援中文的模型
         this.textGenerationModels = [
+            'google/flan-t5-large',  // 更好的多語言支援，包括中文
             'google/flan-t5-base',  // 輕量級，快速響應
             'microsoft/DialoGPT-medium',  // 對話模型
-            'gpt2'  // 備用模型
+            'gpt2'  // 備用模型（對中文支援較弱）
         ];
         
         // 文本分類模型（用於標籤生成）
@@ -43,11 +45,26 @@ class AIService {
             '資料分析', '機器學習', '深度學習', 'AI', '數據分析',
             'iOS', 'Android', 'React Native', 'Flutter', 'Swift', 'Kotlin',
             'Git', 'GitHub', '版本控制', '專案管理', '敏捷開發',
-            'SEO', '行銷', '數位行銷', '社群媒體',
+            'SEO', '行銷', '數位行銷', '社群媒體', '內容行銷',
             '網路安全', '資訊安全', '滲透測試',
             '雲端', 'AWS', 'Azure', 'Docker', 'Kubernetes',
-            '3D建模', 'Blender', 'Maya', 'Unity', 'Unreal Engine'
+            '3D建模', 'Blender', 'Maya', 'Unity', 'Unreal Engine',
+            '前端', '前端開發', '後端', '後端開發', '全端', '全端開發',
+            '電商', '電子商務', '購物車', '支付', '金流', '物流',
+            'API', 'RESTful', 'WebSocket', '微服務', '架構設計',
+            '響應式設計', '行動優先', 'PWA', 'SPA', 'SSR'
         ];
+        
+        // 標題關鍵字到技能標籤的映射（智能推斷）
+        this.titleToTagsMap = {
+            '電商': ['前端開發', 'UI', 'UX', 'JavaScript', 'React', 'Vue', 'HTML', 'CSS', '電商', '電子商務'],
+            '網站': ['前端開發', 'HTML', 'CSS', 'JavaScript', 'UI', 'UX', '響應式設計'],
+            '系統': ['後端開發', '資料庫', 'API', '架構設計', 'Node.js', 'Python'],
+            'App': ['React Native', 'Flutter', 'iOS', 'Android', '行動應用'],
+            '平台': ['全端開發', '架構設計', 'API', '微服務', '雲端'],
+            '分析': ['資料分析', 'Python', 'SQL', '數據分析', '商業分析'],
+            '設計': ['UI', 'UX', 'Figma', '設計', '視覺設計', '品牌設計']
+        };
     }
 
     /**
@@ -65,41 +82,42 @@ class AIService {
         };
         
         try {
-            // 由於Hugging Face API對中文支援有限，我們使用智能本地生成
-            // 但保留API調用的結構以便未來擴展
             console.log('🤖 [AI服務] 開始生成作品描述...', { title, category });
             
-            // 先嘗試使用本地智能生成（更可靠）
-            let description = this.generateDescriptionLocally(title, category);
-            
-            // 如果本地生成成功，直接返回
-            if (description && description.length > 20) {
-                metadata.source = 'local';
-                this.recordUsage('local', 'description');
-                console.log('✅ [AI服務] 使用本地生成完成', { 
-                    source: 'local', 
-                    descriptionLength: description.length 
-                });
-                
-                if (returnMetadata) {
-                    return { description, metadata };
-                }
-                return description;
-            }
-            
-            // 備用：嘗試API（如果網路允許）
+            // 優先嘗試使用 Hugging Face API（更智能的 AI 生成）
             try {
-                console.log('🌐 [AI服務] 嘗試使用 Hugging Face API...');
+                console.log('🌐 [AI服務] 優先嘗試使用 Hugging Face API...');
                 const prompt = this.buildDescriptionPrompt(title, category);
-                const apiDescription = await this.callTextGenerationAPI(prompt, this.textGenerationModels[0]);
                 
-                if (apiDescription && apiDescription.length > 10) {
+                // 嘗試多個模型，直到找到可用的
+                let apiDescription = null;
+                let usedModel = null;
+                
+                for (const model of this.textGenerationModels) {
+                    try {
+                        apiDescription = await this.callTextGenerationAPI(prompt, model);
+                        if (apiDescription && apiDescription.length > 20) {
+                            usedModel = model;
+                            break;
+                        }
+                    } catch (modelError) {
+                        // 如果是模型載入中或超時，跳過該模型繼續嘗試下一個
+                        if (modelError.message === 'MODEL_LOADING' || modelError.message === 'TIMEOUT') {
+                            console.log(`⏳ [AI服務] 模型 ${model} ${modelError.message === 'MODEL_LOADING' ? '正在載入中' : '響應超時'}，嘗試下一個模型...`);
+                        } else {
+                            console.log(`⚠️ [AI服務] 模型 ${model} 調用失敗，嘗試下一個模型...`);
+                        }
+                        continue;
+                    }
+                }
+                
+                if (apiDescription && apiDescription.length > 20) {
                     metadata.source = 'huggingface';
-                    metadata.model = this.textGenerationModels[0];
+                    metadata.model = usedModel;
                     this.recordUsage('huggingface', 'description');
                     console.log('✅ [AI服務] 使用 Hugging Face API 生成完成', { 
                         source: 'huggingface', 
-                        model: this.textGenerationModels[0],
+                        model: usedModel,
                         descriptionLength: apiDescription.length 
                     });
                     
@@ -114,7 +132,8 @@ class AIService {
                 console.log('❌ [AI服務] Hugging Face API 調用失敗，改用本地生成:', apiError.message);
             }
             
-            // 最終備用：使用本地生成
+            // 備用方案：使用本地智能生成（更可靠，對中文支援更好）
+            const description = this.generateDescriptionLocally(title, category);
             metadata.source = 'local';
             this.recordUsage('local', 'description');
             console.log('✅ [AI服務] 使用本地生成完成（備用方案）', { 
@@ -150,7 +169,7 @@ class AIService {
     async generateTags(title, description, returnMetadata = false) {
         const metadata = {
             source: 'local', // 'local' 或 'huggingface'
-            method: 'keyword_matching', // 'keyword_matching' 或 'ai_analysis'
+            method: 'keyword_matching', // 'keyword_matching' 或 'ai_analysis' 或 'title_inference'
             timestamp: new Date().toISOString()
         };
         
@@ -159,12 +178,28 @@ class AIService {
             
             // 組合文本
             const text = `${title} ${description}`.toLowerCase();
+            const matchedTags = [];
             
-            // 從技能關鍵字列表中匹配
-            const matchedTags = this.matchSkillKeywords(text);
-            console.log(`💻 [本地匹配] 找到 ${matchedTags.length} 個匹配標籤:`, matchedTags);
+            // 1. 先根據標題智能推斷標籤
+            const inferredTags = this.inferTagsFromTitle(title);
+            if (inferredTags.length > 0) {
+                matchedTags.push(...inferredTags);
+                metadata.method = 'title_inference';
+                console.log(`🎯 [標題推斷] 從標題推斷出 ${inferredTags.length} 個標籤:`, inferredTags);
+            }
             
-            // 如果匹配的標籤太少，使用AI分析
+            // 2. 從技能關鍵字列表中匹配
+            const keywordTags = this.matchSkillKeywords(text);
+            if (keywordTags.length > 0) {
+                matchedTags.push(...keywordTags);
+                // 如果還沒有從標題推斷，則標記為關鍵字匹配
+                if (metadata.method === 'keyword_matching') {
+                    metadata.method = 'keyword_matching';
+                }
+                console.log(`💻 [關鍵字匹配] 找到 ${keywordTags.length} 個匹配標籤:`, keywordTags);
+            }
+            
+            // 3. 如果匹配的標籤太少，使用AI分析
             if (matchedTags.length < 3) {
                 console.log('🤖 [AI服務] 標籤數量不足，嘗試使用AI分析...');
                 const aiTags = await this.analyzeTextWithAI(text);
@@ -173,8 +208,6 @@ class AIService {
                     metadata.method = 'ai_analysis';
                     console.log(`✅ [AI分析] 額外找到 ${aiTags.length} 個標籤:`, aiTags);
                 }
-            } else {
-                metadata.method = 'keyword_matching';
             }
             
             // 記錄使用量（標籤生成主要使用本地匹配）
@@ -210,52 +243,108 @@ class AIService {
     /**
      * 調用文本生成API
      */
-    async callTextGenerationAPI(prompt, model) {
+    async callTextGenerationAPI(prompt, model, timeout = 10000) {
         try {
             console.log(`🌐 [Hugging Face] 正在調用模型: ${model}`);
             const startTime = Date.now();
             
-            const response = await fetch(`${this.baseUrl}/${model}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    inputs: prompt,
-                    parameters: {
-                        max_length: 150,
-                        temperature: 0.7,
-                        do_sample: true
+            // 創建超時控制器
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            try {
+                const response = await fetch(`${this.baseUrl}/${model}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            max_length: 200,  // 增加長度以生成更完整的描述
+                            temperature: 0.8,  // 稍微提高創造性
+                            do_sample: true,
+                            top_p: 0.95,
+                            repetition_penalty: 1.2  // 減少重複
+                        }
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                const responseTime = Date.now() - startTime;
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`❌ [Hugging Face] API錯誤 ${response.status}:`, errorText);
+                    
+                    // 如果是模型正在載入，返回特殊標記
+                    if (response.status === 503) {
+                        console.log('⏳ [Hugging Face] 模型正在載入中，請稍候...');
+                        throw new Error('MODEL_LOADING');
                     }
-                })
-            });
+                    
+                    throw new Error(`API錯誤: ${response.status} - ${errorText}`);
+                }
 
-            const responseTime = Date.now() - startTime;
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`❌ [Hugging Face] API錯誤 ${response.status}:`, errorText);
-                throw new Error(`API錯誤: ${response.status} - ${errorText}`);
+                const data = await response.json();
+                console.log(`✅ [Hugging Face] API調用成功 (耗時: ${responseTime}ms)`, { model, responseTime });
+                
+                // 處理不同的回應格式
+                let generatedText = null;
+                if (Array.isArray(data) && data[0]) {
+                    if (data[0].generated_text) {
+                        generatedText = data[0].generated_text;
+                    } else if (data[0].summary_text) {
+                        generatedText = data[0].summary_text;
+                    }
+                } else if (data.generated_text) {
+                    generatedText = data.generated_text;
+                } else if (typeof data === 'string') {
+                    generatedText = data;
+                }
+                
+                if (generatedText) {
+                    // 清理生成的文本（移除提示詞部分，只保留生成的部分）
+                    const cleanedText = generatedText.replace(prompt, '').trim();
+                    return cleanedText.length > 10 ? cleanedText : generatedText.trim();
+                }
+                
+                console.warn('⚠️ [Hugging Face] API返回格式未預期:', data);
+                return null;
+            } catch (fetchError) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    console.error(`⏱️ [Hugging Face] 模型 ${model} 調用超時 (${timeout}ms)`);
+                    throw new Error('TIMEOUT');
+                }
+                throw fetchError;
             }
-
-            const data = await response.json();
-            console.log(`✅ [Hugging Face] API調用成功 (耗時: ${responseTime}ms)`, { model, responseTime });
-            
-            // 處理不同的回應格式
-            if (Array.isArray(data) && data[0] && data[0].generated_text) {
-                return data[0].generated_text.trim();
-            } else if (data.generated_text) {
-                return data.generated_text.trim();
-            } else if (typeof data === 'string') {
-                return data.trim();
-            }
-            
-            console.warn('⚠️ [Hugging Face] API返回格式未預期:', data);
-            return null;
         } catch (error) {
+            if (error.message === 'MODEL_LOADING' || error.message === 'TIMEOUT') {
+                throw error; // 重新拋出特殊錯誤，讓調用者知道可以重試
+            }
             console.error(`❌ [Hugging Face] 模型 ${model} 調用失敗:`, error);
             return null;
         }
+    }
+
+    /**
+     * 根據標題智能推斷標籤
+     */
+    inferTagsFromTitle(title) {
+        const inferred = [];
+        const lowerTitle = title.toLowerCase();
+        
+        // 檢查標題關鍵字映射
+        for (const [keyword, tags] of Object.entries(this.titleToTagsMap)) {
+            if (lowerTitle.includes(keyword.toLowerCase())) {
+                inferred.push(...tags);
+                break; // 找到第一個匹配就停止
+            }
+        }
+        
+        return inferred;
     }
 
     /**
@@ -298,6 +387,7 @@ class AIService {
         const categoryMap = {
             'engineering': '工程',
             'information': '資訊',
+            'info': '資訊', // 支援 'info' slug
             'business': '商管',
             'design': '設計',
             'education': '教育',
@@ -314,15 +404,18 @@ class AIService {
         
         const categoryName = categoryMap[category] || '作品';
         
-        return `請為以下${categoryName}學群的作品生成一段專業的描述（50-100字）：
-作品標題：${title}
+        // 使用更簡潔且對 AI 模型友好的提示詞
+        // 對於多語言模型，使用中英文混合提示詞效果更好
+        return `Generate a professional description (50-100 words) for a ${categoryName} portfolio work.
 
-描述應包含：
-1. 作品的主要功能和特色
-2. 使用的技術或方法
-3. 作品的價值和意義
+Title: ${title}
 
-描述：`;
+The description should include:
+1. Main features and highlights
+2. Technologies or methods used
+3. Value and significance
+
+Description (in Traditional Chinese):`;
     }
 
     /**
@@ -333,6 +426,7 @@ class AIService {
         const categoryMap = {
             'engineering': { name: '工程學群', keywords: ['系統設計', '技術實現', '工程方法', '實務應用'] },
             'information': { name: '資訊學群', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'] },
+            'info': { name: '資訊學群', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'] }, // 支援 'info' slug
             'business': { name: '商管學群', keywords: ['商業分析', '市場策略', '管理實務', '商業模式'] },
             'design': { name: '設計學群', keywords: ['視覺設計', '使用者體驗', '創意設計', '美學呈現'] },
             'education': { name: '教育學群', keywords: ['教學設計', '學習方法', '教育科技', '知識傳遞'] },

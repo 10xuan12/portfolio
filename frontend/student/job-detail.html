@@ -48,25 +48,23 @@
                             <h2 id="companyName">企業名稱</h2>
                             <span class="job-status status-active" id="jobStatus">招募中</span>
                         </div>
+                        <div class="job-header-buttons">
+                            <button class="btn btn-primary" id="applyButtonHeader" onclick="applyJob()">
+                                <i class="bi bi-send"></i>
+                                立即申請
+                            </button>
+                        </div>
                     </div>
                     <div class="job-title-header">
                         <h1 class="job-title" id="jobTitle">職缺標題</h1>
-                        <div class="job-header-actions">
-                            <div class="job-header-info">
-                                <div class="info-row">
-                                    <i class="bi bi-calendar3"></i>
-                                    <span>發布日期：<span id="publishedDateHeader">-</span></span>
-                                </div>
-                                <div class="info-row" id="deadlineRowHeader" style="display: none;">
-                                    <i class="bi bi-clock"></i>
-                                    <span>截止日期：<span id="deadlineDateHeader">-</span></span>
-                                </div>
+                        <div class="job-header-info">
+                            <div class="info-row">
+                                <i class="bi bi-calendar3"></i>
+                                <span>發布日期：<span id="publishedDateHeader">-</span></span>
                             </div>
-                            <div class="job-header-buttons">
-                                <button class="btn btn-primary" id="applyButtonHeader" onclick="applyJob()">
-                                    <i class="bi bi-send"></i>
-                                    立即申請
-                                </button>
+                            <div class="info-row" id="deadlineRowHeader" style="display: none;">
+                                <i class="bi bi-clock"></i>
+                                <span>截止日期：<span id="deadlineDateHeader">-</span></span>
                             </div>
                         </div>
                     </div>
