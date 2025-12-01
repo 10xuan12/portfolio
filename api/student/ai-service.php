@@ -106,6 +106,9 @@ function generateDescription($input) {
             'agriculture' => '農業',
             'tourism' => '觀光餐旅',
             'sports' => '體育',
+            'mass-communication' => '大眾傳播',
+            'mass_communication' => '大眾傳播',
+            'communication' => '傳播',
             'other' => '其他'
         ];
         
@@ -127,6 +130,7 @@ function generateDescription($input) {
                     CURLOPT_POST => true,
                     CURLOPT_HTTPHEADER => [
                         'Content-Type: application/json',
+                        'User-Agent: Portfolio-Plus/1.0'
                     ],
                     CURLOPT_POSTFIELDS => json_encode([
                         'inputs' => $prompt,
@@ -138,8 +142,11 @@ function generateDescription($input) {
                             'repetition_penalty' => 1.2
                         ]
                     ]),
-                    CURLOPT_TIMEOUT => 15, // 15秒超時
-                    CURLOPT_CONNECTTIMEOUT => 5
+                    CURLOPT_TIMEOUT => 30, // 增加到30秒（Railway 上可能需要更長時間）
+                    CURLOPT_CONNECTTIMEOUT => 10, // 增加到10秒
+                    CURLOPT_SSL_VERIFYPEER => true, // 驗證 SSL 證書
+                    CURLOPT_FOLLOWLOCATION => true, // 跟隨重定向
+                    CURLOPT_MAXREDIRS => 3 // 最多跟隨3次重定向
                 ]);
                 
                 $response = curl_exec($ch);
@@ -149,17 +156,30 @@ function generateDescription($input) {
                 
                 if ($curlError) {
                     error_log("Hugging Face API curl error for {$model}: {$curlError}");
+                    // 在 Railway 上記錄更詳細的錯誤信息以便調試
+                    if (isset($_ENV['RAILWAY_ENVIRONMENT']) || isset($_ENV['RAILWAY'])) {
+                        $curlInfo = curl_getinfo($ch);
+                        error_log("Railway Environment - curl info: " . json_encode($curlInfo));
+                    }
                     continue;
                 }
                 
                 if ($httpCode === 503) {
-                    // 模型正在載入中
-                    error_log("Hugging Face model {$model} is loading");
+                    // 模型正在載入中，可能需要等待
+                    error_log("Hugging Face model {$model} is loading (HTTP 503)");
+                    // 可以選擇等待後重試，但為了速度，先嘗試下一個模型
+                    continue;
+                }
+                
+                if ($httpCode === 429) {
+                    // 請求過於頻繁（Rate Limit）
+                    error_log("Hugging Face API rate limit exceeded for {$model} (HTTP 429)");
                     continue;
                 }
                 
                 if ($httpCode !== 200) {
-                    error_log("Hugging Face API error for {$model}: HTTP {$httpCode}");
+                    $errorBody = substr($response, 0, 200); // 只記錄前200字符避免日誌過長
+                    error_log("Hugging Face API error for {$model}: HTTP {$httpCode} - Response: {$errorBody}");
                     continue;
                 }
                 

@@ -60,7 +60,12 @@ class AIService {
             '前端', '前端開發', '後端', '後端開發', '全端', '全端開發',
             '電商', '電子商務', '購物車', '支付', '金流', '物流',
             'API', 'RESTful', 'WebSocket', '微服務', '架構設計',
-            '響應式設計', '行動優先', 'PWA', 'SPA', 'SSR'
+            '響應式設計', '行動優先', 'PWA', 'SPA', 'SSR',
+            // 傳播媒體類
+            '新聞', '採訪', '報導', '傳播', '媒體', '新聞寫作', '內容創作',
+            '文案', '寫作', '內容行銷', '編輯', '文字', '文學創作',
+            '影片製作', '剪輯', 'Premiere Pro', 'After Effects', '攝影',
+            '動畫製作', '音訊處理', '音效設計'
         ];
         
         // 標題關鍵字到技能標籤的映射（智能推斷）
@@ -134,8 +139,10 @@ class AIService {
             '文案': ['文案', '內容創作', '寫作', '內容行銷'],
             '寫作': ['寫作', '內容創作', '文案', '文學創作'],
             '內容創作': ['內容創作', '文案', '寫作', '內容行銷'],
-            '新聞': ['新聞', '採訪', '報導', '傳播', '媒體'],
-            '傳播': ['傳播', '媒體', '新聞', '內容創作'],
+            '新聞': ['新聞', '採訪', '報導', '傳播', '媒體', '新聞寫作', '內容創作'],
+            '報導': ['新聞', '採訪', '報導', '傳播', '媒體', '新聞寫作', '內容創作'],
+            '記者': ['新聞', '採訪', '報導', '傳播', '媒體', '新聞寫作', '內容創作'],
+            '傳播': ['傳播', '媒體', '新聞', '內容創作', '新聞寫作'],
             
             // ========== 遊戲開發 ==========
             '遊戲': ['遊戲開發', 'Unity', 'Unreal Engine', '遊戲設計'],
@@ -185,8 +192,33 @@ class AIService {
         try {
             console.log('🤖 [AI服務] 開始生成作品描述...', { title, category });
             
-            // 直接使用本地智能生成（快速、穩定、對中文支援更好）
-            // 註：本地生成是基於規則和模板的智能生成系統，已針對作品集場景優化
+            // 優先嘗試使用後端代理 API（Hugging Face）
+            try {
+                console.log('🌐 [AI服務] 嘗試使用 Hugging Face API（透過後端代理）...');
+                const apiDescription = await this.callBackendProxyAPI(title, category);
+                
+                if (apiDescription && apiDescription.length > 20 && !apiDescription.includes('undefined')) {
+                    metadata.source = 'huggingface';
+                    metadata.model = 'backend_proxy';
+                    this.recordUsage('huggingface', 'description');
+                    console.log('✅ [AI服務] 使用 Hugging Face API 生成完成', { 
+                        source: 'huggingface', 
+                        model: 'backend_proxy',
+                        descriptionLength: apiDescription.length 
+                    });
+                    
+                    if (returnMetadata) {
+                        return { description: apiDescription, metadata };
+                    }
+                    return apiDescription;
+                } else {
+                    console.log('⚠️ [AI服務] Hugging Face API 返回結果不理想，改用本地生成');
+                }
+            } catch (apiError) {
+                console.log('❌ [AI服務] Hugging Face API 調用失敗，改用本地生成:', apiError.message);
+            }
+            
+            // 備用方案：使用本地智能生成（快速、穩定、對中文支援更好）
             const description = this.generateDescriptionLocally(title, category);
             metadata.source = 'local';
             metadata.model = 'smart_template'; // 標記為智能模板生成
@@ -470,29 +502,47 @@ class AIService {
             });
         }
         
-        // 2. 檢查應用類型關鍵字（需要更精確的匹配）
-        const appTypeKeywords = ['記帳', '電商', '網站', '系統', '平台', '分析', '設計', '行動應用', '手機', '行動'];
-        
-        for (const keyword of appTypeKeywords) {
-            // 使用更精確的匹配（避免 "APP" 匹配到 "App"）
-            if (title.includes(keyword)) {
-                // 檢查是否是完整詞組匹配
-                const keywordLower = keyword.toLowerCase();
-                const keywordIndex = lowerTitle.indexOf(keywordLower);
-                
-                // 確保是完整詞組（前後不是字母或數字）
-                const before = keywordIndex > 0 ? title[keywordIndex - 1] : '';
-                const after = keywordIndex + keyword.length < title.length ? title[keywordIndex + keyword.length] : '';
-                const isWordBoundary = !/[a-zA-Z0-9]/.test(before) && !/[a-zA-Z0-9]/.test(after);
-                
-                if (isWordBoundary && this.titleToTagsMap[keyword]) {
-                    // 合併標籤，避免重複
+        // 2. 檢查應用類型關鍵字（需要更精確的匹配，按優先順序）
+        // 優先檢查新聞/傳播類（避免被其他關鍵字誤匹配）
+        const journalismKeywords = ['記者', '報導', '新聞', '傳播', '採訪'];
+        for (const keyword of journalismKeywords) {
+            if (lowerTitle.includes(keyword.toLowerCase())) {
+                if (this.titleToTagsMap[keyword]) {
                     this.titleToTagsMap[keyword].forEach(tag => {
                         if (!inferred.includes(tag)) {
                             inferred.push(tag);
                         }
                     });
-                    break; // 找到第一個匹配就停止
+                    break;
+                }
+            }
+        }
+        
+        // 如果已經找到新聞/傳播類標籤，跳過其他匹配
+        if (inferred.length === 0) {
+            const appTypeKeywords = ['記帳', '電商', '網站', '系統', '平台', '分析', '設計', '行動應用', '手機', '行動'];
+            
+            for (const keyword of appTypeKeywords) {
+                // 使用更精確的匹配（避免 "APP" 匹配到 "App"）
+                if (title.includes(keyword)) {
+                    // 檢查是否是完整詞組匹配
+                    const keywordLower = keyword.toLowerCase();
+                    const keywordIndex = lowerTitle.indexOf(keywordLower);
+                    
+                    // 確保是完整詞組（前後不是字母或數字）
+                    const before = keywordIndex > 0 ? title[keywordIndex - 1] : '';
+                    const after = keywordIndex + keyword.length < title.length ? title[keywordIndex + keyword.length] : '';
+                    const isWordBoundary = !/[a-zA-Z0-9]/.test(before) && !/[a-zA-Z0-9]/.test(after);
+                    
+                    if (isWordBoundary && this.titleToTagsMap[keyword]) {
+                        // 合併標籤，避免重複
+                        this.titleToTagsMap[keyword].forEach(tag => {
+                            if (!inferred.includes(tag)) {
+                                inferred.push(tag);
+                            }
+                        });
+                        break; // 找到第一個匹配就停止
+                    }
                 }
             }
         }
@@ -567,6 +617,9 @@ class AIService {
             'agriculture': '農業',
             'tourism': '觀光餐旅',
             'sports': '體育',
+            'mass-communication': '大眾傳播',
+            'mass_communication': '大眾傳播',
+            'communication': '傳播',
             'other': '其他'
         };
         
@@ -606,6 +659,9 @@ Description (in Traditional Chinese):`;
             'agriculture': { name: '農業學群', keywords: ['農業技術', '永續發展', '生態保護', '農業創新'], tech: ['農業科技', '環境監測', '永續技術'] },
             'tourism': { name: '觀光餐旅學群', keywords: ['服務設計', '體驗規劃', '餐飲管理', '觀光規劃'], tech: ['服務系統', '體驗設計', '管理平台'] },
             'sports': { name: '體育學群', keywords: ['運動科學', '訓練方法', '體能分析', '運動表現'], tech: ['運動分析', '訓練系統', '體能監測'] },
+            'mass-communication': { name: '大眾傳播學群', keywords: ['新聞採訪', '報導寫作', '媒體製作', '傳播策略'], tech: ['新聞寫作', '媒體製作', '內容創作', '傳播規劃'] },
+            'mass_communication': { name: '大眾傳播學群', keywords: ['新聞採訪', '報導寫作', '媒體製作', '傳播策略'], tech: ['新聞寫作', '媒體製作', '內容創作', '傳播規劃'] },
+            'communication': { name: '傳播學群', keywords: ['新聞採訪', '報導寫作', '媒體製作', '傳播策略'], tech: ['新聞寫作', '媒體製作', '內容創作', '傳播規劃'] },
             'other': { name: '其他', keywords: ['創新應用', '跨領域整合', '實務專案', '綜合應用'], tech: ['創新技術', '跨領域', '綜合應用'] }
         };
         
@@ -725,17 +781,33 @@ Description (in Traditional Chinese):`;
         
         let description = '';
         
+        // 為新聞/傳播類作品添加專門處理
+        if (isJournalism || category === 'mass-communication' || category === 'mass_communication' || category === 'communication') {
+            const templates = [
+                () => {
+                    return `${opening}專業的新聞報導${categoryName}作品${connectors[0]}展現了優秀的新聞採訪和報導寫作能力。作品透過深入的採訪和嚴謹的資料收集，呈現出具有新聞價值和社會意義的報導內容。在${keywords.length > 0 ? keywords[0] : '新聞寫作'}和${keywords.length > 1 ? keywords[1] : '內容呈現'}方面，運用了專業的新聞寫作技巧和媒體製作方法，確保報導能夠準確傳達訊息並引起讀者共鳴。透過完整的採訪、寫作和編輯流程，作品展現了良好的新聞素養和專業水準${ending}`;
+                },
+                () => {
+                    return `本新聞報導${categoryName}作品${title}${connectors[0]}結合了新聞專業素養和創意思維，${keywords.length > 0 ? `在${keywords[0]}方面` : '在報導寫作方面'}表現出色。作品透過系統化的採訪方法和嚴謹的資料驗證，創造出具有深度和廣度的新聞報導。${keywords.length > 1 ? `特別在${keywords[1]}方面，` : ''}運用了專業的新聞寫作技巧和媒體呈現方法，確保報導能夠有效傳達訊息並產生社會影響。經過完整的採訪和編輯流程，作品展現了優秀的新聞價值和專業水準${ending}`;
+                }
+            ];
+            description = templates[Math.floor(Math.random() * templates.length)]();
+            return description;
+        }
+        
         // 根據作品類型生成特定描述（按優先順序，使用更自然的語言）
         if (isAccounting) {
             // 多樣化的描述模板
             const templates = [
                 () => {
                     const tech = this.inferTechFromTitle(title, ['Java', '資料庫', '後端開發']);
-                    return `${opening}一個功能完整的記帳管理${categoryName}作品${connectors[0]}採用穩定的後端技術架構${tech ? `（${tech.join('、')}）` : ''}，實現了帳務記錄、分類管理、統計分析等核心功能。在${keywords.length > 0 ? keywords[0] : '資料處理'}和${keywords.length > 1 ? keywords[1] : '資料庫設計'}方面，運用了高效的資料結構和查詢優化技術，確保系統能夠快速且準確地處理大量財務資料。透過完整的開發流程和實際測試驗證，系統展現了良好的準確性和實用性${ending}`;
+                    const techStr = (tech && tech.length > 0) ? `（${tech.join('、')}）` : '';
+                    return `${opening}一個功能完整的記帳管理${categoryName}作品${connectors[0]}採用穩定的後端技術架構${techStr}，實現了帳務記錄、分類管理、統計分析等核心功能。在${keywords.length > 0 ? keywords[0] : '資料處理'}和${keywords.length > 1 ? keywords[1] : '資料庫設計'}方面，運用了高效的資料結構和查詢優化技術，確保系統能夠快速且準確地處理大量財務資料。透過完整的開發流程和實際測試驗證，系統展現了良好的準確性和實用性${ending}`;
                 },
                 () => {
                     const tech = this.inferTechFromTitle(title, ['Java', '資料庫', '後端開發']);
-                    return `${opening}專業的記帳管理${categoryName}系統${connectors[0]}整合了${tech ? tech[0] : '現代化'}技術架構，提供完整的財務管理解決方案。系統核心功能包括帳務記錄、分類管理、統計分析等，${keywords.length > 0 ? `特別在${keywords[0]}方面` : '在資料處理方面'}採用優化的演算法，能夠高效處理複雜的財務數據。經過嚴謹的開發和測試流程，確保了系統的可靠性和實用價值${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech[0] : '現代化';
+                    return `${opening}專業的記帳管理${categoryName}系統${connectors[0]}整合了${techStr}技術架構，提供完整的財務管理解決方案。系統核心功能包括帳務記錄、分類管理、統計分析等，${keywords.length > 0 ? `特別在${keywords[0]}方面` : '在資料處理方面'}採用優化的演算法，能夠高效處理複雜的財務數據。經過嚴謹的開發和測試流程，確保了系統的可靠性和實用價值${ending}`;
                 },
                 () => {
                     return `本記帳管理${categoryName}作品${title}${connectors[0]}以穩定的技術架構為基礎，實現了完整的財務管理功能。系統在${keywords.length > 0 ? keywords[0] : '資料處理'}方面表現出色，透過智能化的資料結構設計和查詢優化，能夠快速響應使用者的各種需求。${keywords.length > 1 ? `在${keywords[1]}方面，` : ''}系統展現了良好的擴展性和維護性，為使用者提供了一個可靠且易用的記帳解決方案${ending}`;
@@ -824,10 +896,12 @@ Description (in Traditional Chinese):`;
             const tech = this.inferTechFromTitle(title, ['前端開發', 'React', 'Vue', 'JavaScript', 'HTML', 'CSS']);
             const templates = [
                 () => {
-                    return `${opening}功能完整的電子商務${categoryName}平台${connectors[0]}採用現代化的${tech ? tech[0] : '前端'}技術架構，實現了商品展示、購物車管理、訂單處理、支付整合等完整的電商功能。在${keywords.length > 0 ? keywords[0] : '系統架構'}方面，運用了響應式設計和優化的使用者體驗設計，確保在不同裝置上都能提供流暢且直觀的購物體驗。系統經過完整的開發、測試和優化流程，展現了良好的穩定性和實用性${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech[0] : '前端';
+                    return `${opening}功能完整的電子商務${categoryName}平台${connectors[0]}採用現代化的${techStr}技術架構，實現了商品展示、購物車管理、訂單處理、支付整合等完整的電商功能。在${keywords.length > 0 ? keywords[0] : '系統架構'}方面，運用了響應式設計和優化的使用者體驗設計，確保在不同裝置上都能提供流暢且直觀的購物體驗。系統經過完整的開發、測試和優化流程，展現了良好的穩定性和實用性${ending}`;
                 },
                 () => {
-                    return `本電商${categoryName}作品${title}${connectors[0]}整合了${tech ? tech.join('、') : '現代化前端技術'}，打造了一個功能豐富且易用的購物平台。系統核心功能包括商品管理、購物車、訂單處理等，${keywords.length > 0 ? `特別在${keywords[0]}方面` : '在用戶體驗方面'}採用了響應式設計和優化的互動流程，為使用者提供流暢的購物體驗。透過實際部署和用戶反饋，證明了系統的實用價值和技術水準${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech.join('、') : '現代化前端技術';
+                    return `本電商${categoryName}作品${title}${connectors[0]}整合了${techStr}，打造了一個功能豐富且易用的購物平台。系統核心功能包括商品管理、購物車、訂單處理等，${keywords.length > 0 ? `特別在${keywords[0]}方面` : '在用戶體驗方面'}採用了響應式設計和優化的互動流程，為使用者提供流暢的購物體驗。透過實際部署和用戶反饋，證明了系統的實用價值和技術水準${ending}`;
                 }
             ];
             description = templates[Math.floor(Math.random() * templates.length)]();
@@ -835,10 +909,12 @@ Description (in Traditional Chinese):`;
             const tech = this.inferTechFromTitle(title, ['HTML', 'CSS', 'JavaScript', '前端開發']);
             const templates = [
                 () => {
-                    return `${opening}精心設計的${categoryName}網站作品${connectors[0]}結合了現代化的${tech ? tech.slice(0, 2).join('、') : '前端'}技術，實現了美觀的視覺設計和流暢的互動體驗。在${keywords.length > 0 ? keywords[0] : '前端開發'}和${keywords.length > 1 ? keywords[1] : '使用者體驗'}方面，運用了響應式設計原則和現代化的前端框架，確保網站在各種裝置上都能完美呈現。透過完整的開發流程和測試驗證，網站展現了良好的專業品質和實用價值${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech.slice(0, 2).join('、') : '前端';
+                    return `${opening}精心設計的${categoryName}網站作品${connectors[0]}結合了現代化的${techStr}技術，實現了美觀的視覺設計和流暢的互動體驗。在${keywords.length > 0 ? keywords[0] : '前端開發'}和${keywords.length > 1 ? keywords[1] : '使用者體驗'}方面，運用了響應式設計原則和現代化的前端框架，確保網站在各種裝置上都能完美呈現。透過完整的開發流程和測試驗證，網站展現了良好的專業品質和實用價值${ending}`;
                 },
                 () => {
-                    return `本網站${categoryName}作品${title}${connectors[0]}採用${tech ? tech.join('、') : '現代前端技術'}打造，注重視覺美感和使用者體驗的平衡。${keywords.length > 0 ? `在${keywords[0]}方面，` : ''}網站運用了響應式設計和優化的互動流程，為使用者提供流暢且直觀的瀏覽體驗。經過完整的設計、開發和測試流程，作品展現了優秀的技術實力和設計水準${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech.join('、') : '現代前端技術';
+                    return `本網站${categoryName}作品${title}${connectors[0]}採用${techStr}打造，注重視覺美感和使用者體驗的平衡。${keywords.length > 0 ? `在${keywords[0]}方面，` : ''}網站運用了響應式設計和優化的互動流程，為使用者提供流暢且直觀的瀏覽體驗。經過完整的設計、開發和測試流程，作品展現了優秀的技術實力和設計水準${ending}`;
                 }
             ];
             description = templates[Math.floor(Math.random() * templates.length)]();
@@ -846,10 +922,12 @@ Description (in Traditional Chinese):`;
             const tech = this.inferTechFromTitle(title, ['React Native', 'Flutter', '行動應用']);
             const templates = [
                 () => {
-                    return `${opening}功能豐富的${categoryName}行動應用作品${connectors[0]}採用${tech ? tech[0] : '跨平台'}開發技術，實現了流暢的使用者介面和穩定的功能運作。在${keywords.length > 0 ? keywords[0] : '應用開發'}方面，注重使用者體驗設計和效能優化，確保應用程式能夠在不同平台上提供一致且良好的使用體驗。透過實際部署和用戶測試，應用展現了良好的實用性和技術水準${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech[0] : '跨平台';
+                    return `${opening}功能豐富的${categoryName}行動應用作品${connectors[0]}採用${techStr}開發技術，實現了流暢的使用者介面和穩定的功能運作。在${keywords.length > 0 ? keywords[0] : '應用開發'}方面，注重使用者體驗設計和效能優化，確保應用程式能夠在不同平台上提供一致且良好的使用體驗。透過實際部署和用戶測試，應用展現了良好的實用性和技術水準${ending}`;
                 },
                 () => {
-                    return `本行動應用${categoryName}作品${title}${connectors[0]}整合了${tech ? tech.join('、') : '現代化行動開發技術'}，打造了一個功能完整且易用的應用程式。${keywords.length > 0 ? `在${keywords[0]}方面，` : ''}應用特別注重使用者體驗的優化和效能提升，透過精心的介面設計和流暢的互動流程，為使用者提供優質的使用體驗。經過完整的開發和測試流程，應用證明了其技術實力和實用價值${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech.join('、') : '現代化行動開發技術';
+                    return `本行動應用${categoryName}作品${title}${connectors[0]}整合了${techStr}，打造了一個功能完整且易用的應用程式。${keywords.length > 0 ? `在${keywords[0]}方面，` : ''}應用特別注重使用者體驗的優化和效能提升，透過精心的介面設計和流暢的互動流程，為使用者提供優質的使用體驗。經過完整的開發和測試流程，應用證明了其技術實力和實用價值${ending}`;
                 }
             ];
             description = templates[Math.floor(Math.random() * templates.length)]();
@@ -857,10 +935,12 @@ Description (in Traditional Chinese):`;
             const tech = this.inferTechFromTitle(title, ['後端開發', '資料庫', 'API']);
             const templates = [
                 () => {
-                    return `${opening}完整的${categoryName}系統作品${connectors[0]}採用系統化的架構設計，實現了核心功能模組和資料管理機制。在${keywords.length > 0 ? keywords[0] : '系統架構'}和${keywords.length > 1 ? keywords[1] : '資料處理'}方面，運用了${tech ? tech.join('、') : '現代化'}的開發技術，確保系統具有良好的穩定性和擴展性。透過完整的開發流程和實際應用驗證，系統展現了優秀的專業水準和實用價值${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech.join('、') : '現代化';
+                    return `${opening}完整的${categoryName}系統作品${connectors[0]}採用系統化的架構設計，實現了核心功能模組和資料管理機制。在${keywords.length > 0 ? keywords[0] : '系統架構'}和${keywords.length > 1 ? keywords[1] : '資料處理'}方面，運用了${techStr}的開發技術，確保系統具有良好的穩定性和擴展性。透過完整的開發流程和實際應用驗證，系統展現了優秀的專業水準和實用價值${ending}`;
                 },
                 () => {
-                    return `本系統${categoryName}作品${title}${connectors[0]}以穩定的技術架構為基礎，整合了多個功能模組和資料管理機制。${keywords.length > 0 ? `在${keywords[0]}方面，` : ''}系統運用了${tech ? tech[0] : '現代化'}技術和最佳實踐，確保了良好的效能和可維護性。經過完整的設計、開發和測試流程，系統展現了優秀的技術實力和實用性${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech[0] : '現代化';
+                    return `本系統${categoryName}作品${title}${connectors[0]}以穩定的技術架構為基礎，整合了多個功能模組和資料管理機制。${keywords.length > 0 ? `在${keywords[0]}方面，` : ''}系統運用了${techStr}技術和最佳實踐，確保了良好的效能和可維護性。經過完整的設計、開發和測試流程，系統展現了優秀的技術實力和實用性${ending}`;
                 }
             ];
             description = templates[Math.floor(Math.random() * templates.length)]();
@@ -879,13 +959,16 @@ Description (in Traditional Chinese):`;
             const tech = this.inferTechFromTitle(title);
             const templates = [
                 () => {
-                    return `${opening}優秀的${categoryName}作品${connectors[0]}${keywords.length > 0 ? `在${keywords[0]}方面` : '在技術實現方面'}展現了專業的能力和創新的思維。${tech ? `作品運用了${tech.slice(0, 2).join('、')}等現代化技術，` : ''}${keywords.length > 1 ? `特別在${keywords[1]}和${keywords.length > 2 ? keywords[2] : '功能設計'}方面，` : ''}透過系統化的方法和嚴謹的實作，確保了作品的品質和實用性。經過完整的開發流程和實際應用驗證，作品展現了良好的專業水準和實用價值${ending}`;
+                    const techStr = (tech && tech.length > 0) ? `作品運用了${tech.slice(0, 2).join('、')}等現代化技術，` : '';
+                    return `${opening}優秀的${categoryName}作品${connectors[0]}${keywords.length > 0 ? `在${keywords[0]}方面` : '在技術實現方面'}展現了專業的能力和創新的思維。${techStr}${keywords.length > 1 ? `特別在${keywords[1]}和${keywords.length > 2 ? keywords[2] : '功能設計'}方面，` : ''}透過系統化的方法和嚴謹的實作，確保了作品的品質和實用性。經過完整的開發流程和實際應用驗證，作品展現了良好的專業水準和實用價值${ending}`;
                 },
                 () => {
-                    return `本${categoryName}作品${title}${connectors[0]}結合了${tech ? tech[0] : '現代化'}技術和創新思維，${keywords.length > 0 ? `在${keywords[0]}方面` : '在核心功能方面'}表現出色。${keywords.length > 1 ? `作品特別注重${keywords[1]}和${keywords.length > 2 ? keywords[2] : '使用者體驗'}的優化，` : ''}透過精心的設計和實作，創造出既實用又具有創新性的解決方案。作品經過完整的開發和測試流程，證明了其專業品質和技術實力${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech[0] : '現代化';
+                    return `本${categoryName}作品${title}${connectors[0]}結合了${techStr}技術和創新思維，${keywords.length > 0 ? `在${keywords[0]}方面` : '在核心功能方面'}表現出色。${keywords.length > 1 ? `作品特別注重${keywords[1]}和${keywords.length > 2 ? keywords[2] : '使用者體驗'}的優化，` : ''}透過精心的設計和實作，創造出既實用又具有創新性的解決方案。作品經過完整的開發和測試流程，證明了其專業品質和技術實力${ending}`;
                 },
                 () => {
-                    return `${opening}精心設計的${categoryName}作品${connectors[0]}展現了作者在${keywords.length > 0 ? keywords[0] : '技術實現'}方面的專業能力。${tech ? `採用${tech.slice(0, 3).join('、')}等技術，` : ''}${keywords.length > 1 ? `特別在${keywords[1]}方面，` : ''}作品運用了現代化的方法和最佳實踐，確保了高品質的輸出。透過完整的開發週期和實際應用，作品展現了良好的實用性和專業水準${ending}`;
+                    const techStr = (tech && tech.length > 0) ? tech.slice(0, 3).join('、') : '';
+                    return `${opening}精心設計的${categoryName}作品${connectors[0]}展現了作者在${keywords.length > 0 ? keywords[0] : '技術實現'}方面的專業能力。${techStr ? `採用${techStr}等技術，` : ''}${keywords.length > 1 ? `特別在${keywords[1]}方面，` : ''}作品運用了現代化的方法和最佳實踐，確保了高品質的輸出。透過完整的開發週期和實際應用，作品展現了良好的實用性和專業水準${ending}`;
                 }
             ];
             description = templates[Math.floor(Math.random() * templates.length)]();
