@@ -84,40 +84,18 @@ class AIService {
         try {
             console.log('🤖 [AI服務] 開始生成作品描述...', { title, category });
             
-            // 優先嘗試使用 Hugging Face API（更智能的 AI 生成）
+            // 優先嘗試使用後端代理 API（避免 CORS 問題）
             try {
-                console.log('🌐 [AI服務] 優先嘗試使用 Hugging Face API...');
-                const prompt = this.buildDescriptionPrompt(title, category);
-                
-                // 嘗試多個模型，直到找到可用的
-                let apiDescription = null;
-                let usedModel = null;
-                
-                for (const model of this.textGenerationModels) {
-                    try {
-                        apiDescription = await this.callTextGenerationAPI(prompt, model);
-                        if (apiDescription && apiDescription.length > 20) {
-                            usedModel = model;
-                            break;
-                        }
-                    } catch (modelError) {
-                        // 如果是模型載入中或超時，跳過該模型繼續嘗試下一個
-                        if (modelError.message === 'MODEL_LOADING' || modelError.message === 'TIMEOUT') {
-                            console.log(`⏳ [AI服務] 模型 ${model} ${modelError.message === 'MODEL_LOADING' ? '正在載入中' : '響應超時'}，嘗試下一個模型...`);
-                        } else {
-                            console.log(`⚠️ [AI服務] 模型 ${model} 調用失敗，嘗試下一個模型...`);
-                        }
-                        continue;
-                    }
-                }
+                console.log('🌐 [AI服務] 優先嘗試使用後端代理 API...');
+                const apiDescription = await this.callBackendProxyAPI(title, category);
                 
                 if (apiDescription && apiDescription.length > 20) {
                     metadata.source = 'huggingface';
-                    metadata.model = usedModel;
+                    metadata.model = 'backend_proxy';
                     this.recordUsage('huggingface', 'description');
-                    console.log('✅ [AI服務] 使用 Hugging Face API 生成完成', { 
+                    console.log('✅ [AI服務] 使用後端代理 API 生成完成', { 
                         source: 'huggingface', 
-                        model: usedModel,
+                        model: 'backend_proxy',
                         descriptionLength: apiDescription.length 
                     });
                     
@@ -126,10 +104,10 @@ class AIService {
                     }
                     return apiDescription;
                 } else {
-                    console.log('⚠️ [AI服務] Hugging Face API 返回結果不理想，改用本地生成');
+                    console.log('⚠️ [AI服務] 後端代理 API 返回結果不理想，改用本地生成');
                 }
             } catch (apiError) {
-                console.log('❌ [AI服務] Hugging Face API 調用失敗，改用本地生成:', apiError.message);
+                console.log('❌ [AI服務] 後端代理 API 調用失敗，改用本地生成:', apiError.message);
             }
             
             // 備用方案：使用本地智能生成（更可靠，對中文支援更好）
@@ -241,7 +219,56 @@ class AIService {
     }
 
     /**
-     * 調用文本生成API
+     * 調用後端代理 API（避免 CORS 問題）
+     */
+    async callBackendProxyAPI(title, category) {
+        try {
+            // 獲取 API 基礎 URL
+            let apiBase = '/api';
+            if (typeof getApiBaseUrl === 'function') {
+                apiBase = getApiBaseUrl();
+            } else if (window.apiService && typeof window.apiService.getApiBase === 'function') {
+                apiBase = window.apiService.getApiBase();
+            } else if (window.config && window.config.apiBase) {
+                apiBase = window.config.apiBase;
+            }
+            
+            const url = `${apiBase}/student/ai-service.php`;
+            
+            console.log('🌐 [後端代理] 調用 API:', url);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'generate_description',
+                    title: title,
+                    category: category
+                })
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`後端 API 錯誤: ${response.status} - ${errorText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.data && data.data.description) {
+                return data.data.description;
+            }
+            
+            throw new Error(data.message || '後端 API 返回格式錯誤');
+        } catch (error) {
+            console.error('❌ [後端代理] API 調用失敗:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 調用文本生成API（直接調用 Hugging Face，可能會有 CORS 問題）
      */
     async callTextGenerationAPI(prompt, model, timeout = 10000) {
         try {
@@ -424,51 +451,124 @@ Description (in Traditional Chinese):`;
     generateDescriptionLocally(title, category) {
         console.log('💻 [本地生成] 開始生成描述...', { title, category });
         const categoryMap = {
-            'engineering': { name: '工程學群', keywords: ['系統設計', '技術實現', '工程方法', '實務應用'] },
-            'information': { name: '資訊學群', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'] },
-            'info': { name: '資訊學群', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'] }, // 支援 'info' slug
-            'business': { name: '商管學群', keywords: ['商業分析', '市場策略', '管理實務', '商業模式'] },
-            'design': { name: '設計學群', keywords: ['視覺設計', '使用者體驗', '創意設計', '美學呈現'] },
-            'education': { name: '教育學群', keywords: ['教學設計', '學習方法', '教育科技', '知識傳遞'] },
-            'arts': { name: '藝術學群', keywords: ['藝術創作', '美學表現', '創意表達', '視覺藝術'] },
-            'humanities': { name: '人文學群', keywords: ['人文思考', '文化研究', '社會觀察', '價值探討'] },
-            'social': { name: '社會學群', keywords: ['社會分析', '社會議題', '社會服務', '社會影響'] },
-            'science': { name: '自然科學學群', keywords: ['科學研究', '實驗分析', '數據驗證', '理論應用'] },
-            'medicine': { name: '醫藥衛生學群', keywords: ['醫療應用', '健康照護', '醫學研究', '公共衛生'] },
-            'agriculture': { name: '農業學群', keywords: ['農業技術', '永續發展', '生態保護', '農業創新'] },
-            'tourism': { name: '觀光餐旅學群', keywords: ['服務設計', '體驗規劃', '餐飲管理', '觀光規劃'] },
-            'sports': { name: '體育學群', keywords: ['運動科學', '訓練方法', '體能分析', '運動表現'] },
-            'other': { name: '其他', keywords: ['創新應用', '跨領域整合', '實務專案', '綜合應用'] }
+            'engineering': { name: '工程學群', keywords: ['系統設計', '技術實現', '工程方法', '實務應用'], tech: ['系統架構', '技術整合', '工程實務'] },
+            'information': { name: '資訊學群', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'], tech: ['前端開發', '後端開發', '資料庫設計', 'API開發'] },
+            'info': { name: '資訊學群', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'], tech: ['前端開發', '後端開發', '資料庫設計', 'API開發'] },
+            'business': { name: '商管學群', keywords: ['商業分析', '市場策略', '管理實務', '商業模式'], tech: ['數據分析', '市場研究', '商業規劃'] },
+            'design': { name: '設計學群', keywords: ['視覺設計', '使用者體驗', '創意設計', '美學呈現'], tech: ['UI設計', 'UX設計', '視覺傳達', '品牌設計'] },
+            'education': { name: '教育學群', keywords: ['教學設計', '學習方法', '教育科技', '知識傳遞'], tech: ['教學平台', '學習系統', '教育科技'] },
+            'arts': { name: '藝術學群', keywords: ['藝術創作', '美學表現', '創意表達', '視覺藝術'], tech: ['視覺藝術', '創意設計', '藝術表現'] },
+            'humanities': { name: '人文學群', keywords: ['人文思考', '文化研究', '社會觀察', '價值探討'], tech: ['文化研究', '社會分析', '人文應用'] },
+            'social': { name: '社會學群', keywords: ['社會分析', '社會議題', '社會服務', '社會影響'], tech: ['社會研究', '社會服務', '社會分析'] },
+            'science': { name: '自然科學學群', keywords: ['科學研究', '實驗分析', '數據驗證', '理論應用'], tech: ['科學計算', '數據分析', '實驗設計'] },
+            'medicine': { name: '醫藥衛生學群', keywords: ['醫療應用', '健康照護', '醫學研究', '公共衛生'], tech: ['醫療系統', '健康管理', '醫學資訊'] },
+            'agriculture': { name: '農業學群', keywords: ['農業技術', '永續發展', '生態保護', '農業創新'], tech: ['農業科技', '環境監測', '永續技術'] },
+            'tourism': { name: '觀光餐旅學群', keywords: ['服務設計', '體驗規劃', '餐飲管理', '觀光規劃'], tech: ['服務系統', '體驗設計', '管理平台'] },
+            'sports': { name: '體育學群', keywords: ['運動科學', '訓練方法', '體能分析', '運動表現'], tech: ['運動分析', '訓練系統', '體能監測'] },
+            'other': { name: '其他', keywords: ['創新應用', '跨領域整合', '實務專案', '綜合應用'], tech: ['創新技術', '跨領域', '綜合應用'] }
         };
         
         const categoryInfo = categoryMap[category] || categoryMap['other'];
         const categoryName = categoryInfo.name;
         const keywords = categoryInfo.keywords;
+        const techKeywords = categoryInfo.tech;
         
-        // 從標題中提取關鍵字
+        // 從標題中提取關鍵字和技術相關詞
         const titleKeywords = this.extractKeywordsFromTitle(title);
+        const titleTechWords = this.extractTechWordsFromTitle(title);
         
-        // 選擇相關的關鍵字
+        // 選擇相關的關鍵字和技術詞
         const selectedKeywords = this.selectRelevantKeywords(titleKeywords, keywords);
+        const selectedTech = this.selectRelevantKeywords(titleTechWords, techKeywords);
         
-        // 生成多樣化的描述模板（categoryName 已經包含「學群」後綴）
-        const templates = [
-            `這是一個${categoryName}的優秀作品。${title}${selectedKeywords.length > 0 ? `在${selectedKeywords[0]}方面` : ''}展現了創新的思維和專業的技能。作品結合了理論與實務，具有很高的實用價值和學習意義，能夠有效解決實際問題並提供良好的使用者體驗。`,
-            `${title}是一個精心設計的${categoryName}作品。作品${selectedKeywords.length > 0 ? `在${selectedKeywords[0]}和${selectedKeywords[1] || '功能設計'}方面` : '在技術實現和功能設計方面'}都表現出色，展現了作者的專業能力和創意思維。透過系統化的開發流程，確保了作品的品質和可用性。`,
-            `本作品${title}屬於${categoryName}，展現了作者在該領域的專業素養。作品設計精良，功能完善，${selectedKeywords.length > 0 ? `特別在${selectedKeywords[0]}方面` : '在整體架構和實作細節方面'}具有很好的示範價值。透過實際應用驗證，證明了作品的實用性和有效性。`
-        ];
+        // 根據標題內容智能生成描述
+        let description = this.buildSmartDescription(title, categoryName, selectedKeywords, selectedTech, titleKeywords);
         
-        // 根據標題長度選擇模板（長標題用簡短描述，短標題用詳細描述）
-        let selectedTemplate;
-        if (title.length > 20) {
-            selectedTemplate = templates[0]; // 較簡短
-        } else if (title.length > 10) {
-            selectedTemplate = templates[1]; // 中等
-        } else {
-            selectedTemplate = templates[2]; // 較詳細
+        return description;
+    }
+    
+    /**
+     * 從標題中提取技術相關詞
+     */
+    extractTechWordsFromTitle(title) {
+        const techWords = {
+            '網站': ['前端開發', 'HTML', 'CSS', 'JavaScript', '響應式設計'],
+            '電商': ['前端開發', 'UI', 'UX', '電子商務', '購物車', '支付系統'],
+            '系統': ['後端開發', '資料庫', 'API', '系統架構'],
+            'App': ['行動應用', 'React Native', 'Flutter', 'iOS', 'Android'],
+            '平台': ['全端開發', '雲端服務', '微服務', 'API'],
+            '設計': ['UI設計', 'UX設計', '視覺設計', 'Figma'],
+            '分析': ['數據分析', 'Python', 'SQL', '商業分析'],
+            '管理': ['管理系統', '資料庫', '後端開發', 'API']
+        };
+        
+        const extracted = [];
+        const lowerTitle = title.toLowerCase();
+        
+        for (const [keyword, techs] of Object.entries(techWords)) {
+            if (lowerTitle.includes(keyword)) {
+                extracted.push(...techs);
+            }
         }
         
-        return selectedTemplate;
+        return extracted;
+    }
+    
+    /**
+     * 智能構建描述
+     */
+    buildSmartDescription(title, categoryName, keywords, techWords, titleKeywords) {
+        // 檢測作品類型
+        const isWebsite = title.includes('網站') || title.includes('網頁') || title.includes('Web');
+        const isEcommerce = title.includes('電商') || title.includes('購物') || title.includes('商城');
+        const isApp = title.includes('App') || title.includes('應用') || title.includes('程式');
+        const isSystem = title.includes('系統') || title.includes('平台') || title.includes('管理');
+        const isDesign = title.includes('設計') || title.includes('UI') || title.includes('UX');
+        
+        let description = '';
+        
+        // 根據作品類型生成特定描述
+        if (isEcommerce) {
+            description = `${title}是一個功能完整的電子商務${categoryName}作品。`;
+            description += `作品採用現代化的前端技術架構，實現了商品展示、購物車管理、訂單處理等核心功能。`;
+            description += `在${keywords.length > 0 ? keywords[0] : '系統架構'}方面，運用了響應式設計和優化的使用者體驗，`;
+            description += `確保在不同裝置上都能提供流暢的購物體驗。透過實際開發與測試，驗證了系統的穩定性和實用性。`;
+        } else if (isWebsite) {
+            description = `${title}是一個精心設計的${categoryName}網站作品。`;
+            description += `作品結合了現代前端開發技術，實現了美觀的視覺設計和流暢的互動體驗。`;
+            description += `在${keywords.length > 0 ? keywords[0] : '前端開發'}和${keywords.length > 1 ? keywords[1] : '使用者體驗'}方面，`;
+            description += `運用了響應式設計原則，確保網站在各種裝置上都能完美呈現。`;
+            description += `透過完整的開發流程和測試驗證，展現了作品的專業品質和實用價值。`;
+        } else if (isApp) {
+            description = `${title}是一個功能豐富的${categoryName}行動應用作品。`;
+            description += `作品採用跨平台開發技術，實現了流暢的使用者介面和穩定的功能運作。`;
+            description += `在${keywords.length > 0 ? keywords[0] : '應用開發'}方面，`;
+            description += `注重使用者體驗和效能優化，確保應用程式能夠提供良好的使用體驗。`;
+            description += `透過實際部署和測試，證明了作品的實用性和技術水準。`;
+        } else if (isSystem) {
+            description = `${title}是一個完整的${categoryName}系統作品。`;
+            description += `作品採用系統化的架構設計，實現了核心功能模組和資料管理機制。`;
+            description += `在${keywords.length > 0 ? keywords[0] : '系統架構'}和${keywords.length > 1 ? keywords[1] : '資料處理'}方面，`;
+            description += `運用了現代化的開發技術，確保系統的穩定性和擴展性。`;
+            description += `透過完整的開發流程和實際應用，展現了作品的專業水準和實用價值。`;
+        } else if (isDesign) {
+            description = `${title}是一個創意十足的${categoryName}設計作品。`;
+            description += `作品展現了優秀的視覺設計能力和使用者體驗思維。`;
+            description += `在${keywords.length > 0 ? keywords[0] : '視覺設計'}和${keywords.length > 1 ? keywords[1] : '使用者體驗'}方面，`;
+            description += `運用了設計原則和美學概念，創造出既美觀又實用的設計方案。`;
+            description += `透過完整的設計流程和實作驗證，展現了作品的創意價值和專業水準。`;
+        } else {
+            // 通用描述模板
+            description = `${title}是一個優秀的${categoryName}作品。`;
+            description += `作品${keywords.length > 0 ? `在${keywords[0]}方面` : '在技術實現方面'}展現了專業的能力和創新的思維。`;
+            if (keywords.length > 1) {
+                description += `特別在${keywords[1]}和${keywords.length > 2 ? keywords[2] : '功能設計'}方面，`;
+            }
+            description += `運用了現代化的技術和方法，確保作品的品質和實用性。`;
+            description += `透過完整的開發流程和實際應用驗證，證明了作品的專業水準和實用價值。`;
+        }
+        
+        return description;
     }
     
     /**
