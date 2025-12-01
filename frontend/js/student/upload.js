@@ -509,9 +509,14 @@ async function handleAIGenerateTags() {
 function selectTagsByValues(tagValues) {
     if (!Array.isArray(tagValues) || tagValues.length === 0) return;
     
-    let selectedCount = 0;
+    console.log('開始選中標籤:', tagValues);
+    console.log('所有可用標籤列表:', allTagsList);
     
-    tagValues.forEach(tagValue => {
+    let selectedCount = 0;
+    const tagsToSelect = [...tagValues]; // 複製陣列以避免修改原始陣列
+    
+    // 先處理當前頁面上的標籤
+    tagsToSelect.forEach(tagValue => {
         // 嘗試精確匹配
         let checkbox = document.querySelector(`input[name="tags"][value="${tagValue}"]`);
         
@@ -526,9 +531,53 @@ function selectTagsByValues(tagValues) {
         }
         
         // 如果找到匹配的checkbox，選中它
-        if (checkbox && !checkbox.checked) {
-            checkbox.checked = true;
-            selectedCount++;
+        if (checkbox) {
+            if (!checkbox.checked) {
+                checkbox.checked = true;
+                // 觸發 change 事件以確保相關處理邏輯被執行
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                selectedCount++;
+                console.log(`✓ 已選中標籤: ${tagValue}`);
+            } else {
+                console.log(`✓ 標籤已選中: ${tagValue}`);
+                selectedCount++;
+            }
+        } else {
+            // 標籤不在當前頁，檢查它是否存在於 allTagsList 中
+            const tagExists = allTagsList.some(tag => 
+                tag.toLowerCase() === tagValue.toLowerCase() || 
+                tag === tagValue
+            );
+            
+            if (tagExists) {
+                // 找到標籤在列表中的索引，切換到對應頁面
+                const tagIndex = allTagsList.findIndex(tag => 
+                    tag.toLowerCase() === tagValue.toLowerCase() || 
+                    tag === tagValue
+                );
+                
+                if (tagIndex !== -1) {
+                    const targetPage = Math.floor(tagIndex / tagsPerPage) + 1;
+                    console.log(`標籤 ${tagValue} 在第 ${targetPage} 頁，切換到該頁`);
+                    
+                    // 切換到包含該標籤的頁面
+                    if (targetPage !== currentTagsPage) {
+                        goToTagsPage(targetPage);
+                        
+                        // 等待DOM更新後再選中
+                        setTimeout(() => {
+                            const checkbox = document.querySelector(`input[name="tags"][value="${allTagsList[tagIndex]}"]`);
+                            if (checkbox && !checkbox.checked) {
+                                checkbox.checked = true;
+                                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                                console.log(`✓ 已選中標籤: ${allTagsList[tagIndex]}`);
+                            }
+                        }, 100);
+                    }
+                }
+            } else {
+                console.warn(`⚠ 標籤不存在於列表中: ${tagValue}`);
+            }
         }
     });
     
@@ -536,7 +585,7 @@ function selectTagsByValues(tagValues) {
     updateSelectedTags();
     collectFormData();
     
-    console.log(`已自動選中 ${selectedCount} 個標籤`);
+    console.log(`總共已自動選中 ${selectedCount} 個標籤`);
 }
 
 // 初始化事件監聽器
@@ -1535,24 +1584,33 @@ async function handleFormSubmit(e) {
         
         if (response.success) {
             showUploadProgress(false);
-            showNotification('作品上傳成功！可以繼續上傳或前往作品集查看', 'success');
+            const portfolioId = response.data?.portfolio_id;
+            console.log('✅ 作品上傳成功！作品 ID:', portfolioId);
+            
+            showNotification('作品上傳成功！即將跳轉到作品詳情頁...', 'success');
             
             // 添加成功動畫
             const uploadContent = document.querySelector('.upload-content');
             if (uploadContent) {
                 uploadContent.classList.add('success-animation');
-                
-                // 重置表單（讓用戶可以繼續上傳）
-                setTimeout(() => {
-                    resetForm();
-                    uploadContent.classList.remove('success-animation');
-                }, 2000);
             }
             
-            // ✅ 不自動跳轉，讓用戶停留在上傳頁面
-            // 如果想跳轉，可以手動點擊導航欄的「作品集」
-            console.log('✅ 作品上傳成功！作品 ID:', response.data?.portfolio_id);
-            console.log('📄 停留在上傳頁面，可以繼續上傳更多作品');
+            // 延遲後跳轉到作品詳情頁
+            setTimeout(() => {
+                if (portfolioId) {
+                    // 跳轉到作品詳情頁
+                    window.location.href = `portfolio-detail.html?id=${portfolioId}`;
+                } else {
+                    // 如果沒有作品ID，顯示通知並停留在上傳頁面
+                    showNotification('作品上傳成功！', 'success');
+                    if (uploadContent) {
+                        uploadContent.classList.remove('success-animation');
+                        setTimeout(() => {
+                            resetForm();
+                        }, 1000);
+                    }
+                }
+            }, 1500);
         } else {
             throw new Error(response.message || '上傳失敗');
         }

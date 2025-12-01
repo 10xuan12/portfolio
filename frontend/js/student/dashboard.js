@@ -75,10 +75,24 @@ async function loadDashboardData() {
         ]);
         
         // 處理API回應格式
-        const activities = activitiesResp && activitiesResp.success ? activitiesResp.data : (activitiesResp || []);
-        const badges = badgesResp && badgesResp.success ? (badgesResp.data?.badges || badgesResp.data || []) : (badgesResp || []);
-        const notifications = notificationsResp && notificationsResp.success ? notificationsResp.data : (notificationsResp || []);
-        const jobs = jobsResp && jobsResp.success ? (jobsResp.data?.jobs || jobsResp.data || []) : (jobsResp || []);
+        const activities = activitiesResp && (activitiesResp.success || activitiesResp.status === 200) ? activitiesResp.data : (activitiesResp || []);
+        const badges = badgesResp && (badgesResp.success || badgesResp.status === 200) ? (badgesResp.data?.badges || badgesResp.data || []) : (badgesResp || []);
+        const notifications = notificationsResp && (notificationsResp.success || notificationsResp.status === 200) ? notificationsResp.data : (notificationsResp || []);
+        
+        // 處理職缺數據：支援多種API回應格式
+        let jobs = [];
+        if (jobsResp) {
+            if (jobsResp.success || jobsResp.status === 200) {
+                // 標準格式：{ status: 200, data: { jobs: [...] } }
+                jobs = jobsResp.data?.jobs || jobsResp.data || [];
+            } else if (Array.isArray(jobsResp)) {
+                // 直接是陣列
+                jobs = jobsResp;
+            } else if (jobsResp.jobs && Array.isArray(jobsResp.jobs)) {
+                // 格式：{ jobs: [...] }
+                jobs = jobsResp.jobs;
+            }
+        }
 
         // 渲染資料
         renderStats(stats || {});
@@ -485,11 +499,24 @@ async function loadResumeStatus(userId) {
 async function loadEnterpriseJobsData() {
     try {
         if (typeof apiService === 'undefined' || !apiService) {
+            console.warn('API服務未初始化，無法載入企業職缺');
             return { success: false, data: [] };
         }
         
-        const result = await apiService.request('student/jobs.php?action=list&limit=5');
-        return result;
+        console.log('開始載入企業職缺資料...');
+        const result = await apiService.request('student/jobs.php?action=list&limit=5&status=published');
+        console.log('企業職缺API回應:', result);
+        
+        // 確保返回標準格式
+        if (result && (result.status === 200 || result.success)) {
+            return result;
+        } else if (result && result.data) {
+            return { success: true, status: 200, data: result.data };
+        } else if (Array.isArray(result)) {
+            return { success: true, status: 200, data: { jobs: result } };
+        }
+        
+        return { success: false, data: [] };
     } catch (error) {
         console.error('載入企業職缺錯誤:', error);
         return { success: false, data: [] };
@@ -501,20 +528,39 @@ async function loadEnterpriseJobsData() {
  */
 function renderEnterpriseJobs(jobs) {
     const jobsContainer = document.getElementById('enterprise-jobs');
-    if (!jobsContainer) return;
+    if (!jobsContainer) {
+        console.warn('找不到企業職缺容器 #enterprise-jobs');
+        return;
+    }
+    
+    console.log('開始渲染企業職缺，接收到的數據:', jobs);
     
     jobsContainer.innerHTML = '';
     
-    // 確保jobs是陣列
-    const jobArray = Array.isArray(jobs) ? jobs : (jobs && jobs.data ? jobs.data : []);
+    // 確保jobs是陣列，支援多種數據格式
+    let jobArray = [];
+    if (Array.isArray(jobs)) {
+        jobArray = jobs;
+    } else if (jobs && jobs.jobs && Array.isArray(jobs.jobs)) {
+        jobArray = jobs.jobs;
+    } else if (jobs && jobs.data) {
+        if (Array.isArray(jobs.data)) {
+            jobArray = jobs.data;
+        } else if (jobs.data.jobs && Array.isArray(jobs.data.jobs)) {
+            jobArray = jobs.data.jobs;
+        }
+    }
+    
+    console.log('處理後的職缺陣列:', jobArray);
     
     if (jobArray.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'no-jobs';
+        empty.style.cssText = 'text-align: center; padding: 2rem; color: #666;';
         empty.innerHTML = `
-            <i class="fas fa-briefcase"></i>
-            <p>暫無職缺</p>
-            <small>目前沒有可用的職缺</small>
+            <i class="fas fa-briefcase" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem; display: block;"></i>
+            <p style="margin: 0.5rem 0; font-size: 1rem;">暫無職缺</p>
+            <small style="color: #999;">目前沒有可用的職缺</small>
         `;
         jobsContainer.appendChild(empty);
         return;
@@ -544,7 +590,7 @@ function renderEnterpriseJobs(jobs) {
         
         // 點擊跳轉到職缺詳情
         jobItem.addEventListener('click', function() {
-            window.location.href = `job-detail.html?id=${job.id}`;
+            window.location.href = `student/job-detail.html?id=${job.id}`;
         });
         
         jobItem.addEventListener('mouseenter', function() {

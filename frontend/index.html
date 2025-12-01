@@ -273,6 +273,24 @@
         </div>
     </section>
 
+    <!-- 企業職缺區塊 -->
+    <section id="jobs" class="categories" style="background: #f8f9fa;">
+        <div class="container">
+            <div class="section-header">
+                <h2>企業職缺</h2>
+                <p>尋找適合您的工作機會</p>
+            </div>
+            
+            <div class="jobs-grid" id="jobsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                <!-- 載入中狀態 -->
+                <div class="loading-state" id="jobsLoading" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                    <div class="loading-spinner"></div>
+                    <p>載入職缺資料中...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- 聯絡我們區塊 -->
     <section id="contact" class="contact">
         <div class="container">
@@ -376,9 +394,9 @@
     </footer>
 
     <!-- 配置和核心腳本 -->
-    <script src="js/config.js?v=20251104"></script>
-    <script src="js/app.js?v=20251104"></script>
-    <script src="js/api-service.js?v=20251104"></script>
+    <script src="js/config.js?v=20251201"></script>
+    <script src="js/app.js?v=20251201"></script>
+    <script src="js/api-service.js?v=20251201"></script>
     
     <!-- 新功能腳本 -->
     <script src="js/popularity-tags.js"></script>
@@ -699,12 +717,154 @@
             }
         }
         
+        // 載入企業職缺資料
+        async function loadEnterpriseJobs() {
+            const jobsGrid = document.getElementById('jobsGrid');
+            const loadingState = document.getElementById('jobsLoading');
+            
+            try {
+                console.log('開始載入企業職缺...');
+                
+                // 顯示載入狀態
+                if (loadingState) {
+                    loadingState.style.display = 'flex';
+                }
+                
+                // 發送 API 請求
+                const apiUrl = (typeof getApiUrl === 'function' ? getApiUrl('student/jobs.php') : '/api/student/jobs.php') + '?action=list&limit=6&status=published&t=' + Date.now();
+                console.log('職缺 API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                console.log('職缺 Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('職缺 API 回應:', result);
+                
+                // 隱藏載入狀態
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
+                
+                // 處理回應數據
+                let jobs = [];
+                if (result.status === 200 && result.data) {
+                    jobs = Array.isArray(result.data.jobs) ? result.data.jobs : (Array.isArray(result.data) ? result.data : []);
+                } else if (result.success && result.data) {
+                    jobs = Array.isArray(result.data.jobs) ? result.data.jobs : (Array.isArray(result.data) ? result.data : []);
+                }
+                
+                // 渲染職缺列表
+                renderJobsList(jobs);
+                
+            } catch (error) {
+                console.error('載入企業職缺錯誤:', error);
+                
+                // 隱藏載入狀態
+                if (loadingState) {
+                    loadingState.style.display = 'none';
+                }
+                
+                // 顯示錯誤訊息
+                if (jobsGrid) {
+                    jobsGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>載入職缺失敗</h3>
+                            <p>無法載入職缺資料，請稍後再試</p>
+                            <button class="btn btn-primary" onclick="loadEnterpriseJobs()" style="margin-top: 1rem;">重新載入</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // 渲染職缺列表
+        function renderJobsList(jobs) {
+            const jobsGrid = document.getElementById('jobsGrid');
+            if (!jobsGrid) return;
+            
+            jobsGrid.innerHTML = '';
+            
+            if (!jobs || jobs.length === 0) {
+                jobsGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <i class="fas fa-briefcase"></i>
+                        <h3>暫無職缺</h3>
+                        <p>目前沒有可用的職缺</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            jobs.forEach(job => {
+                const jobCard = document.createElement('div');
+                jobCard.className = 'job-card';
+                jobCard.style.cssText = 'background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;';
+                
+                jobCard.innerHTML = `
+                    ${job.is_featured ? '<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; margin-bottom: 1rem;">⭐ 熱門職缺</div>' : ''}
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem; color: #2d3748; font-weight: 600;">${job.title || '未命名職缺'}</h3>
+                    <div style="color: #718096; font-size: 0.875rem; margin-bottom: 0.75rem;">
+                        <div style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-building" style="margin-right: 0.5rem;"></i>
+                            ${job.company_name || '企業'}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 0.5rem;"></i>
+                            ${job.location || '地點未指定'}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-briefcase" style="margin-right: 0.5rem;"></i>
+                            ${job.job_type || '全職'}
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem; margin-top: 1rem;">
+                        <div style="color: #667eea; font-weight: 600; font-size: 1rem;">
+                            <i class="fas fa-dollar-sign" style="margin-right: 0.25rem;"></i>
+                            ${job.salary_range || job.salary_min && job.salary_max ? `${job.salary_min} - ${job.salary_max}` : '面議'}
+                        </div>
+                        ${job.skills_required && job.skills_required.length > 0 ? `
+                            <div style="margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                ${(Array.isArray(job.skills_required) ? job.skills_required : job.skills_required.split(',')).slice(0, 3).map(skill => `
+                                    <span style="background: #f0f4f8; color: #4a5568; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem;">${skill.trim()}</span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // 點擊跳轉到職缺詳情
+                jobCard.addEventListener('click', function() {
+                    window.location.href = `student/job-detail.html?id=${job.id}`;
+                });
+                
+                jobCard.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
+                });
+                
+                jobCard.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                });
+                
+                jobsGrid.appendChild(jobCard);
+            });
+        }
+        
         // 頁面載入時執行 (v20250927)
         document.addEventListener('DOMContentLoaded', function() {
             console.log('首頁 DOM 載入完成，開始載入隨機作品...');
             
             // 載入統計數據
             loadStatistics();
+            
+            // 載入企業職缺
+            loadEnterpriseJobs();
             
             // 綁定聯絡表單提交事件
             const contactForm = document.getElementById('contactForm');

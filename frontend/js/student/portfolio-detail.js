@@ -255,27 +255,49 @@ function updatePortfolioDisplay() {
 
     // 作品連結
     const portfolioUrl = portfolioDetail.url || portfolioDetail.portfolio_url;
+    
+    // 尋找適當的插入位置（在作品檔案區域或內容區域之後）
     const portfolioFilesSection = document.querySelector('.portfolio-files');
-    if (portfolioUrl && portfolioFilesSection) {
+    const portfolioContentSection = document.querySelector('.portfolio-content') || document.querySelector('.info-content');
+    const insertBeforeElement = portfolioFilesSection || portfolioContentSection;
+    const parentElement = insertBeforeElement?.parentNode;
+    
+    if (portfolioUrl && portfolioUrl.trim()) {
         // 檢查是否已經有連結顯示區域
         let urlSection = document.getElementById('portfolioUrlSection');
-        if (!urlSection) {
+        if (!urlSection && parentElement) {
             urlSection = document.createElement('div');
             urlSection.id = 'portfolioUrlSection';
             urlSection.className = 'portfolio-url-section';
+            urlSection.style.cssText = 'margin: 2rem 0; padding: 1.5rem; background: #f7fafc; border-radius: 8px;';
             urlSection.innerHTML = `
-                <h3 class="files-title">作品連結</h3>
+                <h3 class="files-title" style="margin: 0 0 1rem 0; font-size: 1.25rem; font-weight: 600; color: #2d3748;">作品連結</h3>
                 <div class="portfolio-url-item">
-                    <a href="${portfolioUrl}" target="_blank" rel="noopener noreferrer" class="portfolio-url-link">
+                    <a href="${portfolioUrl}" target="_blank" rel="noopener noreferrer" class="portfolio-url-link" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #667eea; text-decoration: none; word-break: break-all; font-weight: 500;">
                         <i class="fas fa-external-link-alt"></i>
                         <span>${portfolioUrl}</span>
                     </a>
                 </div>
             `;
-            portfolioFilesSection.parentNode.insertBefore(urlSection, portfolioFilesSection);
-        } else {
-            urlSection.querySelector('.portfolio-url-link').href = portfolioUrl;
-            urlSection.querySelector('.portfolio-url-link span').textContent = portfolioUrl;
+            
+            // 插入連結區域
+            if (insertBeforeElement) {
+                parentElement.insertBefore(urlSection, insertBeforeElement);
+            } else if (parentElement) {
+                parentElement.appendChild(urlSection);
+            }
+        } else if (urlSection) {
+            // 更新現有的連結區域
+            const linkElement = urlSection.querySelector('.portfolio-url-link');
+            const linkSpan = urlSection.querySelector('.portfolio-url-link span');
+            if (linkElement) {
+                linkElement.href = portfolioUrl;
+                if (linkSpan) {
+                    linkSpan.textContent = portfolioUrl;
+                }
+            }
+            // 確保連結區域可見
+            urlSection.style.display = 'block';
         }
     } else {
         // 如果沒有連結，移除連結區域

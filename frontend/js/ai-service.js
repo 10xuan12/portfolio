@@ -331,19 +331,19 @@ class AIService {
     generateDescriptionLocally(title, category) {
         console.log('💻 [本地生成] 開始生成描述...', { title, category });
         const categoryMap = {
-            'engineering': { name: '工程', keywords: ['系統設計', '技術實現', '工程方法', '實務應用'] },
-            'information': { name: '資訊', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'] },
-            'business': { name: '商管', keywords: ['商業分析', '市場策略', '管理實務', '商業模式'] },
-            'design': { name: '設計', keywords: ['視覺設計', '使用者體驗', '創意設計', '美學呈現'] },
-            'education': { name: '教育', keywords: ['教學設計', '學習方法', '教育科技', '知識傳遞'] },
-            'arts': { name: '藝術', keywords: ['藝術創作', '美學表現', '創意表達', '視覺藝術'] },
-            'humanities': { name: '人文', keywords: ['人文思考', '文化研究', '社會觀察', '價值探討'] },
-            'social': { name: '社會', keywords: ['社會分析', '社會議題', '社會服務', '社會影響'] },
-            'science': { name: '自然科學', keywords: ['科學研究', '實驗分析', '數據驗證', '理論應用'] },
-            'medicine': { name: '醫藥衛生', keywords: ['醫療應用', '健康照護', '醫學研究', '公共衛生'] },
-            'agriculture': { name: '農業', keywords: ['農業技術', '永續發展', '生態保護', '農業創新'] },
-            'tourism': { name: '觀光餐旅', keywords: ['服務設計', '體驗規劃', '餐飲管理', '觀光規劃'] },
-            'sports': { name: '體育', keywords: ['運動科學', '訓練方法', '體能分析', '運動表現'] },
+            'engineering': { name: '工程學群', keywords: ['系統設計', '技術實現', '工程方法', '實務應用'] },
+            'information': { name: '資訊學群', keywords: ['程式開發', '系統架構', '資訊技術', '數位化'] },
+            'business': { name: '商管學群', keywords: ['商業分析', '市場策略', '管理實務', '商業模式'] },
+            'design': { name: '設計學群', keywords: ['視覺設計', '使用者體驗', '創意設計', '美學呈現'] },
+            'education': { name: '教育學群', keywords: ['教學設計', '學習方法', '教育科技', '知識傳遞'] },
+            'arts': { name: '藝術學群', keywords: ['藝術創作', '美學表現', '創意表達', '視覺藝術'] },
+            'humanities': { name: '人文學群', keywords: ['人文思考', '文化研究', '社會觀察', '價值探討'] },
+            'social': { name: '社會學群', keywords: ['社會分析', '社會議題', '社會服務', '社會影響'] },
+            'science': { name: '自然科學學群', keywords: ['科學研究', '實驗分析', '數據驗證', '理論應用'] },
+            'medicine': { name: '醫藥衛生學群', keywords: ['醫療應用', '健康照護', '醫學研究', '公共衛生'] },
+            'agriculture': { name: '農業學群', keywords: ['農業技術', '永續發展', '生態保護', '農業創新'] },
+            'tourism': { name: '觀光餐旅學群', keywords: ['服務設計', '體驗規劃', '餐飲管理', '觀光規劃'] },
+            'sports': { name: '體育學群', keywords: ['運動科學', '訓練方法', '體能分析', '運動表現'] },
             'other': { name: '其他', keywords: ['創新應用', '跨領域整合', '實務專案', '綜合應用'] }
         };
         
@@ -357,11 +357,11 @@ class AIService {
         // 選擇相關的關鍵字
         const selectedKeywords = this.selectRelevantKeywords(titleKeywords, keywords);
         
-        // 生成多樣化的描述模板
+        // 生成多樣化的描述模板（categoryName 已經包含「學群」後綴）
         const templates = [
-            `這是一個${categoryName}學群的優秀作品。${title}${selectedKeywords.length > 0 ? `在${selectedKeywords[0]}方面` : ''}展現了創新的思維和專業的技能。作品結合了理論與實務，具有很高的實用價值和學習意義，能夠有效解決實際問題並提供良好的使用者體驗。`,
-            `${title}是一個精心設計的${categoryName}學群作品。作品${selectedKeywords.length > 0 ? `在${selectedKeywords[0]}和${selectedKeywords[1] || '功能設計'}方面` : '在技術實現和功能設計方面'}都表現出色，展現了作者的專業能力和創意思維。透過系統化的開發流程，確保了作品的品質和可用性。`,
-            `本作品${title}屬於${categoryName}學群，展現了作者在該領域的專業素養。作品設計精良，功能完善，${selectedKeywords.length > 0 ? `特別在${selectedKeywords[0]}方面` : '在整體架構和實作細節方面'}具有很好的示範價值。透過實際應用驗證，證明了作品的實用性和有效性。`
+            `這是一個${categoryName}的優秀作品。${title}${selectedKeywords.length > 0 ? `在${selectedKeywords[0]}方面` : ''}展現了創新的思維和專業的技能。作品結合了理論與實務，具有很高的實用價值和學習意義，能夠有效解決實際問題並提供良好的使用者體驗。`,
+            `${title}是一個精心設計的${categoryName}作品。作品${selectedKeywords.length > 0 ? `在${selectedKeywords[0]}和${selectedKeywords[1] || '功能設計'}方面` : '在技術實現和功能設計方面'}都表現出色，展現了作者的專業能力和創意思維。透過系統化的開發流程，確保了作品的品質和可用性。`,
+            `本作品${title}屬於${categoryName}，展現了作者在該領域的專業素養。作品設計精良，功能完善，${selectedKeywords.length > 0 ? `特別在${selectedKeywords[0]}方面` : '在整體架構和實作細節方面'}具有很好的示範價值。透過實際應用驗證，證明了作品的實用性和有效性。`
         ];
         
         // 根據標題長度選擇模板（長標題用簡短描述，短標題用詳細描述）
