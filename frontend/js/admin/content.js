@@ -4,31 +4,8 @@
  */
 
 // 審核資料（可從後端 API 載入：/api/admin/reviews）
+// 注意：作品上傳後直接通過，不需要審核
 let reviews = {
-    portfolios: [
-        {
-            id: 1,
-            title: '響應式網站設計',
-            author: '張小明',
-            type: 'web',
-            status: 'pending',
-            submitted_at: '2024-01-20 14:30',
-            description: '使用 HTML5、CSS3 和 JavaScript 製作的現代化響應式網站，支援各種裝置尺寸。',
-            skills: ['HTML5', 'CSS3', 'JavaScript', '響應式'],
-            image: 'https://via.placeholder.com/400x200/667eea/ffffff?text=Web+Design'
-        },
-        {
-            id: 2,
-            title: '行動應用程式',
-            author: '李大明',
-            type: 'mobile',
-            status: 'pending',
-            submitted_at: '2024-01-20 12:15',
-            description: '使用 React Native 開發的跨平台行動應用程式，提供流暢的使用者體驗。',
-            skills: ['React Native', 'JavaScript', 'Firebase', '跨平台'],
-            image: 'https://via.placeholder.com/400x200/764ba2/ffffff?text=Mobile+App'
-        }
-    ],
     jobs: [
         {
             id: 1,
@@ -72,8 +49,8 @@ let reviews = {
     ]
 };
 
-// 當前標籤
-let currentTab = 'portfolios';
+// 當前標籤（預設為職缺審核，因為作品不需要審核）
+let currentTab = 'jobs';
 
 // 當前篩選條件
 let currentFilters = {
@@ -91,8 +68,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     initEventListeners();
-    // 載入中 spinner
-    ['portfoliosGrid','jobsGrid','usersGrid','reportsGrid'].forEach(id => {
+    // 載入中 spinner（移除 portfoliosGrid，因為作品不需要審核）
+    ['jobsGrid','usersGrid','reportsGrid'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = `<div style="display:flex;justify-content:center;padding:20px;color:var(--text-secondary);"><i class=\"fas fa-spinner fa-spin\" style=\"margin-right:8px;\"></i>載入中...</div>`;
     });
@@ -183,14 +160,11 @@ function switchTab(tabName) {
     renderReviews();
 }
 
-// 渲染審核項目
+// 渲染審核項目（移除作品審核，因為作品上傳後直接通過）
 function renderReviews() {
     const reviewsToRender = getFilteredReviews();
     
     switch (currentTab) {
-        case 'portfolios':
-            renderPortfolioReviews(reviewsToRender.portfolios);
-            break;
         case 'jobs':
             renderJobReviews(reviewsToRender.jobs);
             break;
@@ -207,15 +181,9 @@ function renderReviews() {
 function getFilteredReviews() {
     let filtered = { ...reviews };
     
-    // 搜尋篩選
+    // 搜尋篩選（移除作品審核相關）
     if (currentFilters.search) {
         const searchTerm = currentFilters.search.toLowerCase();
-        
-        filtered.portfolios = filtered.portfolios.filter(item => 
-            item.title.toLowerCase().includes(searchTerm) ||
-            item.author.toLowerCase().includes(searchTerm) ||
-            item.description.toLowerCase().includes(searchTerm)
-        );
         
         filtered.jobs = filtered.jobs.filter(item => 
             item.title.toLowerCase().includes(searchTerm) ||
@@ -242,9 +210,8 @@ function getFilteredReviews() {
         });
     }
     
-    // 類型篩選
+    // 類型篩選（移除作品審核相關）
     if (currentFilters.type) {
-        filtered.portfolios = filtered.portfolios.filter(item => item.type === currentFilters.type);
         filtered.jobs = filtered.jobs.filter(item => item.type === currentFilters.type);
     }
     
@@ -276,54 +243,7 @@ function getFilteredReviews() {
     return filtered;
 }
 
-// 渲染作品審核
-function renderPortfolioReviews(portfolios) {
-    const grid = document.getElementById('portfoliosGrid');
-    
-    if (portfolios.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-folder-open"></i>
-                <h3>沒有待審核的作品</h3>
-                <p>所有作品都已審核完成</p>
-            </div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = portfolios.map(portfolio => `
-        <div class="review-item ${portfolio.status}">
-            <div class="review-header">
-                <div class="review-info">
-                    <h3>${portfolio.title}</h3>
-                    <div class="review-meta">
-                        <span>作者：${portfolio.author}</span>
-                        <span>提交時間：${portfolio.submitted_at}</span>
-                    </div>
-                </div>
-                <span class="review-status status-${portfolio.status}">${getStatusText(portfolio.status)}</span>
-            </div>
-            <div class="review-content">
-                <p class="review-description">${portfolio.description}</p>
-                <div class="review-preview">
-                    <img src="${portfolio.image}" alt="作品預覽">
-                    <p><strong>技能標籤：</strong>${portfolio.skills.join(', ')}</p>
-                </div>
-            </div>
-            <div class="review-actions">
-                <button class="action-btn" onclick="viewPortfolio(${portfolio.id})">
-                    <i class="fas fa-eye"></i> 查看詳情
-                </button>
-                <button class="action-btn approve" onclick="approvePortfolio(${portfolio.id})">
-                    <i class="fas fa-check"></i> 核准
-                </button>
-                <button class="action-btn reject" onclick="rejectPortfolio(${portfolio.id})">
-                    <i class="fas fa-times"></i> 拒絕
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
+// 作品審核功能已移除 - 作品上傳後直接通過，不需要審核
 
 // 渲染職缺審核
 function renderJobReviews(jobs) {
@@ -540,6 +460,7 @@ function updateStats() {
 }
 
 // 查看作品詳情
+// 作品審核功能已移除
 function viewPortfolio(portfolioId) {
     window.location.href = `portfolio-review.html?id=${portfolioId}`;
 }
@@ -788,9 +709,10 @@ function goBack() {
 
 // 全域函數，供 HTML 直接調用
 window.switchTab = switchTab;
-window.viewPortfolio = viewPortfolio;
-window.approvePortfolio = approvePortfolio;
-window.rejectPortfolio = rejectPortfolio;
+// 作品審核相關函數已移除（作品上傳後直接通過）
+// window.viewPortfolio = viewPortfolio;
+// window.approvePortfolio = approvePortfolio;
+// window.rejectPortfolio = rejectPortfolio;
 window.viewJob = viewJob;
 window.approveJob = approveJob;
 window.rejectJob = rejectJob;

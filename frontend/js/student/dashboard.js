@@ -65,18 +65,20 @@ async function loadDashboardData() {
         console.log('API Base URL:', apiService.baseUrl);
         
         // 並行載入所有資料
-        const [stats, portfolios, activitiesResp, badgesResp, notificationsResp] = await Promise.all([
+        const [stats, portfolios, activitiesResp, badgesResp, notificationsResp, jobsResp] = await Promise.all([
             apiService.getStats('student'),
             apiService.getUserPortfolios(userId),
             apiService.getActivities(userId),
             apiService.getBadges(userId),
-            apiService.getNotifications(userId)
+            apiService.getNotifications(userId),
+            loadEnterpriseJobsData()
         ]);
         
         // 處理API回應格式
         const activities = activitiesResp && activitiesResp.success ? activitiesResp.data : (activitiesResp || []);
         const badges = badgesResp && badgesResp.success ? (badgesResp.data?.badges || badgesResp.data || []) : (badgesResp || []);
         const notifications = notificationsResp && notificationsResp.success ? notificationsResp.data : (notificationsResp || []);
+        const jobs = jobsResp && jobsResp.success ? (jobsResp.data?.jobs || jobsResp.data || []) : (jobsResp || []);
 
         // 渲染資料
         renderStats(stats || {});
@@ -84,6 +86,7 @@ async function loadDashboardData() {
         renderRecentActivities(activities);
         renderBadges(badges);
         renderNotifications(notifications);
+        renderEnterpriseJobs(jobs);
         
         debugLog('學生儀表板資料載入完成');
     } catch (error) {
@@ -476,6 +479,95 @@ async function loadResumeStatus(userId) {
     }
 }
 
+/**
+ * 載入企業職缺資料
+ */
+async function loadEnterpriseJobsData() {
+    try {
+        if (typeof apiService === 'undefined' || !apiService) {
+            return { success: false, data: [] };
+        }
+        
+        const result = await apiService.request('student/jobs.php?action=list&limit=5');
+        return result;
+    } catch (error) {
+        console.error('載入企業職缺錯誤:', error);
+        return { success: false, data: [] };
+    }
+}
+
+/**
+ * 渲染企業職缺
+ */
+function renderEnterpriseJobs(jobs) {
+    const jobsContainer = document.getElementById('enterprise-jobs');
+    if (!jobsContainer) return;
+    
+    jobsContainer.innerHTML = '';
+    
+    // 確保jobs是陣列
+    const jobArray = Array.isArray(jobs) ? jobs : (jobs && jobs.data ? jobs.data : []);
+    
+    if (jobArray.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'no-jobs';
+        empty.innerHTML = `
+            <i class="fas fa-briefcase"></i>
+            <p>暫無職缺</p>
+            <small>目前沒有可用的職缺</small>
+        `;
+        jobsContainer.appendChild(empty);
+        return;
+    }
+    
+    jobArray.forEach(job => {
+        const jobItem = document.createElement('div');
+        jobItem.className = 'job-item';
+        jobItem.style.cssText = 'padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;';
+        jobItem.style.borderBottom = jobArray.indexOf(job) === jobArray.length - 1 ? 'none' : '1px solid #eee';
+        
+        jobItem.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #333;">${job.title || '未命名職缺'}</h4>
+                ${job.is_featured ? '<span style="background: #ff6b6b; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">熱門</span>' : ''}
+            </div>
+            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                <i class="fas fa-building"></i> ${job.company_name || '企業'}
+            </div>
+            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                <i class="fas fa-map-marker-alt"></i> ${job.location || '地點未指定'}
+            </div>
+            <div style="font-size: 12px; color: #295a8a; font-weight: 500;">
+                <i class="fas fa-dollar-sign"></i> ${job.salary_range || '面議'}
+            </div>
+        `;
+        
+        // 點擊跳轉到職缺詳情
+        jobItem.addEventListener('click', function() {
+            window.location.href = `job-detail.html?id=${job.id}`;
+        });
+        
+        jobItem.addEventListener('mouseenter', function() {
+            this.style.background = '#f5f5f5';
+        });
+        
+        jobItem.addEventListener('mouseleave', function() {
+            this.style.background = 'transparent';
+        });
+        
+        jobsContainer.appendChild(jobItem);
+    });
+    
+    // 添加「查看更多」連結
+    const moreLink = document.createElement('a');
+    moreLink.href = 'jobs.html';
+    moreLink.className = 'btn btn-link';
+    moreLink.style.cssText = 'display: block; text-align: center; margin-top: 12px; padding: 8px; color: #295a8a; text-decoration: none;';
+    moreLink.innerHTML = '<i class="fas fa-arrow-right"></i> 查看更多職缺';
+    jobsContainer.appendChild(moreLink);
+}
+
 // 全域函數，供 HTML 呼叫
 window.loadDashboardData = loadDashboardData;
 window.loadResumeStatus = loadResumeStatus;
+window.loadEnterpriseJobsData = loadEnterpriseJobsData;

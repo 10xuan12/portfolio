@@ -1,0 +1,518 @@
+/* 學生端職缺詳情頁設計範例 - 請選擇您喜歡的風格 */
+
+/* ============================================
+   範例 1: 簡約卡片式設計（當前設計）
+   ============================================ */
+.job-detail-container.variant-1 {
+    padding: var(--spacing-xl) 0;
+    background: #f8f9fa;
+}
+
+.job-detail-container.variant-1 .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.job-detail-container.variant-1 .job-detail-content {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: var(--spacing-xl);
+}
+
+.job-detail-container.variant-1 .main-content {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.job-detail-container.variant-1 .main-content:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    border-left-color: var(--primary-color);
+}
+
+.job-detail-container.variant-1 .requirement-tag {
+    background: #f0f4ff;
+    color: var(--primary-color);
+    border: 1px solid #e0e8ff;
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ============================================
+   範例 2: 寬版單欄設計（無側邊欄）
+   ============================================ */
+.job-detail-container.variant-2 {
+    padding: var(--spacing-xl) 0;
+    background: #f8f9fa;
+}
+
+.job-detail-container.variant-2 .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.job-detail-container.variant-2 .job-detail-content {
+    display: block;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.job-detail-container.variant-2 .main-content {
+    background: white;
+    padding: var(--spacing-2xl);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.job-detail-container.variant-2 .job-section {
+    padding: var(--spacing-xl) 0;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.job-detail-container.variant-2 .job-section:last-child {
+    border-bottom: none;
+}
+
+.job-detail-container.variant-2 .job-section h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.job-detail-container.variant-2 .requirement-tag {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   範例 3: 雜誌式設計（大標題、豐富視覺）
+   ============================================ */
+.job-detail-container.variant-3 {
+    padding: 0;
+    background: white;
+}
+
+.job-detail-container.variant-3 .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.job-detail-container.variant-3 .job-detail-content {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 0;
+}
+
+.job-detail-container.variant-3 .main-content {
+    background: white;
+    padding: var(--spacing-2xl);
+    border-right: 1px solid #e5e7eb;
+    border-radius: 0;
+    box-shadow: none;
+    border-left: none;
+}
+
+.job-detail-container.variant-3 .job-section {
+    margin-bottom: var(--spacing-2xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.job-detail-container.variant-3 .job-section h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: var(--spacing-lg);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Arial', sans-serif;
+}
+
+.job-detail-container.variant-3 .section-content {
+    font-size: 1rem;
+    line-height: 2;
+    color: #374151;
+}
+
+.job-detail-container.variant-3 .requirement-tag {
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.job-detail-container.variant-3 .sidebar-card {
+    background: #f9fafb;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 0;
+}
+
+/* ============================================
+   範例 4: 極簡線條式設計（清晰分隔）
+   ============================================ */
+.job-detail-container.variant-4 {
+    padding: var(--spacing-xl) 0;
+    background: white;
+}
+
+.job-detail-container.variant-4 .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+}
+
+.job-detail-container.variant-4 .job-detail-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--spacing-2xl);
+}
+
+.job-detail-container.variant-4 .main-content {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    border-left: 3px solid #e5e7eb;
+    padding-left: var(--spacing-xl);
+}
+
+.job-detail-container.variant-4 .job-section {
+    margin-bottom: var(--spacing-2xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.job-detail-container.variant-4 .job-section:last-child {
+    border-bottom: none;
+}
+
+.job-detail-container.variant-4 .job-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-md);
+    border-left: 4px solid var(--primary-color);
+}
+
+.job-detail-container.variant-4 .requirement-tag {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.job-detail-container.variant-4 .sidebar-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* ============================================
+   範例 5: 現代卡片式設計（圓角、陰影）
+   ============================================ */
+.job-detail-container.variant-5 {
+    padding: var(--spacing-xl) 0;
+    background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+}
+
+.job-detail-container.variant-5 .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.job-detail-container.variant-5 .job-detail-content {
+    display: block;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.job-detail-container.variant-5 .main-content {
+    background: white;
+    padding: var(--spacing-2xl);
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+/* 標題區域樣式 */
+.job-detail-container.variant-5 .job-hero {
+    padding: 0;
+    margin-bottom: var(--spacing-xl);
+}
+
+.job-detail-container.variant-5 .hero-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.job-detail-container.variant-5 .job-title-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.job-detail-container.variant-5 .job-title {
+    flex: 1;
+    min-width: 300px;
+}
+
+.job-detail-container.variant-5 .job-header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: flex-end;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.job-detail-container.variant-5 .job-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: 0.875rem;
+    color: #666;
+    text-align: right;
+}
+
+.job-detail-container.variant-5 .job-header-info .info-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    justify-content: flex-end;
+}
+
+.job-detail-container.variant-5 .job-header-info i {
+    color: var(--primary-color);
+    width: 16px;
+}
+
+.job-detail-container.variant-5 .job-header-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+/* 隱藏側邊欄申請卡片 */
+.job-detail-container.variant-5 .apply-card {
+    display: none;
+}
+
+.job-detail-container.variant-5 .job-section {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: #fafbfc;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+}
+
+.job-detail-container.variant-5 .job-section h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.job-detail-container.variant-5 .job-section h3 i {
+    background: var(--primary-color);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.job-detail-container.variant-5 .requirement-tag {
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.job-detail-container.variant-5 .sidebar-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+/* ============================================
+   範例 6: 混合設計（簡約 + 現代）
+   ============================================ */
+.job-detail-container.variant-6 {
+    padding: var(--spacing-xl) 0;
+    background: #f8f9fa;
+}
+
+.job-detail-container.variant-6 .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.job-detail-container.variant-6 .job-detail-content {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: var(--spacing-xl);
+}
+
+.job-detail-container.variant-6 .main-content {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+.job-detail-container.variant-6 .job-section {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.job-detail-container.variant-6 .job-section:last-child {
+    border-bottom: none;
+}
+
+.job-detail-container.variant-6 .job-section h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+    width: 100%;
+}
+
+.job-detail-container.variant-6 .requirement-tag {
+    background: #f0f4ff;
+    color: var(--primary-color);
+    border: 1px solid #e0e8ff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.job-detail-container.variant-6 .requirement-tag:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.job-detail-container.variant-6 .sidebar-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+/* 響應式設計 */
+@media (max-width: 1200px) {
+    .job-detail-container.variant-1 .job-detail-content,
+    .job-detail-container.variant-3 .job-detail-content,
+    .job-detail-container.variant-6 .job-detail-content {
+        grid-template-columns: 1fr 300px;
+    }
+    
+    .job-detail-container.variant-4 .job-detail-content {
+        grid-template-columns: 1fr 280px;
+    }
+}
+
+@media (max-width: 968px) {
+    .job-detail-container.variant-1 .job-detail-content,
+    .job-detail-container.variant-2 .job-detail-content,
+    .job-detail-container.variant-3 .job-detail-content,
+    .job-detail-container.variant-4 .job-detail-content,
+    .job-detail-container.variant-5 .job-detail-content,
+    .job-detail-container.variant-6 .job-detail-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .job-detail-container.variant-4 .main-content {
+        border-left: none;
+        padding-left: 0;
+        border-top: 3px solid #e5e7eb;
+        padding-top: var(--spacing-xl);
+    }
+    
+    /* 範例 5 響應式 */
+    .job-detail-container.variant-5 .job-title-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .job-detail-container.variant-5 .job-header-actions {
+        align-items: stretch;
+        width: 100%;
+        margin-left: 0;
+    }
+    
+    .job-detail-container.variant-5 .job-header-info {
+        text-align: left;
+        width: 100%;
+    }
+    
+    .job-detail-container.variant-5 .job-header-info .info-row {
+        justify-content: flex-start;
+    }
+    
+    .job-detail-container.variant-5 .job-header-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .job-detail-container.variant-5 .job-header-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+

@@ -136,7 +136,7 @@ function renderJobs() {
                 <button class="action-btn" onclick="viewApplications(${job.id})">
                     <i class="bi bi-list-ul"></i> 查看申請
                 </button>
-                <button class="action-btn" onclick="toggleJobStatus(${job.id})">
+                <button class="action-btn ${job.status === 'active' ? '' : 'primary'}" onclick="toggleJobStatus(${job.id})">
                     <i class="bi bi-${job.status === 'active' ? 'pause' : 'play'}"></i> 
                     ${job.status === 'active' ? '暫停招募' : '恢復招募'}
                 </button>

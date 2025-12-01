@@ -11,9 +11,25 @@
     <link rel="stylesheet" href="../css/mobile-responsive.css">
     <link rel="stylesheet" href="../css/admin/responsive.css">
     
+    <link rel="stylesheet" href="../css/student/dashboard.css">
+    <link rel="stylesheet" href="../css/admin/common.css">
     <link rel="stylesheet" href="../css/admin/dashboard.css">
+    <script>
+        // 套用與學生端一致的主題
+        (function(){
+            if (document && document.body) {
+                document.body.classList.remove('admin-theme');
+                document.body.classList.add('student-theme');
+            } else {
+                document.addEventListener('DOMContentLoaded', function(){
+                    document.body.classList.remove('admin-theme');
+                    document.body.classList.add('student-theme');
+                });
+            }
+        })();
+    </script>
 </head>
-<body class="admin-theme">
+<body>
     <!-- 導覽列 -->
     <div id="navbar-placeholder"></div>
     <script>
@@ -44,26 +60,38 @@
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">1,234</div>
-                        <div class="label">總使用者數</div>
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <div class="number" id="statTotalUsers">0</div>
+                            <div class="label">總使用者數</div>
+                        </div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">567</div>
-                        <div class="label">總作品數</div>
+                        <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+                        <div class="stat-info">
+                            <div class="number" id="statTotalJobs">0</div>
+                            <div class="label">總職缺數</div>
+                        </div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">89</div>
-                        <div class="label">待審核內容</div>
+                        <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                        <div class="stat-info">
+                            <div class="number" id="statTotalApplications">0</div>
+                            <div class="label">總申請數</div>
+                        </div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-content-box">
-                        <div class="number">45</div>
-                        <div class="label">今日活躍使用者</div>
+                        <div class="stat-icon"><i class="fas fa-flag"></i></div>
+                        <div class="stat-info">
+                            <div class="number" id="statPendingReports">0</div>
+                            <div class="label">待處理報告</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -81,18 +109,56 @@
                             <i class="fas fa-users"></i>
                             <span>使用者管理</span>
                         </a>
-                        <a href="content.html" class="quick-action">
-                            <i class="fas fa-eye"></i>
-                            <span>內容審核</span>
+                        <a href="analytics.html" class="quick-action">
+                            <i class="fas fa-chart-line"></i>
+                            <span>數據分析</span>
                         </a>
                         <a href="reports.html" class="quick-action">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>數據報表</span>
+                            <i class="fas fa-flag"></i>
+                            <span>報告處理</span>
                         </a>
                         <a href="settings.html" class="quick-action">
                             <i class="fas fa-cog"></i>
                             <span>系統設定</span>
                         </a>
+                    </div>
+
+                    <h2>實習媒合概況</h2>
+                    <div class="internship-overview">
+                        <div class="overview-card">
+                            <div class="overview-header">
+                                <i class="fas fa-briefcase"></i>
+                                <h3>職缺管理</h3>
+                            </div>
+                            <div class="overview-stats">
+                                <div class="overview-stat">
+                                    <span class="stat-value" id="overviewOpenJobs">0</span>
+                                    <span class="stat-label">開放中</span>
+                                </div>
+                                <div class="overview-stat">
+                                    <span class="stat-value" id="overviewTotalJobs">0</span>
+                                    <span class="stat-label">總職缺數</span>
+                                </div>
+                            </div>
+                            <a href="analytics.html" class="overview-link">查看職缺統計 <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="overview-card">
+                            <div class="overview-header">
+                                <i class="fas fa-file-alt"></i>
+                                <h3>申請管理</h3>
+                            </div>
+                            <div class="overview-stats">
+                                <div class="overview-stat">
+                                    <span class="stat-value" id="overviewPendingApps">0</span>
+                                    <span class="stat-label">待處理</span>
+                                </div>
+                                <div class="overview-stat">
+                                    <span class="stat-value" id="overviewTotalApps">0</span>
+                                    <span class="stat-label">總申請數</span>
+                                </div>
+                            </div>
+                            <a href="analytics.html" class="overview-link">查看申請統計 <i class="fas fa-arrow-right"></i></a>
+                        </div>
                     </div>
 
                     <h2>平台統計</h2>
@@ -104,9 +170,29 @@
                         </div>
                     </div>
 
-                    <h2>待審核內容</h2>
-                    <div class="reviews-grid">
-                        <!-- 由 frontend/js/admin/dashboard.js 動態渲染 -->
+                    <h2>平台活動</h2>
+                    <div class="activity-summary">
+                        <div class="activity-item">
+                            <i class="fas fa-user-plus"></i>
+                            <div class="activity-info">
+                                <span class="activity-label">最近註冊</span>
+                                <span class="activity-value" id="recentRegistrations">0 人</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-briefcase"></i>
+                            <div class="activity-info">
+                                <span class="activity-label">新增職缺</span>
+                                <span class="activity-value" id="recentJobs">0 個</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <i class="fas fa-file-alt"></i>
+                            <div class="activity-info">
+                                <span class="activity-label">新增申請</span>
+                                <span class="activity-value" id="recentApplications">0 件</span>
+                            </div>
+                        </div>
                     </div>
 
                     <h2>系統狀態</h2>
@@ -123,58 +209,35 @@
 
                     <div class="sidebar-card">
                         <h3>平台統計</h3>
-                        <!-- TODO: 從資料庫載入平台統計資料 -->
-                        <!-- 假資料開始 -->
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>學生使用者</span>
-                                <span style="color: var(--primary-color); font-weight: 600;">856 人</span>
+                        <div class="platform-stats">
+                            <div class="platform-stat-item">
+                                <span class="stat-label">學生使用者</span>
+                                <span class="stat-value" id="sidebarStudents">0 人</span>
+                            </div>
+                            <div class="platform-stat-item">
+                                <span class="stat-label">企業使用者</span>
+                                <span class="stat-value" id="sidebarEnterprises">0 家</span>
+                            </div>
+                            <div class="platform-stat-item">
+                                <span class="stat-label">已發布作品</span>
+                                <span class="stat-value" id="sidebarPortfolios">0 件</span>
+                            </div>
+                            <div class="platform-stat-item">
+                                <span class="stat-label">開放職缺</span>
+                                <span class="stat-value" id="sidebarJobs">0 個</span>
+                            </div>
+                            <div class="platform-stat-item">
+                                <span class="stat-label">待審核內容</span>
+                                <span class="stat-value" id="sidebarPending">0 件</span>
                             </div>
                         </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>企業使用者</span>
-                                <span style="color: var(--secondary-color); font-weight: 600;">234 家</span>
-                            </div>
-                        </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>已發布作品</span>
-                                <span style="color: var(--success-color); font-weight: 600;">478 件</span>
-                            </div>
-                        </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>待審核內容</span>
-                                <span style="color: var(--warning-color); font-weight: 600;">89 件</span>
-                            </div>
-                        </div>
-                        <div style="margin-bottom: var(--spacing-md);">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>今日活躍使用者</span>
-                                <span style="color: var(--accent-color); font-weight: 600;">45 人</span>
-                            </div>
-                        </div>
-                        <!-- 假資料結束 -->
                     </div>
 
                     <div class="sidebar-card">
-                        <h3>系統通知</h3>
-                        <!-- TODO: 從系統監控載入通知 -->
-                        <!-- 假資料開始 -->
-                        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--warning-color); color: var(--white); border-radius: var(--radius-md);">
-                            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">電子郵件服務延遲</div>
-                            <div style="font-size: var(--text-sm); opacity: 0.9;">回應時間超過 500ms</div>
+                        <h3>系統狀態</h3>
+                        <div class="system-status" id="systemStatus">
+                            <!-- 由 dashboard.js 動態渲染 -->
                         </div>
-                        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--success-color); color: var(--white); border-radius: var(--radius-md);">
-                            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">備份完成</div>
-                            <div style="font-size: var(--text-sm); opacity: 0.9;">每日資料備份已成功</div>
-                        </div>
-                        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--primary-color); color: var(--white); border-radius: var(--radius-md);">
-                            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">新版本可用</div>
-                            <div style="font-size: var(--text-sm); opacity: 0.9;">系統更新 v2.1.0</div>
-                        </div>
-                        <!-- 假資料結束 -->
                     </div>
                 </div>
             </div>

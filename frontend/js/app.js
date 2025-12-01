@@ -1035,16 +1035,16 @@ function loadFooter() {
                 if (tpl) {
                     footer.innerHTML = tpl.innerHTML;
                 } else {
-                    footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2024 Portfolio+. All rights reserved.</p></div></footer>';
+                    footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2025 Portfolio+. All rights reserved.</p></div></footer>';
                 }
             })
             .catch(error => {
                 console.error('載入頁腳失敗:', error);
-                footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2024 Portfolio+. All rights reserved.</p></div></footer>';
+                footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2025 Portfolio+. All rights reserved.</p></div></footer>';
             });
     } catch (error) {
         console.error('頁腳載入錯誤:', error);
-        footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2024 Portfolio+. All rights reserved.</p></div></footer>';
+        footer.innerHTML = '<footer class="footer"><div class="container"><p>&copy; 2025 Portfolio+. All rights reserved.</p></div></footer>';
     }
 }
 

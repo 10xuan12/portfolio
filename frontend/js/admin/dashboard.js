@@ -6,142 +6,14 @@
 // 初始化 API 服務
 let apiService = null;
 
-// 管理員儀表板資料（可從後端 API 載入：/api/admin/dashboard）
+// 管理員儀表板資料（全部從後端 API 載入，不使用假資料）
 let dashboardData = {
-    stats: {
-        totalUsers: 1234,
-        totalStudents: 890,
-        totalEnterprises: 156,
-        totalPortfolios: 2345,
-        totalJobs: 89,
-        totalApplications: 456,
-        thisMonthUsers: 123,
-        thisMonthPortfolios: 234,
-        thisMonthJobs: 12,
-        thisMonthApplications: 67
-    },
-    recentActivities: [
-        {
-            id: 1,
-            type: 'user',
-            text: '新學生註冊：張小明 (資訊管理學系)',
-            time: '10 分鐘前',
-            status: 'pending'
-        },
-        {
-            id: 2,
-            type: 'enterprise',
-            text: '新企業註冊：台灣微軟股份有限公司',
-            time: '30 分鐘前',
-            status: 'approved'
-        },
-        {
-            id: 3,
-            type: 'portfolio',
-            text: '新作品上傳：響應式網站設計 (張小明)',
-            time: '1 小時前',
-            status: 'pending'
-        },
-        {
-            id: 4,
-            type: 'job',
-            text: '新職缺發布：前端開發實習生 (台灣微軟)',
-            time: '2 小時前',
-            status: 'approved'
-        },
-        {
-            id: 5,
-            type: 'application',
-            text: '新申請：李大明申請前端開發實習生',
-            time: '3 小時前',
-            status: 'pending'
-        }
-    ],
-    pendingReviews: [
-        {
-            id: 1,
-            type: 'user',
-            title: '學生註冊審核',
-            count: 5,
-            description: '等待審核的學生註冊申請'
-        },
-        {
-            id: 2,
-            type: 'enterprise',
-            title: '企業註冊審核',
-            count: 2,
-            description: '等待審核的企業註冊申請'
-        },
-        {
-            id: 3,
-            type: 'portfolio',
-            title: '作品審核',
-            count: 12,
-            description: '等待審核的作品上傳'
-        },
-        {
-            id: 4,
-            type: 'job',
-            title: '職缺審核',
-            count: 3,
-            description: '等待審核的職缺發布'
-        }
-    ],
-    systemHealth: {
-        status: 'healthy',
-        uptime: '99.9%',
-        responseTime: '120ms',
-        activeUsers: 234,
-        serverLoad: '45%'
-    },
-    topUsers: [
-        {
-            id: 1,
-            name: '張小明',
-            type: 'student',
-            department: '資訊管理學系',
-            portfolios: 8,
-            views: 1234,
-            likes: 89
-        },
-        {
-            id: 2,
-            name: '台灣微軟',
-            type: 'enterprise',
-            jobs: 5,
-            applications: 23,
-            views: 567
-        },
-        {
-            id: 3,
-            name: '李大明',
-            type: 'student',
-            department: '資訊工程學系',
-            portfolios: 6,
-            views: 890,
-            likes: 67
-        }
-    ],
-    recentReports: [
-        {
-            id: 1,
-            type: 'inappropriate',
-            reporter: '張小明',
-            reported: '李大明',
-            reason: '不當內容',
-            status: 'pending',
-            time: '1 小時前'
-        },
-        {
-            id: 2,
-            type: 'spam',
-            reporter: '系統',
-            reported: '某企業',
-            reason: '垃圾訊息',
-            status: 'resolved',
-            time: '2 小時前'
-        }
-    ]
+    stats: {},
+    recentActivities: [],
+    pendingReviews: [],
+    systemHealth: {},
+    topUsers: [],
+    recentReports: []
 };
 
 // 初始化頁面
@@ -207,24 +79,25 @@ async function loadDashboardData() {
             data = resp?.data || resp;
         }
         
-        // 如果沒有 API 資料，使用預設資料
+        // 如果沒有 API 資料，顯示錯誤訊息
         if (!data) {
-            console.log('使用預設儀表板資料');
-            data = dashboardData;
+            console.error('無法載入儀表板資料');
+            Utils.showNotification('載入儀表板資料失敗', 'error');
+            return;
         }
-        if (data) {
-            dashboardData = {
-                stats: data.stats || dashboardData.stats,
-                recentActivities: data.recentActivities || dashboardData.recentActivities,
-                pendingReviews: data.pendingReviews || dashboardData.pendingReviews,
-                systemHealth: data.systemHealth || dashboardData.systemHealth,
-                topUsers: data.topUsers || dashboardData.topUsers,
-                recentReports: data.recentReports || dashboardData.recentReports
-            };
-        }
+        
+        // 更新 dashboardData
+        dashboardData = {
+            stats: data.stats || {},
+            recentActivities: data.recentActivities || [],
+            pendingReviews: data.pendingReviews || [],
+            systemHealth: data.systemHealth || {},
+            topUsers: data.topUsers || [],
+            recentReports: data.recentReports || []
+        };
         renderStats();
         renderRecentActivities();
-        renderPendingReviews();
+        renderActivitySummary();
         renderSystemHealth();
         renderTopUsers();
         renderRecentReports();
@@ -237,13 +110,13 @@ async function loadDashboardData() {
             activityList.innerHTML = `<li style="text-align:center;color:var(--text-secondary);padding:12px;">沒有最近活動</li>`;
         }
     } catch (error) {
-        console.warn('載入儀表板資料失敗，使用預設資料。', error);
-        renderStats();
-        renderRecentActivities();
-        renderPendingReviews();
-        renderSystemHealth();
-        renderTopUsers();
-        renderRecentReports();
+        console.error('載入儀表板資料失敗:', error);
+        Utils.showNotification('載入儀表板資料失敗，請重新整理頁面', 'error');
+        // 顯示空狀態
+        const activitySummary = document.querySelector('.activity-summary');
+        if (activitySummary) {
+            activitySummary.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>無法載入資料</h3><p>請檢查網路連線或稍後再試</p></div>`;
+        }
     }
 }
 
@@ -251,18 +124,25 @@ async function loadDashboardData() {
 function renderStats() {
     const stats = dashboardData.stats;
     
-    // 更新統計卡片
-    const statCards = document.querySelectorAll('.stat-card');
-    if (statCards.length >= 8) {
-        statCards[0].querySelector('.number').textContent = Utils.formatNumber(stats.totalUsers);
-        statCards[1].querySelector('.number').textContent = Utils.formatNumber(stats.totalStudents);
-        statCards[2].querySelector('.number').textContent = Utils.formatNumber(stats.totalEnterprises);
-        statCards[3].querySelector('.number').textContent = Utils.formatNumber(stats.totalPortfolios);
-        statCards[4].querySelector('.number').textContent = Utils.formatNumber(stats.totalJobs);
-        statCards[5].querySelector('.number').textContent = Utils.formatNumber(stats.totalApplications);
-        statCards[6].querySelector('.number').textContent = Utils.formatNumber(stats.thisMonthUsers);
-        statCards[7].querySelector('.number').textContent = Utils.formatNumber(stats.thisMonthPortfolios);
-    }
+    // 更新主要統計卡片
+    const totalUsersEl = document.getElementById('statTotalUsers');
+    const totalJobsEl = document.getElementById('statTotalJobs');
+    const totalApplicationsEl = document.getElementById('statTotalApplications');
+    const pendingReviewsEl = document.getElementById('statPendingReviews');
+    
+    if (totalUsersEl) totalUsersEl.textContent = Utils.formatNumber(stats.totalUsers || 0);
+    if (totalJobsEl) totalJobsEl.textContent = Utils.formatNumber(stats.totalJobs || 0);
+    if (totalApplicationsEl) totalApplicationsEl.textContent = Utils.formatNumber(stats.totalApplications || 0);
+    
+    // 計算待審核總數
+    const pendingCount = (dashboardData.pendingReviews || []).reduce((sum, item) => sum + (item.count || 0), 0);
+    if (pendingReviewsEl) pendingReviewsEl.textContent = Utils.formatNumber(pendingCount);
+    
+    // 更新實習媒合概況
+    renderInternshipOverview(stats);
+    
+    // 更新側邊欄統計
+    renderSidebarStats(stats);
 }
 
 // 渲染最近活動
@@ -284,66 +164,108 @@ function renderRecentActivities() {
     `).join('');
 }
 
-// 渲染待審核項目
-function renderPendingReviews() {
-    const reviewsGrid = document.querySelector('.reviews-grid');
-    if (!reviewsGrid) return;
+// 渲染平台活動摘要（取代審核項目）
+function renderActivitySummary() {
+    const stats = dashboardData.stats;
     
-    // 需求：不顯示職缺審核
-    const items = (dashboardData.pendingReviews || []).filter(r => r.type !== 'job');
-    if (!items.length) {
-        reviewsGrid.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><h3>目前沒有待審核內容</h3></div>`;
-        return;
+    const recentRegistrationsEl = document.getElementById('recentRegistrations');
+    const recentJobsEl = document.getElementById('recentJobs');
+    const recentApplicationsEl = document.getElementById('recentApplications');
+    
+    if (recentRegistrationsEl) {
+        recentRegistrationsEl.textContent = `${Utils.formatNumber(stats.thisMonthUsers || 0)} 人`;
     }
-    reviewsGrid.innerHTML = items.map(review => `
-        <div class="review-item" data-id="${review.id}" data-type="${review.type}">
-            <div class="review-header">
-                <h3>${review.title}</h3>
-                <span class="review-count">${review.count}</span>
-            </div>
-            <p>${review.description}</p>
-            <div class="review-actions">
-                <button class="btn btn-outline" onclick="viewReviews('${review.type}')">
-                    <i class="fas fa-eye"></i> 查看
-                </button>
-                <button class="btn btn-primary" onclick="processReviews('${review.type}')">
-                    <i class="fas fa-check"></i> 處理
-                </button>
-            </div>
-        </div>
-    `).join('');
+    if (recentJobsEl) {
+        recentJobsEl.textContent = `${Utils.formatNumber(stats.thisMonthJobs || 0)} 個`;
+    }
+    if (recentApplicationsEl) {
+        recentApplicationsEl.textContent = `${Utils.formatNumber(stats.thisMonthApplications || 0)} 件`;
+    }
+    
+    // 更新待處理報告數
+    const pendingReportsEl = document.getElementById('statPendingReports');
+    if (pendingReportsEl) {
+        // 從 pendingReviews 中找出報告相關的項目
+        const reportItem = (dashboardData.pendingReviews || []).find(r => r.type === 'report');
+        const reportCount = reportItem ? reportItem.count : 0;
+        pendingReportsEl.textContent = Utils.formatNumber(reportCount);
+    }
 }
 
 // 渲染系統健康狀態
 function renderSystemHealth() {
-    const health = dashboardData.systemHealth;
+    const health = dashboardData.systemHealth || {};
     const healthCard = document.querySelector('.system-health');
-    if (!healthCard) return;
+    const statusCard = document.getElementById('systemStatus');
     
-    healthCard.innerHTML = `
-        <div class="health-status status-${health.status}">
-            <i class="fas fa-circle"></i>
-            <span>系統狀態：${getHealthStatusText(health.status)}</span>
-        </div>
-        <div class="health-stats">
-            <div class="health-stat">
-                <span class="label">運行時間</span>
-                <span class="value">${health.uptime}</span>
+    if (healthCard) {
+        healthCard.innerHTML = `
+            <div class="health-status status-${health.status || 'healthy'}">
+                <i class="fas fa-circle"></i>
+                <span>系統狀態：${getHealthStatusText(health.status || 'healthy')}</span>
             </div>
-            <div class="health-stat">
-                <span class="label">回應時間</span>
-                <span class="value">${health.responseTime}</span>
+            <div class="health-stats">
+                <div class="health-stat">
+                    <span class="label">活躍使用者（24小時）</span>
+                    <span class="value">${Utils.formatNumber(health.activeUsers || 0)}</span>
+                </div>
+                <div class="health-stat">
+                    <span class="label">今日新增使用者</span>
+                    <span class="value">${Utils.formatNumber(health.todayUsers || 0)}</span>
+                </div>
+                <div class="health-stat">
+                    <span class="label">今日新增職缺</span>
+                    <span class="value">${Utils.formatNumber(health.todayJobs || 0)}</span>
+                </div>
+                <div class="health-stat">
+                    <span class="label">今日新增申請</span>
+                    <span class="value">${Utils.formatNumber(health.todayApplications || 0)}</span>
+                </div>
             </div>
-            <div class="health-stat">
-                <span class="label">活躍使用者</span>
-                <span class="value">${health.activeUsers}</span>
+        `;
+    }
+    
+    // 更新側邊欄系統狀態
+    if (statusCard) {
+        const status = health.status || 'healthy';
+        statusCard.innerHTML = `
+            <div class="status-item status-${status}">
+                <i class="fas fa-${status === 'healthy' ? 'check-circle' : status === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+                <span>系統運行${status === 'healthy' ? '正常' : status === 'warning' ? '警告' : '異常'}</span>
             </div>
-            <div class="health-stat">
-                <span class="label">伺服器負載</span>
-                <span class="value">${health.serverLoad}</span>
-            </div>
-        </div>
-    `;
+        `;
+    }
+}
+
+// 渲染實習媒合概況
+function renderInternshipOverview(stats) {
+    const openJobsEl = document.getElementById('overviewOpenJobs');
+    const totalJobsEl = document.getElementById('overviewTotalJobs');
+    const pendingAppsEl = document.getElementById('overviewPendingApps');
+    const totalAppsEl = document.getElementById('overviewTotalApps');
+    
+    if (openJobsEl) openJobsEl.textContent = Utils.formatNumber(stats.openJobs || stats.totalJobs || 0);
+    if (totalJobsEl) totalJobsEl.textContent = Utils.formatNumber(stats.totalJobs || 0);
+    if (pendingAppsEl) pendingAppsEl.textContent = Utils.formatNumber(stats.pendingApplications || 0);
+    if (totalAppsEl) totalAppsEl.textContent = Utils.formatNumber(stats.totalApplications || 0);
+}
+
+// 渲染側邊欄統計
+function renderSidebarStats(stats) {
+    const studentsEl = document.getElementById('sidebarStudents');
+    const enterprisesEl = document.getElementById('sidebarEnterprises');
+    const portfoliosEl = document.getElementById('sidebarPortfolios');
+    const jobsEl = document.getElementById('sidebarJobs');
+    const pendingEl = document.getElementById('sidebarPending');
+    
+    if (studentsEl) studentsEl.textContent = `${Utils.formatNumber(stats.totalStudents || 0)} 人`;
+    if (enterprisesEl) enterprisesEl.textContent = `${Utils.formatNumber(stats.totalEnterprises || 0)} 家`;
+    if (portfoliosEl) portfoliosEl.textContent = `${Utils.formatNumber(stats.totalPortfolios || 0)} 件`;
+    if (jobsEl) jobsEl.textContent = `${Utils.formatNumber(stats.openJobs || 0)} 個`;
+    
+    // 計算待審核總數
+    const pendingCount = (dashboardData.pendingReviews || []).reduce((sum, item) => sum + (item.count || 0), 0);
+    if (pendingEl) pendingEl.textContent = `${Utils.formatNumber(pendingCount)} 件`;
 }
 
 // 渲染熱門使用者
@@ -611,7 +533,7 @@ function refreshDashboard() {
     Utils.showNotification('儀表板已重新整理', 'success');
 }
 
-// 導向審核目標頁面（依類型對應現有頁面）
+// 導向審核目標頁面（依類型對應現有頁面，移除作品審核）
 function navigateToReviewTarget(type, extraParams = {}) {
     const map = {
         'user': {
@@ -622,13 +544,9 @@ function navigateToReviewTarget(type, extraParams = {}) {
             path: 'users.html',
             params: { tab: 'enterprises', status: 'pending' }
         },
-        'portfolio': {
-            path: 'content.html',
-            params: { section: 'portfolios', status: 'pending' }
-        },
         'job': {
-            path: 'content.html',
-            params: { section: 'jobs', status: 'pending' }
+            path: 'analytics.html',
+            params: { type: 'jobs' }
         }
     };
     const target = map[type];

@@ -107,7 +107,6 @@
     <link rel="stylesheet" href="../css/achievement-notifications.css">
     <link rel="stylesheet" href="../css/skill-cloud.css">
     <link rel="stylesheet" href="../css/popularity-tags.css">
-    <link rel="stylesheet" href="../css/favorites-system.css">
     <link rel="stylesheet" href="../css/card-3d-flip.css">
     <link rel="stylesheet" href="../css/share-card-generator.css">
     <link rel="stylesheet" href="../css/skill-radar.css">
@@ -284,9 +283,9 @@
                     </div>
 
                     <div class="sidebar-card">
-                        <h3>企業互動</h3>
-                        <div id="enterprise-interactions">
-                            <!-- 企業互動將由 JavaScript 動態載入 -->
+                        <h3>企業職缺</h3>
+                        <div id="enterprise-jobs">
+                            <!-- 企業職缺將由 JavaScript 動態載入 -->
                             <div class="loading-placeholder">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 <div>載入中...</div>
@@ -305,7 +304,6 @@
     <script src="../js/achievement-notifications.js"></script>
     <script src="../js/skill-cloud.js"></script>
     <script src="../js/popularity-tags.js"></script>
-    <script src="../js/favorites-system.js"></script>
     <script src="../js/card-3d-flip.js"></script>
     <script src="../js/share-card-generator.js"></script>
     <!-- 新功能腳本 -->
@@ -817,8 +815,8 @@
             // 載入徽章成就
             loadBadges();
             
-            // 載入企業互動
-            loadEnterpriseInteractions();
+            // 載入企業職缺
+            loadEnterpriseJobs();
         }
         
         // 載入作品列表
@@ -848,10 +846,10 @@
             // 這裡會由 dashboard.js 處理
         }
         
-        // 載入企業互動
-        function loadEnterpriseInteractions() {
-            const interactionsContainer = document.getElementById('enterprise-interactions');
-            if (!interactionsContainer) return;
+        // 載入企業職缺
+        function loadEnterpriseJobs() {
+            const jobsContainer = document.getElementById('enterprise-jobs');
+            if (!jobsContainer) return;
             
             // 這裡會由 dashboard.js 處理
         }
