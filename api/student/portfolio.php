@@ -298,6 +298,8 @@ function getPortfolioDetail() {
         'category' => $row['category'] ?? null,
         'tags' => $tagsArray,
         'cover_image' => $row['cover_image'] ?? null,
+        // 作品連結（前端使用 portfolioDetail.url 或 portfolioDetail.portfolio_url）
+        'url' => $row['url'] ?? null,
         'views' => (int)($row['view_count'] ?? 0),
         'likes' => $likeCount,
         'comment_count' => $commentCount,
