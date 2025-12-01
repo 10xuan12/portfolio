@@ -588,9 +588,9 @@ function renderEnterpriseJobs(jobs) {
             </div>
         `;
         
-        // 點擊跳轉到職缺詳情
+        // 點擊跳轉到職缺詳情（使用相對路徑，因為dashboard.html和job-detail.html都在student目錄下）
         jobItem.addEventListener('click', function() {
-            window.location.href = `student/job-detail.html?id=${job.id}`;
+            window.location.href = `job-detail.html?id=${job.id}`;
         });
         
         jobItem.addEventListener('mouseenter', function() {
@@ -604,9 +604,9 @@ function renderEnterpriseJobs(jobs) {
         jobsContainer.appendChild(jobItem);
     });
     
-    // 添加「查看更多」連結
+    // 添加「查看更多」連結（指向搜索頁面，因為沒有專門的職缺列表頁）
     const moreLink = document.createElement('a');
-    moreLink.href = 'jobs.html';
+    moreLink.href = 'search.html?type=jobs';
     moreLink.className = 'btn btn-link';
     moreLink.style.cssText = 'display: block; text-align: center; margin-top: 12px; padding: 8px; color: #295a8a; text-decoration: none;';
     moreLink.innerHTML = '<i class="fas fa-arrow-right"></i> 查看更多職缺';
