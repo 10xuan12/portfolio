@@ -16,7 +16,7 @@ class AIService {
     constructor() {
         // Hugging Face Inference API 端點（免費，無需API金鑰）
         // 使用公開的文本生成模型
-        this.baseUrl = 'https://api-inference.huggingface.co/models';
+        this.baseUrl = 'https://router.huggingface.co';
         
         // 使用量統計（追蹤API調用）
         this.usageStats = {
@@ -360,8 +360,16 @@ class AIService {
             });
             
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`後端 API 錯誤: ${response.status} - ${errorText}`);
+                let errorText = '';
+                let errorData = null;
+                try {
+                    errorData = await response.json();
+                    errorText = errorData.message || JSON.stringify(errorData);
+                } catch (e) {
+                    errorText = await response.text();
+                }
+                console.error('❌ [後端代理] API 返回錯誤:', response.status, errorData || errorText);
+                throw new Error(`後端 API 錯誤: ${response.status} - ${errorText.substring(0, 200)}`);
             }
             
             const data = await response.json();
@@ -678,8 +686,8 @@ Description (in Traditional Chinese):`;
         const selectedKeywords = this.selectRelevantKeywords(titleKeywords, keywords);
         const selectedTech = this.selectRelevantKeywords(titleTechWords, techKeywords);
         
-        // 根據標題內容智能生成描述
-        let description = this.buildSmartDescription(title, categoryName, selectedKeywords, selectedTech, titleKeywords);
+        // 根據標題內容智能生成描述（傳入 category 以便判斷類型）
+        let description = this.buildSmartDescription(title, categoryName, selectedKeywords, selectedTech, titleKeywords, category);
         
         return description;
     }
@@ -714,7 +722,7 @@ Description (in Traditional Chinese):`;
     /**
      * 智能構建描述（增強版：更自然、更多樣、更精準）
      */
-    buildSmartDescription(title, categoryName, keywords, techWords, titleKeywords) {
+    buildSmartDescription(title, categoryName, keywords, techWords, titleKeywords, category = '') {
         // 添加多樣化的開頭和結尾模板
         const openings = [
             `${title}是`,
@@ -783,7 +791,7 @@ Description (in Traditional Chinese):`;
         
         // 為新聞/傳播類作品添加專門處理
         if (isJournalism || category === 'mass-communication' || category === 'mass_communication' || category === 'communication') {
-            const templates = [
+        const templates = [
                 () => {
                     return `${opening}專業的新聞報導${categoryName}作品${connectors[0]}展現了優秀的新聞採訪和報導寫作能力。作品透過深入的採訪和嚴謹的資料收集，呈現出具有新聞價值和社會意義的報導內容。在${keywords.length > 0 ? keywords[0] : '新聞寫作'}和${keywords.length > 1 ? keywords[1] : '內容呈現'}方面，運用了專業的新聞寫作技巧和媒體製作方法，確保報導能夠準確傳達訊息並引起讀者共鳴。透過完整的採訪、寫作和編輯流程，作品展現了良好的新聞素養和專業水準${ending}`;
                 },

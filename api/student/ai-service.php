@@ -43,28 +43,36 @@ set_exception_handler(function($exception) {
 });
 
 // AI 服務 API
-switch ($_SERVER['REQUEST_METHOD']) {
-    case 'POST':
-        $input = json_decode(file_get_contents('php://input'), true);
-        if (!is_array($input)) {
-            $input = [];
-        }
-        
-        $action = $input['action'] ?? '';
-        switch ($action) {
-            case 'generate_description':
-                generateDescription($input);
-                break;
-            case 'generate_tags':
-                generateTags($input);
-                break;
-            default:
-                sendError('無效的操作', 400);
-        }
-        break;
-        
-    default:
-        sendError('不支援的 HTTP 方法', 405);
+try {
+    switch ($_SERVER['REQUEST_METHOD']) {
+        case 'POST':
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!is_array($input)) {
+                $input = [];
+            }
+            
+            $action = $input['action'] ?? '';
+            switch ($action) {
+                case 'generate_description':
+                    generateDescription($input);
+                    break;
+                case 'generate_tags':
+                    generateTags($input);
+                    break;
+                default:
+                    sendError('無效的操作', 400);
+            }
+            break;
+            
+        default:
+            sendError('不支援的 HTTP 方法', 405);
+    }
+} catch (Throwable $e) {
+    // 捕獲所有錯誤和異常
+    ob_clean();
+    error_log("AI Service Fatal Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    sendError('伺服器內部錯誤：' . $e->getMessage(), 500);
 }
 
 /**
