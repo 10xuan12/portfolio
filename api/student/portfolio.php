@@ -289,6 +289,9 @@ function getPortfolioDetail() {
         }
     }
     
+    // 日誌：檢查從資料庫讀取的 URL
+    error_log('getPortfolioDetail - Portfolio ID: ' . $row['id'] . ', portfolio_url from DB: ' . var_export($row['url'] ?? 'NULL', true));
+    
     $portfolio = [
         'id' => (int)$row['id'],
         'author_id' => isset($row['author_id']) ? (int)$row['author_id'] : null,
@@ -312,6 +315,8 @@ function getPortfolioDetail() {
         'files' => $files,
         'comments' => $comments
     ];
+    
+    error_log('getPortfolioDetail - 返回的作品資料: url = ' . var_export($portfolio['url'], true));
 
     sendResponse($portfolio, 200, '成功獲取作品詳情');
 }
