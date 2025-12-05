@@ -792,12 +792,6 @@ function likePortfolioComment($data) {
 
 // 獲取文件 URL（用於預覽）
 function getPortfolioFileUrl($data) {
-    $userId = getUserId();
-    if (!$userId) {
-        sendError('無法獲取使用者資訊', 401);
-        return;
-    }
-    
     $portfolioId = (int)($data['portfolio_id'] ?? 0);
     $filename = sanitizeInput($data['filename'] ?? '');
     
@@ -807,6 +801,29 @@ function getPortfolioFileUrl($data) {
     }
     
     try {
+        // 先檢查作品是否存在及其狀態
+        $portfolioStmt = $GLOBALS['conn']->prepare("
+            SELECT user_id, status FROM portfolios WHERE id = ?
+        ");
+        $portfolioStmt->bind_param("i", $portfolioId);
+        $portfolioStmt->execute();
+        $portfolio = $portfolioStmt->get_result()->fetch_assoc();
+        
+        if (!$portfolio) {
+            sendError('作品不存在', 404);
+            return;
+        }
+        
+        // 獲取當前用戶 ID（如果有登入）
+        $currentUserId = getUserId();
+        
+        // 權限檢查：作品擁有者或已發布的作品可以被任何人查看
+        if ($portfolio['status'] !== 'published' && $currentUserId != $portfolio['user_id']) {
+            sendError('無權限查看此文件', 403);
+            return;
+        }
+        
+        // 查詢文件
         $stmt = $GLOBALS['conn']->prepare("
             SELECT file_path FROM portfolio_files 
             WHERE portfolio_id = ? AND file_name = ?
