@@ -1501,6 +1501,10 @@ async function handleFormSubmit(e) {
     }
     
     try {
+        // 最後一次收集表單數據（確保包含所有欄位）
+        collectFormData();
+        console.log('提交前最終收集的 portfolioData:', portfolioData);
+        
         // 檢查用戶登入狀態
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         console.log('用戶資訊:', user);
@@ -1559,6 +1563,8 @@ async function handleFormSubmit(e) {
         console.log('- 描述:', portfolioData.description);
         console.log('- 標籤:', portfolioData.tags);
         console.log('- 狀態:', portfolioData.status);
+        console.log('- URL:', portfolioData.url);
+        console.log('- GitHub:', portfolioData.github);
         console.log('- 用戶ID:', user.id);
         console.log('- 檔案數量:', uploadedFiles.length);
         

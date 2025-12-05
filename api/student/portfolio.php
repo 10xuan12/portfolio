@@ -429,11 +429,18 @@ function createPortfolio($data) {
         }
         
         // 處理作品連結
+        error_log('createPortfolio - 開始處理作品連結');
+        error_log('createPortfolio - $data[\'url\'] 原始值: ' . var_export($data['url'] ?? 'UNDEFINED', true));
         $portfolioUrl = sanitizeInput($data['url'] ?? '');
+        error_log('createPortfolio - sanitize 後的 $portfolioUrl: ' . var_export($portfolioUrl, true));
+        
         if (!empty($portfolioUrl) && !preg_match('/^https?:\/\//', $portfolioUrl)) {
+            error_log('createPortfolio - URL 格式驗證失敗: ' . $portfolioUrl);
             sendError('URL 格式不正確，必須以 http:// 或 https:// 開頭', 400);
             return;
         }
+        
+        error_log('createPortfolio - URL 驗證通過，準備插入資料庫: ' . ($portfolioUrl ?: 'NULL/EMPTY'));
         
         $stmt = $GLOBALS['conn']->prepare("
             INSERT INTO portfolios (
@@ -446,8 +453,11 @@ function createPortfolio($data) {
         // user_id(i), title(s), description(s), category_id(i), tags(s), cover_image(s), portfolio_url(s), status(s), published_at(s)
         $stmt->bind_param("ississsss", $userId, $title, $description, $categoryId, $tags, $coverImage, $portfolioUrl, $status, $publishedAt);
         
+        error_log('createPortfolio - SQL 綁定參數: userId=' . $userId . ', title=' . $title . ', portfolio_url=' . var_export($portfolioUrl, true));
+        
         if ($stmt->execute()) {
             $portfolioId = $GLOBALS['conn']->insert_id;
+            error_log('createPortfolio - 作品創建成功！ID: ' . $portfolioId . ', portfolio_url: ' . var_export($portfolioUrl, true));
             
             $response = [
                 'portfolio_id' => $portfolioId,
@@ -834,9 +844,20 @@ function getPortfolioFileUrl($data) {
         $file = $result->fetch_assoc();
         
         if ($file) {
+            // 處理文件路徑，確保是正確的 URL
+            $filePath = $file['file_path'];
+            
+            // 移除開頭的 frontend/student/ 或其他多餘路徑
+            $filePath = preg_replace('#^(frontend/student/|frontend/|student/)#', '', $filePath);
+            
+            // 如果路徑不是以 http 開頭，且不是以 / 開頭，則添加 /
+            if (!preg_match('#^https?://#', $filePath) && !preg_match('#^/#', $filePath)) {
+                $filePath = '/' . $filePath;
+            }
+            
             // 返回文件 URL（用於預覽，不更新下載次數）
             sendResponse([
-                'file_url' => $file['file_path'],
+                'file_url' => $filePath,
                 'message' => '文件 URL 獲取成功'
             ], 200, '成功');
         } else {
