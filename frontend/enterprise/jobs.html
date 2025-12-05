@@ -31,162 +31,232 @@
     </script>
 
     <!-- 主要內容 -->
-    <main class="jobs-container">
-        <div class="container">
-            <div class="header-top">
-                <button class="btn-back" onclick="goBack()">
-                    <i class="bi bi-arrow-left"></i>
-                    返回
-                </button>
-            </div>
-            <div class="jobs-header">
-                <h1 class="jobs-title">職缺管理</h1>
-                <div class="jobs-actions">
-                    <button class="btn btn-primary" onclick="createNewJob()">
-                        <i class="bi bi-plus-lg"></i>
-                        發布新職缺
+    <main class="jobs-container-v2">
+        <div class="container-v2">
+            <!-- 頂部標題區域 -->
+            <div class="page-header">
+                <div class="header-top">
+                    <button class="btn-back" onclick="goBack()">
+                        <i class="bi bi-arrow-left"></i>
+                        返回
                     </button>
                 </div>
+                <div class="header-content">
+                    <div>
+                        <h1 class="page-title">職缺管理</h1>
+                        <p class="page-subtitle">管理您的招募職缺，尋找最適合的人才</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-icon" onclick="refreshJobs()" title="重新整理">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button class="btn-primary-v2" onclick="showJobForm()">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>發布新職缺</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div class="jobs-grid">
+            <!-- 篩選和排序 -->
+            <div class="toolbar">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-status="all" onclick="filterJobs('all')">
+                        全部職缺
+                    </button>
+                    <button class="filter-tab" data-status="active" onclick="filterJobs('active')">
+                        招募中
+                    </button>
+                    <button class="filter-tab" data-status="paused" onclick="filterJobs('paused')">
+                        暫停中
+                    </button>
+                    <button class="filter-tab" data-status="closed" onclick="filterJobs('closed')">
+                        已關閉
+                    </button>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="searchInput" placeholder="搜尋職缺..." onkeyup="searchJobs()">
+                    </div>
+                    <select class="sort-select" id="sortSelect" onchange="sortJobs()">
+                        <option value="newest">最新發布</option>
+                        <option value="oldest">最舊發布</option>
+                        <option value="applications">應徵數</option>
+                        <option value="views">瀏覽數</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 職缺管理區域 -->
+            <div class="jobs-management-grid">
                 <!-- 職缺列表 -->
-                <div class="jobs-list">
-                    <h2>我的職缺</h2>
-                    <div id="jobsList"></div>
+                <div class="jobs-list-section">
+                    <div class="jobs-grid-v2" id="jobsListV2">
+                        <!-- 職缺卡片將由 JavaScript 動態生成 -->
+                    </div>
+
+                    <!-- 空狀態 -->
+                    <div class="empty-state-v2" id="emptyState" style="display: none;">
+                        <div class="empty-icon">
+                            <i class="bi bi-inbox"></i>
+                        </div>
+                        <h3>尚未發布任何職缺</h3>
+                        <p>開始發布您的第一個職缺，吸引優秀人才加入團隊</p>
+                        <button class="btn-primary-v2" onclick="showJobForm()">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>發布新職缺</span>
+                        </button>
+                    </div>
                 </div>
 
-
                 <!-- 職缺表單 -->
-                <div class="job-form" id="jobForm" style="display: none;">
-                    <h2 id="formTitle">發布新職缺</h2>
-                    <form id="jobFormElement">
+                <div class="job-form-section" id="jobFormSection" style="display: none;">
+                    <div class="form-header-v2">
+                        <h2 class="form-title-v2" id="formTitle">發布新職缺</h2>
+                        <button class="btn-close-form" onclick="hideJobForm()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <form id="jobFormV2">
                         <input type="hidden" id="jobId" name="jobId">
-                        
-                        <div class="form-section">
-                            <h3>基本資訊</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="jobTitle">職缺標題</label>
-                                    <input type="text" id="jobTitle" name="title" required>
+
+                        <!-- 基本資訊 -->
+                        <div class="form-section-v2">
+                            <h3 class="section-title-simple">
+                                <i class="bi bi-info-circle-fill"></i>
+                                基本資訊
+                            </h3>
+                            <div class="form-grid-v2">
+                                <div class="form-field-v2 full-width">
+                                    <label>職缺標題 <span class="required">*</span></label>
+                                    <input type="text" id="jobTitle" name="title" placeholder="例：前端工程師 (React)" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="jobDepartment">部門</label>
+                                <div class="form-field-v2">
+                                    <label>部門 <span class="required">*</span></label>
                                     <select id="jobDepartment" name="department" required>
                                         <option value="">請選擇部門</option>
-                                        <option value="技術部">技術部</option>
-                                        <option value="設計部">設計部</option>
-                                        <option value="行銷部">行銷部</option>
-                                        <option value="業務部">業務部</option>
+                                        <!-- 選項將由 JavaScript 動態載入 -->
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="jobType">職缺類型</label>
+                                <div class="form-field-v2">
+                                    <label>職缺類型 <span class="required">*</span></label>
                                     <select id="jobType" name="type" required>
                                         <option value="">請選擇類型</option>
-                                        <option value="實習">實習</option>
-                                        <option value="正職">正職</option>
-                                        <option value="兼職">兼職</option>
+                                        <!-- 選項將由 JavaScript 動態載入 -->
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="jobLocation">工作地點</label>
-                                    <input type="text" id="jobLocation" name="location" required>
+                                <div class="form-field-v2">
+                                    <label>工作地點 <span class="required">*</span></label>
+                                    <input type="text" id="jobLocation" name="location" placeholder="例：台北市信義區" required>
+                                </div>
+                                <div class="form-field-v2">
+                                    <label>申請截止日期</label>
+                                    <input type="date" id="deadline" name="deadline">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-section">
-                            <h3>職缺描述</h3>
-                            <div class="form-group full-width">
-                                <label for="jobDescription">工作描述</label>
-                                <textarea id="jobDescription" name="description" rows="4" required></textarea>
+                        <!-- 職缺描述 -->
+                        <div class="form-section-v2">
+                            <h3 class="section-title-simple">
+                                <i class="bi bi-file-text-fill"></i>
+                                職缺描述
+                            </h3>
+                            <div class="form-grid-v2">
+                                <div class="form-field-v2 full-width">
+                                    <label>工作描述 <span class="required">*</span></label>
+                                    <textarea id="jobDescription" name="description" rows="4" placeholder="描述這個職位的主要工作內容、團隊環境等..." required></textarea>
+                                </div>
+                                <div class="form-field-v2 full-width">
+                                    <label>工作職責</label>
+                                    <textarea id="responsibilities" name="responsibilities" rows="3" placeholder="列出具體的工作職責和日常任務..."></textarea>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-section">
-                            <h3>技能要求</h3>
-                            <div class="requirements-input">
-                                <input type="text" id="requirementInput" placeholder="輸入技能要求...">
-                                <button type="button" class="add-requirement-btn" onclick="addRequirement()">
-                                    <i class="bi bi-plus-lg"></i> 新增
-                                </button>
-                            </div>
-                            <div class="requirements-list-edit" id="requirementsList">
-                                <!-- 技能標籤將在這裡動態生成 -->
+                        <!-- 技能要求 -->
+                        <div class="form-section-v2">
+                            <h3 class="section-title-simple">
+                                <i class="bi bi-check2-square"></i>
+                                技能要求
+                            </h3>
+                            <div class="form-grid-v2">
+                                <div class="form-field-v2 full-width">
+                                    <div class="skills-input-wrapper">
+                                        <input type="text" id="requirementInput" placeholder="輸入技能後按 Enter 新增...">
+                                        <button type="button" class="btn-add-skill" onclick="addRequirement()">
+                                            <i class="bi bi-plus-lg"></i>
+                                            新增
+                                        </button>
+                                    </div>
+                                    <div class="skills-tags" id="requirementsList">
+                                        <!-- 技能標籤將在這裡動態生成 -->
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-section">
-                            <h3>薪資與福利</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="salaryMin">最低薪資</label>
-                                    <input type="number" id="salaryMin" name="salary_min" placeholder="例：30000">
+                        <!-- 職位要求 -->
+                        <div class="form-section-v2">
+                            <h3 class="section-title-simple">
+                                <i class="bi bi-person-check-fill"></i>
+                                職位要求
+                            </h3>
+                            <div class="form-grid-v2">
+                                <div class="form-field-v2">
+                                    <label>經驗要求 <span class="required">*</span></label>
+                                    <select id="experienceLevel" name="experience_level" required>
+                                        <option value="">請選擇經驗要求</option>
+                                        <!-- 選項將由 JavaScript 動態載入 -->
+                                    </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="salaryMax">最高薪資</label>
-                                    <input type="number" id="salaryMax" name="salary_max" placeholder="例：50000">
+                                <div class="form-field-v2">
+                                    <label>學歷要求 <span class="required">*</span></label>
+                                    <select id="educationLevel" name="education_level" required>
+                                        <option value="">請選擇學歷要求</option>
+                                        <!-- 選項將由 JavaScript 動態載入 -->
+                                    </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="salaryType">薪資類型</label>
+                            </div>
+                        </div>
+
+                        <!-- 薪資與福利 -->
+                        <div class="form-section-v2">
+                            <h3 class="section-title-simple">
+                                <i class="bi bi-cash-coin"></i>
+                                薪資與福利
+                            </h3>
+                            <div class="form-grid-v2">
+                                <div class="form-field-v2">
+                                    <label>最低薪資</label>
+                                    <input type="number" id="salaryMin" name="salary_min" placeholder="30000">
+                                </div>
+                                <div class="form-field-v2">
+                                    <label>最高薪資</label>
+                                    <input type="number" id="salaryMax" name="salary_max" placeholder="50000">
+                                </div>
+                                <div class="form-field-v2">
+                                    <label>薪資類型 <span class="required">*</span></label>
                                     <select id="salaryType" name="salary_type" required>
                                         <option value="">請選擇薪資類型</option>
-                                        <option value="月薪">月薪</option>
-                                        <option value="年薪">年薪</option>
-                                        <option value="時薪">時薪</option>
-                                        <option value="面議">面議</option>
+                                        <!-- 選項將由 JavaScript 動態載入 -->
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="benefits">福利待遇</label>
+                                <div class="form-field-v2 full-width">
+                                    <label>福利待遇</label>
                                     <textarea id="benefits" name="benefits" rows="3" placeholder="例：員工旅遊、年終獎金、彈性工時"></textarea>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-section">
-                            <h3>職位要求</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="experienceLevel">經驗要求</label>
-                                    <select id="experienceLevel" name="experience_level" required>
-                                        <option value="">請選擇經驗要求</option>
-                                        <option value="無經驗">無經驗</option>
-                                        <option value="1-3年">1-3年</option>
-                                        <option value="3-5年">3-5年</option>
-                                        <option value="5-10年">5-10年</option>
-                                        <option value="10年以上">10年以上</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="educationLevel">學歷要求</label>
-                                    <select id="educationLevel" name="education_level" required>
-                                        <option value="">請選擇學歷要求</option>
-                                        <option value="高中">高中</option>
-                                        <option value="專科">專科</option>
-                                        <option value="大學">大學</option>
-                                        <option value="碩士">碩士</option>
-                                        <option value="博士">博士</option>
-                                        <option value="不拘">不拘</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="deadline">申請截止日期</label>
-                                    <input type="date" id="deadline" name="deadline">
-                                </div>
-                                <div class="form-group">
-                                    <label for="responsibilities">工作職責</label>
-                                    <textarea id="responsibilities" name="responsibilities" rows="3" placeholder="描述具體的工作職責和任務"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-outline" onclick="cancelJobForm()">
+                        <!-- 表單按鈕 -->
+                        <div class="form-actions-v2">
+                            <button type="button" class="btn-outline-v2" onclick="hideJobForm()">
                                 取消
                             </button>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn-primary-v2">
                                 <i class="bi bi-save"></i>
                                 儲存職缺
                             </button>
@@ -200,7 +270,7 @@
     <script src="../js/config.js"></script>
     <script src="../js/api-service.js"></script>
     <script src="../js/app.js"></script>
-    <script src="../js/enterprise/jobs.js?v=20251201"></script>
+    <script src="../js/enterprise/jobs.js?v=20251205"></script>
     <script>
     if (typeof goBack !== 'function') {
         function goBack() {
@@ -213,4 +283,4 @@
     }
     </script>
 </body>
-</html> 
+</html>

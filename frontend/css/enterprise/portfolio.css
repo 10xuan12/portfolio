@@ -208,6 +208,10 @@
     font-size: var(--text-sm);
 }
 
+.portfolio-stats i {
+    color: var(--gray-900);
+}
+
 .portfolio-actions {
     display: flex;
     gap: var(--spacing-sm);

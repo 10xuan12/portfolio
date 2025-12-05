@@ -650,6 +650,10 @@ body {
     color: white;
 }
 
+.portfolio-stats i {
+    color: var(--gray-900);
+}
+
 /* 聯絡區塊 */
 .contact {
     padding: var(--spacing-3xl) 0;

@@ -415,14 +415,53 @@ function getInteractionStats($studentId, $db) {
  */
 function analyzeStudentSkills($portfolios) {
     $skillCategories = [
-        '前端開發' => ['HTML', 'CSS', 'JavaScript', 'React', 'Vue', 'Angular', '前端', 'UI', '響應式'],
-        '後端開發' => ['Node.js', 'Python', 'PHP', 'Java', 'C#', '後端', 'API', '資料庫', 'SQL'],
-        'UI/UX設計' => ['UI', 'UX', '設計', 'Figma', 'Adobe', 'Photoshop', 'Illustrator', '使用者體驗'],
-        '資料分析' => ['Python', 'R', 'SQL', 'Excel', 'PowerBI', 'Tableau', '數據分析', '統計', '機器學習'],
-        '行動開發' => ['iOS', 'Android', 'React Native', 'Flutter', 'Swift', 'Kotlin', '行動應用'],
-        '專案管理' => ['專案管理', '敏捷', 'Scrum', '團隊協作', 'Git', '版本控制', '管理'],
-        '數位行銷' => ['行銷', 'SEO', 'Google Analytics', '社群媒體', '內容行銷', '數位行銷'],
-        '其他技能' => ['其他', '創意', '創新', '解決問題', '溝通', '領導']
+        // === 程式開發類 (4類) ===
+        '前端開發' => ['HTML', 'CSS', 'JavaScript', 'React', 'Vue', 'Angular', 'Next.js', 'Nuxt', 'Svelte', 'TypeScript', '前端', '響應式', 'Webpack', 'Vite', '網頁設計'],
+        '後端開發' => ['Node.js', 'Python', 'PHP', 'Java', 'C#', 'Go', 'Ruby', 'Rust', '後端', 'API', 'REST', 'GraphQL', 'Spring', 'Django', 'Laravel', 'Express'],
+        '行動開發' => ['iOS', 'Android', 'React Native', 'Flutter', 'Swift', 'Kotlin', 'SwiftUI', 'Jetpack Compose', '行動應用', 'App開發', 'Mobile'],
+        '資料庫' => ['SQL', 'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Firebase', 'Supabase', 'Oracle', 'SQLite', '資料庫', 'Database', 'NoSQL', '資料庫管理'],
+        
+        // === 數據與AI類 (2類) ===
+        '資料分析' => ['Python', 'R', 'Excel', 'PowerBI', 'Tableau', 'Looker', '數據分析', '統計', '商業分析', 'Data Analysis', 'Pandas', 'NumPy', '資料分析', 'Excel試算表', 'PowerBI商業智慧'],
+        '機器學習' => ['機器學習', 'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'AI', '人工智慧', 'Neural Network', 'NLP', '深度學習'],
+        
+        // === 設計創意類 (3類) ===
+        'UI/UX設計' => ['UI', 'UX', 'Figma', 'Adobe XD', 'Sketch', 'Prototyping', '原型設計', '使用者體驗', '介面設計', 'Wireframe', '使用者研究', 'UI/UX設計', '無障礙設計'],
+        '平面設計' => ['Photoshop', 'Illustrator', 'InDesign', 'CorelDRAW', '平面設計', 'Graphic Design', '視覺設計', 'Logo設計', '品牌設計', 'Typography', '品牌識別', 'Adobe創意套件', '視覺識別', '字體設計', '插畫設計'],
+        '3D設計' => ['Blender', 'Maya', '3ds Max', 'Cinema 4D', 'ZBrush', 'SketchUp', '3D建模', '3D渲染', '3D動畫', '3D設計', 'SolidWorks', 'CAD/CAM'],
+        
+        // === 多媒體製作類 (4類) ===
+        '影片剪輯' => ['Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Filmora', '影片剪輯', '影片製作', 'Video Editing', '剪輯', 'Adobe Premiere', 'Adobe Premiere影片剪輯'],
+        '動畫特效' => ['After Effects', 'Motion Graphics', 'Animation', '動畫', '特效', 'VFX', '視覺特效', 'Animate', 'After Effects動畫製作', '動畫製作'],
+        '音訊製作' => ['Logic Pro', 'Ableton', 'Pro Tools', 'FL Studio', 'Cubase', '音樂製作', '音效設計', 'Sound Design', '混音', '錄音', '音訊'],
+        '攝影' => ['Photography', 'Lightroom', 'Capture One', '攝影', '修圖', '人像攝影', '商業攝影', '產品攝影', '攝影後製'],
+        
+        // === 工程技術類 (4類) ===
+        '工業自動化' => ['PLC', 'SCADA', '工業自動化', '物聯網', 'IoT', '製造業', '感測器', 'Modbus', 'PLC程式設計', 'SCADA監控系統', '工業4.0', '電力系統', '智慧製造'],
+        '機器人學' => ['機器人學', '機械手臂', '控制系統', 'PID控制', '路徑規劃', '碰撞檢測', 'Arduino', 'MATLAB', 'Simulink', '機械設計', '製造工程', '有限元素分析'],
+        '建築營建' => ['BIM', 'Revit', '建築學', '營建', '3D建模', '結構分析', '機電系統', 'ETABS', '永續建築', '綠建築', 'LEED', '能源效率', 'BIM建築資訊模型', '營建管理', '都市規劃'],
+        '網路安全' => ['網路安全', '滲透測試', '資訊安全', '資安', '弱點評估', '漏洞掃描', '安全測試', 'CISSP', 'CEH', 'Ethical Hacking', 'Risk Assessment', '道德駭客', '風險評估'],
+        
+        // === 科學研究類 (4類) ===
+        '數學統計' => ['數學建模', '最佳化', '線性規劃', '非線性優化', '統計學', '迴歸分析', '時間序列', 'Gurobi', 'CPLEX', 'R', 'MATLAB', 'MATLAB數值計算', '數值分析', '最佳化理論', 'SPSS'],
+        '物理' => ['物理學', 'LabVIEW', '實驗數據', '測量', '不確定度', '實驗物理', '量測技術', '統計物理', 'LabVIEW程式設計', '光學'],
+        '醫療健康' => ['醫療資訊', '護理資訊學', '病患照護', '醫療記錄', 'HIS', '臨床護理', '健康評估', '醫學術語', '醫療管理', '公共衛生', '流行病學', '健康統計', '疫情監控', '公共衛生政策', '健康促進'],
+        '生物資訊' => ['生物資訊學', '基因組學', '蛋白質分析', '基因序列', 'BLAST', 'HMMER', 'Biopython', '進化樹', '分子生物學', '生物技術', 'PCR', '細胞培養'],
+        
+        // === 人文社科類 (3類) ===
+        '心理學' => ['心理測驗', '評估', '人格測驗', '智力測驗', '情緒評估', '職業興趣', '認知心理學', '心理諮商', 'Research Methods'],
+        '數位媒體' => ['數位媒體', '內容創作', '影音製作', '社群媒體行銷', '內容製作', '直播', '媒體企劃', '新聞', '傳播'],
+        '跨文化溝通' => ['跨文化溝通', '語言教學', '培訓設計', '線上學習', '國際商務', '文化理解', '英語教學', '翻譯', 'TESOL', '語言評估'],
+        
+        // === 商業管理類 (3類) ===
+        '專案管理' => ['專案管理', 'Project Management', '敏捷', 'Agile', 'Scrum', 'Kanban', 'Jira', 'Trello', '團隊協作', 'Git', '版本控制', '任務追蹤'],
+        '數位行銷' => ['行銷', 'Marketing', 'SEO', 'SEM', 'Google Analytics', 'Google Ads', 'Facebook Ads', '社群媒體', '內容行銷', 'Email行銷', '數位行銷', 'Google Analytics分析', '行銷策略', '內容規劃', '品牌推廣'],
+        '電商商業' => ['電商', '用戶行為', '轉換率', '用戶分群', '商業分析', '電子商務', '用戶行為分析', '購物車', '營運'],
+        
+        // === 其他專業類 (3類) ===
+        '雲端技術' => ['AWS', 'Azure', 'Google Cloud', 'GCP', 'Docker', 'Kubernetes', 'DevOps', 'CI/CD', '雲端', 'Cloud', 'Serverless', 'Jenkins', 'Linux'],
+        '爬蟲自動化' => ['爬蟲', '自動化', '數據收集', 'Selenium', '多線程', 'Web Scraping', 'RPA', '自動化測試'],
+        '其他技能' => ['其他', '創意', '創新', '解決問題', '溝通', '領導', '簡報', 'Presentation', '團隊合作']
     ];
     
     $skillScores = [];

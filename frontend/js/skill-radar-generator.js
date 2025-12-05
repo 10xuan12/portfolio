@@ -242,13 +242,52 @@ class SkillRadarGenerator {
 
         const categories = this.skillsData.skill_analysis;
         const categoryNames = {
+            // 程式開發類
             '前端開發': 'frontend',
-            '後端開發': 'backend', 
-            'UI/UX設計': 'design',
-            '資料分析': 'data',
+            '後端開發': 'backend',
             '行動開發': 'mobile',
+            '資料庫': 'database',
+            
+            // 數據與AI類
+            '資料分析': 'data',
+            '機器學習': 'ml',
+            
+            // 設計創意類
+            'UI/UX設計': 'design',
+            '平面設計': 'graphic',
+            '3D設計': '3d',
+            
+            // 多媒體製作類
+            '影片剪輯': 'video',
+            '動畫特效': 'animation',
+            '音訊製作': 'audio',
+            '攝影': 'photography',
+            
+            // 工程技術類
+            '工業自動化': 'industrial',
+            '機器人學': 'robotics',
+            '建築營建': 'architecture',
+            '網路安全': 'security',
+            
+            // 科學研究類
+            '數學統計': 'math',
+            '物理': 'physics',
+            '醫療健康': 'medical',
+            '生物資訊': 'bioinfo',
+            
+            // 人文社科類
+            '心理學': 'psychology',
+            '數位媒體': 'media',
+            '跨文化溝通': 'communication',
+            
+            // 商業管理類
             '專案管理': 'management',
             '數位行銷': 'marketing',
+            '電商商業': 'ecommerce',
+            
+            // 其他專業類
+            '雲端技術': 'cloud',
+            '爬蟲自動化': 'automation',
             '其他技能': 'other'
         };
 

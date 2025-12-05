@@ -437,6 +437,10 @@
     padding-top: 0.5rem;
 }
 
+.portfolio-stats i {
+    color: #1e293b;
+}
+
 .portfolio-stat {
     display: flex;
     align-items: center;

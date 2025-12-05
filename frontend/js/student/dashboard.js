@@ -604,9 +604,9 @@ function renderEnterpriseJobs(jobs) {
         jobsContainer.appendChild(jobItem);
     });
     
-    // 添加「查看更多」連結（指向搜索頁面，因為沒有專門的職缺列表頁）
+    // 添加「查看更多」連結（指向首頁的職缺區域）
     const moreLink = document.createElement('a');
-    moreLink.href = 'search.html?type=jobs';
+    moreLink.href = '../index.html#jobs';
     moreLink.className = 'btn btn-link';
     moreLink.style.cssText = 'display: block; text-align: center; margin-top: 12px; padding: 8px; color: #295a8a; text-decoration: none;';
     moreLink.innerHTML = '<i class="fas fa-arrow-right"></i> 查看更多職缺';

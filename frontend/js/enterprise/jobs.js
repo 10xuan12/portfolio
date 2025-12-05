@@ -3,8 +3,10 @@
  * 包含職缺 CRUD、申請管理、狀態控制等功能
  */
 
-// 透過後端 API 載入職缺資料 - 版本 20250927
+// 透過後端 API 載入職缺資料 - 版本 20251205
 let jobs = [];
+let filteredJobs = [];
+let currentFilter = 'all';
 
 // 當前編輯的職缺
 let currentJob = null;
@@ -14,10 +16,99 @@ let requirements = [];
 
 // 初始化頁面
 document.addEventListener('DOMContentLoaded', async function() {
+    await loadDepartments();
     await loadJobs();
     renderJobs();
     initEventListeners();
 });
+
+// 載入下拉選單選項
+async function loadDepartments() {
+    // 部門選項
+    const departments = [
+        '技術部',
+        '設計部',
+        '行銷部',
+        '業務部',
+        '人資部',
+        '財務部',
+        '研發部',
+        '客服部',
+        '營運部',
+        '產品部'
+    ];
+    
+    // 職缺類型
+    const jobTypes = [
+        '實習',
+        '正職',
+        '兼職',
+        '約聘',
+        '契約'
+    ];
+    
+    // 經驗要求
+    const experienceLevels = [
+        '無經驗',
+        '1-3年',
+        '3-5年',
+        '5-10年',
+        '10年以上'
+    ];
+    
+    // 學歷要求
+    const educationLevels = [
+        '高中',
+        '專科',
+        '大學',
+        '碩士',
+        '博士',
+        '不拘'
+    ];
+    
+    // 薪資類型
+    const salaryTypes = [
+        '月薪',
+        '年薪',
+        '時薪',
+        '面議'
+    ];
+    
+    // 載入部門
+    const deptSelect = document.getElementById('jobDepartment');
+    if (deptSelect) {
+        deptSelect.innerHTML = '<option value="">請選擇部門</option>' + 
+            departments.map(dept => `<option value="${dept}">${dept}</option>`).join('');
+    }
+    
+    // 載入職缺類型
+    const typeSelect = document.getElementById('jobType');
+    if (typeSelect) {
+        typeSelect.innerHTML = '<option value="">請選擇類型</option>' + 
+            jobTypes.map(type => `<option value="${type}">${type}</option>`).join('');
+    }
+    
+    // 載入經驗要求
+    const expSelect = document.getElementById('experienceLevel');
+    if (expSelect) {
+        expSelect.innerHTML = '<option value="">請選擇經驗要求</option>' + 
+            experienceLevels.map(level => `<option value="${level}">${level}</option>`).join('');
+    }
+    
+    // 載入學歷要求
+    const eduSelect = document.getElementById('educationLevel');
+    if (eduSelect) {
+        eduSelect.innerHTML = '<option value="">請選擇學歷要求</option>' + 
+            educationLevels.map(level => `<option value="${level}">${level}</option>`).join('');
+    }
+    
+    // 載入薪資類型
+    const salarySelect = document.getElementById('salaryType');
+    if (salarySelect) {
+        salarySelect.innerHTML = '<option value="">請選擇薪資類型</option>' + 
+            salaryTypes.map(type => `<option value="${type}">${type}</option>`).join('');
+    }
+}
 
 // 從後端載入職缺
 async function loadJobs(page = 1) {
@@ -59,20 +150,97 @@ async function loadJobs(page = 1) {
 // 初始化事件監聽器
 function initEventListeners() {
     // 職缺表單提交
-    document.getElementById('jobFormElement').addEventListener('submit', handleJobSubmit);
+    const form = document.getElementById('jobFormV2');
+    if (form) {
+        form.addEventListener('submit', handleJobSubmit);
+    }
     
     // 技能要求輸入
-    document.getElementById('requirementInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addRequirement();
-        }
-    });
+    const requirementInput = document.getElementById('requirementInput');
+    if (requirementInput) {
+        requirementInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addRequirement();
+            }
+        });
+    }
 }
 
-// 渲染職缺列表
+// 渲染職缺列表（V2 版本）
 function renderJobs() {
+    const jobsList = document.getElementById('jobsListV2');
+    const emptyState = document.getElementById('emptyState');
+    
+    // 應用篩選
+    filteredJobs = jobs.filter(job => {
+        if (currentFilter === 'all') return true;
+        return job.status === currentFilter;
+    });
+    
+    if (filteredJobs.length === 0) {
+        if (jobsList) jobsList.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    
+    if (jobsList) jobsList.style.display = 'grid';
+    if (emptyState) emptyState.style.display = 'none';
+    
+    jobsList.innerHTML = filteredJobs.map(job => `
+        <div class="job-card-v2" onclick="editJob(${job.id})">
+            <div class="job-card-header">
+                <div class="job-card-title-section">
+                    <h3 class="job-card-title">${job.title}</h3>
+                    <div class="job-card-meta">
+                        <span><i class="bi bi-building"></i> ${job.department}</span>
+                        <span><i class="bi bi-briefcase"></i> ${job.type}</span>
+                        <span><i class="bi bi-geo-alt"></i> ${job.location}</span>
+                    </div>
+                </div>
+                <span class="job-card-status status-${job.status}">
+                    ${getJobStatusText(job.status)}
+                </span>
+            </div>
+            
+            <p class="job-card-description">${job.description || '暫無描述'}</p>
+            
+            ${job.requirements && job.requirements.length > 0 ? `
+                <div class="job-card-skills">
+                    ${job.requirements.slice(0, 4).map(req => 
+                        `<span class="skill-tag-v2">${req}</span>`
+                    ).join('')}
+                    ${job.requirements.length > 4 ? `<span class="skill-tag-v2">+${job.requirements.length - 4}</span>` : ''}
+                </div>
+            ` : ''}
+            
+            <div class="job-card-footer">
+                <div class="job-card-stats">
+                    <span><i class="bi bi-people"></i> ${job.applications}</span>
+                    <span><i class="bi bi-eye"></i> ${job.views}</span>
+                    <span><i class="bi bi-bookmark"></i> ${job.likes}</span>
+                </div>
+                <div class="job-card-actions" onclick="event.stopPropagation()">
+                    <button class="job-card-btn" onclick="editJob(${job.id})" title="編輯">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="job-card-btn" onclick="toggleJobStatus(${job.id})" title="切換狀態">
+                        <i class="bi bi-toggle-${job.status === 'active' ? 'on' : 'off'}"></i>
+                    </button>
+                    <button class="job-card-btn danger" onclick="deleteJob(${job.id})" title="刪除">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 舊版渲染函數（保留相容性）
+function renderJobsOld() {
     const jobsList = document.getElementById('jobsList');
+    
+    if (!jobsList) return renderJobs();
     
     if (jobs.length === 0) {
         jobsList.innerHTML = `
@@ -155,44 +323,37 @@ function getJobStatusText(status) {
     return statusMap[status] || status;
 }
 
-// 創建新職缺
-function createNewJob() {
+// 顯示職缺表單
+function showJobForm() {
     currentJob = null;
     requirements = [];
     
-    // 安全地設定表單欄位值
-    const setTextContent = (id, value) => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = value || '';
-        } else {
-            console.warn(`找不到元素: ${id}`);
-        }
-    };
+    document.getElementById('formTitle').textContent = '發布新職缺';
     
-    const resetElement = (id) => {
-        const element = document.getElementById(id);
-        if (element) {
-            if (element.tagName === 'FORM') {
-                element.reset();
-            } else {
-                element.innerHTML = '';
-            }
-        } else {
-            console.warn(`找不到元素: ${id}`);
-        }
-    };
+    // V2 版本
+    const formSection = document.getElementById('jobFormSection');
+    const formV2 = document.getElementById('jobFormV2');
     
-    setTextContent('formTitle', '發布新職缺');
-    resetElement('jobFormElement');
-    resetElement('requirementsList');
-    
+    // 舊版相容
     const jobForm = document.getElementById('jobForm');
-    if (jobForm) {
+    const formElement = document.getElementById('jobFormElement');
+    
+    if (formSection && formV2) {
+        formV2.reset();
+        document.getElementById('requirementsList').innerHTML = '';
+        formSection.style.display = 'block';
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (jobForm && formElement) {
+        formElement.reset();
+        document.getElementById('requirementsList').innerHTML = '';
         jobForm.style.display = 'block';
-    // 滾動到表單
         jobForm.scrollIntoView({ behavior: 'smooth' });
     }
+}
+
+// 創建新職缺
+function createNewJob() {
+    showJobForm();
 }
 
 // 編輯職缺 - 版本 20250927
@@ -255,20 +416,22 @@ function editJob(jobId) {
     
     renderRequirements();
     
+    // 顯示表單（V2 版本）
+    const formSection = document.getElementById('jobFormSection');
     const jobForm = document.getElementById('jobForm');
-    if (jobForm) {
+    
+    if (formSection) {
+        formSection.style.display = 'block';
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (jobForm) {
         jobForm.style.display = 'block';
-    // 滾動到表單
         jobForm.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
 // 取消表單
 function cancelJobForm() {
-    const jobForm = document.getElementById('jobForm');
-    if (jobForm) {
-        jobForm.style.display = 'none';
-    }
+    hideJobForm();
     currentJob = null;
     requirements = [];
 }
@@ -420,22 +583,27 @@ function addRequirement() {
     }
 }
 
-// 移除技能要求
-function removeRequirement(index) {
-    requirements.splice(index, 1);
+// 移除技能要求（支援兩種調用方式）
+function removeRequirement(indexOrReq) {
+    if (typeof indexOrReq === 'number') {
+        // 舊版：使用索引
+        requirements.splice(indexOrReq, 1);
+    } else {
+        // V2版：使用字串
+        requirements = requirements.filter(r => r !== indexOrReq);
+    }
     renderRequirements();
 }
 
-// 渲染技能要求
+// 渲染技能要求（V2 版本）
 function renderRequirements() {
     const requirementsList = document.getElementById('requirementsList');
+    if (!requirementsList) return;
     
-    requirementsList.innerHTML = requirements.map((req, index) => `
-        <span class="requirement-tag-edit">
+    requirementsList.innerHTML = requirements.map(req => `
+        <span class="skill-tag-edit">
             ${req}
-            <button type="button" class="remove-requirement" onclick="removeRequirement(${index})">
-                <i class="bi bi-x"></i>
-            </button>
+            <button type="button" class="remove-skill" onclick="removeRequirement('${req}')">×</button>
         </span>
     `).join('');
 }
@@ -558,3 +726,101 @@ async function ensureApiServiceReady(maxRetries = 10, delayMs = 100) {
     }
     throw new Error('API 服務未就緒');
 }
+
+// ==========================================
+// V2 版本新增功能
+// ==========================================
+
+// 隱藏職缺表單
+function hideJobForm() {
+    const formSection = document.getElementById('jobFormSection');
+    const jobForm = document.getElementById('jobForm');
+    
+    if (formSection) {
+        formSection.style.display = 'none';
+    } else if (jobForm) {
+        jobForm.style.display = 'none';
+    }
+    
+    currentJob = null;
+    requirements = [];
+}
+
+// 篩選職缺
+function filterJobs(status) {
+    currentFilter = status;
+    
+    // 更新標籤樣式
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.status === status) {
+            tab.classList.add('active');
+        }
+    });
+    
+    renderJobs();
+}
+
+// 搜尋職缺
+function searchJobs() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    if (!searchTerm) {
+        filteredJobs = jobs.filter(job => {
+            if (currentFilter === 'all') return true;
+            return job.status === currentFilter;
+        });
+    } else {
+        filteredJobs = jobs.filter(job => {
+            const matchesFilter = currentFilter === 'all' || job.status === currentFilter;
+            const matchesSearch = 
+                job.title.toLowerCase().includes(searchTerm) ||
+                (job.description && job.description.toLowerCase().includes(searchTerm)) ||
+                (job.requirements && job.requirements.some(r => r.toLowerCase().includes(searchTerm)));
+            
+            return matchesFilter && matchesSearch;
+        });
+    }
+    
+    renderJobs();
+}
+
+// 排序職缺
+function sortJobs() {
+    const sortBy = document.getElementById('sortSelect').value;
+    
+    switch(sortBy) {
+        case 'newest':
+            filteredJobs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            break;
+        case 'oldest':
+            filteredJobs.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            break;
+        case 'applications':
+            filteredJobs.sort((a, b) => (b.applications || 0) - (a.applications || 0));
+            break;
+        case 'views':
+            filteredJobs.sort((a, b) => (b.views || 0) - (a.views || 0));
+            break;
+    }
+    
+    renderJobs();
+}
+
+// 重新整理職缺
+async function refreshJobs() {
+    await loadJobs();
+    renderJobs();
+    if (typeof Utils !== 'undefined' && Utils.showNotification) {
+        Utils.showNotification('職缺列表已更新', 'success');
+    }
+}
+
+
+// 全域函數註冊（V2）
+window.showJobForm = showJobForm;
+window.hideJobForm = hideJobForm;
+window.filterJobs = filterJobs;
+window.searchJobs = searchJobs;
+window.sortJobs = sortJobs;
+window.refreshJobs = refreshJobs;

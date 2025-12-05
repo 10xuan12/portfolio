@@ -321,6 +321,10 @@
     color: var(--text-secondary);
 }
 
+.portfolio-stats i {
+    color: var(--gray-900);
+}
+
 /* 科系分布 */
 .department-chart {
     display: flex;

@@ -224,6 +224,10 @@
     gap: var(--spacing-xs);
 }
 
+.portfolio-stats i {
+    color: var(--gray-900);
+}
+
 .empty-state {
     text-align: center;
     padding: var(--spacing-3xl);

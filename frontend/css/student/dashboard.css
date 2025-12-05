@@ -689,6 +689,10 @@ body .dashboard-header {
     color: var(--gray-600);
 }
 
+.portfolio-stats i {
+    color: var(--gray-900);
+}
+
 /* 主內容區域優化 */
 .main-content h2 {
     color: #1a1a1a;

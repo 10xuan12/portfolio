@@ -528,6 +528,11 @@ function createPortfolio($data) {
                 // 繼續執行，不影響作品創建
             }
             
+            // 如果作品是已發布狀態，自動同步技能到個人資料
+            if ($status === 'published') {
+                syncSkillsFromPortfolios($userId);
+            }
+            
             sendResponse($response, 201, '建立成功');
         } else {
             sendError('建立失敗: ' . $stmt->error, 500);
@@ -602,6 +607,9 @@ function updatePortfolio($data) {
         $stmt->bind_param("ssisssii", $title, $description, $categoryId, $tags, $portfolioUrl, $status, $portfolioId, $userId);
         
         if ($stmt->execute()) {
+            // 自動同步技能到個人資料（無論作品狀態，因為可能從published改為draft）
+            syncSkillsFromPortfolios($userId);
+            
             sendResponse(['message' => '作品更新成功'], 200, '更新成功');
         } else {
             sendError('更新失敗: ' . $stmt->error, 500);
@@ -630,6 +638,9 @@ function deletePortfolio($data) {
         $stmt->bind_param("ii", $portfolioId, $userId);
         
         if ($stmt->execute()) {
+            // 作品刪除後，重新同步技能列表
+            syncSkillsFromPortfolios($userId);
+            
             sendResponse(['message' => '作品刪除成功'], 200, '刪除成功');
         } else {
             sendError('刪除失敗: ' . $stmt->error, 500);
@@ -1084,6 +1095,9 @@ function togglePortfolioStatus($data) {
         $stmt->bind_param("ssii", $status, $publishedAt, $portfolioId, $userId);
         
         if ($stmt->execute()) {
+            // 狀態改變會影響已發布作品列表，需要重新同步技能
+            syncSkillsFromPortfolios($userId);
+            
             sendResponse(['message' => '狀態更新成功'], 200, '更新成功');
         } else {
             sendError('更新失敗: ' . $stmt->error, 500);
@@ -1239,6 +1253,87 @@ function getUserId() {
     }
     
     return null;
+}
+
+/**
+ * 從學生的作品標籤自動同步技能到 student_profiles.skills
+ * 當學生創建、更新或刪除作品時調用此函數
+ */
+function syncSkillsFromPortfolios($userId) {
+    global $conn;
+    
+    try {
+        // 從所有已發布的作品提取標籤
+        $stmt = $conn->prepare("
+            SELECT tags
+            FROM portfolios
+            WHERE user_id = ? AND status = 'published' AND tags IS NOT NULL AND tags != '' AND tags != '[]'
+            ORDER BY created_at DESC
+        ");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $allSkills = [];
+        while ($row = $result->fetch_assoc()) {
+            if (!empty($row['tags'])) {
+                // 處理 JSON 格式的標籤
+                $decoded = json_decode($row['tags'], true);
+                if (is_array($decoded)) {
+                    foreach ($decoded as $tag) {
+                        $tag = trim($tag);
+                        if ($tag && !in_array($tag, $allSkills)) {
+                            $allSkills[] = $tag;
+                        }
+                    }
+                } else {
+                    // 處理逗號分隔的字串格式
+                    $tags = explode(',', $row['tags']);
+                    foreach ($tags as $tag) {
+                        $tag = trim($tag);
+                        if ($tag && !in_array($tag, $allSkills)) {
+                            $allSkills[] = $tag;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 將技能陣列轉換為逗號分隔的字串
+        $skillsString = implode(',', $allSkills);
+        
+        // 更新 student_profiles 的 skills 欄位
+        // 先檢查是否已有 profile 記錄
+        $checkStmt = $conn->prepare("SELECT id FROM student_profiles WHERE user_id = ?");
+        $checkStmt->bind_param("i", $userId);
+        $checkStmt->execute();
+        $exists = $checkStmt->get_result()->num_rows > 0;
+        
+        if ($exists) {
+            // 更新現有記錄
+            $updateStmt = $conn->prepare("
+                UPDATE student_profiles 
+                SET skills = ?, updated_at = CURRENT_TIMESTAMP 
+                WHERE user_id = ?
+            ");
+            $updateStmt->bind_param("si", $skillsString, $userId);
+            $updateStmt->execute();
+        } else {
+            // 如果沒有 profile 記錄，創建一個基本記錄
+            $insertStmt = $conn->prepare("
+                INSERT INTO student_profiles (user_id, skills, created_at, updated_at) 
+                VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ");
+            $insertStmt->bind_param("is", $userId, $skillsString);
+            $insertStmt->execute();
+        }
+        
+        error_log("技能同步成功 - 使用者 ID: {$userId}, 技能: {$skillsString}");
+        return true;
+    } catch (Exception $e) {
+        error_log("技能同步失敗 - 使用者 ID: {$userId}, 錯誤: " . $e->getMessage());
+        return false;
+    }
 }
 
 // 注意：sanitizeInput 函數已在 config.php 中定義
